@@ -18,7 +18,7 @@
    - Reduced motion / high contrast awareness
    ═══════════════════════════════════════════════════════════════ */
 
-import React, { createContext, useContext, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -179,60 +179,62 @@ function mergeTokens(...layers: (ThemeTokens | null | undefined)[]): ThemeTokens
 // ─── Theme Provider Component ───
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const store = useThemeStore();
+    const colorMode = useThemeStore((s) => s.colorMode);
+    const brandId = useThemeStore((s) => s.brandId);
+    const orgTokens = useThemeStore((s) => s.orgTokens);
+    const projectTokens = useThemeStore((s) => s.projectTokens);
+    const userTokens = useThemeStore((s) => s.userTokens);
+    const setResolvedMode = useThemeStore((s) => s.setResolvedMode);
 
-    const applyTheme = useCallback(() => {
+    // Apply theme to DOM — runs only when input values change (not resolvedMode)
+    useEffect(() => {
         const html = document.documentElement;
 
         // Resolve color mode
         let resolved: "light" | "dark" = "dark";
-        if (store.colorMode === "system") {
+        if (colorMode === "system") {
             resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         } else {
-            resolved = store.colorMode;
+            resolved = colorMode;
         }
-        store.setResolvedMode(resolved);
+        setResolvedMode(resolved);
 
         // Apply color mode class
         html.classList.remove("light", "dark");
         html.classList.add(resolved);
 
         // Apply brand attribute
-        if (store.brandId !== "frozen-phoenix") {
-            html.setAttribute("data-brand", store.brandId);
+        if (brandId !== "frozen-phoenix") {
+            html.setAttribute("data-brand", brandId);
         } else {
             html.removeAttribute("data-brand");
         }
 
         // Apply cascading token overrides (org → project → user)
         clearCustomTokensFromDOM();
-        const merged = mergeTokens(store.orgTokens, store.projectTokens, store.userTokens);
+        const merged = mergeTokens(orgTokens, projectTokens, userTokens);
         if (Object.keys(merged).length > 0) {
             applyTokensToDOM(merged);
         }
-    }, [store]);
-
-    // Apply on mount and whenever store changes
-    useEffect(() => {
-        applyTheme();
-    }, [
-        applyTheme,
-        store.colorMode,
-        store.brandId,
-        store.orgTokens,
-        store.projectTokens,
-        store.userTokens,
-    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [colorMode, brandId, orgTokens, projectTokens, userTokens]);
 
     // Listen for system color scheme changes
     useEffect(() => {
-        if (store.colorMode !== "system") return;
+        if (colorMode !== "system") return;
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
-        const handler = () => applyTheme();
+        const handler = () => {
+            const resolved = mq.matches ? "dark" : "light";
+            setResolvedMode(resolved);
+            document.documentElement.classList.remove("light", "dark");
+            document.documentElement.classList.add(resolved);
+        };
         mq.addEventListener("change", handler);
         return () => mq.removeEventListener("change", handler);
-    }, [store.colorMode, applyTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [colorMode]);
 
+    const store = useThemeStore();
     const contextValue = useMemo<ThemeContextValue>(
         () => ({
             colorMode: store.colorMode,

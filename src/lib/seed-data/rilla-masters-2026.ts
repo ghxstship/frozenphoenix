@@ -574,7 +574,7 @@ export const RILLA_STAKEHOLDERS: Stakeholder[] = [
     {
         id: "rm-s4",
         name: "Alex Rivera",
-        email: "alex@frozenphoenix.com",
+        email: "alex@playbook.production",
         type: "internal",
         role: "Executive Producer",
         projectIds: ["rm-p1"],
@@ -582,7 +582,7 @@ export const RILLA_STAKEHOLDERS: Stakeholder[] = [
     {
         id: "rm-s5",
         name: "Jordan Park",
-        email: "jordan@frozenphoenix.com",
+        email: "jordan@playbook.production",
         type: "internal",
         role: "Event PM",
         projectIds: ["rm-p2", "rm-p3"],

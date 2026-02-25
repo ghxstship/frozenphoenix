@@ -72,7 +72,7 @@ export const useThemeStore = create<ThemeStore>()(
         (set) => ({
             colorMode: "dark",
             resolvedMode: "dark",
-            brandId: "frozen-phoenix",
+            brandId: "playbook",
             orgTokens: null,
             projectTokens: null,
             userTokens: null,
@@ -84,7 +84,7 @@ export const useThemeStore = create<ThemeStore>()(
             setResolvedMode: (resolvedMode) => set({ resolvedMode }),
         }),
         {
-            name: "fp-theme",
+            name: "pb-theme",
             partialize: (state) => ({
                 colorMode: state.colorMode,
                 brandId: state.brandId,
@@ -110,7 +110,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({
     colorMode: "dark",
     resolvedMode: "dark",
-    brandId: "frozen-phoenix",
+    brandId: "playbook",
     setColorMode: () => {},
     setBrandId: () => {},
     setOrgTokens: () => {},
@@ -204,7 +204,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         html.classList.add(resolved);
 
         // Apply brand attribute
-        if (brandId !== "frozen-phoenix") {
+        if (brandId !== "playbook") {
             html.setAttribute("data-brand", brandId);
         } else {
             html.removeAttribute("data-brand");

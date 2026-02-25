@@ -73,4 +73,4 @@ export interface BrandConfig {
     };
 }
 
-export type BrandId = "frozen-phoenix" | "rilla";
+export type BrandId = "playbook" | "rilla";

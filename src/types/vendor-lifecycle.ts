@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// FROZEN PHOENIX — Vendor/Contractor/Subcontractor Lifecycle Types
+// PLAYBOOK — Vendor/Contractor/Subcontractor Lifecycle Types
 // HeyPros + Jobber feature parity for creative/experiential production
 // Maintains 3NF compliance and SSOT principles
 // ═══════════════════════════════════════════════════════════════════════════

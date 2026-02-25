@@ -14,7 +14,7 @@ export type { BrandConfig as LegacyBrandConfig } from "./brand";
 export {
     BRAND_REGISTRY,
     RILLA_BRAND,
-    FROZEN_PHOENIX_BRAND,
+    PLAYBOOK_BRAND,
     getBrand,
     getActiveBrand,
 } from "./brands";

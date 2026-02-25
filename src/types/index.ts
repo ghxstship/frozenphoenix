@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — Core Type Definitions
+   PLAYBOOK — Core Type Definitions
    ═══════════════════════════════════════════════════════════════ */
 
 // Re-export Productive.io feature types

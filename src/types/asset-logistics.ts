@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — Asset, Inventory, Logistics & Warehousing Types
+   PLAYBOOK — Asset, Inventory, Logistics & Warehousing Types
    Migration 018: asset lifecycle, warehouse hierarchy, logistics
    ═══════════════════════════════════════════════════════════════ */
 

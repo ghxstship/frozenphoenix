@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — Legal, Compliance, Finance & Procurement Types
+   PLAYBOOK — Legal, Compliance, Finance & Procurement Types
    Migration 015: governance entities
    ═══════════════════════════════════════════════════════════════ */
 

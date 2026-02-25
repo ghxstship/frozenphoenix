@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// FROZEN PHOENIX — Production Lifecycle Types
+// PLAYBOOK — Production Lifecycle Types
 // Complete data model for creative/experiential production management
 // Who/What/When/Where/Why/How/If-Then for every datapoint
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// FROZEN PHOENIX — Unified Workforce Lifecycle Types
+// PLAYBOOK — Unified Workforce Lifecycle Types
 // Resolves SSOT violations between crew_members and vendors.
 // Single identity model for all worker classifications.
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — CRM & Revenue Pipeline Types
+   PLAYBOOK — CRM & Revenue Pipeline Types
    Migration 013 entities
    ═══════════════════════════════════════════════════════════════ */
 

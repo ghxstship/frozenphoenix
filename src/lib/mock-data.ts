@@ -232,8 +232,8 @@ export const MOCK_CASE_STUDIES: CaseStudy[] = [
 
 // ─── Stakeholders ───
 export const MOCK_STAKEHOLDERS: Stakeholder[] = [
-    { id: "s1", name: "Alex Rivera", email: "alex@frozenphoenix.com", type: "internal", role: "Executive Producer", projectIds: ["p1", "p3"] },
-    { id: "s2", name: "Jordan Park", email: "jordan@frozenphoenix.com", type: "internal", role: "Senior PM", projectIds: ["p2"] },
+    { id: "s1", name: "Alex Rivera", email: "alex@playbook.production", type: "internal", role: "Executive Producer", projectIds: ["p1", "p3"] },
+    { id: "s2", name: "Jordan Park", email: "jordan@playbook.production", type: "internal", role: "Senior PM", projectIds: ["p2"] },
     { id: "s3", name: "Sarah Chen", email: "sarah@nike.com", type: "client", role: "Brand Director", projectIds: ["p3"] },
     { id: "s4", name: "Derek Allen", email: "derek@coachella.com", type: "client", role: "Festival Director", projectIds: ["p1"] },
     { id: "s5", name: "Marcus Johnson", email: "marcus@crew.com", type: "freelance", role: "Lead Fabricator", projectIds: ["p1"] },

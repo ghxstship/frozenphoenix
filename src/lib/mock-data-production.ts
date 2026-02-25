@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// FROZEN PHOENIX — Production Lifecycle Mock Data
+// PLAYBOOK — Production Lifecycle Mock Data
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Note: Using 'any' arrays to avoid strict type checking on mock data

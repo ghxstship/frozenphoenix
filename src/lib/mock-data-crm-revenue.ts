@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — CRM & Revenue Pipeline Mock Data
+   PLAYBOOK — CRM & Revenue Pipeline Mock Data
    Migration 013 entities
    ═══════════════════════════════════════════════════════════════ */
 

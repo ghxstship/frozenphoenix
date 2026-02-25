@@ -28,14 +28,14 @@ import type { BrandConfig, BrandId } from "./types";
 
 // Re-export individual brand configs
 export { RILLA_BRAND } from "./rilla";
-export { FROZEN_PHOENIX_BRAND } from "./frozen-phoenix";
+export { PLAYBOOK_BRAND } from "./playbook";
 
 // Brand registry for runtime lookup
 import { RILLA_BRAND } from "./rilla";
-import { FROZEN_PHOENIX_BRAND } from "./frozen-phoenix";
+import { PLAYBOOK_BRAND } from "./playbook";
 
 export const BRAND_REGISTRY: Record<BrandId, BrandConfig> = {
-    "frozen-phoenix": FROZEN_PHOENIX_BRAND,
+    "playbook": PLAYBOOK_BRAND,
     "rilla": RILLA_BRAND,
 };
 
@@ -50,6 +50,6 @@ export function getBrand(id: BrandId): BrandConfig {
  * Get current active brand from environment or default
  */
 export function getActiveBrand(): BrandConfig {
-    const brandId = (process.env.NEXT_PUBLIC_BRAND_ID as BrandId) || "frozen-phoenix";
-    return BRAND_REGISTRY[brandId] || FROZEN_PHOENIX_BRAND;
+    const brandId = (process.env.NEXT_PUBLIC_BRAND_ID as BrandId) || "playbook";
+    return BRAND_REGISTRY[brandId] || PLAYBOOK_BRAND;
 }

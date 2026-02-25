@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// FROZEN PHOENIX — Production Domain Configuration
+// PLAYBOOK — Production Domain Configuration
 // Single Source of Truth for all production lifecycle enums, labels, and mappings
 // ═══════════════════════════════════════════════════════════════════════════
 

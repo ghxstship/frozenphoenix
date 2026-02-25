@@ -1,13 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════
-   FROZEN PHOENIX — Default Platform Brand Configuration
+   PLAYBOOK — Default Platform Brand Configuration
    ═══════════════════════════════════════════════════════════════ */
 
 import type { BrandConfig } from "./types";
 
-export const FROZEN_PHOENIX_BRAND: BrandConfig = {
-    id: "frozen-phoenix",
-    name: "Frozen Phoenix",
-    shortName: "FP",
+export const PLAYBOOK_BRAND: BrandConfig = {
+    id: "playbook",
+    name: "Playbook",
+    shortName: "PB",
     tagline: "Production Command Center",
     description: "Enterprise-grade production management platform for live events, fabrication, and experiential marketing.",
     
@@ -58,8 +58,8 @@ export const FROZEN_PHOENIX_BRAND: BrandConfig = {
     },
     
     support: {
-        email: "support@frozenphoenix.com",
-        url: "https://frozenphoenix.com/support",
+        email: "support@playbook.production",
+        url: "https://playbook.production/support",
     },
     
     features: {

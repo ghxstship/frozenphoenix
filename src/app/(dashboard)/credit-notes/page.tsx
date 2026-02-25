@@ -1,0 +1,97 @@
+"use client";
+
+import { useState } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { formatCurrency } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
+import {
+    ReceiptText, Plus, Search, DollarSign,
+    FileText, ArrowDownRight,
+} from "lucide-react";
+
+type CreditNoteStatus = "draft" | "issued" | "applied" | "void";
+
+interface CreditNote {
+    id: string;
+    number: string;
+    invoiceNumber: string;
+    client: string;
+    project: string;
+    reason: string;
+    amount: number;
+    status: CreditNoteStatus;
+    issuedDate: string;
+    appliedDate: string | null;
+}
+
+const mockCreditNotes: CreditNote[] = [
+    { id: "1", number: "CN-2026-001", invoiceNumber: "INV-2026-003", client: "Red Bull", project: "Red Bull Festival", reason: "Scope reduction — removed 2 LED walls", amount: 12000, status: "applied", issuedDate: "2026-02-18", appliedDate: "2026-02-20" },
+    { id: "2", number: "CN-2026-002", invoiceNumber: "INV-2025-089", client: "TechStart", project: "TechStart Launch", reason: "Early payment discount (2%)", amount: 500, status: "issued", issuedDate: "2026-02-22", appliedDate: null },
+    { id: "3", number: "CN-2026-003", invoiceNumber: "INV-2026-001", client: "Nike", project: "Nike Air Max Launch", reason: "Overcharge on labor hours", amount: 3750, status: "applied", issuedDate: "2026-02-10", appliedDate: "2026-02-12" },
+    { id: "4", number: "CN-2026-004", invoiceNumber: "INV-2026-002", client: "Nike", project: "Nike Air Max Launch", reason: "Material substitution credit", amount: 8200, status: "draft", issuedDate: "2026-02-25", appliedDate: null },
+];
+
+export default function CreditNotesPage() {
+    const [search, setSearch] = useState("");
+
+    const filtered = mockCreditNotes.filter((cn) =>
+        !search || cn.client.toLowerCase().includes(search.toLowerCase()) || cn.number.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const totalIssued = mockCreditNotes.filter((cn) => cn.status !== "void").reduce((s, cn) => s + cn.amount, 0);
+    const totalApplied = mockCreditNotes.filter((cn) => cn.status === "applied").reduce((s, cn) => s + cn.amount, 0);
+    const pendingCredits = mockCreditNotes.filter((cn) => cn.status === "issued" || cn.status === "draft").reduce((s, cn) => s + cn.amount, 0);
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <PageHeader title="Credit Notes" description="Issue and track credit notes against client invoices">
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> New Credit Note
+                </Button>
+            </PageHeader>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard title="Total Issued" value={formatCurrency(totalIssued)} description="all credit notes" icon={ReceiptText} />
+                <StatCard title="Applied" value={formatCurrency(totalApplied)} description="against invoices" icon={ArrowDownRight} />
+                <StatCard title="Pending" value={formatCurrency(pendingCredits)} description="to be applied" icon={DollarSign} />
+            </div>
+
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search credit notes..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                {filtered.map((cn) => (
+                    <Card key={cn.id} className="hover:bg-secondary/30 transition-colors cursor-pointer">
+                        <CardContent className="flex items-center gap-4 py-3">
+                            <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                                <FileText className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-muted-foreground">{cn.number}</span>
+                                    <StatusBadge status={cn.status} className="text-[10px]" />
+                                </div>
+                                <p className="text-sm font-semibold">{cn.reason}</p>
+                                <p className="text-xs text-muted-foreground">{cn.client} · Against {cn.invoiceNumber} · {cn.issuedDate}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                                <p className="text-sm font-bold text-destructive">-{formatCurrency(cn.amount)}</p>
+                                {cn.appliedDate && (
+                                    <p className="text-[10px] text-muted-foreground">Applied {cn.appliedDate}</p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}

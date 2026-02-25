@@ -1,0 +1,98 @@
+"use client";
+
+import { useState } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+    Fingerprint, Search, Plus,
+} from "lucide-react";
+import { MOCK_IP_RIGHTS } from "@/lib/mock-data-governance";
+
+const ASSET_TYPE_LABELS: Record<string, string> = {
+    logo: "Logo", trademark: "Trademark", design: "Design", photograph: "Photograph",
+    video: "Video", music: "Music", software: "Software", content: "Content",
+    invention: "Invention", trade_secret: "Trade Secret", other: "Other",
+};
+
+const LICENSE_TYPE_LABELS: Record<string, string> = {
+    exclusive: "Exclusive", non_exclusive: "Non-Exclusive", sole: "Sole",
+    sublicensable: "Sublicensable", work_for_hire: "Work for Hire",
+    assignment: "Assignment", creative_commons: "Creative Commons", other: "Other",
+};
+
+const OWNER_LABELS: Record<string, string> = {
+    us: "Us (Company)", counterparty: "Counterparty", mutual: "Mutual", third_party: "Third Party",
+};
+
+export default function IPRightsPage() {
+    const [search, setSearch] = useState("");
+
+    const rights = MOCK_IP_RIGHTS;
+
+    const filtered = rights.filter(r => {
+        return !search || r.asset_description.toLowerCase().includes(search.toLowerCase()) || r.asset_type.toLowerCase().includes(search.toLowerCase());
+    });
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <PageHeader title="IP & Usage Rights" description="Intellectual property ownership, licensing terms, and usage rights tracking across all contracts">
+                <Button size="sm"><Plus className="h-4 w-4" /> Add IP Right</Button>
+            </PageHeader>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard title="Total IP Rights" value={rights.length} icon={Fingerprint} />
+                <StatCard title="Work for Hire" value={rights.filter(r => r.license_type === "work_for_hire").length} icon={Fingerprint} />
+                <StatCard title="Licensed" value={rights.filter(r => r.license_type !== "work_for_hire").length} icon={Fingerprint} />
+            </div>
+
+            <div className="flex items-center gap-3">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search IP rights..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filtered.map(r => (
+                    <Card key={r.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-start justify-between">
+                                <CardTitle className="text-sm">{r.asset_description}</CardTitle>
+                                <Badge variant="secondary" className="text-[9px]">{ASSET_TYPE_LABELS[r.asset_type] || r.asset_type}</Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2 text-xs">
+                                <div className="flex items-center gap-4">
+                                    <div><span className="text-muted-foreground">Owner:</span> <span className="font-medium">{OWNER_LABELS[r.owner] || r.owner}</span></div>
+                                    <div><span className="text-muted-foreground">License:</span> <span className="font-medium">{LICENSE_TYPE_LABELS[r.license_type] || r.license_type}</span></div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div><span className="text-muted-foreground">Territory:</span> {r.territory}</div>
+                                    {r.duration && <div><span className="text-muted-foreground">Duration:</span> {r.duration}</div>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {r.exclusivity && <Badge variant="warning" className="text-[9px]">Exclusive</Badge>}
+                                    {r.sublicensable && <Badge variant="info" className="text-[9px]">Sublicensable</Badge>}
+                                </div>
+                                {r.permitted_uses && (
+                                    <div><span className="text-muted-foreground">Permitted:</span> {r.permitted_uses}</div>
+                                )}
+                                {r.prohibited_uses && (
+                                    <div className="text-destructive"><span className="text-muted-foreground">Prohibited:</span> {r.prohibited_uses}</div>
+                                )}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-border">
+                                Contract: {r.contract_id}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}

@@ -1,0 +1,98 @@
+"use client";
+
+import React from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useVaultDocuments, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { Plus, Lock, FileText, Eye, Link, Clock, Shield, Loader2 } from "lucide-react";
+
+const MOCK_DOCS = [
+    { id: "doc1", name: "Coachella Site Map — Restricted Zone", category: "site_map", accessLevel: "pm", uploadedBy: "Alex Rivera", uploadedAt: "2026-02-10", hasExpLink: true, expLinkExpiry: "2026-03-01" },
+    { id: "doc2", name: "Artist NDA — Headliner TBD", category: "nda", accessLevel: "exec", uploadedBy: "Jordan Park", uploadedAt: "2026-02-15", hasExpLink: false },
+    { id: "doc3", name: "Fire Marshal Permit — DTLA", category: "permit", accessLevel: "pm", uploadedBy: "Alex Rivera", uploadedAt: "2026-02-20", hasExpLink: true, expLinkExpiry: "2026-02-28" },
+    { id: "doc4", name: "Venue Blueprint — Grand Ballroom", category: "blueprint", accessLevel: "pm", uploadedBy: "Jordan Park", uploadedAt: "2026-01-25", hasExpLink: false },
+];
+
+const categoryIcons: Record<string, typeof FileText> = {
+    site_map: Shield,
+    nda: Lock,
+    permit: FileText,
+    blueprint: FileText,
+    contract: FileText,
+    other: FileText,
+};
+
+export default function VaultPage() {
+    const { data: sbDocs, isLoading } = useVaultDocuments();
+
+    const docs = isSupabaseConfigured && sbDocs ? sbDocs.map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        category: doc.category,
+        accessLevel: doc.access_level,
+        uploadedBy: ((doc as unknown as { profiles?: { name: string } }).profiles?.name) || "Unknown",
+        uploadedAt: (doc.created_at ?? new Date().toISOString()).split("T")[0],
+        hasExpLink: !!(doc as unknown as { expiring_link_token?: string }).expiring_link_token,
+        expLinkExpiry: (doc as unknown as { expiring_link_expires_at?: string }).expiring_link_expires_at ?? undefined,
+    })) : MOCK_DOCS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <PageHeader title="Secure Document Vault" description="Encrypted storage with expiring view-only links for external stakeholders">
+                <Button size="sm"><Plus className="h-4 w-4" /> Upload Document</Button>
+            </PageHeader>
+
+            <div className="space-y-3">
+                {docs.map((doc, i) => {
+                    const Icon = categoryIcons[doc.category] || FileText;
+                    return (
+                        <Card key={doc.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                            <CardContent>
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Icon className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-sm font-bold truncate">{doc.name}</h3>
+                                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+                                            <Badge variant="ghost" className="text-[9px]">{doc.category.replace("_", " ")}</Badge>
+                                            <span>Uploaded by {doc.uploadedBy}</span>
+                                            <span>·</span>
+                                            <span>{doc.uploadedAt}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant={doc.accessLevel === "exec" ? "destructive" : "warning"} className="text-[9px]">
+                                            <Lock className="h-2.5 w-2.5 mr-0.5" />
+                                            {doc.accessLevel.toUpperCase()}
+                                        </Badge>
+                                        {doc.hasExpLink && (
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-info/10 text-info text-[10px] font-medium">
+                                                <Link className="h-3 w-3" />
+                                                Expiring Link
+                                                <Clock className="h-3 w-3 ml-0.5" />
+                                            </div>
+                                        )}
+                                        <Button size="icon" variant="ghost" className="h-7 w-7">
+                                            <Eye className="h-3.5 w-3.5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}

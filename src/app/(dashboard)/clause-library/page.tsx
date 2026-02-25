@@ -1,0 +1,102 @@
+"use client";
+
+import { useState } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+    BookLock, Search, Plus,
+} from "lucide-react";
+import { MOCK_CONTRACT_CLAUSES } from "@/lib/mock-data-governance";
+import type { ClauseRiskLevel } from "@/types/governance";
+
+const CLAUSE_TYPE_LABELS: Record<string, string> = {
+    indemnification: "Indemnification", limitation_of_liability: "Limitation of Liability",
+    insurance_requirements: "Insurance Requirements", ip_ownership: "IP Ownership",
+    ip_usage_rights: "IP Usage Rights", confidentiality: "Confidentiality",
+    non_compete: "Non-Compete", force_majeure: "Force Majeure",
+    termination: "Termination", payment_terms: "Payment Terms",
+    dispute_resolution: "Dispute Resolution", data_privacy: "Data Privacy",
+    cancellation: "Cancellation", weather_contingency: "Weather Contingency",
+    warranty: "Warranty", other: "Other",
+};
+
+const RISK_VARIANTS: Record<ClauseRiskLevel, "success" | "info" | "warning" | "destructive"> = {
+    low: "success", medium: "info", high: "warning", critical: "destructive",
+};
+
+export default function ClauseLibraryPage() {
+    const [search, setSearch] = useState("");
+    const [riskFilter, setRiskFilter] = useState<string>("all");
+
+    const clauses = MOCK_CONTRACT_CLAUSES;
+
+    const filtered = clauses.filter(c => {
+        const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.body.toLowerCase().includes(search.toLowerCase());
+        const matchesRisk = riskFilter === "all" || c.risk_level === riskFilter;
+        return matchesSearch && matchesRisk;
+    });
+
+    const templates = clauses.filter(c => c.is_template).length;
+    const highRisk = clauses.filter(c => c.risk_level === "high" || c.risk_level === "critical").length;
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <PageHeader title="Clause Library" description="Standard contract clauses with risk classification — reuse across contracts to ensure consistency">
+                <Button size="sm"><Plus className="h-4 w-4" /> Add Clause</Button>
+            </PageHeader>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard title="Total Clauses" value={clauses.length} icon={BookLock} />
+                <StatCard title="Templates" value={templates} icon={BookLock} />
+                <StatCard title="High/Critical Risk" value={highRisk} icon={BookLock} />
+            </div>
+
+            <div className="flex items-center gap-3">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search clauses..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+                </div>
+                <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                    <option value="all">All Risk Levels</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filtered.map(c => (
+                    <Card key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <CardTitle className="text-sm">{c.title}</CardTitle>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {CLAUSE_TYPE_LABELS[c.clause_type] || c.clause_type}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Badge variant={RISK_VARIANTS[c.risk_level]} className="text-[9px]">{c.risk_level}</Badge>
+                                    {c.is_template && <Badge variant="secondary" className="text-[9px]">Template</Badge>}
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-xs text-muted-foreground line-clamp-3">{c.body}</p>
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border text-[10px] text-muted-foreground">
+                                {c.is_standard && <span>Standard</span>}
+                                {c.negotiable && <span>· Negotiable</span>}
+                                {!c.negotiable && <span className="text-destructive">· Non-negotiable</span>}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}

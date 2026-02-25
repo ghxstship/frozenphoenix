@@ -1,0 +1,123 @@
+import type {
+    UserDirectoryEntry,
+    Invitation,
+    LoginAuditEntry,
+    RoleChangeLogEntry,
+    AccessReviewEntry,
+    TemporaryAccessGrant,
+    UserOnboardingProgress,
+    UserSession,
+    ApiToken,
+    UserComplianceAck,
+    DataRetentionPolicy,
+} from "@/types/user-lifecycle";
+
+// ─── User Directory ───
+export const MOCK_USER_DIRECTORY: UserDirectoryEntry[] = [
+    { id: "u1", displayName: "Alex Rivera", email: "alex@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Executive Producer", lifecycleStatus: "active", role: "exec", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-25T14:30:00Z", onboardingCompletedAt: "2023-06-20T10:00:00Z", createdAt: "2023-06-15T00:00:00Z" },
+    { id: "u2", displayName: "Jordan Park", email: "jordan@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Technical Director", lifecycleStatus: "active", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-25T12:15:00Z", onboardingCompletedAt: "2024-01-12T09:00:00Z", createdAt: "2024-01-10T00:00:00Z" },
+    { id: "u3", displayName: "Sarah Chen", email: "sarah@nike.com", avatarUrl: undefined, jobTitle: "Brand Manager", lifecycleStatus: "active", role: "client", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-24T16:00:00Z", onboardingCompletedAt: "2025-03-05T11:00:00Z", createdAt: "2025-03-01T00:00:00Z" },
+    { id: "u4", displayName: "Marcus Johnson", email: "marcus@steelcraft.com", avatarUrl: undefined, jobTitle: "Fabrication Lead", lifecycleStatus: "active", role: "vendor", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-23T09:00:00Z", onboardingCompletedAt: "2025-06-10T14:00:00Z", createdAt: "2025-06-01T00:00:00Z" },
+    { id: "u5", displayName: "Emily Nakamura", email: "emily@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Project Coordinator", lifecycleStatus: "active", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-25T11:00:00Z", onboardingCompletedAt: "2025-09-15T10:00:00Z", createdAt: "2025-09-10T00:00:00Z" },
+    { id: "u6", displayName: "Carlos Mendez", email: "carlos@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Production Manager", lifecycleStatus: "active", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-25T08:30:00Z", onboardingCompletedAt: "2024-03-10T09:00:00Z", createdAt: "2024-03-01T00:00:00Z" },
+    { id: "u7", displayName: "Lisa Tran", email: "lisa@redbull.com", avatarUrl: undefined, jobTitle: "Events Director", lifecycleStatus: "active", role: "client", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-20T10:00:00Z", onboardingCompletedAt: "2025-11-20T15:00:00Z", createdAt: "2025-11-15T00:00:00Z" },
+    { id: "u8", displayName: "Derek Williams", email: "derek@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Warehouse Manager", lifecycleStatus: "deactivated", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2026-01-15T17:00:00Z", onboardingCompletedAt: "2022-02-01T09:00:00Z", createdAt: "2022-01-15T00:00:00Z" },
+    { id: "u9", displayName: "Priya Sharma", email: "priya@avpros.com", avatarUrl: undefined, jobTitle: "AV Consultant", lifecycleStatus: "active", role: "vendor", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-22T14:00:00Z", onboardingCompletedAt: "2025-08-05T11:00:00Z", createdAt: "2025-08-01T00:00:00Z" },
+    { id: "u10", displayName: "Lena Kowalski", email: "lena@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Production Intern", lifecycleStatus: "onboarding", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2026-02-25T09:00:00Z", createdAt: "2026-02-20T00:00:00Z" },
+    { id: "u11", displayName: "Tom Richardson", email: "tom@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Finance Director", lifecycleStatus: "suspended", role: "exec", organizationName: "Frozen Phoenix", lastActiveAt: "2026-01-30T16:00:00Z", onboardingCompletedAt: "2023-09-01T10:00:00Z", createdAt: "2023-08-15T00:00:00Z" },
+    { id: "u12", displayName: "Nina Alvarez", email: "nina@frozenphoenix.com", avatarUrl: undefined, jobTitle: "Brand Ambassador", lifecycleStatus: "pending_deletion", role: "pm", organizationName: "Frozen Phoenix", lastActiveAt: "2025-10-31T17:00:00Z", onboardingCompletedAt: "2024-05-10T09:00:00Z", createdAt: "2024-05-01T00:00:00Z" },
+];
+
+// ─── Invitations ───
+export const MOCK_INVITATIONS: Invitation[] = [
+    { id: "inv1", organizationId: "org1", organizationName: "Frozen Phoenix", email: "maya.chen@frozenphoenix.com", role: "pm", token: "tok_abc123", status: "pending", invitedBy: "u1", invitedByName: "Alex Rivera", personalMessage: "Welcome to the team! Looking forward to having you on the Coachella 2026 project.", projectIds: [], expiresAt: "2026-03-04T00:00:00Z", createdAt: "2026-02-25T10:00:00Z", updatedAt: "2026-02-25T10:00:00Z" },
+    { id: "inv2", organizationId: "org1", organizationName: "Frozen Phoenix", email: "james.wright@redrock.com", role: "vendor", token: "tok_def456", status: "pending", invitedBy: "u2", invitedByName: "Jordan Park", projectIds: ["p1"], expiresAt: "2026-03-04T00:00:00Z", createdAt: "2026-02-24T14:00:00Z", updatedAt: "2026-02-24T14:00:00Z" },
+    { id: "inv3", organizationId: "org1", organizationName: "Frozen Phoenix", email: "ana.costa@frozenphoenix.com", role: "pm", token: "tok_ghi789", status: "accepted", invitedBy: "u1", invitedByName: "Alex Rivera", projectIds: [], expiresAt: "2026-02-28T00:00:00Z", acceptedAt: "2026-02-22T09:30:00Z", acceptedBy: "u5", createdAt: "2026-02-20T10:00:00Z", updatedAt: "2026-02-22T09:30:00Z" },
+    { id: "inv4", organizationId: "org1", organizationName: "Frozen Phoenix", email: "old.vendor@legacy.com", role: "vendor", token: "tok_jkl012", status: "expired", invitedBy: "u2", invitedByName: "Jordan Park", projectIds: [], expiresAt: "2026-02-10T00:00:00Z", createdAt: "2026-02-03T10:00:00Z", updatedAt: "2026-02-10T00:00:00Z" },
+    { id: "inv5", organizationId: "org1", organizationName: "Frozen Phoenix", email: "revoked.user@example.com", role: "client", token: "tok_mno345", status: "revoked", invitedBy: "u1", invitedByName: "Alex Rivera", projectIds: [], expiresAt: "2026-03-01T00:00:00Z", revokedAt: "2026-02-23T11:00:00Z", revokedBy: "u1", createdAt: "2026-02-22T10:00:00Z", updatedAt: "2026-02-23T11:00:00Z" },
+];
+
+// ─── Login Audit Log ───
+export const MOCK_LOGIN_AUDIT: LoginAuditEntry[] = [
+    { id: "la1", userId: "u1", userName: "Alex Rivera", email: "alex@frozenphoenix.com", eventType: "login_success", authMethod: "password", ipAddress: "192.168.1.100", userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", countryCode: "US", city: "Los Angeles", success: true, createdAt: "2026-02-25T14:30:00Z" },
+    { id: "la2", userId: "u2", userName: "Jordan Park", email: "jordan@frozenphoenix.com", eventType: "login_success", authMethod: "password", ipAddress: "10.0.0.55", userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64)", countryCode: "US", city: "New York", success: true, createdAt: "2026-02-25T12:15:00Z" },
+    { id: "la3", userId: "u3", userName: "Sarah Chen", email: "sarah@nike.com", eventType: "login_success", authMethod: "oauth_google", ipAddress: "172.16.0.22", userAgent: "Mozilla/5.0 (Macintosh)", countryCode: "US", city: "Portland", success: true, createdAt: "2026-02-24T16:00:00Z" },
+    { id: "la4", userId: undefined, email: "unknown@hacker.com", eventType: "login_failure", authMethod: "password", ipAddress: "203.0.113.50", userAgent: "curl/7.79.1", countryCode: "CN", city: "Beijing", success: false, failureReason: "Invalid credentials", createdAt: "2026-02-25T03:22:00Z" },
+    { id: "la5", userId: "u1", userName: "Alex Rivera", email: "alex@frozenphoenix.com", eventType: "token_refresh", authMethod: "session_refresh", ipAddress: "192.168.1.100", success: true, createdAt: "2026-02-25T13:00:00Z" },
+    { id: "la6", userId: "u4", userName: "Marcus Johnson", email: "marcus@steelcraft.com", eventType: "login_success", authMethod: "password", ipAddress: "98.76.54.32", userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3)", countryCode: "US", city: "Detroit", success: true, createdAt: "2026-02-23T09:00:00Z" },
+    { id: "la7", userId: "u11", userName: "Tom Richardson", email: "tom@frozenphoenix.com", eventType: "login_failure", authMethod: "password", ipAddress: "192.168.1.105", success: false, failureReason: "Account suspended", createdAt: "2026-02-20T08:15:00Z" },
+    { id: "la8", userId: "u1", userName: "Alex Rivera", email: "alex@frozenphoenix.com", eventType: "session_revoked", ipAddress: "192.168.1.100", success: true, metadata: { reason: "User initiated logout from all devices" }, createdAt: "2026-02-24T23:00:00Z" },
+    { id: "la9", userId: undefined, email: "alex@frozenphoenix.com", eventType: "login_failure", authMethod: "password", ipAddress: "45.33.12.88", countryCode: "RU", city: "Moscow", success: false, failureReason: "Invalid credentials", createdAt: "2026-02-25T02:10:00Z" },
+    { id: "la10", userId: "u5", userName: "Emily Nakamura", email: "emily@frozenphoenix.com", eventType: "password_reset_complete", authMethod: "magic_link", ipAddress: "192.168.1.110", success: true, createdAt: "2026-02-21T15:30:00Z" },
+];
+
+// ─── Role Change Log ───
+export const MOCK_ROLE_CHANGES: RoleChangeLogEntry[] = [
+    { id: "rc1", userId: "u5", userName: "Emily Nakamura", organizationName: "Frozen Phoenix", changeType: "membership_created", newValue: "pm", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2025-09-10T10:00:00Z" },
+    { id: "rc2", userId: "u3", userName: "Sarah Chen", organizationName: "Frozen Phoenix", changeType: "membership_created", newValue: "client", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2025-03-01T11:00:00Z" },
+    { id: "rc3", userId: "u11", userName: "Tom Richardson", organizationName: "Frozen Phoenix", changeType: "account_suspended", oldValue: "active", newValue: "suspended", reason: "Policy violation investigation", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2026-01-30T16:00:00Z" },
+    { id: "rc4", userId: "u8", userName: "Derek Williams", organizationName: "Frozen Phoenix", changeType: "account_deactivated", oldValue: "active", newValue: "deactivated", reason: "Voluntary resignation — relocating", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2026-02-01T09:00:00Z" },
+    { id: "rc5", userId: "u12", userName: "Nina Alvarez", organizationName: "Frozen Phoenix", changeType: "account_deletion_requested", oldValue: "active", newValue: "pending_deletion", reason: "User requested account deletion", changedBy: "u12", changedByName: "Nina Alvarez", createdAt: "2026-02-15T14:00:00Z" },
+    { id: "rc6", userId: "u6", userName: "Carlos Mendez", organizationName: "Frozen Phoenix", changeType: "role_changed", oldValue: "pm", newValue: "exec", reason: "Promotion to department head", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2026-02-10T10:00:00Z" },
+    { id: "rc7", userId: "u4", userName: "Marcus Johnson", organizationName: "Frozen Phoenix", changeType: "temp_grant_created", newValue: "pm-level access to budgets", reason: "Vendor needs budget visibility for Coachella project", changedBy: "u2", changedByName: "Jordan Park", createdAt: "2026-02-20T11:00:00Z" },
+    { id: "rc8", userId: "u10", userName: "Lena Kowalski", organizationName: "Frozen Phoenix", changeType: "membership_created", newValue: "pm", changedBy: "u1", changedByName: "Alex Rivera", createdAt: "2026-02-20T09:00:00Z" },
+];
+
+// ─── Access Reviews ───
+export const MOCK_ACCESS_REVIEWS: AccessReviewEntry[] = [
+    { userId: "u1", userName: "Alex Rivera", email: "alex@frozenphoenix.com", organizationName: "Frozen Phoenix", role: "exec", membershipStatus: "active", joinedAt: "2023-06-15T00:00:00Z", lastActiveAt: "2026-02-25T14:30:00Z", daysSinceActive: 0, projectCount: 8, hasExpiredGrants: false, riskLevel: "low" },
+    { userId: "u2", userName: "Jordan Park", email: "jordan@frozenphoenix.com", organizationName: "Frozen Phoenix", role: "pm", membershipStatus: "active", joinedAt: "2024-01-10T00:00:00Z", lastActiveAt: "2026-02-25T12:15:00Z", daysSinceActive: 0, projectCount: 5, hasExpiredGrants: false, riskLevel: "low" },
+    { userId: "u3", userName: "Sarah Chen", email: "sarah@nike.com", organizationName: "Frozen Phoenix", role: "client", membershipStatus: "active", joinedAt: "2025-03-01T00:00:00Z", lastActiveAt: "2026-02-24T16:00:00Z", daysSinceActive: 1, projectCount: 2, hasExpiredGrants: false, riskLevel: "low" },
+    { userId: "u4", userName: "Marcus Johnson", email: "marcus@steelcraft.com", organizationName: "Frozen Phoenix", role: "vendor", membershipStatus: "active", joinedAt: "2025-06-01T00:00:00Z", lastActiveAt: "2026-02-23T09:00:00Z", daysSinceActive: 2, projectCount: 1, hasExpiredGrants: true, riskLevel: "medium" },
+    { userId: "u7", userName: "Lisa Tran", email: "lisa@redbull.com", organizationName: "Frozen Phoenix", role: "client", membershipStatus: "active", joinedAt: "2025-11-15T00:00:00Z", lastActiveAt: "2026-02-20T10:00:00Z", daysSinceActive: 5, projectCount: 1, hasExpiredGrants: false, riskLevel: "low" },
+    { userId: "u8", userName: "Derek Williams", email: "derek@frozenphoenix.com", organizationName: "Frozen Phoenix", role: "pm", membershipStatus: "active", joinedAt: "2022-01-15T00:00:00Z", lastActiveAt: "2026-01-15T17:00:00Z", daysSinceActive: 41, projectCount: 0, hasExpiredGrants: true, riskLevel: "high" },
+    { userId: "u9", userName: "Priya Sharma", email: "priya@avpros.com", organizationName: "Frozen Phoenix", role: "vendor", membershipStatus: "active", joinedAt: "2025-08-01T00:00:00Z", lastActiveAt: "2026-02-22T14:00:00Z", daysSinceActive: 3, projectCount: 2, hasExpiredGrants: false, riskLevel: "low" },
+    { userId: "u11", userName: "Tom Richardson", email: "tom@frozenphoenix.com", organizationName: "Frozen Phoenix", role: "exec", membershipStatus: "suspended", joinedAt: "2023-08-15T00:00:00Z", lastActiveAt: "2026-01-30T16:00:00Z", daysSinceActive: 26, projectCount: 4, hasExpiredGrants: false, riskLevel: "high" },
+];
+
+// ─── Temporary Access Grants ───
+export const MOCK_TEMP_GRANTS: TemporaryAccessGrant[] = [
+    { id: "tg1", userId: "u4", userName: "Marcus Johnson", organizationId: "org1", resourceType: "budgets", permissionLevel: "pm", actions: ["read"], reason: "Vendor needs budget visibility for Coachella project cost estimation", grantedBy: "u2", grantedByName: "Jordan Park", status: "active", startsAt: "2026-02-20T00:00:00Z", expiresAt: "2026-03-20T00:00:00Z", createdAt: "2026-02-20T11:00:00Z", updatedAt: "2026-02-20T11:00:00Z" },
+    { id: "tg2", userId: "u3", userName: "Sarah Chen", organizationId: "org1", resourceType: "crew", permissionLevel: "pm", actions: ["read"], reason: "Client reviewing crew assignments for upcoming activation", grantedBy: "u1", grantedByName: "Alex Rivera", status: "active", startsAt: "2026-02-15T00:00:00Z", expiresAt: "2026-03-15T00:00:00Z", createdAt: "2026-02-15T10:00:00Z", updatedAt: "2026-02-15T10:00:00Z" },
+    { id: "tg3", userId: "u9", userName: "Priya Sharma", organizationId: "org1", resourceType: "inventory", permissionLevel: "pm", actions: ["read", "write"], reason: "AV vendor managing equipment inventory for SXSW event", grantedBy: "u2", grantedByName: "Jordan Park", status: "expired", startsAt: "2026-01-01T00:00:00Z", expiresAt: "2026-02-01T00:00:00Z", createdAt: "2026-01-01T09:00:00Z", updatedAt: "2026-02-01T00:00:00Z" },
+];
+
+// ─── Onboarding Progress ───
+export const MOCK_ONBOARDING_PROGRESS: UserOnboardingProgress[] = [
+    { id: "op1", userId: "u10", stepDefinitionId: "sd1", stepKey: "email_verification", stepTitle: "Verify Email Address", status: "completed", completedAt: "2026-02-20T09:30:00Z", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:30:00Z" },
+    { id: "op2", userId: "u10", stepDefinitionId: "sd2", stepKey: "terms_acceptance", stepTitle: "Accept Terms of Service", status: "completed", completedAt: "2026-02-20T09:35:00Z", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:35:00Z" },
+    { id: "op3", userId: "u10", stepDefinitionId: "sd3", stepKey: "profile_completion", stepTitle: "Complete Your Profile", status: "in_progress", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:35:00Z" },
+    { id: "op4", userId: "u10", stepDefinitionId: "sd4", stepKey: "notification_setup", stepTitle: "Configure Notifications", status: "not_started", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:00:00Z" },
+    { id: "op5", userId: "u10", stepDefinitionId: "sd8", stepKey: "project_tour", stepTitle: "Project Management Tour", status: "not_started", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:00:00Z" },
+    { id: "op6", userId: "u10", stepDefinitionId: "sd9", stepKey: "team_familiarization", stepTitle: "Meet Your Team", status: "not_started", createdAt: "2026-02-20T09:00:00Z", updatedAt: "2026-02-20T09:00:00Z" },
+];
+
+// ─── User Sessions ───
+export const MOCK_USER_SESSIONS: UserSession[] = [
+    { id: "sess1", userId: "u1", sessionTokenHash: "sha256_abc", ipAddress: "192.168.1.100", deviceName: "MacBook Pro", deviceType: "desktop", browser: "Chrome 121", os: "macOS 14.3", countryCode: "US", city: "Los Angeles", isCurrent: true, lastActiveAt: "2026-02-25T14:30:00Z", expiresAt: "2026-03-27T14:30:00Z", createdAt: "2026-02-25T08:00:00Z" },
+    { id: "sess2", userId: "u1", sessionTokenHash: "sha256_def", ipAddress: "192.168.1.101", deviceName: "iPhone 15 Pro", deviceType: "mobile", browser: "Safari 17", os: "iOS 17.3", countryCode: "US", city: "Los Angeles", isCurrent: false, lastActiveAt: "2026-02-24T22:00:00Z", expiresAt: "2026-03-26T22:00:00Z", createdAt: "2026-02-24T18:00:00Z" },
+];
+
+// ─── API Tokens ───
+export const MOCK_API_TOKENS: ApiToken[] = [
+    { id: "at1", userId: "u1", name: "CI/CD Pipeline", description: "Used by GitHub Actions for automated deployments", tokenPrefix: "fp_live_", tokenHash: "sha256_tok1", scopes: ["read", "write"], permissionLevel: "pm", status: "active", lastUsedAt: "2026-02-25T06:00:00Z", lastUsedIp: "140.82.112.3", expiresAt: "2026-08-25T00:00:00Z", createdAt: "2025-08-25T10:00:00Z", updatedAt: "2026-02-25T06:00:00Z" },
+    { id: "at2", userId: "u1", name: "Slack Integration", description: "Webhook for Slack notifications", tokenPrefix: "fp_live_", tokenHash: "sha256_tok2", scopes: ["read"], permissionLevel: "pm", status: "active", lastUsedAt: "2026-02-25T14:00:00Z", expiresAt: "2026-06-01T00:00:00Z", createdAt: "2025-12-01T10:00:00Z", updatedAt: "2026-02-25T14:00:00Z" },
+    { id: "at3", userId: "u2", name: "Legacy API Key", description: "Old integration — to be retired", tokenPrefix: "fp_test_", tokenHash: "sha256_tok3", scopes: ["read"], permissionLevel: "pm", status: "revoked", revokedAt: "2026-02-10T10:00:00Z", revokedBy: "u2", createdAt: "2024-06-01T10:00:00Z", updatedAt: "2026-02-10T10:00:00Z" },
+];
+
+// ─── Compliance Acknowledgments ───
+export const MOCK_COMPLIANCE_ACKS: UserComplianceAck[] = [
+    { id: "ca1", userId: "u1", policyType: "terms_of_service", policyVersion: "2.1", policyTitle: "Platform Terms of Service", documentUrl: "/docs/tos-v2.1.pdf", acknowledgedAt: "2026-01-15T10:00:00Z", ipAddress: "192.168.1.100", createdAt: "2026-01-15T10:00:00Z" },
+    { id: "ca2", userId: "u1", policyType: "privacy_policy", policyVersion: "1.3", policyTitle: "Privacy Policy", documentUrl: "/docs/privacy-v1.3.pdf", acknowledgedAt: "2026-01-15T10:01:00Z", ipAddress: "192.168.1.100", createdAt: "2026-01-15T10:01:00Z" },
+    { id: "ca3", userId: "u4", policyType: "nda", policyVersion: "1.0", policyTitle: "Non-Disclosure Agreement", documentUrl: "/docs/nda-vendor.pdf", acknowledgedAt: "2025-06-05T14:00:00Z", ipAddress: "98.76.54.32", createdAt: "2025-06-05T14:00:00Z" },
+];
+
+// ─── Data Retention Policies ───
+export const MOCK_RETENTION_POLICIES: DataRetentionPolicy[] = [
+    { id: "rp1", entityType: "login_audit_log", retentionDays: 730, actionOnExpiry: "purge", legalBasis: "Legitimate interest", description: "Authentication event logs retained for 2 years", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+    { id: "rp2", entityType: "user_sessions", retentionDays: 90, actionOnExpiry: "purge", legalBasis: "Legitimate interest", description: "Expired sessions purged after 90 days", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+    { id: "rp3", entityType: "api_tokens", retentionDays: 730, actionOnExpiry: "purge", legalBasis: "Security", description: "Revoked/expired token metadata retained for 2 years", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+    { id: "rp4", entityType: "user_pii", retentionDays: 30, actionOnExpiry: "anonymize", legalBasis: "GDPR Art. 17", description: "PII anonymized 30 days after deletion request", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+    { id: "rp5", entityType: "role_change_log", retentionDays: -1, actionOnExpiry: "retain", legalBasis: "Compliance/audit", description: "Permission changes retained indefinitely", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+    { id: "rp6", entityType: "user_compliance_acks", retentionDays: -1, actionOnExpiry: "retain", legalBasis: "Legal obligation", description: "Compliance acknowledgments retained indefinitely", isActive: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: "2025-01-01T00:00:00Z" },
+];

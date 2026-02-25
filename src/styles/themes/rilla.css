@@ -1,0 +1,189 @@
+/* ═══════════════════════════════════════════════════════════════
+   RILLA THEME — CSS Custom Properties Override
+   ═══════════════════════════════════════════════════════════════
+   
+   Rilla: AI-powered sales coaching platform
+   "The End of Ridealongs"
+   
+   Apply this theme by adding data-brand="rilla" to the html element
+   or by importing this file when NEXT_PUBLIC_BRAND_ID=rilla
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-brand="rilla"] {
+  /* Brand Colors — Purple/Indigo + Coral */
+  --brand-primary: 262 83% 58%;
+  --brand-primary-foreground: 0 0% 100%;
+  --brand-secondary: 262 30% 12%;
+  --brand-accent: 16 100% 66%;
+
+  /* Semantic Colors — Light Mode */
+  --background: 0 0% 100%;
+  --foreground: 262 40% 10%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 262 40% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 262 40% 10%;
+
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 260 20% 96%;
+  --secondary-foreground: 262 30% 15%;
+
+  --muted: 260 15% 95%;
+  --muted-foreground: 260 10% 45%;
+
+  --accent: 16 100% 66%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
+  --success: 142 70% 45%;
+  --success-foreground: 0 0% 100%;
+
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+
+  --border: 260 15% 90%;
+  --input: 260 15% 90%;
+  --ring: 262 83% 58%;
+
+  /* Sidebar — Deep Purple */
+  --sidebar-background: 262 40% 8%;
+  --sidebar-foreground: 260 15% 85%;
+  --sidebar-border: 262 25% 12%;
+  --sidebar-accent: 262 25% 12%;
+  --sidebar-accent-foreground: 260 15% 96%;
+  --sidebar-primary: 262 83% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-ring: 262 83% 65%;
+  --sidebar-muted: 262 20% 20%;
+
+  /* Liquid Glass — Purple Tint */
+  --glass-bg: rgba(250, 248, 255, 0.72);
+  --glass-border: rgba(139, 92, 246, 0.15);
+}
+
+[data-brand="rilla"].dark,
+[data-brand="rilla"] .dark {
+  /* Semantic Colors — Dark Mode */
+  --background: 262 40% 6%;
+  --foreground: 260 10% 95%;
+
+  --card: 262 35% 9%;
+  --card-foreground: 260 10% 95%;
+
+  --popover: 262 35% 9%;
+  --popover-foreground: 260 10% 95%;
+
+  --primary: 262 83% 65%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 262 30% 12%;
+  --secondary-foreground: 260 15% 90%;
+
+  --muted: 262 25% 12%;
+  --muted-foreground: 260 15% 55%;
+
+  --accent: 16 100% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 262 25% 15%;
+  --input: 262 25% 15%;
+  --ring: 262 83% 65%;
+
+  --sidebar-background: 262 45% 5%;
+  --sidebar-foreground: 260 15% 85%;
+  --sidebar-border: 262 25% 10%;
+  --sidebar-accent: 262 25% 10%;
+  --sidebar-accent-foreground: 260 15% 96%;
+  --sidebar-primary: 262 83% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-ring: 262 83% 65%;
+  --sidebar-muted: 262 20% 15%;
+
+  /* Liquid Glass — Dark Purple */
+  --glass-bg: rgba(20, 15, 35, 0.72);
+  --glass-border: rgba(139, 92, 246, 0.1);
+}
+
+/* ═══════ Rilla-Specific Utility Classes ═══════ */
+
+[data-brand="rilla"] {
+  /* Glow Effects */
+  --glow-primary: 0 0 20px hsl(262 83% 58% / 0.4), 0 0 60px hsl(262 83% 58% / 0.15);
+  --glow-accent: 0 0 20px hsl(16 100% 66% / 0.5), 0 0 60px hsl(16 100% 66% / 0.2);
+}
+
+/* Sales Performance Tiers */
+[data-brand="rilla"] .tier-needs-coaching { background-color: hsl(0 84% 60%); color: hsl(0 0% 100%); }
+[data-brand="rilla"] .tier-developing { background-color: hsl(38 92% 50%); color: hsl(0 0% 0%); }
+[data-brand="rilla"] .tier-proficient { background-color: hsl(199 89% 48%); color: hsl(0 0% 100%); }
+[data-brand="rilla"] .tier-top-performer { background-color: hsl(142 70% 45%); color: hsl(0 0% 100%); }
+[data-brand="rilla"] .tier-elite { 
+  background: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(280 70% 50%) 100%); 
+  color: hsl(0 0% 100%);
+  box-shadow: var(--glow-primary);
+}
+
+/* Session Status */
+[data-brand="rilla"] .session-scheduled { background-color: hsl(199 89% 48%); }
+[data-brand="rilla"] .session-in-progress { 
+  background-color: hsl(38 92% 50%); 
+  animation: pulse-session 2s ease-in-out infinite;
+}
+[data-brand="rilla"] .session-completed { background-color: hsl(142 70% 45%); }
+[data-brand="rilla"] .session-reviewed { background-color: hsl(262 83% 58%); }
+
+@keyframes pulse-session {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Conference Track Colors */
+[data-brand="rilla"] .track-sales-leadership { background-color: hsl(262 83% 58%); }
+[data-brand="rilla"] .track-coaching { background-color: hsl(16 100% 66%); }
+[data-brand="rilla"] .track-ai-technology { background-color: hsl(199 89% 48%); }
+[data-brand="rilla"] .track-performance { background-color: hsl(142 70% 45%); }
+[data-brand="rilla"] .track-culture { background-color: hsl(38 92% 50%); }
+
+/* Jungle Afterparty Theme (for event elements) */
+[data-brand="rilla"] .jungle-gradient {
+  background: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(150 40% 15%) 100%);
+}
+
+[data-brand="rilla"] .jungle-gradient-dark {
+  background: linear-gradient(135deg, hsl(150 40% 8%) 0%, hsl(142 50% 12%) 100%);
+}
+
+/* Accent Button Glow */
+[data-brand="rilla"] .btn-glow:hover {
+  box-shadow: var(--glow-primary);
+}
+
+/* Sponsor Tier Badges */
+[data-brand="rilla"] .sponsor-platinum { 
+  background: linear-gradient(135deg, hsl(0 0% 85%) 0%, hsl(0 0% 95%) 100%);
+  color: hsl(0 0% 20%);
+}
+[data-brand="rilla"] .sponsor-gold { 
+  background: linear-gradient(135deg, hsl(45 90% 50%) 0%, hsl(40 85% 55%) 100%);
+  color: hsl(0 0% 0%);
+}
+[data-brand="rilla"] .sponsor-silver { 
+  background: linear-gradient(135deg, hsl(210 10% 60%) 0%, hsl(210 10% 75%) 100%);
+  color: hsl(0 0% 100%);
+}
+[data-brand="rilla"] .sponsor-bronze { 
+  background: linear-gradient(135deg, hsl(25 50% 45%) 0%, hsl(25 45% 55%) 100%);
+  color: hsl(0 0% 100%);
+}

@@ -11,9 +11,18 @@ export async function updateSession(request: NextRequest) {
         request,
     });
 
-    // If Supabase is not configured, allow all routes ONLY in development
+    // If Supabase is not configured, skip auth entirely.
+    // In production without credentials, protect dashboard routes by redirecting
+    // to /login, but always allow public paths through to avoid redirect loops.
     if (!supabaseUrl || !supabaseAnonKey) {
-        if (process.env.NODE_ENV === "production") {
+        const publicPaths = ["/", "/login", "/signup"];
+        const isPublic =
+            publicPaths.includes(request.nextUrl.pathname) ||
+            request.nextUrl.pathname.startsWith("/api/") ||
+            request.nextUrl.pathname.startsWith("/_next/") ||
+            request.nextUrl.pathname.startsWith("/auth/");
+
+        if (process.env.NODE_ENV === "production" && !isPublic) {
             const url = request.nextUrl.clone();
             url.pathname = "/login";
             return NextResponse.redirect(url);

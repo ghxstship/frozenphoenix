@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ArrowDownToLine, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 interface MockStrikeStep {
     id: string;
@@ -48,7 +49,8 @@ export default function StrikePage() {
 
             <div className="space-y-2">
                 {mockStrikeSteps.map((step, i) => (
-                    <Card key={step.id} className={`hover:shadow-sm transition-all animate-slide-up ${step.status === "in_progress" ? "border-l-2 border-l-info" : step.status === "completed" ? "border-l-2 border-l-success" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={step.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all ${step.status === "in_progress" ? "border-l-2 border-l-info" : step.status === "completed" ? "border-l-2 border-l-success" : ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-mono font-bold bg-secondary px-2 py-0.5 rounded shrink-0">#{step.sequence}</span>
@@ -71,6 +73,7 @@ export default function StrikePage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

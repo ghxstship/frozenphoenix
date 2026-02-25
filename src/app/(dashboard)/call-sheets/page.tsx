@@ -5,13 +5,14 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { CALL_SHEET_STATUS_MAP, type CallSheetStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    ClipboardList, Plus, Search, MapPin, Clock, Users,
+    ClipboardList, Plus, MapPin, Clock, Users,
     Calendar, Sun, Send, CheckCircle2,
 } from "lucide-react";
 
@@ -67,10 +68,7 @@ export default function CallSheetsPage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search call sheets..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search call sheets..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {["all", "draft", "published", "distributed", "acknowledged", "archived"].map((s) => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -84,8 +82,9 @@ export default function CallSheetsPage() {
                 {filtered.map((cs, i) => {
                     const statusCfg = CALL_SHEET_STATUS_MAP[cs.status];
                     return (
-                        <Link key={cs.id} href={`/call-sheets/${cs.id}`}>
-                            <Card className="cursor-pointer hover:shadow-md transition-all animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={cs.id} index={i} stagger="relaxed">
+                        <Link href={`/call-sheets/${cs.id}`}>
+                            <Card className="cursor-pointer hover:shadow-md transition-all">
                                 <CardContent className="py-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -119,6 +118,7 @@ export default function CallSheetsPage() {
                                 </CardContent>
                             </Card>
                         </Link>
+                        </StaggerItem>
                     );
                 })}
             </div>

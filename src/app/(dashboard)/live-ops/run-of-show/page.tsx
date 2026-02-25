@@ -7,8 +7,9 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Megaphone, Search, Plus, CheckCircle2, Clock, Play } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { SearchInput } from "@/components/ui/search-input";
+import { Megaphone, Plus, CheckCircle2, Clock, Play } from "lucide-react";
 
 interface MockCue {
     id: string;
@@ -61,10 +62,7 @@ export default function RunOfShowPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search cues..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search cues..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {["all", "completed", "in_progress", "standby", "called", "pending", "held", "skipped"].map(s => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -76,7 +74,8 @@ export default function RunOfShowPage() {
 
             <div className="space-y-2">
                 {filtered.map((cue, i) => (
-                    <Card key={cue.id} className={`hover:shadow-sm transition-all animate-slide-up ${cue.isCritical ? "border-l-2 border-l-destructive" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={cue.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all ${cue.isCritical ? "border-l-2 border-l-destructive" : ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 text-center shrink-0">
@@ -108,6 +107,7 @@ export default function RunOfShowPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
 

@@ -6,15 +6,16 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/locale";
 import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/mock-data-crm-revenue";
 import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
 import type { Opportunity, OpportunityStage } from "@/types";
 import {
-    Plus, Search, Columns, List, Target, DollarSign, TrendingUp, Clock,
+    Plus, Columns, List, Target, DollarSign, TrendingUp, Clock,
     GripVertical, Calendar, User, Building2,
 } from "lucide-react";
 
@@ -156,15 +157,7 @@ export default function OpportunitiesPage() {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search opportunities..."
-                            className="pl-9 w-64"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                    <SearchInput value={search} onValueChange={setSearch} placeholder="Search opportunities..." />
                     <select
                         className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={stageFilter}
@@ -247,7 +240,7 @@ export default function OpportunitiesPage() {
                                             <div className="flex items-center justify-between text-xs text-muted-foreground">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="h-3 w-3" />
-                                                    <span>{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "TBD"}</span>
+                                                    <span>{opp.expectedCloseDate ? formatDate(opp.expectedCloseDate, "compact") : "TBD"}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <User className="h-3 w-3" />

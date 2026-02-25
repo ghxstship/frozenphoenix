@@ -5,14 +5,15 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import type { DealStage } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
-    DollarSign, Plus, Search, TrendingUp, Building2,
+    DollarSign, Plus, TrendingUp, Building2,
     Calendar, User, ArrowRight,
 } from "lucide-react";
 
@@ -65,10 +66,7 @@ export default function DealsPage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search deals..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search deals..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {["all", "lead", "qualified", "proposal", "negotiation", "won", "lost"].map((s) => (
                         <Button key={s} variant={stageFilter === s ? "default" : "outline"} size="sm" onClick={() => setStageFilter(s)}>
@@ -83,7 +81,8 @@ export default function DealsPage() {
                     const stageCfg = DEAL_STAGE_MAP[deal.stage];
                     return (
                         <Link href={`/deals/${deal.id}`} key={deal.id}>
-                            <Card className="hover:shadow-md transition-all animate-slide-up cursor-pointer" style={{ animationDelay: `${i * 60}ms` }}>
+                            <StaggerItem index={i} stagger="relaxed">
+                            <Card className="hover:shadow-md transition-all cursor-pointer">
                                 <CardContent className="py-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -111,6 +110,7 @@ export default function DealsPage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         </Link>
                     );
                 })}

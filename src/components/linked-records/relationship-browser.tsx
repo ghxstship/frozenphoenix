@@ -156,7 +156,7 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                 </div>
                 {group.canCreate && group.createHref && (
                     <Link href={group.createHref}>
-                        <Button variant="ghost" size="icon" className="h-5 w-5">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Create new record">
                             <Plus className="h-3 w-3" />
                         </Button>
                     </Link>

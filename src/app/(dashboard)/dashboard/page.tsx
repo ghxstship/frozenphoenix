@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { useProjects, useDeals, useNotifications, useApprovals, useTasks, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS, MOCK_DEALS, MOCK_NOTIFICATIONS, MOCK_APPROVALS, MOCK_TASKS } from "@/lib/mock-data";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     DollarSign,
     FolderKanban,
@@ -176,10 +178,9 @@ export default function DashboardPage() {
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {activeProjects.map((project, i) => (
+                                <StaggerItem key={project.id} index={i} stagger="relaxed">
                                 <div
-                                    key={project.id}
                                     className="flex items-center gap-4 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
-                                    style={{ animationDelay: `${i * 80}ms` }}
                                 >
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
@@ -192,12 +193,7 @@ export default function DashboardPage() {
                                     </div>
                                     {/* Progress bar */}
                                     <div className="w-32 flex items-center gap-2">
-                                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary rounded-full transition-all duration-700"
-                                                style={{ width: `${project.progress}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={project.progress} size="xs" className="flex-1" />
                                         <span className="text-xs font-medium text-muted-foreground w-8 text-right">{project.progress}%</span>
                                     </div>
                                     {/* Budget */}
@@ -206,6 +202,7 @@ export default function DashboardPage() {
                                         <p className="text-[10px] text-muted-foreground">of {formatCurrency(project.budgetPlanned)}</p>
                                     </div>
                                 </div>
+                                </StaggerItem>
                             ))}
                         </CardContent>
                     </Card>

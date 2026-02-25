@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Users, TrendingUp, Clock, ShoppingCart } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
 
 interface MockZone {
@@ -50,7 +52,8 @@ export default function FohPage() {
                 {mockZones.map((zone, i) => {
                     const utilPct = Math.round((zone.occupancy / zone.capacity) * 100);
                     return (
-                        <Card key={zone.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                        <StaggerItem key={zone.id} index={i} stagger="tight">
+                        <Card className="hover:shadow-sm transition-all">
                             <CardContent className="py-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="text-sm font-semibold">{zone.name}</h3>
@@ -61,9 +64,7 @@ export default function FohPage() {
                                         <span>Occupancy</span>
                                         <span className="font-medium">{zone.occupancy} / {zone.capacity} ({utilPct}%)</span>
                                     </div>
-                                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                                        <div className={`h-full rounded-full transition-all ${utilPct > 90 ? "bg-destructive" : utilPct > 75 ? "bg-warning" : "bg-success"}`} style={{ width: `${utilPct}%` }} />
-                                    </div>
+                                    <ProgressBar value={utilPct} size="sm" />
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 text-[11px]">
                                     <div>
@@ -84,6 +85,7 @@ export default function FohPage() {
                                 )}
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

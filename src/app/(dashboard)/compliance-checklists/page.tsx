@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Search, Plus, CheckCircle2, Clock, AlertTriangle,
+    Plus, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
 import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/mock-data-governance";
 import type { ComplianceChecklistStatus } from "@/types/governance";
@@ -55,10 +56,7 @@ export default function ComplianceChecklistsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search checklists..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search checklists..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {CHECKLIST_STATUSES.map(s => <option key={s} value={s}>{getStatusLabel(s)}</option>)}
@@ -84,12 +82,7 @@ export default function ComplianceChecklistsPage() {
                                     <span className="text-muted-foreground">{c.completed_items} / {c.total_items} items</span>
                                     <span className="font-medium">{c.completion_percent}%</span>
                                 </div>
-                                <div className="w-full bg-muted rounded-full h-2">
-                                    <div
-                                        className="bg-primary rounded-full h-2 transition-all"
-                                        style={{ width: `${c.completion_percent}%` }}
-                                    />
-                                </div>
+                                <ProgressBar value={c.completion_percent} size="md" />
                             </div>
                             {c.inspected_at && (
                                 <p className="text-[10px] text-muted-foreground mt-2">

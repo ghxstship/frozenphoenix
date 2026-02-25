@@ -10,6 +10,7 @@ import { MOCK_PROJECTS } from "@/lib/mock-data";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import type { BadgeVariant } from "@/config/ui-variants";
 import {
     Plus,
@@ -169,10 +170,9 @@ export default function DecksPage() {
                         const project = MOCK_PROJECTS.find((p) => p.id === deck.projectId);
                         const type = typeConfig[deck.type];
                         return (
+                            <StaggerItem key={deck.id} index={i} stagger="relaxed">
                             <Card
-                                key={deck.id}
-                                className="group cursor-pointer hover:border-primary/30 animate-slide-up overflow-hidden"
-                                style={{ animationDelay: `${i * 60}ms` }}
+                                className="group cursor-pointer hover:border-primary/30 overflow-hidden"
                             >
                                 <div className={`h-32 ${type.color} relative`}>
                                     <div className="absolute inset-0 flex items-center justify-center">
@@ -222,6 +222,7 @@ export default function DecksPage() {
                                     )}
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
 
@@ -251,14 +252,13 @@ export default function DecksPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredDecks.map((deck, i) => {
+                                {filteredDecks.map((deck) => {
                                     const project = MOCK_PROJECTS.find((p) => p.id === deck.projectId);
                                     const type = typeConfig[deck.type];
                                     return (
                                         <tr
                                             key={deck.id}
-                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors animate-slide-up"
-                                            style={{ animationDelay: `${i * 40}ms` }}
+                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
                                         >
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-2">

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_CREW } from "@/lib/mock-data";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { Plus, ShieldAlert, ShieldCheck, AlertTriangle, Loader2, LayoutGrid, Table2, Kanban } from "lucide-react";
 import type { CrewMember, CertificationType } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
@@ -245,10 +246,9 @@ export default function CrewPage() {
                     {crew.map((member, i) => {
                         const hasExpired = member.certifications.some(c => !c.isValid);
                         return (
+                            <StaggerItem key={member.id} index={i} stagger="relaxed">
                             <Card
-                                key={member.id}
-                                className={`animate-slide-up ${hasExpired ? "border-destructive/30" : ""}`}
-                                style={{ animationDelay: `${i * 80}ms` }}
+                                className={`${hasExpired ? "border-destructive/30" : ""}`}
                             >
                                 <CardContent>
                                     <div className="flex items-start gap-3">
@@ -310,6 +310,7 @@ export default function CrewPage() {
                                     )}
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
                 </div>

@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
-import { Package, Search, CheckCircle2, AlertTriangle, Wrench } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Package, CheckCircle2, AlertTriangle, Wrench } from "lucide-react";
 
 interface MockEquipment {
     id: string;
@@ -53,14 +54,12 @@ export default function EquipmentPage() {
                 <StatCard title="Categories" value={new Set(mockEquipment.map(e => e.category)).size} icon={Wrench} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search equipment..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search equipment..." className="max-w-sm" />
 
             <div className="space-y-2">
                 {filtered.map((item, i) => (
-                    <Card key={item.id} className={`hover:shadow-sm transition-all animate-slide-up ${["issue_reported", "failed"].includes(item.status) ? "border-l-2 border-l-warning" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={item.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all ${["issue_reported", "failed"].includes(item.status) ? "border-l-2 border-l-warning" : ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -84,6 +83,7 @@ export default function EquipmentPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

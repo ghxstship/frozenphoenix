@@ -21,6 +21,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { cn, formatCompactCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface DashboardWidget {
     id: string;
@@ -63,13 +64,6 @@ const pipelineStages = [
     { stage: "Negotiation", count: 2, value: 350000 },
 ];
 
-
-function getUtilizationColor(percent: number): string {
-    if (percent >= 90) return "bg-destructive";
-    if (percent >= 75) return "bg-warning";
-    if (percent >= 50) return "bg-success";
-    return "bg-muted-foreground";
-}
 
 export default function DashboardsPage() {
     const [selectedDashboard, setSelectedDashboard] = useState("overview");
@@ -163,12 +157,7 @@ export default function DashboardsPage() {
                                         </Badge>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                            <div 
-                                                className="h-full bg-success rounded-full"
-                                                style={{ width: `${(project.cost / project.revenue) * 100}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={(project.cost / project.revenue) * 100} size="md" />
                                         <span className="text-xs text-muted-foreground w-20 text-right">
                                             {formatCompactCurrency(project.revenue)}
                                         </span>
@@ -199,12 +188,7 @@ export default function DashboardsPage() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                            <div 
-                                                className={cn("h-full rounded-full", getUtilizationColor(dept.utilization))}
-                                                style={{ width: `${dept.utilization}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={dept.utilization} size="md" className="flex-1" />
                                         <span className={cn(
                                             "text-sm font-medium w-12 text-right",
                                             dept.utilization >= 90 ? "text-destructive" :

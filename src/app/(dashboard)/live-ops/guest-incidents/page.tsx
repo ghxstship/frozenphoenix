@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
-import { AlertTriangle, Search, Clock, CheckCircle2 } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 interface MockGuestIncident {
     id: string;
@@ -56,14 +57,12 @@ export default function GuestIncidentsPage() {
                 <StatCard title="Major" value={mockIncidents.filter(i => i.severity === "major").length} icon={AlertTriangle} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search incidents..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search incidents..." className="max-w-sm" />
 
             <div className="space-y-2">
                 {filtered.map((incident, i) => (
-                    <Card key={incident.id} className={`hover:shadow-sm transition-all animate-slide-up border-l-2 ${SEVERITY_BORDERS[incident.severity] ?? ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={incident.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all border-l-2 ${SEVERITY_BORDERS[incident.severity] ?? ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-start gap-3">
                                 <div className="shrink-0 mt-0.5">
@@ -89,6 +88,7 @@ export default function GuestIncidentsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

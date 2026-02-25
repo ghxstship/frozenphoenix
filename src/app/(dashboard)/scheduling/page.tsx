@@ -9,6 +9,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, useProjects, useShifts, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/mock-data";
+import { formatDate } from "@/lib/locale";
 import type { CrewMember, Project, ProjectStatus, ProjectPhase } from "@/types";
 import {
     Plus,
@@ -182,16 +183,18 @@ export default function SchedulingPage() {
                             <button
                                 onClick={() => navigateWeek(-1)}
                                 className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                aria-label="Previous week"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
                             <span className="text-sm font-medium min-w-40 text-center">
-                                {weekDays[0].toLocaleDateString("en-US", { month: "short", day: "numeric" })} —{" "}
-                                {weekDays[6].toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                {formatDate(weekDays[0], "compact")} —{" "}
+                                {formatDate(weekDays[6], "medium")}
                             </span>
                             <button
                                 onClick={() => navigateWeek(1)}
                                 className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                aria-label="Next week"
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </button>
@@ -211,7 +214,7 @@ export default function SchedulingPage() {
                                                 key={day.toISOString()}
                                                 className={`text-center p-3 text-xs font-semibold ${isToday ? "bg-primary/5 text-primary" : "text-muted-foreground"}`}
                                             >
-                                                <div>{day.toLocaleDateString("en-US", { weekday: "short" })}</div>
+                                                <div>{new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(day)}</div>
                                                 <div className="text-sm font-bold">{day.getDate()}</div>
                                             </th>
                                         );

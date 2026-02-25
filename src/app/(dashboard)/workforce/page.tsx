@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Chip } from "@/components/ui/chip";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    Users, Search, Plus, UserCheck, UserX, Clock, AlertTriangle,
+    Users, Plus, UserCheck, UserX, Clock, AlertTriangle,
     Star, MapPin, Briefcase, ChevronRight,
 } from "lucide-react";
 import { MOCK_WORKER_PROFILES } from "@/lib/mock-data-workforce";
@@ -40,12 +43,9 @@ const CLASSIFICATION_LABELS: Record<WorkerClassification, string> = {
 };
 
 function ComplianceBar({ score }: { score: number }) {
-    const color = score >= 90 ? "bg-success" : score >= 70 ? "bg-warning" : "bg-destructive";
     return (
         <div className="flex items-center gap-2">
-            <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
-            </div>
+            <ProgressBar value={score} size="sm" className="w-16" />
             <span className="text-[10px] text-muted-foreground">{score}%</span>
         </div>
     );
@@ -97,10 +97,7 @@ export default function WorkforcePage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <div className="relative flex-1 min-w-[200px] max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search by name, role, skill..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search by name, role, skill..." className="flex-1 min-w-[200px] max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {Object.entries(LIFECYCLE_CONFIG).map(([key, cfg]) => (
@@ -117,7 +114,8 @@ export default function WorkforcePage() {
 
             <div className="space-y-2">
                 {filtered.map((worker, i) => (
-                    <Card key={worker.id} className="animate-slide-up hover:shadow-md transition-shadow cursor-pointer" style={{ animationDelay: `${i * 40}ms` }}>
+                    <StaggerItem key={worker.id} index={i} stagger="tight">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
@@ -168,7 +166,7 @@ export default function WorkforcePage() {
 
                                 <div className="hidden lg:flex items-center gap-1 shrink-0">
                                     {worker.skills.slice(0, 3).map(skill => (
-                                        <span key={skill} className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground">{skill.replace(/_/g, " ")}</span>
+                                        <Chip key={skill} size="sm">{skill.replace(/_/g, " ")}</Chip>
                                     ))}
                                     {worker.skills.length > 3 && (
                                         <span className="text-[10px] text-muted-foreground">+{worker.skills.length - 3}</span>
@@ -179,6 +177,7 @@ export default function WorkforcePage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
 
                 {filtered.length === 0 && (

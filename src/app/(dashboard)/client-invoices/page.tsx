@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency } from "@/lib/utils";
 import {
-    FileText, Plus, Search, DollarSign,
+    FileText, Plus, DollarSign,
     Send, Eye, AlertTriangle,
 } from "lucide-react";
 
@@ -72,10 +72,7 @@ export default function ClientInvoicesPage() {
             </div>
 
             <div className="flex items-center gap-4 flex-wrap">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search invoices..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1 flex-wrap">
                     {(["all", "draft", "sent", "overdue", "paid"] as const).map((f) => (
                         <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs capitalize">

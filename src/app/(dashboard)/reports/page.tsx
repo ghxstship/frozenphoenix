@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_PROJECTS, MOCK_DEALS, MOCK_TASKS, MOCK_CREW, MOCK_VENDORS } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     BarChart3,
     PieChart,
@@ -151,10 +153,9 @@ export default function ReportsPage() {
                     const category = categoryConfig[report.category];
 
                     return (
+                        <StaggerItem key={report.id} index={i} stagger="relaxed">
                         <Card
-                            key={report.id}
-                            className="hover:shadow-md transition-shadow cursor-pointer animate-slide-up"
-                            style={{ animationDelay: `${i * 50}ms` }}
+                            className="hover:shadow-md transition-shadow cursor-pointer"
                         >
                             <CardHeader className="pb-2">
                                 <div className="flex items-start justify-between">
@@ -180,6 +181,7 @@ export default function ReportsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>
@@ -201,12 +203,7 @@ export default function ReportsPage() {
                                 return (
                                     <div key={status} className="flex items-center gap-3">
                                         <div className="w-20 text-xs text-muted-foreground capitalize">{status.replace("_", " ")}</div>
-                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full ${status === "active" ? "bg-success" : status === "draft" ? "bg-muted-foreground" : status === "completed" ? "bg-info" : "bg-warning"}`}
-                                                style={{ width: `${percentage}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={percentage} size="md" className="flex-1" />
                                         <div className="w-12 text-xs text-right">{count} ({percentage}%)</div>
                                     </div>
                                 );
@@ -234,12 +231,7 @@ export default function ReportsPage() {
                                 return (
                                     <div key={stage} className="flex items-center gap-3">
                                         <div className="w-20 text-xs text-muted-foreground capitalize">{stage}</div>
-                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary rounded-full"
-                                                style={{ width: `${percentage}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={percentage} size="md" />
                                         <div className="w-20 text-xs text-right">{formatCurrency(value)}</div>
                                     </div>
                                 );

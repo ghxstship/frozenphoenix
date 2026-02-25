@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Star, Search, Plus, ThumbsUp, ThumbsDown, TrendingUp,
+    Star, Plus, ThumbsUp, ThumbsDown, TrendingUp,
 } from "lucide-react";
 import { MOCK_VENDOR_REVIEWS } from "@/lib/mock-data-vendor-lifecycle";
 import type { VendorReviewType } from "@/types/vendor-lifecycle";
@@ -56,14 +57,12 @@ export default function VendorReviewsPage() {
                 <StatCard title="Would Not Rehire" value={wouldNotRehireCount} icon={ThumbsDown} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search reviews..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search reviews..." className="max-w-sm" />
 
             <div className="space-y-4">
                 {filtered.map((review, i) => (
-                    <Card key={review.id} className="animate-slide-up hover:shadow-md transition-shadow" style={{ animationDelay: `${i * 60}ms` }}>
+                    <StaggerItem key={review.id} index={i} stagger="relaxed">
+                    <Card className="hover:shadow-md transition-shadow">
                         <CardContent className="pt-4">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
@@ -136,6 +135,7 @@ export default function VendorReviewsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

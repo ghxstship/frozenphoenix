@@ -4,11 +4,11 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Fingerprint, Search, Plus,
+    Fingerprint, Plus,
 } from "lucide-react";
 import { MOCK_IP_RIGHTS } from "@/lib/mock-data-governance";
 
@@ -50,10 +50,7 @@ export default function IPRightsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search IP rights..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search IP rights..." className="flex-1 max-w-sm" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

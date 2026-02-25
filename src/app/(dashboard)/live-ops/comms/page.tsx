@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Radio, Lock, MessageSquare } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 interface MockChannel {
     id: string;
@@ -53,7 +54,8 @@ export default function CommsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {mockChannels.map((ch, i) => (
-                    <Card key={ch.id} className={`hover:shadow-sm transition-all animate-slide-up border-l-2 ${PRIORITY_COLORS[ch.priority] ?? ""}`} style={{ animationDelay: `${i * 40}ms` }}>
+                    <StaggerItem key={ch.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all border-l-2 ${PRIORITY_COLORS[ch.priority] ?? ""}`}>
                         <CardContent className="py-4">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
@@ -71,6 +73,7 @@ export default function CommsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

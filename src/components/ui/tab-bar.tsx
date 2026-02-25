@@ -1,0 +1,117 @@
+"use client";
+
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export interface TabBarItem {
+    id: string;
+    label: string;
+    count?: number;
+    icon?: React.ReactNode;
+    disabled?: boolean;
+}
+
+export interface TabBarProps {
+    items: TabBarItem[];
+    value: string;
+    onValueChange: (value: string) => void;
+    size?: "sm" | "md";
+    variant?: "underline" | "pill";
+    className?: string;
+}
+
+export function TabBar({
+    items,
+    value,
+    onValueChange,
+    size = "md",
+    variant = "underline",
+    className,
+}: TabBarProps) {
+    return (
+        <div
+            role="tablist"
+            aria-orientation="horizontal"
+            className={cn(
+                "flex",
+                variant === "underline" && "gap-1 border-b border-border",
+                variant === "pill" && "gap-1 bg-muted p-1 rounded-lg",
+                className
+            )}
+        >
+            {items.map((item) => (
+                <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={value === item.id}
+                    aria-controls={`tabpanel-${item.id}`}
+                    id={`tab-${item.id}`}
+                    disabled={item.disabled}
+                    onClick={() => onValueChange(item.id)}
+                    className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "disabled:pointer-events-none disabled:opacity-50",
+                        size === "sm" ? "px-3 py-2 text-xs" : "px-4 py-2.5 text-sm",
+                        variant === "underline" && [
+                            "border-b-2 -mb-px",
+                            value === item.id
+                                ? "border-primary text-primary"
+                                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
+                        ],
+                        variant === "pill" && [
+                            "rounded-md",
+                            value === item.id
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground",
+                        ]
+                    )}
+                >
+                    {item.icon && <span className="mr-1.5">{item.icon}</span>}
+                    {item.label}
+                    {item.count !== undefined && (
+                        <span className={cn(
+                            "ml-2 text-xs px-1.5 py-0.5 rounded-full",
+                            value === item.id
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground"
+                        )}>
+                            {item.count}
+                        </span>
+                    )}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+export interface TabPanelProps extends React.HTMLAttributes<HTMLDivElement> {
+    value: string;
+    activeValue: string;
+    tabId?: string;
+}
+
+export function TabPanel({
+    value,
+    activeValue,
+    tabId,
+    className,
+    children,
+    ...props
+}: TabPanelProps) {
+    if (value !== activeValue) return null;
+
+    return (
+        <div
+            role="tabpanel"
+            id={`tabpanel-${value}`}
+            aria-labelledby={tabId ?? `tab-${value}`}
+            tabIndex={0}
+            className={cn("mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className)}
+            {...props}
+        >
+            {children}
+        </div>
+    );
+}

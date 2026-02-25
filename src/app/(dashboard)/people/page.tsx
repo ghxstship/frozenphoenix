@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MOCK_STAKEHOLDERS } from "@/lib/mock-data";
 import { Plus, Users, Building2, Wrench, UserCircle, Mail, Phone } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import type { StakeholderType } from "@/types";
 
 const typeConfig: Record<StakeholderType, { label: string; variant: "default" | "info" | "warning" | "success"; icon: typeof Users }> = {
@@ -47,7 +48,8 @@ export default function PeoplePage() {
                 {MOCK_STAKEHOLDERS.map((person, i) => {
                     const config = typeConfig[person.type];
                     return (
-                        <Card key={person.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={person.id} index={i} stagger="relaxed">
+                        <Card>
                             <CardContent>
                                 <div className="flex items-start gap-3">
                                     <Avatar name={person.name} size="lg" />
@@ -68,6 +70,7 @@ export default function PeoplePage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

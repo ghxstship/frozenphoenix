@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
-import { HardHat, Search, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { HardHat, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 
 interface MockLiveCrew {
     id: string;
@@ -53,14 +54,12 @@ export default function LiveCrewPage() {
                 <StatCard title="Total Crew" value={mockCrew.length} icon={HardHat} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search crew..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search crew..." className="max-w-sm" />
 
             <div className="space-y-2">
                 {filtered.map((member, i) => (
-                    <Card key={member.id} className={`hover:shadow-sm transition-all animate-slide-up ${member.overtimeFlagged ? "border-l-2 border-l-warning" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={member.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all ${member.overtimeFlagged ? "border-l-2 border-l-warning" : ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-xs font-bold">
@@ -92,6 +91,7 @@ export default function LiveCrewPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

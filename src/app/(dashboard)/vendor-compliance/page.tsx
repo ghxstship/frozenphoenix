@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import {
-    ShieldCheck, ShieldAlert, Search, FileText, AlertTriangle,
+    ShieldCheck, ShieldAlert, FileText, AlertTriangle,
     CheckCircle2, Clock, XCircle, RefreshCw,
 } from "lucide-react";
 import { MOCK_VENDOR_COMPLIANCE_DOCS, MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/mock-data-vendor-lifecycle";
@@ -103,10 +103,7 @@ export default function VendorCompliancePage() {
             )}
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search vendors or documents..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search vendors or documents..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {COMPLIANCE_STATUSES.map((s) => (

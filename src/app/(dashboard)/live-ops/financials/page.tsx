@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { DollarSign, TrendingUp, AlertTriangle, Clock } from "lucide-react";
 
 const snapshot = {
@@ -60,9 +61,7 @@ export default function LiveFinancialsPage() {
                             <div className="flex justify-between"><span className="text-muted-foreground">Committed</span><span className="font-medium">{fmt(snapshot.committedNotSpent)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Remaining</span><span className={`font-medium ${remaining < 10000 ? "text-destructive" : "text-success"}`}>{fmt(remaining)}</span></div>
                         </div>
-                        <div className="mt-3 h-2 rounded-full bg-secondary overflow-hidden">
-                            <div className={`h-full rounded-full transition-all ${burnPct > 90 ? "bg-destructive" : burnPct > 75 ? "bg-warning" : "bg-success"}`} style={{ width: `${burnPct}%` }} />
-                        </div>
+                        <ProgressBar value={burnPct} size="md" className="mt-3" />
                     </CardContent>
                 </Card>
                 <Card>

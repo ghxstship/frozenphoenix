@@ -4,11 +4,11 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import {
-    CreditCard, Plus, Search, Copy, Pencil,
+    CreditCard, Plus, Copy, Pencil,
     DollarSign, Users,
 } from "lucide-react";
 
@@ -80,10 +80,7 @@ export default function RateCardsPage() {
 
             {/* Search */}
             <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search rate cards..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search rate cards..." className="flex-1 max-w-sm" />
                 <span className="text-sm text-muted-foreground">{filtered.length} rate card{filtered.length !== 1 ? "s" : ""}</span>
             </div>
 

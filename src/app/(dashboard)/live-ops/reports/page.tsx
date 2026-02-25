@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { FileBarChart, Users, AlertTriangle, DollarSign } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { formatCurrency } from "@/lib/utils";
 
 interface MockPostEventReport {
@@ -74,7 +75,8 @@ export default function PostEventReportsPage() {
 
             <div className="space-y-4">
                 {mockReports.map((report, i) => (
-                    <Card key={report.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                    <StaggerItem key={report.id} index={i} stagger="relaxed">
+                    <Card className="hover:shadow-sm transition-all">
                         <CardContent className="py-4">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
@@ -113,6 +115,7 @@ export default function PostEventReportsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

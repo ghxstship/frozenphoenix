@@ -5,13 +5,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import { MOCK_INVITATIONS } from "@/lib/mock-data-user-lifecycle";
 import {
-    UserPlus, Search, Mail, Clock, CheckCircle2, XCircle, RotateCcw, Send,
+    UserPlus, Mail, Clock, CheckCircle2, XCircle, RotateCcw, Send,
 } from "lucide-react";
 import type { InvitationStatus, PermissionLevel } from "@/types";
 
@@ -66,15 +66,7 @@ export default function InvitationsPage() {
             <Card>
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by email or inviter..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
+                        <SearchInput value={search} onValueChange={setSearch} placeholder="Search by email or inviter..." className="flex-1" />
                         <div className="flex gap-2 flex-wrap">
                             {STATUS_FILTERS.map((f) => (
                                 <Button

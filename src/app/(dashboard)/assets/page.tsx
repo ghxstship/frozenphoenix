@@ -10,6 +10,7 @@ import { useAssets, useVehicles, isSupabaseConfigured } from "@/lib/supabase/hoo
 import { MOCK_ASSETS, MOCK_VEHICLES } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import { Plus, Package, Truck, Clock, AlertTriangle, QrCode, MapPin, Loader2, Table2, LayoutGrid } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { ASSET_CONDITION_CONFIG } from "@/config/constants";
 import type { Asset, Vehicle, AssetCondition } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
@@ -271,7 +272,8 @@ export default function AssetsPage() {
                             ? computeDaysUntilReturn(asset.rentalReturnDate)
                             : null;
                         return (
-                            <Card key={asset.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                            <StaggerItem key={asset.id} index={i} stagger="relaxed">
+                            <Card>
                                 <CardContent>
                                     <div className="flex items-start justify-between">
                                         <div>
@@ -314,6 +316,7 @@ export default function AssetsPage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
                 </div>

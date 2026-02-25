@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Building2, FolderKanban, FileText, ShieldCheck, DollarSign,
     Calendar, CheckCircle2, Clock, Eye, Download, FileSignature,
@@ -128,9 +129,7 @@ export default function ClientPortalPage() {
                                     <span className="text-muted-foreground">Progress</span>
                                     <span className="font-semibold">{project.progress}%</span>
                                 </div>
-                                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${project.progress}%` }} />
-                                </div>
+                                <ProgressBar value={project.progress} size="md" />
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
                                     Next: {project.nextMilestone} — {formatDate(project.nextMilestoneDate)}

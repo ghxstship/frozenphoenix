@@ -5,8 +5,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
-import { Crown, Search, Users, CheckCircle2 } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Chip } from "@/components/ui/chip";
+import { Crown, Users, CheckCircle2 } from "lucide-react";
 
 interface MockVip {
     id: string;
@@ -59,14 +61,12 @@ export default function VipPage() {
                 <StatCard title="Platinum" value={platinum} icon={Crown} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search VIPs..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search VIPs..." className="max-w-sm" />
 
             <div className="space-y-2">
                 {filtered.map((vip, i) => (
-                    <Card key={vip.id} className={`hover:shadow-sm transition-all animate-slide-up border-l-2 ${TIER_COLORS[vip.tier] ?? ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={vip.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all border-l-2 ${TIER_COLORS[vip.tier] ?? ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-xs font-bold">
@@ -81,7 +81,7 @@ export default function VipPage() {
                                     <p className="text-[11px] text-muted-foreground mt-0.5">{vip.affiliation}</p>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                         {vip.zoneAccess.map(z => (
-                                            <span key={z} className="text-[9px] bg-secondary px-1.5 py-0.5 rounded">{z}</span>
+                                            <Chip key={z} size="sm">{z}</Chip>
                                         ))}
                                     </div>
                                 </div>
@@ -96,6 +96,7 @@ export default function VipPage() {
                             )}
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

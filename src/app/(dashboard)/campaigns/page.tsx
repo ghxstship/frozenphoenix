@@ -3,12 +3,16 @@
 import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { Chip } from "@/components/ui/chip";
 import { formatCurrency, formatCompactCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/locale";
 import {
     MOCK_CAMPAIGNS,
     MOCK_CAMPAIGN_CHANNELS,
@@ -18,7 +22,6 @@ import {
 import type { Campaign, CampaignStatus } from "@/types";
 import {
     Plus,
-    Search,
     Megaphone,
     DollarSign,
     TrendingUp,
@@ -123,15 +126,7 @@ export default function CampaignsPage() {
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search campaigns..."
-                        className="pl-9"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search campaigns..." className="flex-1" />
                 <select
                     className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                     value={statusFilter}
@@ -156,10 +151,9 @@ export default function CampaignsPage() {
                         const budgetPct = computeBudgetProgress(campaign);
 
                         return (
+                            <StaggerItem key={campaign.id} index={i} stagger="relaxed">
                             <Card
-                                key={campaign.id}
-                                className="hover:border-primary/30 transition-colors animate-slide-up"
-                                style={{ animationDelay: `${i * 60}ms` }}
+                                className="hover:border-primary/30 transition-colors"
                             >
                                 <CardContent className="pt-5">
                                     {/* Header */}
@@ -179,12 +173,7 @@ export default function CampaignsPage() {
                                             <span>Budget: {formatCurrency(campaign.spent_budget)} / {formatCurrency(campaign.total_budget)}</span>
                                             <span>{budgetPct}%</span>
                                         </div>
-                                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-500 ${budgetPct > 90 ? "bg-destructive" : budgetPct > 70 ? "bg-warning" : "bg-primary"}`}
-                                                style={{ width: `${Math.min(budgetPct, 100)}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={Math.min(budgetPct, 100)} size="xs" />
                                     </div>
 
                                     {/* Metrics Row */}
@@ -263,12 +252,7 @@ export default function CampaignsPage() {
                                                                         {kpi.current_value} / {kpi.target_value}
                                                                     </span>
                                                                 </div>
-                                                                <div className="h-1 rounded-full bg-muted overflow-hidden">
-                                                                    <div
-                                                                        className={`h-full rounded-full transition-all ${progress >= 100 ? "bg-success" : progress >= 75 ? "bg-primary" : "bg-warning"}`}
-                                                                        style={{ width: `${progress}%` }}
-                                                                    />
-                                                                </div>
+                                                                <ProgressBar value={progress} size="xs" />
                                                             </div>
                                                         );
                                                     })}
@@ -280,20 +264,18 @@ export default function CampaignsPage() {
                                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                                         <div className="flex gap-1 flex-wrap">
                                             {campaign.tags.slice(0, 3).map((tag) => (
-                                                <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary/50">
-                                                    {tag}
-                                                </span>
+                                                <Chip key={tag} size="sm">{tag}</Chip>
                                             ))}
                                         </div>
                                         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                             {campaign.start_date && (
                                                 <>
                                                     <CalendarDays className="h-3 w-3" />
-                                                    {new Date(campaign.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                                    {formatDate(campaign.start_date, "compact")}
                                                     {campaign.end_date && (
                                                         <>
                                                             <ChevronRight className="h-3 w-3" />
-                                                            {new Date(campaign.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                                            {formatDate(campaign.end_date, "compact")}
                                                         </>
                                                     )}
                                                 </>
@@ -302,6 +284,7 @@ export default function CampaignsPage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
                     {filtered.length === 0 && (

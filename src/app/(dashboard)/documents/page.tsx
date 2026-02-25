@@ -1,14 +1,16 @@
 "use client";
 
+import { formatDate } from "@/lib/locale";
+
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-    FileText, Plus, Search, Globe, Lock,
+    FileText, Plus, Globe, Lock,
     Users, Star, FolderOpen,
     BookOpen, StickyNote, FileCode, Presentation,
     ScrollText, LayoutTemplate, Clock, Eye,
@@ -97,7 +99,7 @@ export default function DocumentsPage() {
         const diffDays = Math.floor(diffHours / 24);
         if (diffDays === 1) return "yesterday";
         if (diffDays < 7) return `${diffDays}d ago`;
-        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return formatDate(date, "compact");
     };
 
     return (
@@ -110,10 +112,7 @@ export default function DocumentsPage() {
 
             {/* Filters */}
             <div className="flex items-center gap-4 flex-wrap">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search documents..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search documents..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1 flex-wrap">
                     {(["all", "doc", "wiki", "meeting_notes", "specification", "sow", "template"] as const).map((t) => (
                         <Button key={t} variant={typeFilter === t ? "default" : "ghost"} size="sm" onClick={() => setTypeFilter(t)} className="text-xs">

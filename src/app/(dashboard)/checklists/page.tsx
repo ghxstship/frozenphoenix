@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    ListChecks, Search, Plus, CheckCircle2, Circle, Clock,
+    ListChecks, Plus, CheckCircle2, Circle, Clock,
     Percent,
 } from "lucide-react";
 import { MOCK_JOB_CHECKLISTS, MOCK_CHECKLIST_TEMPLATES } from "@/lib/mock-data-vendor-lifecycle";
@@ -55,15 +57,13 @@ export default function ChecklistsPage() {
                 <StatCard title="Avg. Completion" value={`${avgCompletion}%`} icon={Percent} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder={`Search ${tab === "templates" ? "templates" : "checklists"}...`} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder={`Search ${tab === "templates" ? "templates" : "checklists"}...`} className="max-w-sm" />
 
             {tab === "active" && (
                 <div className="space-y-4">
                     {filteredChecklists.map((checklist, i) => (
-                        <Card key={checklist.id} className="animate-slide-up hover:shadow-md transition-shadow" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={checklist.id} index={i} stagger="relaxed">
+                        <Card className="hover:shadow-md transition-shadow">
                             <CardContent className="pt-4">
                                 <div className="flex items-start justify-between mb-3">
                                     <div>
@@ -76,12 +76,7 @@ export default function ChecklistsPage() {
                                 </div>
 
                                 <div className="flex items-center gap-3 mb-3">
-                                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full transition-all ${checklist.completionPercent === 100 ? "bg-success" : "bg-primary"}`}
-                                            style={{ width: `${checklist.completionPercent}%` }}
-                                        />
-                                    </div>
+                                    <ProgressBar value={checklist.completionPercent} size="md" className="flex-1" />
                                     <span className="text-xs font-medium">{checklist.completedItems}/{checklist.totalItems}</span>
                                 </div>
 
@@ -107,6 +102,7 @@ export default function ChecklistsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     ))}
                 </div>
             )}
@@ -114,7 +110,8 @@ export default function ChecklistsPage() {
             {tab === "templates" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredTemplates.map((template, i) => (
-                        <Card key={template.id} className="animate-slide-up hover:shadow-md transition-shadow cursor-pointer" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={template.id} index={i} stagger="relaxed">
+                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
                             <CardContent className="pt-4">
                                 <div className="flex items-start justify-between mb-2">
                                     <h3 className="text-sm font-bold">{template.name}</h3>
@@ -141,6 +138,7 @@ export default function ChecklistsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     ))}
                 </div>
             )}

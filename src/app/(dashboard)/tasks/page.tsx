@@ -279,13 +279,12 @@ export default function TasksPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {tasks.map((task, i) => {
+                            {tasks.map((task) => {
                                 const project = projects.find(p => p.id === task.projectId);
                                 return (
                                     <tr
                                         key={task.id}
-                                        className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer animate-slide-up"
-                                        style={{ animationDelay: `${i * 40}ms` }}
+                                        className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
                                     >
                                         <td className="px-4 py-3">
                                             <div>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { MOCK_POS, MOCK_VENDORS, MOCK_PROJECTS } from "@/lib/mock-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Plus,
     ShoppingCart,
@@ -119,11 +120,8 @@ export default function ProcurementPage() {
                         const status = requestStatusConfig[request.status];
 
                         return (
-                            <Card
-                                key={request.id}
-                                className="animate-slide-up"
-                                style={{ animationDelay: `${i * 60}ms` }}
-                            >
+                            <StaggerItem key={request.id} index={i} stagger="relaxed">
+                            <Card>
                                 <CardContent>
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start gap-4">
@@ -166,6 +164,7 @@ export default function ProcurementPage() {
                                     )}
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
                 </div>
@@ -189,14 +188,13 @@ export default function ProcurementPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredPOs.map((po, i) => {
+                                    {filteredPOs.map((po) => {
                                         const vendor = MOCK_VENDORS.find((v) => v.id === po.vendorId);
                                         const project = MOCK_PROJECTS.find((p) => p.id === po.projectId);
                                         return (
                                             <tr
                                                 key={po.id}
-                                                className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer animate-slide-up"
-                                                style={{ animationDelay: `${i * 40}ms` }}
+                                                className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
                                             >
                                                 <td className="px-4 py-3">
                                                     <span className="text-sm font-mono font-medium">PO-{po.id.toUpperCase()}</span>

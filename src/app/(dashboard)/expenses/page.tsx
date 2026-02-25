@@ -4,14 +4,15 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Receipt, Plus, Search, DollarSign, Calendar,
+    Receipt, Plus, DollarSign, Calendar,
     User, CheckCircle2, Clock, Upload,
 } from "lucide-react";
 
@@ -75,10 +76,7 @@ export default function ExpensesPage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search expenses..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search expenses..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {(["all", "pending", "approved", "rejected", "reimbursed"] as const).map((s) => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -91,7 +89,8 @@ export default function ExpensesPage() {
             <div className="space-y-3">
                 {filtered.map((expense, i) => {
                     return (
-                        <Card key={expense.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                        <StaggerItem key={expense.id} index={i} stagger="relaxed">
+                        <Card className="hover:shadow-sm transition-all">
                             <CardContent className="py-4">
                                 <div className="flex items-start gap-4">
                                     <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -120,6 +119,7 @@ export default function ExpensesPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

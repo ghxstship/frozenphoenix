@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Thermometer, Wind, Volume2, Zap } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface MockReading {
     id: string;
@@ -62,11 +64,7 @@ export default function EnvironmentPage() {
                             <div className="flex justify-between"><span className="text-muted-foreground">Utilization</span><span className={`font-medium ${powerUtil > 85 ? "text-destructive" : powerUtil > 70 ? "text-warning" : "text-success"}`}>{powerUtil}%</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Generator Fuel</span><span className={`font-medium ${latest.generatorFuelPercent < 30 ? "text-destructive" : "text-success"}`}>{latest.generatorFuelPercent}%</span></div>
                         </div>
-                        <div className="mt-3">
-                            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                                <div className={`h-full rounded-full transition-all ${powerUtil > 85 ? "bg-destructive" : powerUtil > 70 ? "bg-warning" : "bg-success"}`} style={{ width: `${powerUtil}%` }} />
-                            </div>
-                        </div>
+                        <ProgressBar value={powerUtil} size="md" className="mt-3" />
                     </CardContent>
                 </Card>
             </div>
@@ -76,7 +74,8 @@ export default function EnvironmentPage() {
                     <h3 className="text-sm font-semibold mb-3">Reading History</h3>
                     <div className="space-y-2">
                         {mockReadings.map((r, i) => (
-                            <div key={r.id} className="flex items-center gap-4 text-sm py-2 border-b border-border last:border-0 animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
+                            <StaggerItem key={r.id} index={i} stagger="tight">
+                            <div className="flex items-center gap-4 text-sm py-2 border-b border-border last:border-0">
                                 <span className="text-xs text-muted-foreground w-20 shrink-0">{new Date(r.recordedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                                 <span className="w-16">{r.temperatureF}°F</span>
                                 <span className="w-20">{r.windSpeedMph} mph</span>
@@ -84,6 +83,7 @@ export default function EnvironmentPage() {
                                 <span className="w-24">{r.totalPowerLoadAmps}A ({Math.round((r.totalPowerLoadAmps / r.powerCapacityAmps) * 100)}%)</span>
                                 <span className="w-20">Fuel: {r.generatorFuelPercent}%</span>
                             </div>
+                            </StaggerItem>
                         ))}
                     </div>
                 </CardContent>

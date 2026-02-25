@@ -4,13 +4,13 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import {
-    FlaskConical, Plus, Search, TrendingUp,
+    FlaskConical, Plus, TrendingUp,
     ArrowRight, Copy, Trash2, CheckCircle2, BarChart3,
     GitCompare,
 } from "lucide-react";
@@ -177,10 +177,7 @@ export default function ScenariosPage() {
             </div>
 
             <div className="flex items-center gap-4 flex-wrap">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search scenarios..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search scenarios..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1 flex-wrap">
                     {(["all", "combined", "budget", "revenue", "pricing", "hiring", "resource"] as const).map((t) => (
                         <Button key={t} variant={typeFilter === t ? "default" : "ghost"} size="sm" onClick={() => setTypeFilter(t)} className="text-xs capitalize">

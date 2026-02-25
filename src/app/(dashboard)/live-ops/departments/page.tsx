@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { LayoutList, CheckCircle2, AlertTriangle, Users } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface MockDeptStatus {
     id: string;
@@ -46,7 +48,8 @@ export default function DepartmentStatusPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {mockDepts.map((dept, i) => (
-                    <Card key={dept.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                    <StaggerItem key={dept.id} index={i} stagger="tight">
+                    <Card className="hover:shadow-sm transition-all">
                         <CardContent className="py-4">
                             <div className="flex items-center justify-between mb-2">
                                 <h3 className="text-sm font-semibold">{dept.department}</h3>
@@ -54,9 +57,7 @@ export default function DepartmentStatusPage() {
                             </div>
                             <p className="text-[11px] text-muted-foreground mb-2">Lead: {dept.lead}</p>
                             <div className="flex items-center gap-2 mb-1">
-                                <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                                    <div className="h-full rounded-full bg-success transition-all" style={{ width: `${(dept.crewCheckedIn / dept.crewCount) * 100}%` }} />
-                                </div>
+                                <ProgressBar value={(dept.crewCheckedIn / dept.crewCount) * 100} size="xs" className="flex-1" />
                                 <span className="text-[10px] font-medium">{dept.crewCheckedIn}/{dept.crewCount}</span>
                             </div>
                             {dept.issues && (
@@ -66,6 +67,7 @@ export default function DepartmentStatusPage() {
                             )}
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

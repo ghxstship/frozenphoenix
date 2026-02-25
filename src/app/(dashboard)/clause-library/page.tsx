@@ -4,11 +4,11 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    BookLock, Search, Plus,
+    BookLock, Plus,
 } from "lucide-react";
 import { MOCK_CONTRACT_CLAUSES } from "@/lib/mock-data-governance";
 import type { ClauseRiskLevel } from "@/types/governance";
@@ -56,10 +56,7 @@ export default function ClauseLibraryPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search clauses..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search clauses..." className="flex-1 max-w-sm" />
                 <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Risk Levels</option>
                     <option value="low">Low</option>

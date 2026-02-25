@@ -9,6 +9,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useVendors, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_VENDORS } from "@/lib/mock-data";
 import { Plus, ShieldCheck, ShieldAlert, FileText, Star, Store, Loader2, Table2, LayoutGrid } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { RatingField, EmailField, PhoneField, BooleanField } from "@/components/data-view/field-renderers";
 
@@ -166,10 +167,9 @@ export default function VendorsPage() {
             {viewMode === "cards" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {vendors.map((vendor, i) => (
+                    <StaggerItem key={vendor.id} index={i} stagger="relaxed">
                     <Card
-                        key={vendor.id}
-                        className={`animate-slide-up ${!vendor.coiValid ? "border-destructive/30" : ""}`}
-                        style={{ animationDelay: `${i * 80}ms` }}
+                        className={`${!vendor.coiValid ? "border-destructive/30" : ""}`}
                     >
                         <CardContent>
                             <div className="flex items-start justify-between mb-3">
@@ -231,6 +231,7 @@ export default function VendorsPage() {
                             )}
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
             )}

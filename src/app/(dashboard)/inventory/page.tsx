@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { StatCard } from "@/components/ui/stat-card";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Package, Plus, Search, AlertTriangle,
+    Package, Plus, AlertTriangle,
     MapPin, Tag, BarChart3,
 } from "lucide-react";
 
@@ -73,10 +74,7 @@ export default function InventoryPage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search by name or SKU..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search by name or SKU..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {(["all", "in_stock", "low_stock", "out_of_stock", "on_order"] as const).map((s) => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -96,7 +94,8 @@ export default function InventoryPage() {
             <div className="space-y-2">
                 {filtered.map((item, i) => {
                     return (
-                        <Card key={item.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                        <StaggerItem key={item.id} index={i} stagger="tight">
+                        <Card className="hover:shadow-sm transition-all">
                             <CardContent className="py-3">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -128,6 +127,7 @@ export default function InventoryPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

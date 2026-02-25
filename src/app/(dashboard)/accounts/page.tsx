@@ -5,14 +5,15 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { SearchInput } from "@/components/ui/search-input";
 import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/mock-data-crm-revenue";
 // ACCOUNT_RISK_LEVEL_MAP available for future drill-down views
 import type { AccountHealthScore } from "@/types";
 import {
-    Search, Building2, DollarSign, AlertTriangle,
+    Building2, DollarSign, AlertTriangle,
     HeartPulse, ChevronRight, Target, FolderKanban, FileWarning,
     Shield,
 } from "lucide-react";
@@ -35,16 +36,13 @@ function getScoreColor(score: number): string {
 }
 
 function ScoreBar({ label, score }: { label: string; score: number }) {
-    const barColor = score >= 80 ? "bg-success" : score >= 60 ? "bg-warning" : "bg-destructive";
     return (
         <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{label}</span>
                 <span className="font-medium">{score}</span>
             </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${score}%` }} />
-            </div>
+            <ProgressBar value={score} size="sm" />
         </div>
     );
 }
@@ -91,15 +89,7 @@ export default function AccountsPage() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search accounts..."
-                        className="pl-9 w-64"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search accounts..." className="w-64" />
                 <select
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={riskFilter}

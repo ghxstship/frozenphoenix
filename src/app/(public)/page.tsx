@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { MOCK_CASE_STUDIES } from "@/lib/mock-data";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
 import { brandConfig } from "@/config/brand";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Flame,
     CheckCircle2,
@@ -83,7 +84,7 @@ export default function LandingPage() {
             <section className="relative pt-32 pb-20 px-6 overflow-hidden">
                 {/* Gradient orbs */}
                 <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+                <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
 
                 <div className="max-w-4xl mx-auto text-center relative z-10">
                     <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-xs">
@@ -186,10 +187,9 @@ export default function LandingPage() {
                             { icon: Zap, title: "Live Activation", desc: "Run-of-show management, real-time crew dispatch, and on-site problem solving." },
                             { icon: Star, title: "Case Studies", desc: "Auto-generated project case studies with KPI metrics, published with one click." },
                         ].map((service, i) => (
+                            <StaggerItem key={service.title} index={i} stagger="relaxed">
                             <div
-                                key={service.title}
-                                className="spatial-card p-6 group cursor-pointer animate-slide-up"
-                                style={{ animationDelay: `${i * 100}ms` }}
+                                className="spatial-card p-6 group cursor-pointer"
                             >
                                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                                     <service.icon className="h-6 w-6 text-primary" />
@@ -197,6 +197,7 @@ export default function LandingPage() {
                                 <h3 className="text-base font-bold mb-2">{service.title}</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">{service.desc}</p>
                             </div>
+                            </StaggerItem>
                         ))}
                     </div>
                 </div>

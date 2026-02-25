@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    Calculator, Search, DollarSign, TrendingUp, TrendingDown,
+    Calculator, DollarSign, TrendingUp, TrendingDown,
     BarChart3,
 } from "lucide-react";
 import { MOCK_JOB_COST_ENTRIES } from "@/lib/mock-data-vendor-lifecycle";
@@ -89,9 +90,7 @@ export default function JobCostingPage() {
                                             <span className="font-medium">{formatCurrency(ct.total)}</span>
                                         </div>
                                     </div>
-                                    <div className="h-2 rounded-full bg-muted overflow-hidden">
-                                        <div className={`h-full rounded-full ${ct.color} transition-all`} style={{ width: `${pct}%` }} />
-                                    </div>
+                                    <ProgressBar value={pct} size="md" />
                                 </div>
                             );
                         })}
@@ -127,12 +126,7 @@ export default function JobCostingPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full transition-all ${ps.budget > 0 && ps.cost / ps.budget > 1 ? "bg-destructive" : "bg-primary"}`}
-                                        style={{ width: `${Math.min(ps.budget > 0 ? (ps.cost / ps.budget) * 100 : 0, 100)}%` }}
-                                    />
-                                </div>
+                                <ProgressBar value={Math.min(ps.budget > 0 ? (ps.cost / ps.budget) * 100 : 0, 100)} size="sm" className="mt-2" />
                             </div>
                         ))}
                     </CardContent>
@@ -140,10 +134,7 @@ export default function JobCostingPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search cost entries..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search cost entries..." className="flex-1 max-w-sm" />
                 <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Projects</option>
                     {projects.map(p => <option key={p} value={p}>{p}</option>)}

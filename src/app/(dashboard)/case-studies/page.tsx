@@ -8,6 +8,7 @@ import { useCaseStudies, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_CASE_STUDIES } from "@/lib/mock-data";
 import { Award, Globe, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 export default function CaseStudiesPage() {
     const { data: sbCaseStudies, isLoading } = useCaseStudies();
@@ -42,7 +43,8 @@ export default function CaseStudiesPage() {
 
             <div className="space-y-4">
                 {caseStudies.map((cs, i) => (
-                    <Card key={cs.id} className="animate-slide-up" style={{ animationDelay: `${i * 80}ms` }}>
+                    <StaggerItem key={cs.id} index={i} stagger="relaxed">
+                    <Card>
                         <CardContent>
                             <div className="flex items-start justify-between mb-3">
                                 <div>
@@ -69,6 +71,7 @@ export default function CaseStudiesPage() {
                             )}
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

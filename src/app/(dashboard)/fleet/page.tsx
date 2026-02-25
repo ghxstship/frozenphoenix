@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useVehicles, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_VEHICLES } from "@/lib/mock-data";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Plus,
     Truck,
@@ -75,10 +76,9 @@ export default function FleetPage() {
                             <div className="space-y-4">
                                 {vehicles.map((vehicle, i) => {
                                     return (
+                                        <StaggerItem key={vehicle.id} index={i} stagger="relaxed">
                                         <div
-                                            key={vehicle.id}
-                                            className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer animate-slide-up"
-                                            style={{ animationDelay: `${i * 80}ms` }}
+                                            className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                                         >
                                             <div className={`h-12 w-12 rounded-xl ${getStatusBgColor(vehicle.status)} flex items-center justify-center`}>
                                                 <Truck className="h-6 w-6 text-white" />
@@ -115,6 +115,7 @@ export default function FleetPage() {
                                                 </div>
                                             )}
                                         </div>
+                                        </StaggerItem>
                                     );
                                 })}
                             </div>

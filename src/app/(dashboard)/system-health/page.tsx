@@ -4,6 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Activity,
     Shield,
@@ -176,15 +177,7 @@ export default function SystemHealthPage() {
                                         <span className="font-medium">{sla.name}</span>
                                         <span className={slaStatusColor(sla.status)}>{sla.current}%</span>
                                     </div>
-                                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full transition-all ${
-                                                sla.status === "on_track" ? "bg-emerald-500" :
-                                                sla.status === "at_risk" ? "bg-amber-500" : "bg-red-500"
-                                            }`}
-                                            style={{ width: `${sla.current}%` }}
-                                        />
-                                    </div>
+                                    <ProgressBar value={sla.current} size="md" />
                                     <p className="text-xs text-muted-foreground">Target: {sla.target}</p>
                                 </div>
                             ))}

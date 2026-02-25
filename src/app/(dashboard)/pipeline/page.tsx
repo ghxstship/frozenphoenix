@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useDeals, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_DEALS, DEAL_STAGES } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/locale";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { Plus, GripVertical, DollarSign, Calendar, User, Loader2, Columns, List } from "lucide-react";
 import type { Deal, DealStage } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
@@ -193,10 +195,9 @@ export default function PipelinePage() {
                             {/* Cards */}
                             <div className="flex-1 space-y-2">
                                 {stage.deals.map((deal, i) => (
+                                    <StaggerItem key={deal.id} index={i} stagger="relaxed">
                                     <div
-                                        key={deal.id}
-                                        className="spatial-card p-4 cursor-grab active:cursor-grabbing animate-slide-up"
-                                        style={{ animationDelay: `${i * 60}ms` }}
+                                        className="spatial-card p-4 cursor-grab active:cursor-grabbing"
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <div className="flex-1 min-w-0">
@@ -218,7 +219,7 @@ export default function PipelinePage() {
                                             </div>
                                             <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                                                 <Calendar className="h-3 w-3" />
-                                                <span>{new Date(deal.expectedCloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                                <span>{formatDate(deal.expectedCloseDate, "compact")}</span>
                                             </div>
                                         </div>
 
@@ -236,6 +237,7 @@ export default function PipelinePage() {
                                             <span className="text-[10px] font-medium text-muted-foreground">{deal.probability}%</span>
                                         </div>
                                     </div>
+                                    </StaggerItem>
                                 ))}
 
                                 {/* Empty state */}

@@ -1,0 +1,264 @@
+"use client";
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME PROVIDER — White-Label Appearance Hierarchy System
+   ═══════════════════════════════════════════════════════════════
+   
+   Cascading inheritance priority (highest → lowest):
+   1. User preferences
+   2. Activation/Event override
+   3. Project-level theme
+   4. Organization-level theme
+   5. Platform defaults (CSS :root)
+   
+   Design Principles:
+   - Runtime theme switching without page reload
+   - CSS custom property injection for zero re-render cost
+   - Brand isolation across tenants
+   - Reduced motion / high contrast awareness
+   ═══════════════════════════════════════════════════════════════ */
+
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+// ─── Theme Token Override Shape ───
+
+export interface ThemeTokens {
+    primary?: string;
+    primaryForeground?: string;
+    secondary?: string;
+    secondaryForeground?: string;
+    accent?: string;
+    accentForeground?: string;
+    background?: string;
+    foreground?: string;
+    muted?: string;
+    mutedForeground?: string;
+    card?: string;
+    cardForeground?: string;
+    border?: string;
+    ring?: string;
+    radius?: string;
+}
+
+export type ColorMode = "light" | "dark" | "system";
+
+export interface ThemeConfig {
+    colorMode: ColorMode;
+    brandId?: string;
+    tokens?: ThemeTokens;
+}
+
+// ─── Theme Store (Zustand + Persist) ───
+
+interface ThemeStore {
+    colorMode: ColorMode;
+    resolvedMode: "light" | "dark";
+    brandId: string;
+    orgTokens: ThemeTokens | null;
+    projectTokens: ThemeTokens | null;
+    userTokens: ThemeTokens | null;
+    setColorMode: (mode: ColorMode) => void;
+    setBrandId: (id: string) => void;
+    setOrgTokens: (tokens: ThemeTokens | null) => void;
+    setProjectTokens: (tokens: ThemeTokens | null) => void;
+    setUserTokens: (tokens: ThemeTokens | null) => void;
+    setResolvedMode: (mode: "light" | "dark") => void;
+}
+
+export const useThemeStore = create<ThemeStore>()(
+    persist(
+        (set) => ({
+            colorMode: "dark",
+            resolvedMode: "dark",
+            brandId: "frozen-phoenix",
+            orgTokens: null,
+            projectTokens: null,
+            userTokens: null,
+            setColorMode: (colorMode) => set({ colorMode }),
+            setBrandId: (brandId) => set({ brandId }),
+            setOrgTokens: (orgTokens) => set({ orgTokens }),
+            setProjectTokens: (projectTokens) => set({ projectTokens }),
+            setUserTokens: (userTokens) => set({ userTokens }),
+            setResolvedMode: (resolvedMode) => set({ resolvedMode }),
+        }),
+        {
+            name: "fp-theme",
+            partialize: (state) => ({
+                colorMode: state.colorMode,
+                brandId: state.brandId,
+                userTokens: state.userTokens,
+            }),
+        }
+    )
+);
+
+// ─── Theme Context ───
+
+interface ThemeContextValue {
+    colorMode: ColorMode;
+    resolvedMode: "light" | "dark";
+    brandId: string;
+    setColorMode: (mode: ColorMode) => void;
+    setBrandId: (id: string) => void;
+    setOrgTokens: (tokens: ThemeTokens | null) => void;
+    setProjectTokens: (tokens: ThemeTokens | null) => void;
+    setUserTokens: (tokens: ThemeTokens | null) => void;
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
+    colorMode: "dark",
+    resolvedMode: "dark",
+    brandId: "frozen-phoenix",
+    setColorMode: () => {},
+    setBrandId: () => {},
+    setOrgTokens: () => {},
+    setProjectTokens: () => {},
+    setUserTokens: () => {},
+});
+
+export function useTheme() {
+    return useContext(ThemeContext);
+}
+
+// ─── Token Application Logic ───
+
+function applyTokensToDOM(tokens: ThemeTokens) {
+    const root = document.documentElement;
+    const mapping: Record<keyof ThemeTokens, string> = {
+        primary: "--primary",
+        primaryForeground: "--primary-foreground",
+        secondary: "--secondary",
+        secondaryForeground: "--secondary-foreground",
+        accent: "--accent",
+        accentForeground: "--accent-foreground",
+        background: "--background",
+        foreground: "--foreground",
+        muted: "--muted",
+        mutedForeground: "--muted-foreground",
+        card: "--card",
+        cardForeground: "--card-foreground",
+        border: "--border",
+        ring: "--ring",
+        radius: "--radius",
+    };
+
+    for (const [key, cssVar] of Object.entries(mapping)) {
+        const value = tokens[key as keyof ThemeTokens];
+        if (value) {
+            root.style.setProperty(cssVar, value);
+        }
+    }
+}
+
+function clearCustomTokensFromDOM() {
+    const root = document.documentElement;
+    const vars = [
+        "--primary", "--primary-foreground", "--secondary", "--secondary-foreground",
+        "--accent", "--accent-foreground", "--background", "--foreground",
+        "--muted", "--muted-foreground", "--card", "--card-foreground",
+        "--border", "--ring", "--radius",
+    ];
+    vars.forEach((v) => root.style.removeProperty(v));
+}
+
+function mergeTokens(...layers: (ThemeTokens | null | undefined)[]): ThemeTokens {
+    const merged: ThemeTokens = {};
+    for (const layer of layers) {
+        if (!layer) continue;
+        for (const [key, value] of Object.entries(layer)) {
+            if (value) {
+                (merged as Record<string, string>)[key] = value;
+            }
+        }
+    }
+    return merged;
+}
+
+// ─── Theme Provider Component ───
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    const store = useThemeStore();
+
+    const applyTheme = useCallback(() => {
+        const html = document.documentElement;
+
+        // Resolve color mode
+        let resolved: "light" | "dark" = "dark";
+        if (store.colorMode === "system") {
+            resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        } else {
+            resolved = store.colorMode;
+        }
+        store.setResolvedMode(resolved);
+
+        // Apply color mode class
+        html.classList.remove("light", "dark");
+        html.classList.add(resolved);
+
+        // Apply brand attribute
+        if (store.brandId !== "frozen-phoenix") {
+            html.setAttribute("data-brand", store.brandId);
+        } else {
+            html.removeAttribute("data-brand");
+        }
+
+        // Apply cascading token overrides (org → project → user)
+        clearCustomTokensFromDOM();
+        const merged = mergeTokens(store.orgTokens, store.projectTokens, store.userTokens);
+        if (Object.keys(merged).length > 0) {
+            applyTokensToDOM(merged);
+        }
+    }, [store]);
+
+    // Apply on mount and whenever store changes
+    useEffect(() => {
+        applyTheme();
+    }, [
+        applyTheme,
+        store.colorMode,
+        store.brandId,
+        store.orgTokens,
+        store.projectTokens,
+        store.userTokens,
+    ]);
+
+    // Listen for system color scheme changes
+    useEffect(() => {
+        if (store.colorMode !== "system") return;
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const handler = () => applyTheme();
+        mq.addEventListener("change", handler);
+        return () => mq.removeEventListener("change", handler);
+    }, [store.colorMode, applyTheme]);
+
+    const contextValue = useMemo<ThemeContextValue>(
+        () => ({
+            colorMode: store.colorMode,
+            resolvedMode: store.resolvedMode,
+            brandId: store.brandId,
+            setColorMode: store.setColorMode,
+            setBrandId: store.setBrandId,
+            setOrgTokens: store.setOrgTokens,
+            setProjectTokens: store.setProjectTokens,
+            setUserTokens: store.setUserTokens,
+        }),
+        [
+            store.colorMode,
+            store.resolvedMode,
+            store.brandId,
+            store.setColorMode,
+            store.setBrandId,
+            store.setOrgTokens,
+            store.setProjectTokens,
+            store.setUserTokens,
+        ]
+    );
+
+    return (
+        <ThemeContext.Provider value={contextValue}>
+            {children}
+        </ThemeContext.Provider>
+    );
+}

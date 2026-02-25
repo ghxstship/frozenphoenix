@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
+import { SearchInput } from "@/components/ui/search-input";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Warehouse, Plus, Search, MapPin, Package,
+    Warehouse, Plus, MapPin, Package,
     Thermometer, Shield, Truck,
 } from "lucide-react";
 
@@ -58,16 +60,19 @@ export default function WarehousesPage() {
                 <StatCard title="Active Shipments" value={mockWarehouses.reduce((sum, w) => sum + w.activeShipments, 0)} icon={Truck} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Search warehouses..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                placeholder="Search warehouses..."
+                className="max-w-sm"
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filtered.map((wh, i) => {
                     const utilPercent = Math.round((wh.utilized / wh.capacity) * 100);
                     return (
-                        <Card key={wh.id} className="hover:shadow-md transition-all animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={wh.id} index={i} stagger="relaxed">
+                        <Card className="hover:shadow-md transition-all">
                             <CardContent className="py-4 space-y-3">
                                 <div className="flex items-start justify-between">
                                     <div>
@@ -85,9 +90,7 @@ export default function WarehousesPage() {
                                         <span className="text-muted-foreground">Capacity</span>
                                         <span className="font-medium">{wh.utilized.toLocaleString()} / {wh.capacity.toLocaleString()} sq ft</span>
                                     </div>
-                                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                        <div className={`h-full rounded-full transition-all ${utilPercent >= 90 ? "bg-destructive" : utilPercent >= 70 ? "bg-warning" : "bg-success"}`} style={{ width: `${utilPercent}%` }} />
-                                    </div>
+                                    <ProgressBar value={utilPercent} size="md" />
                                     <p className="text-[10px] text-muted-foreground mt-1">{utilPercent}% utilized</p>
                                 </div>
 
@@ -98,6 +101,7 @@ export default function WarehousesPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

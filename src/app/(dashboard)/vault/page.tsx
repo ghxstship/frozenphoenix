@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useVaultDocuments, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { Plus, Lock, FileText, Eye, Link, Clock, Shield, Loader2 } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 const MOCK_DOCS = [
     { id: "doc1", name: "Coachella Site Map — Restricted Zone", category: "site_map", accessLevel: "pm", uploadedBy: "Alex Rivera", uploadedAt: "2026-02-10", hasExpLink: true, expLinkExpiry: "2026-03-01" },
@@ -56,7 +57,8 @@ export default function VaultPage() {
                 {docs.map((doc, i) => {
                     const Icon = categoryIcons[doc.category] || FileText;
                     return (
-                        <Card key={doc.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={doc.id} index={i} stagger="relaxed">
+                        <Card>
                             <CardContent>
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -83,13 +85,14 @@ export default function VaultPage() {
                                                 <Clock className="h-3 w-3 ml-0.5" />
                                             </div>
                                         )}
-                                        <Button size="icon" variant="ghost" className="h-7 w-7">
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="View secret">
                                             <Eye className="h-3.5 w-3.5" />
                                         </Button>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

@@ -4,10 +4,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    LayoutList, Plus, Search, Eye, Star,
+    LayoutList, Plus, Eye, Star,
     Users, Lock, Globe, Pencil, Copy, Trash2,
     Filter, SortAsc, Columns,
 } from "lucide-react";
@@ -71,10 +71,7 @@ export default function SavedViewsPage() {
             </PageHeader>
 
             <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search views..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search views..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "private", "team", "organization"] as const).map((f) => (
                         <Button key={f} variant={visFilter === f ? "default" : "ghost"} size="sm" onClick={() => setVisFilter(f)} className="text-xs capitalize">

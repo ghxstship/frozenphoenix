@@ -5,13 +5,14 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { CONTRACT_STATUS_MAP, CONTRACT_TYPE_MAP, type ContractStatusType, type ContractType } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    FileSignature, Plus, Search, Calendar, Building2, AlertTriangle,
+    FileSignature, Plus, Calendar, Building2, AlertTriangle,
     CheckCircle2, Clock, DollarSign,
 } from "lucide-react";
 
@@ -91,10 +92,7 @@ export default function ContractsPage() {
             )}
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search contracts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search contracts..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {["all", "active", "pending_review", "pending_signature", "draft", "expired"].map((s) => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -119,10 +117,10 @@ export default function ContractsPage() {
                     const isExpiring = contract.daysUntilExpiry > 0 && contract.daysUntilExpiry <= 90;
 
                     return (
-                        <Link key={contract.id} href={`/contracts/${contract.id}`}>
+                        <StaggerItem key={contract.id} index={i} stagger="relaxed">
+                        <Link href={`/contracts/${contract.id}`}>
                             <Card
-                                className={`cursor-pointer hover:shadow-md transition-all animate-slide-up ${isExpiring ? "border-warning/30" : ""}`}
-                                style={{ animationDelay: `${i * 60}ms` }}
+                                className={`cursor-pointer hover:shadow-md transition-all ${isExpiring ? "border-warning/30" : ""}`}
                             >
                                 <CardContent className="py-4">
                                     <div className="flex items-start justify-between gap-4">
@@ -173,6 +171,7 @@ export default function ContractsPage() {
                                 </CardContent>
                             </Card>
                         </Link>
+                        </StaggerItem>
                     );
                 })}
             </div>

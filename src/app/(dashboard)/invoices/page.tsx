@@ -5,13 +5,15 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { INVOICE_DELIVERY_STATUS_MAP, type InvoiceDeliveryStatusType } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    FileText, Plus, Search, Building2, Calendar,
+    FileText, Plus, Building2, Calendar,
     DollarSign, CheckCircle2, AlertTriangle, Send,
 } from "lucide-react";
 
@@ -82,10 +84,7 @@ export default function InvoicesPage() {
             )}
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search invoices..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search invoices..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     {["all", "draft", "sent", "viewed", "paid", "overdue", "disputed"].map((s) => (
                         <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -99,8 +98,9 @@ export default function InvoicesPage() {
                 {filtered.map((invoice, i) => {
                     const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoice.status];
                     return (
-                        <Link key={invoice.id} href={`/invoices/${invoice.id}`}>
-                            <Card className={`cursor-pointer hover:shadow-md transition-all animate-slide-up ${invoice.status === "overdue" ? "border-destructive/30" : ""}`} style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={invoice.id} index={i} stagger="relaxed">
+                        <Link href={`/invoices/${invoice.id}`}>
+                            <Card className={`cursor-pointer hover:shadow-md transition-all ${invoice.status === "overdue" ? "border-destructive/30" : ""}`}>
                                 <CardContent className="py-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -131,16 +131,14 @@ export default function InvoicesPage() {
                                     </div>
                                     {/* Payment progress bar */}
                                     {invoice.amount > 0 && (
-                                        <div className="mt-3 h-1.5 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all ${invoice.status === "paid" ? "bg-success" : invoice.status === "overdue" ? "bg-destructive" : "bg-primary"}`}
-                                                style={{ width: `${Math.min(100, (invoice.paidAmount / invoice.amount) * 100)}%` }}
-                                            />
+                                        <div className="mt-3">
+                                            <ProgressBar value={Math.min(100, (invoice.paidAmount / invoice.amount) * 100)} size="xs" />
                                         </div>
                                     )}
                                 </CardContent>
                             </Card>
                         </Link>
+                        </StaggerItem>
                     );
                 })}
             </div>

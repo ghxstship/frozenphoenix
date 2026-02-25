@@ -7,6 +7,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Gauge, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 interface MockGate {
     id: string;
@@ -72,7 +73,8 @@ export default function ReadinessGatesPage() {
 
             <div className="space-y-2">
                 {filtered.map((gate, i) => (
-                    <Card key={gate.id} className={`hover:shadow-sm transition-all animate-slide-up ${gate.isBlocking && !["passed", "waived"].includes(gate.status) ? "border-l-2 border-l-destructive" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <StaggerItem key={gate.id} index={i} stagger="tight">
+                    <Card className={`hover:shadow-sm transition-all ${gate.isBlocking && !["passed", "waived"].includes(gate.status) ? "border-l-2 border-l-destructive" : ""}`}>
                         <CardContent className="py-3">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">
@@ -95,6 +97,7 @@ export default function ReadinessGatesPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

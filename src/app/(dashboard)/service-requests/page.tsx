@@ -8,9 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Inbox, Search, Plus, Clock, ArrowRightCircle,
+    Inbox, Plus, Clock, ArrowRightCircle,
     AlertTriangle, Calendar, User, Mail, Phone, MapPin,
     FileSignature, ClipboardList, FolderKanban, Megaphone,
 } from "lucide-react";
@@ -77,10 +78,7 @@ export default function ServiceRequestsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search requests..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search requests..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {SERVICE_REQUEST_STATUSES.map((s) => (
@@ -95,7 +93,8 @@ export default function ServiceRequestsPage() {
                     const ConvertIcon = req.convertedToType ? CONVERT_ICONS[req.convertedToType] || ArrowRightCircle : null;
 
                     return (
-                        <Card key={req.id} className="animate-slide-up hover:shadow-md transition-shadow cursor-pointer" style={{ animationDelay: `${i * 50}ms` }}>
+                        <StaggerItem key={req.id} index={i} stagger="normal">
+                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
                             <CardContent className="pt-4">
                                 <div className="flex items-start gap-4">
                                     <div className="flex-1 min-w-0">
@@ -177,6 +176,7 @@ export default function ServiceRequestsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
 

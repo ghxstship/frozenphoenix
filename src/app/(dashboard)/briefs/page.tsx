@@ -3,17 +3,19 @@
 import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/locale";
 import { MOCK_CREATIVE_BRIEFS, MOCK_BRIEF_TEMPLATES } from "@/lib/mock-data-creative-brand";
 import type { CreativeBrief, CreativeBriefStatus, CreativeBriefType } from "@/types";
 import {
     Plus,
-    Search,
     FileText,
     Target,
     DollarSign,
@@ -124,15 +126,7 @@ export default function BriefsPage() {
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search briefs..."
-                        className="pl-9"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search briefs..." className="flex-1" />
                 <div className="flex gap-2">
                     <select
                         className="h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -179,7 +173,8 @@ export default function BriefsPage() {
 
 function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; index: number; statusProgress: number }) {
     return (
-        <Card className="hover:border-primary/30 transition-colors animate-slide-up" style={{ animationDelay: `${index * 60}ms` }}>
+        <StaggerItem index={index} stagger="relaxed">
+        <Card className="hover:border-primary/30 transition-colors">
             <CardContent className="pt-5">
                 <div className="flex items-start justify-between mb-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -196,12 +191,7 @@ function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; ind
 
                 {/* Progress Bar */}
                 <div className="mb-3">
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div
-                            className="h-full rounded-full bg-primary transition-all duration-500"
-                            style={{ width: `${statusProgress}%` }}
-                        />
-                    </div>
+                    <ProgressBar value={statusProgress} size="xs" />
                     <p className="text-[10px] text-muted-foreground mt-1">{statusProgress}% through lifecycle</p>
                 </div>
 
@@ -242,11 +232,11 @@ function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; ind
                         {brief.start_date && (
                             <>
                                 <CalendarDays className="h-3 w-3" />
-                                {new Date(brief.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                {formatDate(brief.start_date, "compact")}
                                 {brief.end_date && (
                                     <>
                                         <ChevronRight className="h-3 w-3" />
-                                        {new Date(brief.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                        {formatDate(brief.end_date, "compact")}
                                     </>
                                 )}
                             </>
@@ -277,5 +267,6 @@ function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; ind
                 )}
             </CardContent>
         </Card>
+        </StaggerItem>
     );
 }

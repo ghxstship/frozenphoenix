@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import {
-    HardDriveDownload, Search, Plus, CheckCircle2, AlertTriangle, Package,
+    HardDriveDownload, Plus, CheckCircle2, AlertTriangle, Package,
 } from "lucide-react";
 import { MOCK_GOODS_RECEIPTS } from "@/lib/mock-data-governance";
 import type { GoodsReceiptStatus } from "@/types/governance";
@@ -46,10 +46,7 @@ export default function GoodsReceiptsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search receipts..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search receipts..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {GR_STATUSES.map(s => <option key={s} value={s}>{getStatusLabel(s)}</option>)}

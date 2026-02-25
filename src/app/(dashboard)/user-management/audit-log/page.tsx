@@ -1,16 +1,18 @@
 "use client";
 
+import { formatDateTime } from "@/lib/locale";
+
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
 import { MOCK_LOGIN_AUDIT, MOCK_ROLE_CHANGES } from "@/lib/mock-data-user-lifecycle";
 import {
-    KeyRound, Search, ShieldCheck, ShieldAlert, LogIn, LogOut, AlertTriangle,
+    KeyRound, ShieldCheck, ShieldAlert, LogIn, LogOut, AlertTriangle,
     Clock, Globe, Monitor, Smartphone, Download,
 } from "lucide-react";
 import type { LoginEventType, RoleChangeType } from "@/types";
@@ -70,7 +72,7 @@ function getDeviceIcon(userAgent?: string) {
 
 function formatTime(dateStr: string): string {
     const d = new Date(dateStr);
-    return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    return formatDateTime(d);
 }
 
 export default function AuditLogPage() {
@@ -151,15 +153,7 @@ export default function AuditLogPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search by email, user, or IP..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-10"
-                                />
-                            </div>
+                            <SearchInput value={search} onValueChange={setSearch} placeholder="Search by email, user, or IP..." className="flex-1" />
                             <div className="flex gap-2">
                                 {(["all", "success", "failure"] as const).map((f) => (
                                     <Button
@@ -242,15 +236,7 @@ export default function AuditLogPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="relative mb-4">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by user or changed by..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
+                        <SearchInput value={search} onValueChange={setSearch} placeholder="Search by user or changed by..." className="mb-4" />
 
                         <div className="space-y-2">
                             {filteredRoleChanges.map((change) => {

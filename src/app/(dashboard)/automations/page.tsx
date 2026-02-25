@@ -4,13 +4,14 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { WORKFLOW_STATUS_MAP, type WorkflowStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
 import {
-    Zap, Plus, Search, Play, Pause, ArrowRight,
+    Zap, Plus, Play, Pause, ArrowRight,
     Mail, Bell, CheckSquare, GitBranch, Clock, Activity,
 } from "lucide-react";
 
@@ -93,7 +94,7 @@ const mockAutomations: AutomationListItem[] = [
 ];
 
 function formatDateTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return formatDateTime(dateStr);
 }
 
 export default function AutomationsPage() {
@@ -161,10 +162,7 @@ export default function AutomationsPage() {
             {activeTab === "builder" && (
                 <>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input placeholder="Search automations..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                        </div>
+                        <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search automations..." className="flex-1 max-w-sm" />
                         <div className="flex gap-2 flex-wrap">
                             {["all", "active", "paused", "draft", "archived"].map((s) => (
                                 <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
@@ -181,7 +179,8 @@ export default function AutomationsPage() {
                             const TriggerIcon = triggerCfg.icon;
 
                             return (
-                                <Card key={automation.id} className="hover:shadow-md transition-all animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                                <StaggerItem key={automation.id} index={i} stagger="relaxed">
+                                <Card className="hover:shadow-md transition-all">
                                     <CardContent className="py-4">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -233,6 +232,7 @@ export default function AutomationsPage() {
                                         </div>
                                     </CardContent>
                                 </Card>
+                                </StaggerItem>
                             );
                         })}
                     </div>
@@ -255,10 +255,7 @@ export default function AutomationsPage() {
             {activeTab === "logs" && (
                 <>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input placeholder="Search logs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                        </div>
+                        <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search logs..." className="flex-1 max-w-sm" />
                         <div className="flex gap-2">
                             {["all", "success", "failed", "skipped"].map((s) => (
                                 <Button key={s} variant={logFilter === s ? "default" : "outline"} size="sm" onClick={() => setLogFilter(s)}>
@@ -272,7 +269,8 @@ export default function AutomationsPage() {
                         {filteredLogs.map((log, i) => {
                             const statusCfg = LOG_STATUS_CONFIG[log.status];
                             return (
-                                <Card key={log.id} className="animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                                <StaggerItem key={log.id} index={i} stagger="tight">
+                                <Card>
                                     <CardContent className="py-3">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -320,6 +318,7 @@ export default function AutomationsPage() {
                                         </div>
                                     </CardContent>
                                 </Card>
+                                </StaggerItem>
                             );
                         })}
                     </div>

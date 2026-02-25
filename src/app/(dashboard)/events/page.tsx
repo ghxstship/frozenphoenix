@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
 import { useEvents, useLocations, useActivations, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
@@ -18,7 +18,6 @@ import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { formatDate } from "@/lib/utils";
 import {
     Plus,
-    Search,
     Calendar,
     MapPin,
     Users,
@@ -121,15 +120,7 @@ export default function EventsPage() {
         >
             {/* Filters */}
             <div className="flex items-center gap-4 mb-6">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search events..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search events..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2">
                     {statuses.map((status) => (
                         <Button

@@ -6,16 +6,17 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/locale";
 import { MOCK_CHANGE_ORDERS } from "@/lib/mock-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
 import type { ChangeOrder } from "@/types";
 import {
-    Plus, Search, DollarSign, Clock, CheckCircle,
+    Plus, DollarSign, Clock, CheckCircle,
     AlertTriangle, ArrowUpRight, ArrowDownRight, Calendar, FolderKanban,
 } from "lucide-react";
 
@@ -154,15 +155,7 @@ export default function ChangeOrdersPage() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search change orders..."
-                        className="pl-9 w-64"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search change orders..." />
                 <select
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={statusFilter}
@@ -273,7 +266,7 @@ function ChangeOrderCard({ co }: { co: ChangeOrder }) {
                 <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-2">
                     <span>Requested by {co.requestedByName ?? "—"}</span>
                     {co.approvedAt && (
-                        <span>Approved {new Date(co.approvedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                        <span>Approved {formatDate(co.approvedAt, "medium")}</span>
                     )}
                     {co.clientApprovedBy && (
                         <span>Client: {co.clientApprovedBy}</span>

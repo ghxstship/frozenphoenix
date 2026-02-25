@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useProjects, useTasks, useApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS } from "@/lib/mock-data";
 import { formatDate } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Loader2 } from "lucide-react";
 import type { Project, Task, Approval, ProjectStatus, ProjectPhase, TaskStatus, TaskPriority, FabricationStatus } from "@/types";
 import {
@@ -334,12 +335,7 @@ export default function CalendarPage() {
                                                 {formatDate(project.startDate)} — {formatDate(project.endDate)}
                                             </p>
                                         </div>
-                                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary rounded-full transition-all"
-                                                style={{ width: `${progress}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={progress} size="md" />
                                     </div>
                                 );
                             })}

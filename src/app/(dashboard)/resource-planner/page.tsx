@@ -19,6 +19,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatDate as formatDisplayDate } from "@/lib/locale";
 
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
@@ -285,17 +286,17 @@ export default function ResourcePlannerPage() {
             {/* Calendar Navigation */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => navigateWeek("prev")}>
+                    <Button variant="outline" size="icon" onClick={() => navigateWeek("prev")} aria-label="Previous week">
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" onClick={goToToday}>
                         Today
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => navigateWeek("next")}>
+                    <Button variant="outline" size="icon" onClick={() => navigateWeek("next")} aria-label="Next week">
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                     <span className="ml-4 text-lg font-semibold">
-                        {weekDates[0].toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                        {formatDisplayDate(weekDates[0], "long")}
                     </span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -338,7 +339,7 @@ export default function ResourcePlannerPage() {
                                     )}
                                 >
                                     <div className="text-xs text-muted-foreground">
-                                        {date.toLocaleDateString("en-US", { weekday: "short" })}
+                                        {new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date)}
                                     </div>
                                     <div className="font-medium">{date.getDate()}</div>
                                 </div>

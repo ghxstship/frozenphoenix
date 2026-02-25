@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     ArrowLeft,
     Palette,
@@ -330,7 +331,8 @@ export default function BrandKitDetailPage() {
 
                     <div className="space-y-4">
                         {guidelineSections.map((section, i) => (
-                            <Card key={section.id} className="animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                            <StaggerItem key={section.id} index={i} stagger="relaxed">
+                            <Card>
                                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                                     <div className="flex items-center gap-2">
                                         <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{i + 1}</div>
@@ -361,6 +363,7 @@ export default function BrandKitDetailPage() {
                                     />
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         ))}
                     </div>
                 </div>

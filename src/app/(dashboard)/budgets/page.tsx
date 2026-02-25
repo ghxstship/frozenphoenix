@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
 import { MOCK_BUDGETS, MOCK_BUDGET_LINES } from "@/lib/mock-data-production";
@@ -16,7 +16,6 @@ import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
 import {
     Plus,
-    Search,
     DollarSign,
     TrendingUp,
     TrendingDown,
@@ -66,15 +65,7 @@ export default function BudgetsPage() {
         >
             {/* Filters */}
             <div className="flex items-center gap-4 mb-6">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by project..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search by project..." className="flex-1 max-w-sm" />
             </div>
 
             {/* Summary Stats */}

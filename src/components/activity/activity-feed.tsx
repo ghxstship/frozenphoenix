@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import type { ActivityAction } from "@/types";
 import {
     Plus,
@@ -62,10 +63,9 @@ export function ActivityFeed({ items, className, maxItems }: ActivityFeedProps) 
                 const Icon = config.icon;
 
                 return (
+                    <StaggerItem key={item.id} index={index} stagger="tight">
                     <div
-                        key={item.id}
-                        className="flex gap-3 animate-slide-up"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                        className="flex gap-3"
                     >
                         <div className="relative">
                             <Avatar name={item.actorName} size="sm" />
@@ -98,6 +98,7 @@ export function ActivityFeed({ items, className, maxItems }: ActivityFeedProps) 
                             </p>
                         </div>
                     </div>
+                    </StaggerItem>
                 );
             })}
         </div>

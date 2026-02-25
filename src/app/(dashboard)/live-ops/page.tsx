@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
 import { Radio, Users, AlertTriangle, Activity } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 
 type EventPhase = "advance" | "load_in" | "setup" | "rehearsal" | "ready" | "live" | "hold" | "strike" | "wrapped";
 
@@ -75,7 +76,8 @@ export default function LiveOpsPage() {
 
             <div className="space-y-3">
                 {filtered.map((evt, i) => (
-                    <Card key={evt.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                    <StaggerItem key={evt.id} index={i} stagger="tight">
+                    <Card className="hover:shadow-sm transition-all">
                         <CardContent className="py-4">
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -121,6 +123,7 @@ export default function LiveOpsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
 

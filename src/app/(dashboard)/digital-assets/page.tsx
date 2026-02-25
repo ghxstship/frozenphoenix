@@ -5,8 +5,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
-import { Image, Search, FileText, Film, Music, Lock } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Chip } from "@/components/ui/chip";
+import { Image, FileText, Film, Music, Lock } from "lucide-react";
 
 interface MockDigitalAsset {
     id: string;
@@ -65,16 +67,14 @@ export default function DigitalAssetsPage() {
                 <StatCard title="Locked" value={byStatus.locked} icon={Lock} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search assets or tags..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search assets or tags..." className="max-w-sm" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((asset, i) => {
                     const Icon = CLASS_ICONS[asset.assetClass] ?? FileText;
                     return (
-                        <Card key={asset.id} className="hover:shadow-sm transition-all animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                        <StaggerItem key={asset.id} index={i} stagger="tight">
+                        <Card className="hover:shadow-sm transition-all">
                             <CardContent className="py-4">
                                 <div className="flex items-start gap-3">
                                     <div className="h-10 w-10 rounded bg-secondary flex items-center justify-center shrink-0">
@@ -94,13 +94,14 @@ export default function DigitalAssetsPage() {
                                         {asset.projectName && <p className="text-[10px] text-muted-foreground">{asset.projectName}</p>}
                                         <div className="flex flex-wrap gap-1 mt-1.5">
                                             {asset.tags.map(t => (
-                                                <span key={t} className="text-[9px] bg-secondary px-1.5 py-0.5 rounded">{t}</span>
+                                                <Chip key={t} size="sm">{t}</Chip>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

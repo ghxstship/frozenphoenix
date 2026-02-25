@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
     CalendarDays, Plus, CheckCircle2, Clock,
@@ -104,12 +105,7 @@ export default function TimeOffPage() {
                                         <span className="text-2xl font-bold">{remaining}</span>
                                         <span className="text-xs text-muted-foreground mb-1">/ {b.total} days</span>
                                     </div>
-                                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-primary rounded-full"
-                                            style={{ width: `${((b.used + b.pending) / b.total) * 100}%` }}
-                                        />
-                                    </div>
+                                    <ProgressBar value={((b.used + b.pending) / b.total) * 100} size="sm" />
                                     <div className="flex justify-between text-[10px] text-muted-foreground">
                                         <span>{b.used} used</span>
                                         {b.pending > 0 && <span>{b.pending} pending</span>}

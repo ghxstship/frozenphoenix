@@ -6,6 +6,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/form/textarea";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import { Send, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 export interface CommentItem {
@@ -115,10 +116,9 @@ export function CommentsSection({
                         const isEditing = editingId === comment.id;
 
                         return (
+                            <StaggerItem key={comment.id} index={index} stagger="tight">
                             <div
-                                key={comment.id}
-                                className="flex gap-3 animate-slide-up"
-                                style={{ animationDelay: `${index * 50}ms` }}
+                                className="flex gap-3"
                             >
                                 <Avatar name={comment.authorName} size="sm" />
                                 <div className="flex-1 min-w-0">
@@ -201,6 +201,7 @@ export function CommentsSection({
                                     )}
                                 </div>
                             </div>
+                            </StaggerItem>
                         );
                     })}
                 </div>

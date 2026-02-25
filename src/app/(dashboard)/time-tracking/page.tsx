@@ -4,13 +4,13 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import {
-    Clock, Plus, Search, Play, Pause, Square,
+    Clock, Plus, Play, Pause, Square,
     Calendar, AlertTriangle, Timer,
     ChevronLeft, ChevronRight, BarChart3,
 } from "lucide-react";
@@ -139,10 +139,7 @@ export default function TimeTrackingPage() {
                     </Button>
                 ))}
                 <div className="flex-1" />
-                <div className="relative w-64">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search entries..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search entries..." className="w-64" />
             </div>
 
             {/* Daily View */}

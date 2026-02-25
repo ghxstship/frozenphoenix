@@ -4,12 +4,12 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import {
-    Banknote, Plus, Search,
+    Banknote, Plus,
     TrendingUp, ArrowDownRight, ArrowUpRight,
 } from "lucide-react";
 
@@ -77,10 +77,7 @@ export default function PaymentsPage() {
             </div>
 
             <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search payments..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search payments..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "incoming", "outgoing"] as const).map((f) => (
                         <Button key={f} variant={dirFilter === f ? "default" : "ghost"} size="sm" onClick={() => setDirFilter(f)} className="text-xs capitalize">

@@ -5,7 +5,6 @@ import { formatCurrency } from "@/lib/utils";
 import {
     Building2,
     Plus,
-    Search,
     MoreHorizontal,
     Globe,
     Users,
@@ -13,7 +12,7 @@ import {
     MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import {
     Card,
@@ -217,15 +216,7 @@ export default function CompaniesPage() {
             {/* Filters */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-1 items-center gap-2">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search companies..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9"
-                        />
-                    </div>
+                    <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search companies..." className="flex-1 max-w-sm" />
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger className="w-[140px]">
                             <SelectValue placeholder="Type" />
@@ -323,7 +314,7 @@ export default function CompaniesPage() {
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
+                                                <Button variant="ghost" size="icon" aria-label="Company actions">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -367,7 +358,7 @@ export default function CompaniesPage() {
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
+                                            <Button variant="ghost" size="icon" aria-label="Company actions">
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDate } from "@/lib/locale";
+
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +12,8 @@ import { useApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_APPROVALS } from "@/lib/mock-data";
 import { LIFECYCLE_STAGES, type LifecycleStage } from "@/config/domain-config";
 import { Clock, CheckCircle2, AlertTriangle, XCircle, Calendar, Loader2, Shield, GitBranch, Table2, List } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import type { Approval } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DateField } from "@/components/data-view/field-renderers";
@@ -191,7 +195,7 @@ export default function ApprovalsPage() {
                                             </div>
                                             <p className="text-xs text-muted-foreground mt-0.5">{stage.description}</p>
                                             {stage.completedAt && (
-                                                <p className="text-[10px] text-success mt-1">Completed {new Date(stage.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                                                <p className="text-[10px] text-success mt-1">Completed {formatDate(stage.completedAt, "compact")}</p>
                                             )}
                                         </div>
                                     </div>
@@ -249,12 +253,11 @@ export default function ApprovalsPage() {
                     const isOverdue = hoursRemaining < 0;
 
                     return (
+                        <StaggerItem key={approval.id} index={i} stagger="relaxed">
                         <Card
-                            key={approval.id}
-                            className={`animate-slide-up ${approval.status === "overdue" ? "border-destructive/30 bg-destructive/3" :
+                            className={`${approval.status === "overdue" ? "border-destructive/30 bg-destructive/3" :
                                     approval.status === "pending" ? "border-warning/20" : ""
                                 }`}
-                            style={{ animationDelay: `${i * 80}ms` }}
                         >
                             <CardContent>
                                 <div className="flex items-start justify-between">
@@ -300,7 +303,7 @@ export default function ApprovalsPage() {
                                         </p>
                                         <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
                                             <Calendar className="h-3 w-3" />
-                                            <span>Deadline was: {deadlineDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                                            <span>Deadline was: {formatDate(deadlineDate, "medium")}</span>
                                         </div>
                                     </div>
                                 )}
@@ -310,12 +313,7 @@ export default function ApprovalsPage() {
                                     <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                                         <Clock className="h-3.5 w-3.5" />
                                         <span>{hoursRemaining}h remaining</span>
-                                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-warning rounded-full transition-all"
-                                                style={{ width: `${Math.max(0, Math.min(100, ((72 - hoursRemaining) / 72) * 100))}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={Math.max(0, Math.min(100, ((72 - hoursRemaining) / 72) * 100))} size="xs" className="flex-1" />
                                     </div>
                                 )}
 
@@ -323,11 +321,12 @@ export default function ApprovalsPage() {
                                 {approval.status === "approved" && approval.approvedAt && (
                                     <div className="mt-3 flex items-center gap-2 text-xs text-success">
                                         <CheckCircle2 className="h-3.5 w-3.5" />
-                                        Approved on {new Date(approval.approvedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                        Approved on {formatDate(approval.approvedAt, "compact")}
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
             </div>

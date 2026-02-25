@@ -3,11 +3,12 @@
 import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     MOCK_BRAND_GUIDELINES,
     MOCK_BRAND_GUIDELINE_SECTIONS,
@@ -15,7 +16,6 @@ import {
 import type { BrandGuideline, BrandGuidelineSection, BrandLevel } from "@/types";
 import {
     Plus,
-    Search,
     Palette,
     BookOpen,
     GitBranch,
@@ -111,15 +111,7 @@ export default function BrandGuidelinesPage() {
             </div>
 
             {/* Search */}
-            <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search guidelines..."
-                    className="pl-9"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </div>
+            <SearchInput value={search} onValueChange={setSearch} placeholder="Search guidelines..." className="max-w-md" />
 
             {/* Hierarchy Tree */}
             <div className="space-y-3">
@@ -170,9 +162,9 @@ function GuidelineNode({
 
     return (
         <div className={LEVEL_INDENT[guideline.brand_level]}>
+            <StaggerItem index={index} stagger="relaxed">
             <Card
-                className="hover:border-primary/30 transition-colors animate-slide-up"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="hover:border-primary/30 transition-colors"
             >
                 <CardContent className="pt-4 pb-3">
                     <div className="flex items-start justify-between">
@@ -276,6 +268,7 @@ function GuidelineNode({
                     )}
                 </CardContent>
             </Card>
+            </StaggerItem>
 
             {/* Child Guidelines */}
             {childGuidelines.map((child, ci) => (

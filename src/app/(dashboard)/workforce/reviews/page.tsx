@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Star, Search, Plus, ClipboardCheck, ThumbsUp, Calendar,
+    Star, Plus, ClipboardCheck, ThumbsUp, Calendar,
 } from "lucide-react";
 import { MOCK_WORKER_REVIEWS } from "@/lib/mock-data-workforce";
 import type { ReviewTargetType } from "@/types/workforce";
@@ -77,10 +78,7 @@ export default function WorkforceReviewsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search reviews..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search reviews..." className="flex-1 max-w-sm" />
                 <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Types</option>
                     {Object.entries(TARGET_LABELS).map(([key, label]) => (
@@ -91,7 +89,8 @@ export default function WorkforceReviewsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filtered.map((review, i) => (
-                    <Card key={review.id} className="animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                    <StaggerItem key={review.id} index={i} stagger="normal">
+                    <Card>
                         <CardContent className="pt-4">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
@@ -153,6 +152,7 @@ export default function WorkforceReviewsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
 

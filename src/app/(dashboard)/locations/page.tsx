@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLocations, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_LOCATIONS } from "@/lib/mock-data-production";
@@ -17,7 +17,6 @@ import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
 import {
     Plus,
-    Search,
     MapPin,
     Building,
     Warehouse,
@@ -96,15 +95,7 @@ export default function LocationsPage() {
         >
             {/* Filters */}
             <div className="flex items-center gap-4 mb-6">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search locations..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search locations..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2">
                     <Button
                         variant={typeFilter === "all" ? "default" : "outline"}

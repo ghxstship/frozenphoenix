@@ -5,11 +5,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Truck, Search, Plus, MapPin, Clock, CheckCircle2,
+    Truck, Plus, MapPin, Clock, CheckCircle2,
     Users, Navigation,
 } from "lucide-react";
 import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/mock-data-vendor-lifecycle";
@@ -51,10 +52,7 @@ export default function DispatchPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search dispatches..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search dispatches..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {DISPATCH_STATUSES.map((s) => (
@@ -72,7 +70,8 @@ export default function DispatchPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {filtered.filter(d => !["completed", "no_show", "declined"].includes(d.status)).map((dispatch, i) => (
-                            <div key={dispatch.id} className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                            <StaggerItem key={dispatch.id} index={i} stagger="relaxed">
+                            <div className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
                                 <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-sm font-medium truncate">
@@ -104,6 +103,7 @@ export default function DispatchPage() {
                                     <p className="text-[10px] text-muted-foreground mt-1 italic">Note: {dispatch.dispatchNotes}</p>
                                 )}
                             </div>
+                            </StaggerItem>
                         ))}
                         {filtered.filter(d => !["completed", "no_show", "declined"].includes(d.status)).length === 0 && (
                             <div className="text-center py-8 text-sm text-muted-foreground">No active dispatches</div>
@@ -119,7 +119,8 @@ export default function DispatchPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {filtered.filter(d => ["completed", "no_show", "declined"].includes(d.status)).map((dispatch, i) => (
-                            <div key={dispatch.id} className="p-3 rounded-lg border border-border opacity-75 animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                            <StaggerItem key={dispatch.id} index={i} stagger="relaxed">
+                            <div className="p-3 rounded-lg border border-border opacity-75">
                                 <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-sm font-medium truncate">
@@ -138,6 +139,7 @@ export default function DispatchPage() {
                                     </p>
                                 )}
                             </div>
+                            </StaggerItem>
                         ))}
                         {filtered.filter(d => ["completed", "no_show", "declined"].includes(d.status)).length === 0 && (
                             <div className="text-center py-8 text-sm text-muted-foreground">No completed dispatches</div>

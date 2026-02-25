@@ -5,16 +5,17 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { MOCK_REVENUE_SCHEDULES } from "@/lib/mock-data-crm-revenue";
 // REVENUE_SCHEDULE_STATUS_MAP available for drill-down views
 import type { RevenueSchedule } from "@/types";
 import {
-    Search, DollarSign, TrendingUp, CheckCircle, Clock,
+    DollarSign, TrendingUp, CheckCircle, Clock,
     ArrowRight, Receipt,
 } from "lucide-react";
 
@@ -96,15 +97,14 @@ const tableColumns: ColumnDef<RevenueSchedule>[] = [
 
 function WaterfallBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
     const pct = total > 0 ? (value / total) * 100 : 0;
+    const variant = color.includes("success") ? "success" : color.includes("warning") ? "warning" : color.includes("destructive") ? "destructive" : color.includes("info") ? "info" : "default";
     return (
         <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{label}</span>
                 <span className="font-semibold">{formatCurrency(value)}</span>
             </div>
-            <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
-            </div>
+            <ProgressBar value={pct} size="lg" variant={variant} />
         </div>
     );
 }
@@ -188,15 +188,7 @@ export default function RevenuePage() {
             </Card>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search schedules..."
-                        className="pl-9 w-64"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search schedules..." />
                 <select
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={statusFilter}

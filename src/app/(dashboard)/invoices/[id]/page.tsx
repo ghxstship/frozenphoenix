@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { INVOICE_DELIVERY_STATUS_MAP, type InvoiceDeliveryStatusType } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     ArrowLeft, FileText, Building2, Calendar, DollarSign,
     CheckCircle2, Send, Download, Printer, Clock, CreditCard,
@@ -198,9 +199,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                                 <p className="text-xs text-muted-foreground">Balance Due</p>
                                 <p className="text-3xl font-bold mt-1">{formatCurrency(balance)}</p>
                             </div>
-                            <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-success rounded-full transition-all" style={{ width: `${(mockInvoice.paidAmount / total) * 100}%` }} />
-                            </div>
+                            <ProgressBar value={(mockInvoice.paidAmount / total) * 100} size="md" variant="success" />
                             <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>Paid: {formatCurrency(mockInvoice.paidAmount)}</span>
                                 <span>Total: {formatCurrency(total)}</span>

@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    ClipboardList, Plus, Search, Clock, CheckCircle2,
+    ClipboardList, Plus, Clock, CheckCircle2,
     Play, Users, Gavel, Calendar,
     LayoutGrid, Table2,
 } from "lucide-react";
@@ -73,10 +74,7 @@ export default function WorkOrdersPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search work orders..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search work orders..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {WORK_ORDER_STATUSES.map((s) => (
@@ -88,7 +86,8 @@ export default function WorkOrdersPage() {
             {viewMode === "cards" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filtered.map((wo, i) => (
-                        <Card key={wo.id} className="animate-slide-up hover:shadow-md transition-shadow cursor-pointer" style={{ animationDelay: `${i * 60}ms` }}>
+                        <StaggerItem key={wo.id} index={i} stagger="relaxed">
+                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
                             <CardContent className="pt-4">
                                 <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1 min-w-0">
@@ -146,6 +145,7 @@ export default function WorkOrdersPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     ))}
                 </div>
             )}

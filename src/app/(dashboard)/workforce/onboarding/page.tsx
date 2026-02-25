@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    UserPlus, Search, Plus, CheckCircle2, Clock, AlertTriangle,
+    UserPlus, Plus, CheckCircle2, Clock, AlertTriangle,
     Circle, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { MOCK_ONBOARDING_RUNS, MOCK_OFFBOARDING_RUNS } from "@/lib/mock-data-workforce";
@@ -63,10 +65,7 @@ export default function WorkforceOnboardingPage() {
                         Offboarding ({offboardingRuns.length})
                     </button>
                 </div>
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search by name..." className="flex-1 max-w-sm" />
             </div>
 
             <div className="space-y-4">
@@ -77,7 +76,8 @@ export default function WorkforceOnboardingPage() {
                     const progressPct = run.totalSteps > 0 ? Math.round((run.completedSteps / run.totalSteps) * 100) : 0;
 
                     return (
-                        <Card key={run.id} className="animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                        <StaggerItem key={run.id} index={i} stagger="normal">
+                        <Card>
                             <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedRun(isExpanded ? null : run.id)}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -99,9 +99,7 @@ export default function WorkforceOnboardingPage() {
                                     <div className="flex items-center gap-4">
                                         <div className="text-right">
                                             <p className="text-xs font-medium">{run.completedSteps}/{run.totalSteps} steps</p>
-                                            <div className="w-24 h-1.5 rounded-full bg-muted mt-1">
-                                                <div className={`h-full rounded-full ${progressPct === 100 ? "bg-success" : "bg-primary"}`} style={{ width: `${progressPct}%` }} />
-                                            </div>
+                                            <ProgressBar value={progressPct} size="xs" className="w-24 mt-1" />
                                         </div>
                                     </div>
                                 </div>
@@ -155,6 +153,7 @@ export default function WorkforceOnboardingPage() {
                                 </CardContent>
                             )}
                         </Card>
+                        </StaggerItem>
                     );
                 })}
 

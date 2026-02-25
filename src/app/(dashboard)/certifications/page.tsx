@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import {
-    BadgeCheck, Search, Plus, CheckCircle2, Clock, XCircle,
+    BadgeCheck, Plus, CheckCircle2, Clock, XCircle,
 } from "lucide-react";
 import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/mock-data-governance";
 import type { AssetCertificationStatus } from "@/types/governance";
@@ -61,10 +61,7 @@ export default function CertificationsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search certifications..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search certifications..." className="flex-1 max-w-sm" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Statuses</option>
                     {CERT_STATUSES.map(s => <option key={s} value={s}>{getStatusLabel(s)}</option>)}

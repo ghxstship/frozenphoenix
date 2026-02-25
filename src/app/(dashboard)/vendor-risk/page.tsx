@@ -5,13 +5,14 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import {
-    Search, AlertTriangle, CheckCircle2, ShieldAlert,
+    AlertTriangle, CheckCircle2, ShieldAlert,
 } from "lucide-react";
 import { MOCK_VENDOR_RISK_SCORES } from "@/lib/mock-data-governance";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import type { VendorRiskLevel } from "@/types/governance";
 
 const vendorNames: Record<string, string> = {
@@ -24,16 +25,13 @@ const RISK_VARIANTS: Record<VendorRiskLevel, "success" | "warning" | "destructiv
 };
 
 function ScoreBar({ label, score }: { label: string; score: number }) {
-    const color = score >= 80 ? "bg-success" : score >= 60 ? "bg-warning" : "bg-destructive";
     return (
         <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px]">
                 <span className="text-muted-foreground">{label}</span>
                 <span className="font-medium">{score}</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-1.5">
-                <div className={`${color} rounded-full h-1.5 transition-all`} style={{ width: `${score}%` }} />
-            </div>
+            <ProgressBar value={score} size="sm" />
         </div>
     );
 }
@@ -66,10 +64,7 @@ export default function VendorRiskPage() {
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search vendors..." className="flex-1 max-w-sm" />
                 <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
                     <option value="all">All Risk Levels</option>
                     <option value="low">Low</option>

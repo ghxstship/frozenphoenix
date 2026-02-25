@@ -10,6 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useBrandKits, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS } from "@/lib/mock-data";
 import { Loader2 } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import {
     Plus,
@@ -246,10 +247,9 @@ export default function BrandKitPage() {
                 {brandKits.map((kit, i) => {
                     const project = projects.find((p) => p.client.toLowerCase().includes(kit.clientName.toLowerCase()));
                     return (
+                        <StaggerItem key={kit.id} index={i} stagger="relaxed">
                         <Card
-                            key={kit.id}
-                            className="overflow-hidden animate-slide-up"
-                            style={{ animationDelay: `${i * 80}ms` }}
+                            className="overflow-hidden"
                         >
                             <div
                                 className="h-24 relative"
@@ -271,7 +271,7 @@ export default function BrandKitPage() {
                                             <Badge variant="info" className="text-[9px] mt-1">{project.name}</Badge>
                                         )}
                                     </div>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View asset details">
                                         <ExternalLink className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -338,6 +338,7 @@ export default function BrandKitPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </StaggerItem>
                     );
                 })}
 

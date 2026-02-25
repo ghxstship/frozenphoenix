@@ -4,13 +4,14 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    FileText, Plus, Search, DollarSign,
+    FileText, Plus, DollarSign,
     CheckCircle2, Clock,
 } from "lucide-react";
 
@@ -71,10 +72,7 @@ export default function ScopesOfWorkPage() {
             </div>
 
             <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search SOWs..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search SOWs..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "active", "draft", "pending_approval", "completed"] as const).map((f) => (
                         <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs capitalize">
@@ -112,18 +110,14 @@ export default function ScopesOfWorkPage() {
                                             <span>Invoiced</span>
                                             <span>{Math.round(invoicedPct)}%</span>
                                         </div>
-                                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                            <div className="h-full bg-info rounded-full" style={{ width: `${invoicedPct}%` }} />
-                                        </div>
+                                        <ProgressBar value={invoicedPct} size="sm" variant="info" />
                                     </div>
                                     <div>
                                         <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
                                             <span>Deliverables</span>
                                             <span>{sow.completedDeliverables}/{sow.deliverableCount}</span>
                                         </div>
-                                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                            <div className="h-full bg-success rounded-full" style={{ width: `${deliverablePct}%` }} />
-                                        </div>
+                                        <ProgressBar value={deliverablePct} size="sm" variant="success" />
                                     </div>
                                 </div>
                             </CardContent>

@@ -5,13 +5,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import { MOCK_ACCESS_REVIEWS, MOCK_TEMP_GRANTS } from "@/lib/mock-data-user-lifecycle";
 import {
-    ShieldQuestion, Search, AlertTriangle, CheckCircle2, Clock, Users, ShieldAlert, Eye,
+    ShieldQuestion, AlertTriangle, CheckCircle2, Clock, Users, ShieldAlert, Eye,
 } from "lucide-react";
 import type { PermissionLevel } from "@/types";
 
@@ -101,15 +101,7 @@ export default function AccessReviewsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search users..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
+                        <SearchInput value={search} onValueChange={setSearch} placeholder="Search users..." className="flex-1" />
                         <div className="flex gap-2">
                             {(["all", "high", "medium", "low"] as const).map((level) => (
                                 <Button

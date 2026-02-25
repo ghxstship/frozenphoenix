@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS, MOCK_STAKEHOLDERS } from "@/lib/mock-data";
 import { PROJECT_PHASE_MAP } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Edit,
     DollarSign,
@@ -177,12 +178,7 @@ export default function ProjectDetailPage() {
                                     <span className="text-xs">Progress</span>
                                 </div>
                                 <p className="text-xl font-bold">{project.progress}%</p>
-                                <div className="h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                                    <div
-                                        className="h-full bg-primary rounded-full transition-all"
-                                        style={{ width: `${project.progress}%` }}
-                                    />
-                                </div>
+                                <ProgressBar value={project.progress} size="sm" />
                             </CardContent>
                         </Card>
                     </div>

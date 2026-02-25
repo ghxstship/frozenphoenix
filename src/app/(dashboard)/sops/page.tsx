@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSOPs, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { Plus, BookOpen, CheckCircle2, Clock, User, Loader2 } from "lucide-react";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 
 const MOCK_SOPS = [
     { id: "sop1", title: "Load-In Safety Protocol", role: "Lead Fabricator", version: "2.1", lastUpdated: "2026-02-10", acknowledged: 4, total: 5 },
@@ -43,7 +45,8 @@ export default function SOPsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {sops.map((sop, i) => (
-                    <Card key={sop.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                    <StaggerItem key={sop.id} index={i} stagger="relaxed">
+                    <Card>
                         <CardContent>
                             <div className="flex items-start gap-3">
                                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -68,17 +71,12 @@ export default function SOPsPage() {
                                             {sop.acknowledged}/{sop.total} acknowledged
                                         </span>
                                     </div>
-                                    {/* Progress */}
-                                    <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-success rounded-full"
-                                            style={{ width: `${(sop.acknowledged / sop.total) * 100}%` }}
-                                        />
-                                    </div>
+                                    <ProgressBar value={(sop.acknowledged / sop.total) * 100} size="xs" className="mt-2" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
+                    </StaggerItem>
                 ))}
             </div>
         </div>

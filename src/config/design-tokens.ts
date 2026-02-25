@@ -265,3 +265,87 @@ export const TRANSITIONS = {
     opacity: "transition-opacity",
     shadow: "transition-shadow",
 } as const;
+
+// ─── Motion Scale ───
+// Named motion durations for semantic animation control
+export const MOTION_SCALE = {
+    instant: 0,
+    xs: 100,
+    sm: 150,
+    md: 250,
+    lg: 400,
+    xl: 600,
+} as const;
+
+export type MotionScaleToken = keyof typeof MOTION_SCALE;
+
+// ─── Stagger Scale ───
+// Delay increments for staggered entrance animations (in ms)
+export const STAGGER_SCALE = {
+    tight: 30,
+    normal: 50,
+    relaxed: 80,
+    loose: 120,
+} as const;
+
+export type StaggerScaleToken = keyof typeof STAGGER_SCALE;
+
+// ─── Interaction Timing ───
+// Standard debounce/throttle values for user interactions
+export const INTERACTION_TIMING = {
+    debounceSearch: 300,
+    debounceResize: 150,
+    throttleScroll: 100,
+    tooltipDelay: 400,
+    toastDuration: 5000,
+    longPress: 500,
+} as const;
+
+// ─── Grid Units ───
+// Standardized grid configuration tokens
+export const GRID = {
+    columns: {
+        1: "grid-cols-1",
+        2: "grid-cols-1 sm:grid-cols-2",
+        3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+        4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+        5: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5",
+        6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
+    },
+    gap: {
+        xs: "gap-1 sm:gap-2",
+        sm: "gap-2 sm:gap-3",
+        md: "gap-3 sm:gap-4 lg:gap-6",
+        lg: "gap-4 sm:gap-6 lg:gap-8",
+    },
+} as const;
+
+export type GridColumnsToken = keyof typeof GRID.columns;
+export type GridGapToken = keyof typeof GRID.gap;
+
+// ─── Component Size Scale ───
+// Unified sizing tokens for interactive components
+export const COMPONENT_SIZES = {
+    xs: { height: "h-7", px: "px-2", text: "text-xs", icon: "h-3 w-3" },
+    sm: { height: "h-8", px: "px-3", text: "text-xs", icon: "h-3.5 w-3.5" },
+    md: { height: "h-9", px: "px-4", text: "text-sm", icon: "h-4 w-4" },
+    lg: { height: "h-11", px: "px-6", text: "text-base", icon: "h-5 w-5" },
+    xl: { height: "h-12", px: "px-8", text: "text-base", icon: "h-5 w-5" },
+} as const;
+
+export type ComponentSizeToken = keyof typeof COMPONENT_SIZES;
+
+// ─── Contrast Variants ───
+// Accessible color contrast pairs for high-contrast mode
+export const CONTRAST_VARIANTS = {
+    default: {
+        border: "border-border",
+        ring: "ring-ring",
+        focus: "focus-visible:ring-ring",
+    },
+    high: {
+        border: "border-foreground/50",
+        ring: "ring-foreground",
+        focus: "focus-visible:ring-foreground",
+    },
+} as const;

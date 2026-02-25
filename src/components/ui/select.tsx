@@ -40,11 +40,16 @@ export function Select({ value, onValueChange, children }: { value: string; onVa
     );
 }
 
-export function SelectTrigger({ children, className }: { children: React.ReactNode; className?: string }) {
+export function SelectTrigger({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
     const { open, setOpen } = React.useContext(SelectContext);
+    const listboxId = id ? `${id}-listbox` : "select-listbox";
     return (
         <button
             type="button"
+            role="combobox"
+            aria-expanded={open}
+            aria-haspopup="listbox"
+            aria-controls={open ? listboxId : undefined}
             className={cn(
                 "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                 className
@@ -66,10 +71,14 @@ export function SelectContent({ children, className }: { children: React.ReactNo
     const { open } = React.useContext(SelectContext);
     if (!open) return null;
     return (
-        <div className={cn(
-            "absolute z-50 min-w-[8rem] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 top-full mt-1",
-            className
-        )}>
+        <div
+            role="listbox"
+            id="select-listbox"
+            className={cn(
+                "absolute z-50 min-w-[8rem] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 top-full mt-1",
+                className
+            )}
+        >
             <div className="p-1">{children}</div>
         </div>
     );
@@ -80,6 +89,8 @@ export function SelectItem({ value, children }: { value: string; children: React
     return (
         <button
             type="button"
+            role="option"
+            aria-selected={selectedValue === value}
             className={cn(
                 "relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
                 selectedValue === value && "bg-accent text-accent-foreground"

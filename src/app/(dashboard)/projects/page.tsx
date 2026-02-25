@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS } from "@/lib/mock-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Plus, Calendar, DollarSign, Users, ArrowRight, Loader2, LayoutGrid, List, Columns } from "lucide-react";
 import {
     PROJECT_PHASE_CONFIG,
@@ -256,10 +258,9 @@ export default function ProjectsPage() {
                         const isOverBudget = budgetPercent > 90;
 
                         return (
+                            <StaggerItem key={project.id} index={i} stagger="relaxed">
                             <Card
-                                key={project.id}
-                                className="group cursor-pointer hover:border-primary/30 animate-slide-up"
-                                style={{ animationDelay: `${i * 80}ms` }}
+                                className="group cursor-pointer hover:border-primary/30"
                             >
                                 <CardContent className="space-y-4">
                                     {/* Header */}
@@ -310,12 +311,7 @@ export default function ProjectsPage() {
                                                 {formatCurrency(project.budgetActual)} / {formatCurrency(project.budgetPlanned)}
                                             </span>
                                         </div>
-                                        <div className="h-1 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-700 ${isOverBudget ? "bg-destructive" : "bg-primary"}`}
-                                                style={{ width: `${Math.min(budgetPercent, 100)}%` }}
-                                            />
-                                        </div>
+                                        <ProgressBar value={Math.min(budgetPercent, 100)} size="xs" />
                                     </div>
 
                                     {/* Footer */}
@@ -331,6 +327,7 @@ export default function ProjectsPage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         );
                     })}
                 </div>

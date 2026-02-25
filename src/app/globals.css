@@ -275,6 +275,25 @@ body {
 }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
+/* Accordion collapse/expand */
+@keyframes accordionDown {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes accordionUp {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+.animate-accordion-down { animation: accordionDown var(--duration-normal) var(--ease-out-expo); }
+.animate-accordion-up { animation: accordionUp var(--duration-normal) var(--ease-out-expo); }
+
+/* Stagger animation fill mode — keeps elements visible after animation completes */
+.animate-slide-up,
+.animate-fade-in,
+.animate-scale-in {
+  animation-fill-mode: both;
+}
+
 /* ═══════ Scrollbar ═══════ */
 ::-webkit-scrollbar {
   width: 6px;

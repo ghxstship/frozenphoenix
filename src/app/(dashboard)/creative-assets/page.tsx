@@ -1,13 +1,17 @@
 "use client";
 
+import { formatDate } from "@/lib/locale";
+
 import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     MOCK_CAMPAIGN_ASSETS,
     MOCK_CREATIVE_REVIEWS,
@@ -16,7 +20,6 @@ import {
 import type { CampaignAsset, CreativeReview, CampaignAssetProductionStatus } from "@/types";
 import {
     Plus,
-    Search,
     CheckCircle2,
     Clock,
     Filter,
@@ -113,15 +116,7 @@ export default function CreativeAssetsPage() {
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search assets..."
-                        className="pl-9"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchInput value={search} onValueChange={setSearch} placeholder="Search assets..." className="flex-1" />
                 <select
                     className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                     value={statusFilter}
@@ -229,12 +224,7 @@ function AssetCard({
                                 {asset.brand_compliance_score}%
                             </span>
                         </div>
-                        <div className="h-1 rounded-full bg-muted overflow-hidden">
-                            <div
-                                className={`h-full rounded-full ${asset.brand_compliance_score >= 90 ? "bg-success" : asset.brand_compliance_score >= 70 ? "bg-warning" : "bg-destructive"}`}
-                                style={{ width: `${asset.brand_compliance_score}%` }}
-                            />
-                        </div>
+                        <ProgressBar value={asset.brand_compliance_score} size="xs" />
                     </div>
                 )}
 
@@ -282,7 +272,7 @@ function AssetCard({
                 {/* Due Date */}
                 {asset.due_date && (
                     <p className="text-[9px] text-muted-foreground mt-1.5">
-                        Due: {new Date(asset.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        Due: {formatDate(asset.due_date, "compact")}
                     </p>
                 )}
             </CardContent>
@@ -305,9 +295,9 @@ function AssetListRow({
     const totalGates = reviews.length;
 
     return (
+        <StaggerItem index={index} stagger="tight">
         <Card
-            className="hover:border-primary/30 transition-colors animate-slide-up"
-            style={{ animationDelay: `${index * 30}ms` }}
+            className="hover:border-primary/30 transition-colors"
         >
             <CardContent className="py-3 flex items-center gap-4">
                 {/* Status */}
@@ -364,10 +354,11 @@ function AssetListRow({
                 {/* Due Date */}
                 <div className="flex-shrink-0 w-20 text-right text-[10px] text-muted-foreground">
                     {asset.due_date
-                        ? new Date(asset.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                        ? formatDate(asset.due_date, "compact")
                         : "—"}
                 </div>
             </CardContent>
         </Card>
+        </StaggerItem>
     );
 }

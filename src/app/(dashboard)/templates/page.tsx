@@ -5,12 +5,14 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { SearchInput } from "@/components/ui/search-input";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Chip } from "@/components/ui/chip";
 import { formatDate } from "@/lib/utils";
 import {
-    LayoutTemplate, Plus, Search, FileText, Copy,
+    LayoutTemplate, Plus, FileText, Copy,
     Star, Clock, Tag,
 } from "lucide-react";
 
@@ -77,10 +79,7 @@ export default function TemplatesPage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
-                </div>
+                <SearchInput value={searchQuery} onValueChange={setSearchQuery} placeholder="Search templates..." className="flex-1 max-w-sm" />
                 <div className="flex gap-2 flex-wrap">
                     <Button variant={categoryFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setCategoryFilter("all")}>All</Button>
                     {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
@@ -96,7 +95,8 @@ export default function TemplatesPage() {
                     const catCfg = CATEGORY_CONFIG[template.category];
                     return (
                         <Link key={template.id} href={`/templates/${template.id}/edit`}>
-                            <Card className="cursor-pointer hover:shadow-md transition-all animate-slide-up h-full" style={{ animationDelay: `${i * 60}ms` }}>
+                            <StaggerItem index={i} stagger="relaxed">
+                            <Card className="cursor-pointer hover:shadow-md transition-all h-full">
                                 <CardContent className="py-4">
                                     <div className="flex items-start gap-3">
                                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -116,9 +116,7 @@ export default function TemplatesPage() {
                                             {template.tags.length > 0 && (
                                                 <div className="flex gap-1 mt-2 flex-wrap">
                                                     {template.tags.map((tag) => (
-                                                        <span key={tag} className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                                            {tag}
-                                                        </span>
+                                                        <Chip key={tag} size="sm">{tag}</Chip>
                                                     ))}
                                                 </div>
                                             )}
@@ -126,6 +124,7 @@ export default function TemplatesPage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            </StaggerItem>
                         </Link>
                     );
                 })}

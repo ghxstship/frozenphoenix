@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { Chip } from "@/components/ui/chip";
 import {
-    UserPlus, Search, CheckCircle2, Clock,
+    UserPlus, CheckCircle2, Clock,
     FileText, Users,
 } from "lucide-react";
 import type { OnboardingStatus } from "@/types/vendor-lifecycle";
@@ -96,10 +98,12 @@ export default function VendorOnboardingPage() {
                 <StatCard title="Avg. Onboarding Time" value="8 days" icon={Clock} />
             </div>
 
-            <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
+            <SearchInput
+                value={search}
+                onValueChange={setSearch}
+                placeholder="Search vendors..."
+                className="max-w-sm"
+            />
 
             {viewMode === "pipeline" && (
                 <div className="flex gap-4 overflow-x-auto pb-4">
@@ -121,14 +125,12 @@ export default function VendorOnboardingPage() {
                                             </div>
                                             <p className="text-[10px] text-muted-foreground mb-2">{vendor.contactName} · {vendor.email}</p>
                                             <div className="flex items-center gap-2 mb-2">
-                                                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                                                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${vendor.docsRequired > 0 ? (vendor.docsApproved / vendor.docsRequired) * 100 : 0}%` }} />
-                                                </div>
+                                                <ProgressBar value={vendor.docsRequired > 0 ? (vendor.docsApproved / vendor.docsRequired) * 100 : 0} size="xs" className="flex-1" />
                                                 <span className="text-[10px] text-muted-foreground">{vendor.docsApproved}/{vendor.docsRequired}</span>
                                             </div>
                                             <div className="flex flex-wrap gap-1">
                                                 {vendor.categories.map(cat => (
-                                                    <span key={cat} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{cat}</span>
+                                                    <Chip key={cat} size="sm">{cat}</Chip>
                                                 ))}
                                             </div>
                                         </CardContent>
@@ -167,9 +169,7 @@ export default function VendorOnboardingPage() {
                                             <td className="p-3"><Badge variant={STATUS_BADGE[v.status]?.variant || "default"} className="text-[10px]">{STATUS_BADGE[v.status]?.label || v.status}</Badge></td>
                                             <td className="p-3">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                                                        <div className="h-full rounded-full bg-primary" style={{ width: `${v.docsRequired > 0 ? (v.docsApproved / v.docsRequired) * 100 : 0}%` }} />
-                                                    </div>
+                                                    <ProgressBar value={v.docsRequired > 0 ? (v.docsApproved / v.docsRequired) * 100 : 0} size="xs" className="w-16" />
                                                     <span className="text-xs text-muted-foreground">{v.docsApproved}/{v.docsRequired}</span>
                                                 </div>
                                             </td>

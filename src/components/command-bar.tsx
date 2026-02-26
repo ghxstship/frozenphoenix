@@ -49,7 +49,7 @@ export function CommandBar({ className }: CommandBarProps) {
         } catch { /* ignore */ }
     }, []);
 
-    // Build flat command list from navigation config
+    // Build flat command list from navigation config (including nested children)
     const allCommands = React.useMemo<CommandItem[]>(() => {
         const items: CommandItem[] = [];
         navigationConfig.forEach((section) => {
@@ -61,6 +61,17 @@ export function CommandBar({ className }: CommandBarProps) {
                     section: section.title,
                     icon: item.icon,
                 });
+                if (item.children) {
+                    item.children.forEach((child) => {
+                        items.push({
+                            id: child.path,
+                            title: child.title,
+                            path: child.path,
+                            section: section.title,
+                            icon: child.icon,
+                        });
+                    });
+                }
             });
         });
         return items;

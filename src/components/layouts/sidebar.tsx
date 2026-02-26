@@ -4,14 +4,17 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
-import { navigationConfig, type NavItem } from "@/config/navigation";
+import { navigationConfig, flattenNavItems, type NavItem, type NavSection } from "@/config/navigation";
+import { hasPermission } from "@/config/rbac";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { brandConfig } from "@/config/brand";
 import { LAYOUT, BREAKPOINTS } from "@/config/design-tokens";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { Tooltip } from "@/components/ui/tooltip";
+import type { PermissionLevel } from "@/types";
 import {
     ChevronDown,
+    ChevronRight,
     PanelLeftClose,
     PanelLeft,
     Flame,
@@ -26,6 +29,35 @@ import {
 
 const SIDEBAR_WIDTH = LAYOUT.sidebar;
 
+// ─── RBAC helpers ───────────────────────────────────────────────────
+function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): boolean {
+    if (!role) return false;
+    if (role === "exec") return true;
+    if (!item.permission) return true;
+    const [resource, action] = item.permission.split(".");
+    return hasPermission(role, resource, action as "read" | "write" | "delete" | "manage");
+}
+
+function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undefined): NavItem[] {
+    return items
+        .filter((item) => isItemPermitted(item, role))
+        .map((item) =>
+            item.children
+                ? { ...item, children: item.children.filter((c) => isItemPermitted(c, role)) }
+                : item
+        );
+}
+
+function filterSectionsByPermission(sections: NavSection[], role: PermissionLevel | undefined): NavSection[] {
+    return sections
+        .map((section) => ({
+            ...section,
+            items: filterItemsByPermission(section.items, role),
+        }))
+        .filter((section) => section.items.length > 0);
+}
+
+// ─── Nested NavItem with children support ───────────────────────────
 function SidebarNavItem({
     item,
     isActive,
@@ -33,6 +65,9 @@ function SidebarNavItem({
     isMobile,
     isPinned,
     onTogglePin,
+    pathname,
+    pinnedPaths,
+    depth = 0,
 }: {
     item: NavItem;
     isActive: boolean;
@@ -40,63 +75,127 @@ function SidebarNavItem({
     isMobile: boolean;
     isPinned: boolean;
     onTogglePin: (path: string) => void;
+    pathname: string;
+    pinnedPaths: string[];
+    depth?: number;
 }) {
     const Icon = item.icon;
+    const hasChildren = item.children && item.children.length > 0;
+    const isChildActive = hasChildren && item.children!.some(
+        (c) => pathname === c.path || pathname.startsWith(c.path + "/")
+    );
+    // User can manually collapse, but active children always force open.
+    // `userClosed` tracks explicit collapse; isChildActive overrides it.
+    const [userClosed, setUserClosed] = useState(false);
+    const childrenOpen = isChildActive || (isActive && !userClosed) || (!userClosed && (isActive || isChildActive));
     const [showPinAction, setShowPinAction] = useState(false);
 
     const content = (
-        <Link
-            href={item.path}
+        <div
             onMouseEnter={() => setShowPinAction(true)}
             onMouseLeave={() => setShowPinAction(false)}
-            className={cn(
-                "group relative flex items-center gap-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                collapsed && !isMobile ? "justify-center px-2 py-2.5" : "px-2.5 py-2",
-                isActive
-                    ? "bg-sidebar-primary/12 text-sidebar-primary"
-                    : "text-sidebar-foreground/65 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
-            )}
-            aria-current={isActive ? "page" : undefined}
         >
-            {isActive && (
-                <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary transition-all duration-300"
-                    aria-hidden="true"
-                />
-            )}
-            <Icon className={cn(
-                "h-[18px] w-[18px] shrink-0 transition-colors",
-                isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"
-            )} />
-            {(!collapsed || isMobile) && (
-                <>
-                    <span className="truncate flex-1">{item.title}</span>
-                    {item.badge && (
-                        <span className="text-[10px] font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full">
-                            {item.badge}
-                        </span>
+            <div className="flex items-center">
+                <Link
+                    href={item.path}
+                    className={cn(
+                        "group relative flex flex-1 items-center gap-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        collapsed && !isMobile ? "justify-center px-2 py-2.5" : "py-2",
+                        depth === 0 && (!collapsed || isMobile) && "px-2.5",
+                        depth === 1 && (!collapsed || isMobile) && "pl-8 pr-2.5",
+                        isActive
+                            ? "bg-sidebar-primary/12 text-sidebar-primary"
+                            : isChildActive
+                                ? "text-sidebar-primary/80"
+                                : "text-sidebar-foreground/65 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
                     )}
-                    {showPinAction && (
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onTogglePin(item.path);
-                            }}
-                            className={cn(
-                                "h-5 w-5 rounded flex items-center justify-center transition-all opacity-0 group-hover:opacity-100",
-                                isPinned
-                                    ? "text-sidebar-primary hover:text-sidebar-primary/70"
-                                    : "text-sidebar-foreground/30 hover:text-sidebar-foreground/60"
+                    aria-current={isActive ? "page" : undefined}
+                >
+                    {isActive && (
+                        <span
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary transition-all duration-300"
+                            aria-hidden="true"
+                        />
+                    )}
+                    <Icon className={cn(
+                        "h-[18px] w-[18px] shrink-0 transition-colors",
+                        isActive || isChildActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"
+                    )} />
+                    {(!collapsed || isMobile) && (
+                        <>
+                            <span className="truncate flex-1">{item.title}</span>
+                            {item.badge && (
+                                <span className="text-[10px] font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full">
+                                    {item.badge}
+                                </span>
                             )}
-                            aria-label={isPinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
-                        >
-                            {isPinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-                        </button>
+                            {showPinAction && depth === 0 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onTogglePin(item.path);
+                                    }}
+                                    className={cn(
+                                        "h-5 w-5 rounded flex items-center justify-center transition-all opacity-0 group-hover:opacity-100",
+                                        isPinned
+                                            ? "text-sidebar-primary hover:text-sidebar-primary/70"
+                                            : "text-sidebar-foreground/30 hover:text-sidebar-foreground/60"
+                                    )}
+                                    aria-label={isPinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
+                                >
+                                    {isPinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                                </button>
+                            )}
+                        </>
                     )}
-                </>
+                </Link>
+                {/* Expand/collapse toggle for items with children */}
+                {hasChildren && (!collapsed || isMobile) && (
+                    <button
+                        onClick={() => setUserClosed((v) => !v)}
+                        className="h-6 w-6 shrink-0 rounded flex items-center justify-center text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
+                        aria-label={childrenOpen ? `Collapse ${item.title}` : `Expand ${item.title}`}
+                        aria-expanded={childrenOpen}
+                    >
+                        {childrenOpen
+                            ? <ChevronDown className="h-3 w-3" />
+                            : <ChevronRight className="h-3 w-3" />
+                        }
+                    </button>
+                )}
+            </div>
+
+            {/* Children — two-level nesting */}
+            {hasChildren && (!collapsed || isMobile) && (
+                <div
+                    className={cn(
+                        "overflow-hidden transition-all duration-200",
+                        childrenOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                    )}
+                >
+                    <div className="space-y-0.5 mt-0.5">
+                        {item.children!.map((child) => {
+                            const childActive = pathname === child.path || pathname.startsWith(child.path + "/");
+                            return (
+                                <SidebarNavItem
+                                    key={child.path}
+                                    item={child}
+                                    isActive={childActive}
+                                    collapsed={collapsed}
+                                    isMobile={isMobile}
+                                    isPinned={pinnedPaths.includes(child.path)}
+                                    onTogglePin={onTogglePin}
+                                    pathname={pathname}
+                                    pinnedPaths={pinnedPaths}
+                                    depth={1}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
             )}
-        </Link>
+        </div>
     );
 
     if (collapsed && !isMobile) {
@@ -127,6 +226,8 @@ export function Sidebar() {
 
     const collapsed = isMobile ? false : isCollapsed;
     const sidebarWidth = collapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded;
+
+    const userRole = profile?.role as PermissionLevel | undefined;
 
     const handleSignOut = async () => {
         setSigningOut(true);
@@ -178,31 +279,42 @@ export function Sidebar() {
         setExpandedSections((prev) => ({ ...prev, [title]: !prev[title] }));
     }, []);
 
-    // Build pinned items from all navigation sections
+    // ── RBAC-filtered navigation ──
+    // Remove items/sections the current role cannot access.
+    // Contextual sections (e.g. Live Ops) are hidden unless explicitly shown.
+    // TODO: Wire `contextual: "live-ops"` to a real "hasActiveEvent" signal.
+    const rbacFilteredSections = useMemo(() => {
+        const nonContextual = navigationConfig.filter((s) => !s.contextual);
+        return filterSectionsByPermission(nonContextual, userRole);
+    }, [userRole]);
+
+    // Build pinned items from all navigation sections (including children)
     const pinnedItems = useMemo(() => {
         if (pinnedPaths.length === 0) return [];
-        const allItems: NavItem[] = [];
-        navigationConfig.forEach((s) => s.items.forEach((i) => allItems.push(i)));
+        const allItems = flattenNavItems(rbacFilteredSections);
         return pinnedPaths
             .map((path) => allItems.find((i) => i.path === path))
             .filter(Boolean) as NavItem[];
-    }, [pinnedPaths]);
+    }, [pinnedPaths, rbacFilteredSections]);
 
-    // Filter sections based on search query
+    // Filter sections based on search query (matches parent or child titles)
     const filteredSections = useMemo(() => {
-        if (!filterQuery.trim()) return navigationConfig;
+        if (!filterQuery.trim()) return rbacFilteredSections;
         const q = filterQuery.toLowerCase();
-        return navigationConfig
+        return rbacFilteredSections
             .map((section) => ({
                 ...section,
                 items: section.items.filter(
                     (item) =>
                         item.title.toLowerCase().includes(q) ||
-                        item.path.toLowerCase().includes(q)
+                        item.path.toLowerCase().includes(q) ||
+                        (item.children && item.children.some(
+                            (c) => c.title.toLowerCase().includes(q) || c.path.toLowerCase().includes(q)
+                        ))
                 ),
             }))
             .filter((section) => section.items.length > 0);
-    }, [filterQuery]);
+    }, [filterQuery, rbacFilteredSections]);
 
     // When filtering, treat all sections as expanded (derived, no setState needed)
     const isFiltering = filterQuery.trim().length > 0;
@@ -324,6 +436,8 @@ export function Sidebar() {
                                             isMobile={isMobile}
                                             isPinned={true}
                                             onTogglePin={togglePin}
+                                            pathname={pathname}
+                                            pinnedPaths={pinnedPaths}
                                         />
                                     );
                                 })}
@@ -373,6 +487,8 @@ export function Sidebar() {
                                                 isMobile={isMobile}
                                                 isPinned={pinnedPaths.includes(item.path)}
                                                 onTogglePin={togglePin}
+                                                pathname={pathname}
+                                                pinnedPaths={pinnedPaths}
                                             />
                                         );
                                     })}

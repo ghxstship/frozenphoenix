@@ -65,6 +65,7 @@ export async function updateSession(request: NextRequest) {
     const publicPaths = ["/", "/login", "/signup"];
     const isPublicPath =
         publicPaths.includes(request.nextUrl.pathname) ||
+        request.nextUrl.pathname.startsWith("/auth/") ||
         request.nextUrl.pathname.startsWith("/api/") ||
         request.nextUrl.pathname.startsWith("/_next/");
     const isProtectedPath = !isPublicPath;

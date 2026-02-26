@@ -115,37 +115,67 @@ function ToastItem({
     onDismiss: (id: string) => void;
 }) {
     const Icon = variantIcons[toast.variant ?? "default"];
+    const duration = toast.duration ?? INTERACTION_TIMING.toastDuration;
+    const [paused, setPaused] = React.useState(false);
+
+    // Timer bar color based on variant
+    const timerBarColor: Record<string, string> = {
+        default: "bg-foreground/20",
+        success: "bg-success/40",
+        warning: "bg-warning/40",
+        destructive: "bg-destructive/40",
+        info: "bg-info/40",
+    };
 
     return (
         <div
-            className={cn(toastVariants({ variant: toast.variant }), "animate-slide-up")}
+            className={cn(toastVariants({ variant: toast.variant }), "animate-slide-up flex-col")}
             role="alert"
             aria-live="assertive"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
         >
-            {Icon && <Icon className="h-5 w-5 shrink-0 mt-0.5" />}
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">{toast.title}</p>
-                {toast.description && (
-                    <p className="text-sm opacity-80 mt-0.5">{toast.description}</p>
-                )}
-                {toast.action && (
-                    <button
-                        type="button"
-                        onClick={toast.action.onClick}
-                        className="text-sm font-medium underline underline-offset-2 mt-1 hover:opacity-80 transition-opacity"
-                    >
-                        {toast.action.label}
-                    </button>
-                )}
+            <div className="flex items-start gap-3 w-full">
+                {Icon && <Icon className="h-5 w-5 shrink-0 mt-0.5" />}
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{toast.title}</p>
+                    {toast.description && (
+                        <p className="text-sm opacity-80 mt-0.5">{toast.description}</p>
+                    )}
+                    {toast.action && (
+                        <button
+                            type="button"
+                            onClick={toast.action.onClick}
+                            className="text-sm font-medium underline underline-offset-2 mt-1 hover:opacity-80 transition-opacity"
+                        >
+                            {toast.action.label}
+                        </button>
+                    )}
+                </div>
+                <button
+                    type="button"
+                    onClick={() => onDismiss(toast.id)}
+                    className="shrink-0 rounded-sm opacity-70 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    aria-label="Dismiss notification"
+                >
+                    <X className="h-4 w-4" />
+                </button>
             </div>
-            <button
-                type="button"
-                onClick={() => onDismiss(toast.id)}
-                className="shrink-0 rounded-sm opacity-70 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                aria-label="Dismiss notification"
-            >
-                <X className="h-4 w-4" />
-            </button>
+            {/* Auto-dismiss timer bar */}
+            {duration > 0 && (
+                <div className="w-full h-0.5 rounded-full overflow-hidden mt-2 bg-black/5" aria-hidden="true">
+                    <div
+                        className={cn(
+                            "h-full rounded-full origin-left",
+                            timerBarColor[toast.variant ?? "default"]
+                        )}
+                        style={{
+                            animation: `toast-timer ${duration}ms linear forwards`,
+                            animationPlayState: paused ? "paused" : "running",
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 }

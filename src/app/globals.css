@@ -275,6 +275,12 @@ body {
 }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
+/* Toast auto-dismiss timer bar */
+@keyframes toast-timer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 /* Accordion collapse/expand */
 @keyframes accordionDown {
   from { height: 0; opacity: 0; }

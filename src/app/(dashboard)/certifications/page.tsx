@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
     BadgeCheck, Plus, CheckCircle2, Clock, XCircle,
 } from "lucide-react";
-import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/mock-data-governance";
+import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
 import type { AssetCertificationStatus } from "@/types/governance";
 
 const CERT_STATUSES: AssetCertificationStatus[] = [

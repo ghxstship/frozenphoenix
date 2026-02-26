@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_ACCESS_REVIEWS, MOCK_TEMP_GRANTS } from "@/lib/mock-data-user-lifecycle";
+import { MOCK_ACCESS_REVIEWS, MOCK_TEMP_GRANTS } from "@/lib/demo-data-user-lifecycle";
 import {
     ShieldQuestion, AlertTriangle, CheckCircle2, Clock, Users, ShieldAlert, Eye,
 } from "lucide-react";

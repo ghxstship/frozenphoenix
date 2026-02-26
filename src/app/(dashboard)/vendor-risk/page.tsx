@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     AlertTriangle, CheckCircle2, ShieldAlert,
 } from "lucide-react";
-import { MOCK_VENDOR_RISK_SCORES } from "@/lib/mock-data-governance";
+import { MOCK_VENDOR_RISK_SCORES } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { VendorRiskLevel } from "@/types/governance";

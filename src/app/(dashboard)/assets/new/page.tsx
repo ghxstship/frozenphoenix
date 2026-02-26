@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, CurrencyInput, Textarea } from "@/components/ui/form";
+import { useCreateAsset, isSupabaseConfigured } from "@/lib/supabase/hooks";
 
 const CATEGORY_OPTIONS = [
     { value: "Tools", label: "Tools" },
@@ -33,6 +34,7 @@ const OWNERSHIP_OPTIONS = [
 
 export default function NewAssetPage() {
     const router = useRouter();
+    const createAsset = useCreateAsset();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -44,17 +46,29 @@ export default function NewAssetPage() {
         purchasePrice: 0,
         notes: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Creating asset:", formData);
-
-        setIsSubmitting(false);
-        router.push("/assets");
+        try {
+            if (isSupabaseConfigured) {
+                const assetData = {
+                    name: formData.name,
+                    category: formData.category,
+                    barcode: formData.barcode || null,
+                    location: formData.location || null,
+                    condition: formData.condition,
+                    owned_or_rental: formData.ownedOrRental,
+                    purchase_price: formData.purchasePrice || null,
+                    notes: formData.notes || null,
+                    status: "available",
+                };
+                await createAsset.mutateAsync(assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]);
+            }
+            router.push("/assets");
+        } catch (error) {
+            console.error("Failed to create asset:", error);
+        }
     };
 
     const isValid = formData.name.trim() !== "" && formData.category !== "";
@@ -66,7 +80,7 @@ export default function NewAssetPage() {
             title="Add Asset"
             description="Add a new asset to your inventory"
             onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={createAsset.isPending}
             isValid={isValid}
             submitLabel="Add Asset"
         >

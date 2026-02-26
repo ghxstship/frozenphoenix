@@ -233,6 +233,7 @@ export function DataTable<T extends object>({
                 )}
                 style={{ width: column.width, minWidth: column.minWidth }}
                 onClick={canSort ? () => handleSort(column.id) : undefined}
+                aria-sort={isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
             >
                 <div className="flex items-center gap-1.5">
                     <span>{column.header}</span>
@@ -316,7 +317,7 @@ export function DataTable<T extends object>({
                             </Badge>
                         )}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground tabular-nums">
                         {sortedData.length} {sortedData.length === 1 ? "item" : "items"}
                     </div>
                 </div>
@@ -326,7 +327,7 @@ export function DataTable<T extends object>({
             <div className="rounded-lg border border-border overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full" role="table" aria-label="Data table">
-                        <thead className={cn("bg-muted/50", stickyHeader && "sticky top-0 z-10")}>
+                        <thead className={cn("bg-muted/50 border-b border-border", stickyHeader && "sticky top-0 z-10 backdrop-blur-sm bg-muted/80")}>
                             <tr>
                                 {selectable && (
                                     <th className="w-12 px-4 py-3">
@@ -452,7 +453,7 @@ export function DataTable<T extends object>({
                         </select>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-muted-foreground tabular-nums">
                             Page {page + 1} of {totalPages}
                         </span>
                         <div className="flex items-center gap-1">

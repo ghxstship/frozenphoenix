@@ -5,14 +5,14 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTasks, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_TASKS, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_TASKS, MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, List, LayoutGrid, Loader2, Table2 } from "lucide-react";
 import {
-    TASK_STATUS_CONFIG,
-    TASK_PRIORITY_CONFIG,
-    FABRICATION_STATUS_CONFIG,
-} from "@/config/constants";
+    TASK_STATUS_MAP as TASK_STATUS_CONFIG,
+    TASK_PRIORITY_MAP as TASK_PRIORITY_CONFIG,
+    FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
+} from "@/config/domain-config";
 import type { Task, TaskStatus, TaskPriority, ProjectPhase, FabricationStatus, Project, ProjectStatus } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DataBoard, type BoardColumn, type CardField } from "@/components/data-view/data-board";

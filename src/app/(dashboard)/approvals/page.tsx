@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { useApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_APPROVALS } from "@/lib/mock-data";
+import { useApprovals, useUpdateApproval, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { MOCK_APPROVALS } from "@/lib/demo-data";
 import { LIFECYCLE_STAGES, type LifecycleStage } from "@/config/domain-config";
 import { Clock, CheckCircle2, AlertTriangle, XCircle, Calendar, Loader2, Shield, GitBranch, Table2, List } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -95,6 +95,32 @@ export default function ApprovalsPage() {
     const [activeTab, setActiveTab] = useState<"approvals" | "lifecycle">("approvals");
     const [approvalView, setApprovalView] = useState<"list" | "table">("list");
     const { data: sbApprovals, isLoading } = useApprovals();
+    const updateApproval = useUpdateApproval();
+
+    const handleApprove = async (approvalId: string) => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateApproval.mutateAsync({
+                id: approvalId,
+                status: "approved",
+                approved_at: new Date().toISOString(),
+            } as unknown as Parameters<typeof updateApproval.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to approve:", error);
+        }
+    };
+
+    const handleReject = async (approvalId: string) => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateApproval.mutateAsync({
+                id: approvalId,
+                status: "rejected",
+            } as unknown as Parameters<typeof updateApproval.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to reject:", error);
+        }
+    };
 
     const approvals: Approval[] = isSupabaseConfigured && sbApprovals ? sbApprovals.map(a => ({
         id: a.id,
@@ -314,6 +340,29 @@ export default function ApprovalsPage() {
                                         <Clock className="h-3.5 w-3.5" />
                                         <span>{hoursRemaining}h remaining</span>
                                         <ProgressBar value={Math.max(0, Math.min(100, ((72 - hoursRemaining) / 72) * 100))} size="xs" className="flex-1" />
+                                    </div>
+                                )}
+
+                                {/* Approve / Reject Actions */}
+                                {(approval.status === "pending" || approval.status === "overdue") && (
+                                    <div className="mt-4 flex items-center gap-2 justify-end">
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => handleReject(approval.id)}
+                                            disabled={updateApproval.isPending}
+                                        >
+                                            <XCircle className="h-3.5 w-3.5" />
+                                            Reject
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleApprove(approval.id)}
+                                            disabled={updateApproval.isPending}
+                                        >
+                                            {updateApproval.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                            Approve
+                                        </Button>
                                     </div>
                                 )}
 

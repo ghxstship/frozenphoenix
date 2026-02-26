@@ -11,7 +11,7 @@ import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/mock-data-crm-revenue";
+import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/demo-data-crm-revenue";
 import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
 import type { Opportunity, OpportunityStage } from "@/types";
 import {

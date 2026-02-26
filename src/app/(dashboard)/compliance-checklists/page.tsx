@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     Plus, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
-import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/mock-data-governance";
+import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/demo-data-governance";
 import type { ComplianceChecklistStatus } from "@/types/governance";
 
 const CHECKLIST_STATUSES: ComplianceChecklistStatus[] = [

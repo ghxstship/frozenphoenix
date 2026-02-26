@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCaseStudies, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_CASE_STUDIES } from "@/lib/mock-data";
+import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
 import { Award, Globe, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";

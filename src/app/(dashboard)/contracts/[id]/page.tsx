@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toast";
 import { CONTRACT_STATUS_MAP, CONTRACT_TYPE_MAP, SIGNATURE_STATUSES, type ContractStatusType, type ContractType, type SignatureStatusType } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -74,6 +75,25 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const contract = mockContract;
     const statusCfg = CONTRACT_STATUS_MAP[contract.status];
     const typeCfg = CONTRACT_TYPE_MAP[contract.type];
+    const { addToast } = useToast();
+
+    const handleExportPDF = () => {
+        addToast({
+            title: "Export Started",
+            description: `Generating PDF for ${contract.contractNumber}. This may take a moment.`,
+            variant: "info",
+        });
+        // TODO: wire to actual PDF generation endpoint
+    };
+
+    const handleSendForSignature = () => {
+        addToast({
+            title: "Signature Request Sent",
+            description: `Signature request has been sent for ${contract.contractNumber}.`,
+            variant: "success",
+        });
+        // TODO: wire to actual e-signature service
+    };
 
     const daysUntilExpiry = useMemo(() => {
         const now = new Date();
@@ -86,8 +106,8 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                 <Link href="/contracts">
                     <Button variant="outline" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>
                 </Link>
-                <Button variant="outline" size="sm"><Download className="mr-2 h-4 w-4" />Export PDF</Button>
-                <Button size="sm"><Send className="mr-2 h-4 w-4" />Send for Signature</Button>
+                <Button variant="outline" size="sm" onClick={handleExportPDF}><Download className="mr-2 h-4 w-4" />Export PDF</Button>
+                <Button size="sm" onClick={handleSendForSignature}><Send className="mr-2 h-4 w-4" />Send for Signature</Button>
             </PageHeader>
 
             <div className="flex items-center gap-3 flex-wrap">

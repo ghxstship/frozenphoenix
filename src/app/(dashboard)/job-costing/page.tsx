@@ -13,7 +13,7 @@ import {
     Calculator, DollarSign, TrendingUp, TrendingDown,
     BarChart3,
 } from "lucide-react";
-import { MOCK_JOB_COST_ENTRIES } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_JOB_COST_ENTRIES } from "@/lib/demo-data-vendor-lifecycle";
 import type { JobCostType } from "@/types/vendor-lifecycle";
 
 const COST_TYPE_CONFIG: Record<JobCostType, { label: string; color: string }> = {

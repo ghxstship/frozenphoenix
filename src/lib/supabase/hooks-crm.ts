@@ -62,8 +62,8 @@ export function useCreateLead() {
     return useMutation({
         mutationFn: async (lead: LeadInsert) => {
             if (!isSupabaseConfigured) {
-                console.log("Lead submission (mock):", lead);
-                return { id: "mock-lead-id", ...lead };
+                console.log("Lead submission (demo mode):", lead);
+                return { id: `demo-lead-${Date.now()}`, ...lead, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as unknown as Lead;
             }
             const { data, error } = await getSupabase()
                 .from("leads")
@@ -259,12 +259,7 @@ export function useLeadPipelineStats() {
         queryKey: ["lead_pipeline_stats"],
         queryFn: async () => {
             if (!isSupabaseConfigured) {
-                return [
-                    { status: "new", count: 12, new_this_week: 5, new_this_month: 12 },
-                    { status: "contacted", count: 8, new_this_week: 2, new_this_month: 6 },
-                    { status: "qualified", count: 5, new_this_week: 1, new_this_month: 4 },
-                    { status: "proposal_sent", count: 3, new_this_week: 1, new_this_month: 2 },
-                ];
+                return DEMO_PIPELINE_STATS;
             }
             const { data, error } = await getSupabase()
                 .from("lead_pipeline_stats")
@@ -274,6 +269,15 @@ export function useLeadPipelineStats() {
         },
     });
 }
+
+// ─── Demo Data ───
+
+const DEMO_PIPELINE_STATS = [
+    { status: "new", count: 12, new_this_week: 5, new_this_month: 12 },
+    { status: "contacted", count: 8, new_this_week: 2, new_this_month: 6 },
+    { status: "qualified", count: 5, new_this_week: 1, new_this_month: 4 },
+    { status: "proposal_sent", count: 3, new_this_week: 1, new_this_month: 2 },
+];
 
 // ─── Mock Data ───
 

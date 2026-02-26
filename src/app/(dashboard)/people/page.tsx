@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MOCK_STAKEHOLDERS } from "@/lib/mock-data";
+import { MOCK_STAKEHOLDERS } from "@/lib/demo-data";
 import { Plus, Users, Building2, Wrench, UserCircle, Mail, Phone } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { StakeholderType } from "@/types";

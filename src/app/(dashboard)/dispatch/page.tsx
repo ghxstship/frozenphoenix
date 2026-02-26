@@ -13,7 +13,7 @@ import {
     Truck, Plus, MapPin, Clock, CheckCircle2,
     Users, Navigation,
 } from "lucide-react";
-import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
 import type { DispatchStatus } from "@/types/vendor-lifecycle";
 
 const DISPATCH_STATUSES: DispatchStatus[] = ["unassigned", "offered", "accepted", "declined", "en_route", "on_site", "in_progress", "completed", "no_show"];

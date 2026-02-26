@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_BUDGETS, MOCK_BUDGET_LINES } from "@/lib/mock-data-production";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_BUDGETS, MOCK_BUDGET_LINES } from "@/lib/demo-data-production";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
 import {

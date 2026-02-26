@@ -28,10 +28,51 @@ export function TabBar({
     variant = "underline",
     className,
 }: TabBarProps) {
+    const tabListRef = React.useRef<HTMLDivElement>(null);
+
+    const handleKeyDown = React.useCallback(
+        (e: React.KeyboardEvent) => {
+            const enabledItems = items.filter((item) => !item.disabled);
+            const currentIndex = enabledItems.findIndex((item) => item.id === value);
+            let nextIndex = currentIndex;
+
+            switch (e.key) {
+                case "ArrowRight":
+                    e.preventDefault();
+                    nextIndex = (currentIndex + 1) % enabledItems.length;
+                    break;
+                case "ArrowLeft":
+                    e.preventDefault();
+                    nextIndex = (currentIndex - 1 + enabledItems.length) % enabledItems.length;
+                    break;
+                case "Home":
+                    e.preventDefault();
+                    nextIndex = 0;
+                    break;
+                case "End":
+                    e.preventDefault();
+                    nextIndex = enabledItems.length - 1;
+                    break;
+                default:
+                    return;
+            }
+
+            const nextItem = enabledItems[nextIndex];
+            if (nextItem) {
+                onValueChange(nextItem.id);
+                const btn = tabListRef.current?.querySelector<HTMLButtonElement>(`#tab-${nextItem.id}`);
+                btn?.focus();
+            }
+        },
+        [items, value, onValueChange]
+    );
+
     return (
         <div
+            ref={tabListRef}
             role="tablist"
             aria-orientation="horizontal"
+            onKeyDown={handleKeyDown}
             className={cn(
                 "flex",
                 variant === "underline" && "gap-1 border-b border-border",
@@ -48,6 +89,7 @@ export function TabBar({
                     aria-controls={`tabpanel-${item.id}`}
                     id={`tab-${item.id}`}
                     disabled={item.disabled}
+                    tabIndex={value === item.id ? 0 : -1}
                     onClick={() => onValueChange(item.id)}
                     className={cn(
                         "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors",

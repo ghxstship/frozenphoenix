@@ -16,7 +16,7 @@ import {
     MOCK_CAMPAIGN_ASSETS,
     MOCK_CREATIVE_REVIEWS,
     MOCK_CAMPAIGNS,
-} from "@/lib/mock-data-creative-brand";
+} from "@/lib/demo-data-creative-brand";
 import type { CampaignAsset, CreativeReview, CampaignAssetProductionStatus } from "@/types";
 import {
     Plus,

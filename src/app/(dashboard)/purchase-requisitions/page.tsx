@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     ClipboardList, Plus, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
-import { MOCK_PURCHASE_REQUISITIONS } from "@/lib/mock-data-governance";
+import { MOCK_PURCHASE_REQUISITIONS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
 import type { RequisitionStatus } from "@/types/governance";
 

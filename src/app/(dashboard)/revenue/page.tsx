@@ -11,7 +11,7 @@ import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { MOCK_REVENUE_SCHEDULES } from "@/lib/mock-data-crm-revenue";
+import { MOCK_REVENUE_SCHEDULES } from "@/lib/demo-data-crm-revenue";
 // REVENUE_SCHEDULE_STATUS_MAP available for drill-down views
 import type { RevenueSchedule } from "@/types";
 import {

@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_DEALS } from "@/lib/mock-data";
+import { MOCK_DEALS } from "@/lib/demo-data";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
+import { useUpdateDeal, useDeals, useCreateProject, useCreateComment, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
@@ -20,6 +22,7 @@ import {
     Building2,
     TrendingUp,
     Filter,
+    Loader2,
 } from "lucide-react";
 
 type TabId = "overview" | "activity" | "notes";
@@ -33,8 +36,81 @@ export default function DealDetailPage() {
     const router = useRouter();
     const dealId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+    const [noteText, setNoteText] = useState("");
+    const updateDeal = useUpdateDeal();
+    const createProject = useCreateProject();
+    const createComment = useCreateComment();
+    const { data: sbDeals } = useDeals();
 
-    const deal = MOCK_DEALS.find((d) => d.id === dealId);
+    const sbDeal = sbDeals?.find((d) => d.id === dealId);
+    const deal = isSupabaseConfigured && sbDeal
+        ? {
+            id: sbDeal.id,
+            title: sbDeal.title,
+            company: sbDeal.company,
+            contactName: sbDeal.contact_name,
+            contactEmail: sbDeal.contact_email,
+            value: sbDeal.value,
+            stage: sbDeal.stage,
+            probability: sbDeal.probability,
+            expectedCloseDate: sbDeal.expected_close_date,
+            assignedTo: sbDeal.assigned_to ?? "",
+            notes: sbDeal.notes ?? "",
+            createdAt: sbDeal.created_at ?? "",
+            updatedAt: sbDeal.updated_at ?? "",
+        }
+        : MOCK_DEALS.find((d) => d.id === dealId);
+
+    const handleMarkWon = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateDeal.mutateAsync({ id: dealId, stage: "closed_won" } as unknown as Parameters<typeof updateDeal.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to mark deal as won:", error);
+        }
+    };
+
+    const handleMarkLost = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateDeal.mutateAsync({ id: dealId, stage: "closed_lost" } as unknown as Parameters<typeof updateDeal.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to mark deal as lost:", error);
+        }
+    };
+
+    const handleConvertToProject = async () => {
+        if (!deal || !isSupabaseConfigured) return;
+        try {
+            const projectData = {
+                name: deal.title,
+                client: deal.company,
+                status: "draft",
+                budget_planned: deal.value,
+            };
+            const newProject = await createProject.mutateAsync(projectData as unknown as Parameters<typeof createProject.mutateAsync>[0]);
+            await updateDeal.mutateAsync({ id: dealId, stage: "closed_won" } as unknown as Parameters<typeof updateDeal.mutateAsync>[0]);
+            router.push(`/projects/${(newProject as { id: string }).id}`);
+        } catch (error) {
+            console.error("Failed to convert deal to project:", error);
+        }
+    };
+
+    const handleAddNote = async () => {
+        if (!noteText.trim() || !isSupabaseConfigured) return;
+        try {
+            await createComment.mutateAsync({
+                entity_type: "deal",
+                entity_id: dealId,
+                content: noteText,
+            } as unknown as Parameters<typeof createComment.mutateAsync>[0]);
+            setNoteText("");
+            setNoteDialogOpen(false);
+        } catch (error) {
+            console.error("Failed to add note:", error);
+        }
+    };
 
     if (!deal) {
         return (
@@ -47,7 +123,7 @@ export default function DealDetailPage() {
         );
     }
 
-    const stageConfig = DEAL_STAGE_MAP[deal.stage];
+    const stageConfig = DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP];
     const weightedValue = deal.value * (deal.probability / 100);
     const daysToClose = computeDaysToClose(deal.expectedCloseDate);
 
@@ -108,6 +184,7 @@ export default function DealDetailPage() {
     );
 
     return (
+        <>
         <DetailLayout
             backHref="/pipeline"
             backLabel="Pipeline"
@@ -126,9 +203,9 @@ export default function DealDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Convert to Project", onClick: () => {} },
-                { label: "Mark as Won", onClick: () => {} },
-                { label: "Mark as Lost", onClick: () => {}, variant: "destructive" },
+                { label: createProject.isPending ? "Converting..." : "Convert to Project", onClick: handleConvertToProject },
+                { label: updateDeal.isPending ? "Updating..." : "Mark as Won", onClick: handleMarkWon },
+                { label: "Mark as Lost", onClick: handleMarkLost, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -200,7 +277,7 @@ export default function DealDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Notes & Comments</CardTitle>
-                        <Button size="sm">Add Note</Button>
+                        <Button size="sm" onClick={() => setNoteDialogOpen(true)}>Add Note</Button>
                     </CardHeader>
                     <CardContent>
                         {deal.notes ? (
@@ -217,5 +294,28 @@ export default function DealDetailPage() {
                 </Card>
             )}
         </DetailLayout>
+
+            {/* Add Note Dialog */}
+            <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Note</DialogTitle>
+                    </DialogHeader>
+                    <textarea
+                        className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[120px]"
+                        placeholder="Enter your note..."
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                    />
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setNoteDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddNote} disabled={!noteText.trim() || createComment.isPending}>
+                            {createComment.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Save Note
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

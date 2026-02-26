@@ -11,7 +11,7 @@ export async function updateSession(request: NextRequest) {
     // In production without credentials, protect dashboard routes by redirecting
     // to /login, but always allow public paths through to avoid redirect loops.
     if (!supabaseUrl || !supabaseAnonKey) {
-        const publicPaths = ["/", "/login", "/signup"];
+        const publicPaths = ["/", "/login", "/signup", "/forgot-password"];
         const isPublic =
             publicPaths.includes(request.nextUrl.pathname) ||
             request.nextUrl.pathname.startsWith("/api/") ||
@@ -58,7 +58,7 @@ export async function updateSession(request: NextRequest) {
 
     // Protected routes - all dashboard routes require authentication
     // Public routes are explicitly listed; everything else is protected
-    const publicPaths = ["/", "/login", "/signup"];
+    const publicPaths = ["/", "/login", "/signup", "/forgot-password"];
     const isPublicPath =
         publicPaths.includes(request.nextUrl.pathname) ||
         request.nextUrl.pathname.startsWith("/auth/") ||
@@ -74,7 +74,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Redirect authenticated users away from auth pages
-    const authPaths = ["/login", "/signup"];
+    const authPaths = ["/login", "/signup", "/forgot-password"];
     const isAuthPath = authPaths.includes(request.nextUrl.pathname);
 
     if (isAuthPath && user) {

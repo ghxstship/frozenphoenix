@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CONTRACT_TYPES, type ContractType } from "@/config/domain-config";
-import { ArrowLeft, ArrowRight, FileSignature, Building2, Calendar, CheckCircle2 } from "lucide-react";
+import { useCreateContract, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { ArrowLeft, ArrowRight, FileSignature, Building2, Calendar, CheckCircle2, Loader2 } from "lucide-react";
 
 type WizardStep = "type" | "details" | "terms" | "review";
 
@@ -20,6 +22,8 @@ const STEPS: { key: WizardStep; label: string; icon: React.ElementType }[] = [
 ];
 
 export default function NewContractPage() {
+    const router = useRouter();
+    const createContract = useCreateContract();
     const [currentStep, setCurrentStep] = useState<WizardStep>("type");
     const [selectedType, setSelectedType] = useState<ContractType | null>(null);
     const [formData, setFormData] = useState({
@@ -199,8 +203,32 @@ export default function NewContractPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" />Back
                 </Button>
                 {currentStep === "review" ? (
-                    <Button disabled={!canNext}>
-                        <CheckCircle2 className="mr-2 h-4 w-4" />Create Contract
+                    <Button
+                        disabled={!canNext || createContract.isPending}
+                        onClick={async () => {
+                            try {
+                                if (isSupabaseConfigured) {
+                                    const contractData = {
+                                        title: formData.title,
+                                        type: selectedType,
+                                        counterparty_name: formData.counterpartyName || null,
+                                        value: formData.value ? Number(formData.value) : null,
+                                        effective_date: formData.effectiveDate || null,
+                                        expiration_date: formData.expirationDate || null,
+                                        auto_renew: formData.autoRenew,
+                                        description: formData.description || null,
+                                        status: "draft",
+                                    };
+                                    await createContract.mutateAsync(contractData as unknown as Parameters<typeof createContract.mutateAsync>[0]);
+                                }
+                                router.push("/contracts");
+                            } catch (error) {
+                                console.error("Failed to create contract:", error);
+                            }
+                        }}
+                    >
+                        {createContract.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                        {createContract.isPending ? "Creating..." : "Create Contract"}
                     </Button>
                 ) : (
                     <Button onClick={goNext} disabled={!canNext}>

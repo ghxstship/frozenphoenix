@@ -7,7 +7,12 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type TableName = 
     | "projects" | "tasks" | "deals" | "approvals" 
-    | "notifications" | "comments" | "activity_log";
+    | "notifications" | "comments" | "activity_log"
+    | "budgets" | "contracts" | "invoices" | "client_invoices"
+    | "workflow_instances" | "workflow_step_approvals"
+    | "crew_shifts" | "incidents" | "shipments"
+    | "proposals" | "scopes_of_work" | "e_signatures"
+    | "assets" | "purchase_orders" | "expenses";
 
 interface UseRealtimeOptions {
     table: TableName;
@@ -269,6 +274,320 @@ export function useProjectRealtime(projectId: string) {
         return () => {
             supabase.removeChannel(projectChannel);
             supabase.removeChannel(tasksChannel);
+        };
+    }, [projectId, queryClient]);
+}
+
+// ─── Deals Pipeline Realtime ───
+export function useDealsRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const channel = supabase
+            .channel("deals_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "deals" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["deals"] });
+                    queryClient.invalidateQueries({ queryKey: ["pipeline_summary"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [queryClient]);
+}
+
+// ─── Approvals Realtime ───
+export function useApprovalsRealtime(userId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = userId ? `approver_id=eq.${userId}` : undefined;
+
+        const channel = supabase
+            .channel("approvals_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "approvals", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["approvals"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [userId, queryClient]);
+}
+
+// ─── Budgets Realtime ───
+export function useBudgetsRealtime(projectId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = projectId ? `project_id=eq.${projectId}` : undefined;
+
+        const channel = supabase
+            .channel("budgets_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "budgets", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["budgets"] });
+                    queryClient.invalidateQueries({ queryKey: ["budget_line_items"] });
+                    if (projectId) {
+                        queryClient.invalidateQueries({ queryKey: ["project_profitability"] });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [projectId, queryClient]);
+}
+
+// ─── Contracts Realtime ───
+export function useContractsRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const channel = supabase
+            .channel("contracts_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "contracts" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["contracts"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [queryClient]);
+}
+
+// ─── Invoices Realtime (both vendor invoices and client invoices) ───
+export function useInvoicesRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const vendorChannel = supabase
+            .channel("invoices_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "invoices" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["invoices"] });
+                    queryClient.invalidateQueries({ queryKey: ["invoice_aging"] });
+                }
+            )
+            .subscribe();
+
+        const clientChannel = supabase
+            .channel("client_invoices_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "client_invoices" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["client_invoices"] });
+                    queryClient.invalidateQueries({ queryKey: ["v_client_invoice_aging"] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(vendorChannel);
+            supabase.removeChannel(clientChannel);
+        };
+    }, [queryClient]);
+}
+
+// ─── Workflow Instances Realtime ───
+export function useWorkflowRealtime(workflowId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const instanceFilter = workflowId
+            ? `workflow_id=eq.${workflowId}`
+            : undefined;
+
+        const instanceChannel = supabase
+            .channel("workflow_instances_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "workflow_instances", filter: instanceFilter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["workflow_instances"] });
+                }
+            )
+            .subscribe();
+
+        const stepChannel = supabase
+            .channel("workflow_step_approvals_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "workflow_step_approvals" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["workflow_step_approvals"] });
+                    queryClient.invalidateQueries({ queryKey: ["workflow_instances"] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(instanceChannel);
+            supabase.removeChannel(stepChannel);
+        };
+    }, [workflowId, queryClient]);
+}
+
+// ─── E-Signatures Realtime ───
+export function useESignaturesRealtime(documentId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = documentId ? `document_id=eq.${documentId}` : undefined;
+
+        const channel = supabase
+            .channel("e_signatures_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "e_signatures", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["e_signatures"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [documentId, queryClient]);
+}
+
+// ─── Crew Shifts Realtime ───
+export function useCrewShiftsRealtime(projectId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = projectId ? `project_id=eq.${projectId}` : undefined;
+
+        const channel = supabase
+            .channel("crew_shifts_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "crew_shifts", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["crew_shifts"] });
+                    queryClient.invalidateQueries({ queryKey: ["crew_utilization"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [projectId, queryClient]);
+}
+
+// ─── Incidents Realtime ───
+export function useIncidentsRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const channel = supabase
+            .channel("incidents_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "incidents" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["incidents"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [queryClient]);
+}
+
+// ─── Composite: Full Project Realtime (project + tasks + budgets + milestones) ───
+export function useFullProjectRealtime(projectId: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured || !projectId) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const channels: RealtimeChannel[] = [];
+        const tables = ["projects", "tasks", "budgets", "budget_line_items", "milestones", "expenses"] as const;
+
+        tables.forEach((table) => {
+            const filterKey = table === "projects" ? "id" : "project_id";
+            const ch = supabase
+                .channel(`full_project_${projectId}_${table}`)
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "*",
+                        schema: "public",
+                        table,
+                        filter: `${filterKey}=eq.${projectId}`,
+                    },
+                    () => {
+                        queryClient.invalidateQueries({ queryKey: [table] });
+                        queryClient.invalidateQueries({ queryKey: [table, projectId] });
+                    }
+                )
+                .subscribe();
+            channels.push(ch);
+        });
+
+        return () => {
+            channels.forEach((ch) => supabase.removeChannel(ch));
         };
     }, [projectId, queryClient]);
 }

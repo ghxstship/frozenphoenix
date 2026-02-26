@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useBrandKits, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";

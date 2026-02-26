@@ -11,7 +11,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Star, Plus, ThumbsUp, ThumbsDown, TrendingUp,
 } from "lucide-react";
-import { MOCK_VENDOR_REVIEWS } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_VENDOR_REVIEWS } from "@/lib/demo-data-vendor-lifecycle";
 import type { VendorReviewType } from "@/types/vendor-lifecycle";
 
 const REVIEW_TYPE_LABELS: Record<VendorReviewType, { label: string; variant: "default" | "info" | "warning" | "destructive" }> = {

@@ -5,8 +5,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useProjects, useDeals, useNotifications, useApprovals, useTasks, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS, MOCK_DEALS, MOCK_NOTIFICATIONS, MOCK_APPROVALS, MOCK_TASKS } from "@/lib/mock-data";
+import { useProjects, useDeals, useNotifications, useApprovals, useTasks, useCrewMembers, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { MOCK_PROJECTS, MOCK_DEALS, MOCK_NOTIFICATIONS, MOCK_APPROVALS, MOCK_TASKS, MOCK_CREW } from "@/lib/demo-data";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -29,6 +29,7 @@ export default function DashboardPage() {
     const { data: sbNotifications } = useNotifications();
     const { data: sbApprovals } = useApprovals();
     const { data: sbTasks } = useTasks();
+    const { data: sbCrew } = useCrewMembers();
 
     const isLoading = isSupabaseConfigured && (loadingProjects || loadingDeals);
 
@@ -156,7 +157,7 @@ export default function DashboardPage() {
                 />
                 <StatCard
                     title="Active Crew"
-                    value="12"
+                    value={isSupabaseConfigured && sbCrew ? sbCrew.filter(c => c.status === 'active' || c.status === 'on_project').length : MOCK_CREW.filter(c => c.status === 'available').length}
                     change={-1}
                     changeSuffix=""
                     description="vs last week"

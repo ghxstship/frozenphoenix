@@ -17,15 +17,15 @@ import {
     XCircle,
 } from "lucide-react";
 
-const ACTION_CONFIG: Record<ActivityAction, { icon: typeof Plus; label: string; color: string }> = {
-    created: { icon: Plus, label: "Created", color: "text-success" },
-    updated: { icon: Pencil, label: "Updated", color: "text-info" },
-    deleted: { icon: Trash2, label: "Deleted", color: "text-destructive" },
-    status_changed: { icon: RefreshCw, label: "Status Changed", color: "text-warning" },
-    assigned: { icon: UserPlus, label: "Assigned", color: "text-primary" },
-    commented: { icon: MessageSquare, label: "Commented", color: "text-muted-foreground" },
-    approved: { icon: CheckCircle, label: "Approved", color: "text-success" },
-    rejected: { icon: XCircle, label: "Rejected", color: "text-destructive" },
+const ACTION_CONFIG: Record<ActivityAction, { icon: typeof Plus; label: string; color: string; bg: string }> = {
+    created: { icon: Plus, label: "Created", color: "text-success", bg: "bg-success/10" },
+    updated: { icon: Pencil, label: "Updated", color: "text-info", bg: "bg-info/10" },
+    deleted: { icon: Trash2, label: "Deleted", color: "text-destructive", bg: "bg-destructive/10" },
+    status_changed: { icon: RefreshCw, label: "Status Changed", color: "text-warning", bg: "bg-warning/10" },
+    assigned: { icon: UserPlus, label: "Assigned", color: "text-primary", bg: "bg-primary/10" },
+    commented: { icon: MessageSquare, label: "Commented", color: "text-muted-foreground", bg: "bg-muted" },
+    approved: { icon: CheckCircle, label: "Approved", color: "text-success", bg: "bg-success/10" },
+    rejected: { icon: XCircle, label: "Rejected", color: "text-destructive", bg: "bg-destructive/10" },
 };
 
 export interface ActivityItem {
@@ -43,41 +43,59 @@ export interface ActivityFeedProps {
     items: ActivityItem[];
     className?: string;
     maxItems?: number;
+    compact?: boolean;
 }
 
-export function ActivityFeed({ items, className, maxItems }: ActivityFeedProps) {
+export function ActivityFeed({ items, className, maxItems, compact = false }: ActivityFeedProps) {
     const displayItems = maxItems ? items.slice(0, maxItems) : items;
 
     if (displayItems.length === 0) {
         return (
-            <div className="text-center py-8 text-sm text-muted-foreground">
+            <div className="text-center py-8 text-sm text-muted-foreground" role="status">
                 No activity yet
             </div>
         );
     }
 
     return (
-        <div className={cn("space-y-4", className)}>
+        <div className={cn("relative", className)} role="feed" aria-label="Activity feed">
             {displayItems.map((item, index) => {
                 const config = ACTION_CONFIG[item.action];
                 const Icon = config.icon;
+                const isLast = index === displayItems.length - 1;
 
                 return (
                     <StaggerItem key={item.id} index={index} stagger="tight">
                     <div
-                        className="flex gap-3"
+                        className={cn(
+                            "group relative flex gap-3 rounded-lg transition-colors",
+                            compact ? "py-2 px-2" : "py-3 px-2",
+                            "hover:bg-muted/40"
+                        )}
+                        role="article"
+                        aria-label={`${item.actorName} ${config.label.toLowerCase()} ${item.entityName ?? ""}`}
                     >
-                        <div className="relative">
+                        {/* Timeline connector */}
+                        <div className="relative shrink-0">
                             <Avatar name={item.actorName} size="sm" />
                             <div className={cn(
-                                "absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-background flex items-center justify-center",
-                                config.color
+                                "absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full ring-2 ring-background flex items-center justify-center",
+                                config.bg, config.color
                             )}>
                                 <Icon className="h-2.5 w-2.5" />
                             </div>
+                            {/* Vertical line connecting items */}
+                            {!isLast && (
+                                <div
+                                    className="absolute left-1/2 -translate-x-1/2 top-full w-px bg-border"
+                                    style={{ height: compact ? 8 : 12 }}
+                                    aria-hidden="true"
+                                />
+                            )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm">
+
+                        <div className="flex-1 min-w-0 pt-0.5">
+                            <p className="text-sm leading-snug">
                                 <span className="font-medium">{item.actorName}</span>
                                 {" "}
                                 <span className="text-muted-foreground">{config.label.toLowerCase()}</span>
@@ -93,9 +111,12 @@ export function ActivityFeed({ items, className, maxItems }: ActivityFeedProps) 
                                     {item.description}
                                 </p>
                             )}
-                            <p className="text-[10px] text-muted-foreground mt-1">
+                            <time
+                                className="text-[10px] text-muted-foreground/60 mt-1 block"
+                                dateTime={item.createdAt}
+                            >
                                 {formatRelativeTime(item.createdAt)}
-                            </p>
+                            </time>
                         </div>
                     </div>
                     </StaggerItem>

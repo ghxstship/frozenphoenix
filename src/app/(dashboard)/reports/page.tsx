@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_PROJECTS, MOCK_DEALS, MOCK_TASKS, MOCK_CREW, MOCK_VENDORS } from "@/lib/mock-data";
+import { MOCK_PROJECTS, MOCK_DEALS, MOCK_TASKS, MOCK_CREW, MOCK_VENDORS } from "@/lib/demo-data";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { StaggerItem } from "@/components/ui/stagger-container";

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     CircleDollarSign, Plus,
 } from "lucide-react";
-import { MOCK_GL_ACCOUNTS } from "@/lib/mock-data-governance";
+import { MOCK_GL_ACCOUNTS } from "@/lib/demo-data-governance";
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
     asset: "Asset", liability: "Liability", equity: "Equity",

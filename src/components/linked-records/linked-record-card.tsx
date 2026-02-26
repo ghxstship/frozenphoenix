@@ -35,15 +35,25 @@ export function LinkedRecordCard({
     const content = (
         <Card
             className={cn(
-                "group transition-all hover:shadow-md hover:border-primary/30 cursor-pointer",
-                variant === "compact" && "p-2",
+                "group flex items-center gap-3 p-3 rounded-lg border border-border",
+                "hover:bg-secondary/50 hover:border-border/80 hover:shadow-sm transition-all duration-200",
+                onClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 className
             )}
+            role={onClick ? "button" : undefined}
+            aria-label={record.name}
+            tabIndex={onClick ? 0 : undefined}
+            onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && onClick) {
+                    e.preventDefault();
+                    onClick();
+                }
+            }}
         >
             <CardContent className={cn("flex items-center gap-3", variant === "compact" ? "p-0" : "pt-4")}>
                 <div className={cn(
-                    "shrink-0 rounded-lg flex items-center justify-center bg-primary/10 text-primary",
-                    variant === "compact" ? "h-8 w-8" : "h-10 w-10"
+                    variant === "compact" ? "h-8 w-8" : "h-10 w-10",
+                    "shrink-0 rounded-lg flex items-center justify-center bg-primary/10 text-primary"
                 )}>
                     <Icon className={variant === "compact" ? "h-4 w-4" : "h-5 w-5"} />
                 </div>

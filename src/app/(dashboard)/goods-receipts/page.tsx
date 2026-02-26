@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
     HardDriveDownload, Plus, CheckCircle2, AlertTriangle, Package,
 } from "lucide-react";
-import { MOCK_GOODS_RECEIPTS } from "@/lib/mock-data-governance";
+import { MOCK_GOODS_RECEIPTS } from "@/lib/demo-data-governance";
 import type { GoodsReceiptStatus } from "@/types/governance";
 
 const GR_STATUSES: GoodsReceiptStatus[] = [

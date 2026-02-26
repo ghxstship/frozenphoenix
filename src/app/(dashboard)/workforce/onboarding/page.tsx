@@ -13,7 +13,7 @@ import {
     UserPlus, Plus, CheckCircle2, Clock, AlertTriangle,
     Circle, ChevronDown, ChevronRight,
 } from "lucide-react";
-import { MOCK_ONBOARDING_RUNS, MOCK_OFFBOARDING_RUNS } from "@/lib/mock-data-workforce";
+import { MOCK_ONBOARDING_RUNS, MOCK_OFFBOARDING_RUNS } from "@/lib/demo-data-workforce";
 import type { LifecycleStepStatus } from "@/types/workforce";
 
 const STEP_ICONS: Record<LifecycleStepStatus, { icon: typeof CheckCircle2; color: string }> = {

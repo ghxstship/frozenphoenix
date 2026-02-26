@@ -122,6 +122,9 @@ export const TASK_STATUSES: EnumConfig<TaskStatus>[] = [
     { value: "in_progress", label: "In Progress", variant: "info" },
     { value: "review", label: "Review", variant: "warning" },
     { value: "done", label: "Done", variant: "success" },
+    { value: "blocked", label: "Blocked", variant: "destructive" },
+    { value: "completed", label: "Completed", variant: "success" },
+    { value: "cancelled", label: "Cancelled", variant: "ghost" },
 ];
 
 export const TASK_STATUS_MAP = Object.fromEntries(
@@ -136,6 +139,7 @@ export const TASK_PRIORITIES: EnumConfig<TaskPriority>[] = [
     { value: "high", label: "High", variant: "warning" },
     { value: "medium", label: "Medium", variant: "info" },
     { value: "low", label: "Low", variant: "success" },
+    { value: "urgent", label: "Urgent", variant: "destructive" },
 ];
 
 export const TASK_PRIORITY_MAP = Object.fromEntries(
@@ -158,6 +162,7 @@ export const FABRICATION_STATUS_MAP = Object.fromEntries(
 
 // ─── Asset Condition ───
 export const ASSET_CONDITIONS: EnumConfig<AssetCondition>[] = [
+    { value: "new", label: "New", variant: "success" },
     { value: "excellent", label: "Excellent", variant: "success" },
     { value: "good", label: "Good", variant: "info" },
     { value: "fair", label: "Fair", variant: "warning" },

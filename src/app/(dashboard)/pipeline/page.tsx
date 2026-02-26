@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDeals, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_DEALS, DEAL_STAGES } from "@/lib/mock-data";
+import { MOCK_DEALS, DEAL_STAGES } from "@/lib/demo-data";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -13,7 +13,7 @@ import { Plus, GripVertical, DollarSign, Calendar, User, Loader2, Columns, List 
 import type { Deal, DealStage } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField, ProgressField } from "@/components/data-view/field-renderers";
-import { DEAL_STAGE_CONFIG } from "@/config/constants";
+import { DEAL_STAGE_MAP as DEAL_STAGE_CONFIG } from "@/config/domain-config";
 
 type ViewMode = "board" | "table";
 

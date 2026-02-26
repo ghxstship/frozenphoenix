@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, Textarea } from "@/components/ui/form";
+import { useCreateVendor, isSupabaseConfigured } from "@/lib/supabase/hooks";
 
 const SPECIALTY_OPTIONS = [
     { value: "Fabrication", label: "Fabrication" },
@@ -27,6 +28,7 @@ const STATUS_OPTIONS = [
 
 export default function NewVendorPage() {
     const router = useRouter();
+    const createVendor = useCreateVendor();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -37,17 +39,27 @@ export default function NewVendorPage() {
         status: "pending",
         notes: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Creating vendor:", formData);
-
-        setIsSubmitting(false);
-        router.push("/vendors");
+        try {
+            if (isSupabaseConfigured) {
+                const vendorData = {
+                    name: formData.name,
+                    contact_name: formData.contactName || null,
+                    email: formData.email,
+                    phone: formData.phone || null,
+                    specialty: formData.specialty,
+                    status: formData.status,
+                    notes: formData.notes || null,
+                };
+                await createVendor.mutateAsync(vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]);
+            }
+            router.push("/vendors");
+        } catch (error) {
+            console.error("Failed to create vendor:", error);
+        }
     };
 
     const isValid = formData.name.trim() !== "" && formData.email.trim() !== "" && formData.specialty !== "";
@@ -59,7 +71,7 @@ export default function NewVendorPage() {
             title="Add Vendor"
             description="Add a new vendor to your network"
             onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={createVendor.isPending}
             isValid={isValid}
             submitLabel="Add Vendor"
         >

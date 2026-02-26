@@ -12,7 +12,7 @@ import {
     Shield, Plus, AlertTriangle, CheckCircle2,
     Clock, XCircle,
 } from "lucide-react";
-import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/mock-data-governance";
+import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/demo-data-governance";
 import type { InsurancePolicyStatus } from "@/types/governance";
 
 const POLICY_STATUSES: InsurancePolicyStatus[] = [

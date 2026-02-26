@@ -6,10 +6,13 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/demo-data";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
+import { useUpdateCrewMember, useCrewMembers, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
@@ -30,8 +33,54 @@ export default function CrewDetailPage() {
     const router = useRouter();
     const crewId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [assignOpen, setAssignOpen] = useState(false);
+    const [assignProjectId, setAssignProjectId] = useState("");
+    const [certOpen, setCertOpen] = useState(false);
+    const [certName, setCertName] = useState("");
+    const [certExpiry, setCertExpiry] = useState("");
+    const updateCrewMember = useUpdateCrewMember();
+    const { data: sbCrew } = useCrewMembers();
 
-    const crewMember = MOCK_CREW.find((c) => c.id === crewId);
+    const sbMember = sbCrew?.find((c) => c.id === crewId);
+    const crewMember = isSupabaseConfigured && sbMember
+        ? {
+            id: sbMember.id,
+            name: sbMember.name,
+            email: sbMember.email,
+            phone: sbMember.phone ?? "",
+            role: sbMember.role,
+            hourlyRate: sbMember.hourly_rate ?? 0,
+            status: sbMember.status as string,
+            certifications: [] as { id: string; type: string; label: string; expiryDate: string; isValid: boolean }[],
+        }
+        : MOCK_CREW.find((c) => c.id === crewId);
+
+    const handleDeactivate = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateCrewMember.mutateAsync({ id: crewId, status: "inactive" } as unknown as Parameters<typeof updateCrewMember.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to deactivate crew member:", error);
+        }
+    };
+
+    const handleAssignToProject = async () => {
+        if (!assignProjectId.trim() || !isSupabaseConfigured) return;
+        // In production, this would create a project_members record
+        // For now, we log and close the dialog
+        console.log("Assigning crew member", crewId, "to project", assignProjectId);
+        setAssignOpen(false);
+        setAssignProjectId("");
+    };
+
+    const handleAddCertification = async () => {
+        if (!certName.trim() || !isSupabaseConfigured) return;
+        // In production, this would insert into a certifications table
+        console.log("Adding certification", certName, "expiry", certExpiry, "for crew member", crewId);
+        setCertOpen(false);
+        setCertName("");
+        setCertExpiry("");
+    };
 
     if (!crewMember) {
         return (
@@ -114,6 +163,7 @@ export default function CrewDetailPage() {
     );
 
     return (
+        <>
         <DetailLayout
             backHref="/crew"
             backLabel="Crew"
@@ -132,9 +182,9 @@ export default function CrewDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Assign to Project", onClick: () => {} },
-                { label: "View Time Entries", onClick: () => {} },
-                { label: "Deactivate", onClick: () => {}, variant: "destructive" },
+                { label: "Assign to Project", onClick: () => setAssignOpen(true) },
+                { label: "View Time Entries", onClick: () => router.push(`/crew/${crewId}/time`) },
+                { label: updateCrewMember.isPending ? "Deactivating..." : "Deactivate", onClick: handleDeactivate, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -217,7 +267,7 @@ export default function CrewDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Certifications</CardTitle>
-                        <Button size="sm">Add Certification</Button>
+                        <Button size="sm" onClick={() => setCertOpen(true)}>Add Certification</Button>
                     </CardHeader>
                     <CardContent>
                         {crewMember.certifications.length === 0 ? (
@@ -225,12 +275,12 @@ export default function CrewDetailPage() {
                                 icon={Award}
                                 title="No certifications"
                                 description="Add certifications to track compliance"
-                                action={{ label: "Add Certification", onClick: () => {} }}
+                                action={{ label: "Add Certification", onClick: () => setCertOpen(true) }}
                             />
                         ) : (
                             <div className="space-y-3">
                                 {crewMember.certifications.map((cert) => {
-                                    const config = CERTIFICATION_TYPE_MAP[cert.type];
+                                    const config = CERTIFICATION_TYPE_MAP[cert.type as keyof typeof CERTIFICATION_TYPE_MAP];
                                     return (
                                         <div key={cert.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors">
                                             <div className="flex items-center gap-3">
@@ -282,5 +332,58 @@ export default function CrewDetailPage() {
                 </Card>
             )}
         </DetailLayout>
+
+            {/* Assign to Project Dialog */}
+            <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Assign to Project</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium">Project ID</label>
+                        <Input
+                            placeholder="Enter project ID"
+                            value={assignProjectId}
+                            onChange={(e) => setAssignProjectId(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setAssignOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAssignToProject} disabled={!assignProjectId.trim()}>Assign</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Certification Dialog */}
+            <Dialog open={certOpen} onOpenChange={setCertOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Certification</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-sm font-medium">Certification Name</label>
+                            <Input
+                                placeholder="e.g., OSHA 30-Hour"
+                                value={certName}
+                                onChange={(e) => setCertName(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium">Expiry Date</label>
+                            <Input
+                                type="date"
+                                value={certExpiry}
+                                onChange={(e) => setCertExpiry(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setCertOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddCertification} disabled={!certName.trim()}>Add Certification</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

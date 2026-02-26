@@ -79,16 +79,20 @@ export function SearchInput({
         lg: "left-3 top-3",
     };
 
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const showHint = !localValue && size !== "sm";
+
     return (
-        <div className={cn("relative", className)}>
+        <div className={cn("relative group", className)}>
             <Search
                 className={cn(
-                    "absolute text-muted-foreground pointer-events-none",
+                    "absolute text-muted-foreground pointer-events-none transition-colors group-focus-within:text-foreground/70",
                     iconSizes[size],
                     iconPositions[size]
                 )}
             />
             <input
+                ref={inputRef}
                 type="search"
                 value={localValue}
                 onChange={handleChange}
@@ -98,12 +102,20 @@ export function SearchInput({
                     "placeholder:text-muted-foreground",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    "transition-colors",
+                    "transition-all",
                     sizeClasses[size]
                 )}
                 aria-label={placeholder}
                 {...props}
             />
+            {showHint && (
+                <kbd
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground/60 font-mono"
+                    aria-hidden="true"
+                >
+                    ⌘K
+                </kbd>
+            )}
             {showClear && localValue && (
                 <button
                     type="button"

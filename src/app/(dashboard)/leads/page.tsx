@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel, getStatusBgColor } from "@/config/ui-variants";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLeads, useLeadPipelineStats } from "@/lib/supabase/hooks-crm";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatRelativeTime } from "@/lib/utils";
 import {
     Plus,
@@ -36,7 +37,7 @@ const BUDGET_LABELS: Record<string, string> = {
     over_5m: "$5M+",
 };
 
-const MOCK_LEADS = [
+const DEMO_LEADS = [
     {
         id: "lead-1",
         first_name: "Sarah",
@@ -94,7 +95,7 @@ export default function LeadsPage() {
     const { data: sbLeads, isLoading } = useLeads(statusFilter !== "all" ? statusFilter : undefined);
     const { data: pipelineStats } = useLeadPipelineStats();
 
-    const leads = sbLeads?.length ? sbLeads : MOCK_LEADS;
+    const leads = isSupabaseConfigured && sbLeads ? sbLeads : DEMO_LEADS;
 
     const filteredLeads = leads.filter((lead) => {
         const fullName = `${lead.first_name} ${lead.last_name || ""}`.toLowerCase();

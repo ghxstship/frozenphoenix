@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, useProjects, useShifts, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatDate } from "@/lib/locale";
 import type { CrewMember, Project, ProjectStatus, ProjectPhase } from "@/types";
 import {

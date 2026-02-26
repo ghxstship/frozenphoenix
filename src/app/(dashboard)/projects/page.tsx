@@ -7,16 +7,16 @@ import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Plus, Calendar, DollarSign, Users, ArrowRight, Loader2, LayoutGrid, List, Columns } from "lucide-react";
 import {
-    PROJECT_PHASE_CONFIG,
+    PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
     PROJECT_PHASE_ORDER,
-    PROJECT_STATUS_CONFIG,
-} from "@/config/constants";
+    PROJECT_STATUS_MAP as PROJECT_STATUS_CONFIG,
+} from "@/config/domain-config";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DataBoard, type BoardColumn, type CardField } from "@/components/data-view/data-board";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";

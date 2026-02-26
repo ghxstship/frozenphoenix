@@ -11,7 +11,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Star, Plus, ClipboardCheck, ThumbsUp, Calendar,
 } from "lucide-react";
-import { MOCK_WORKER_REVIEWS } from "@/lib/mock-data-workforce";
+import { MOCK_WORKER_REVIEWS } from "@/lib/demo-data-workforce";
 import type { ReviewTargetType } from "@/types/workforce";
 
 const TARGET_LABELS: Record<ReviewTargetType, string> = {

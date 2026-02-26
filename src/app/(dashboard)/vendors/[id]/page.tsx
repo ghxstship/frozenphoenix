@@ -6,9 +6,12 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_VENDORS, MOCK_POS, MOCK_INVOICES } from "@/lib/mock-data";
+import { MOCK_VENDORS, MOCK_POS, MOCK_INVOICES } from "@/lib/demo-data";
+import { useUpdateVendor, useCreatePurchaseOrder, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
@@ -20,6 +23,7 @@ import {
     AlertTriangle,
     Store,
     Receipt,
+    Loader2,
 } from "lucide-react";
 
 type TabId = "overview" | "orders" | "invoices" | "compliance";
@@ -29,8 +33,39 @@ export default function VendorDetailPage() {
     const router = useRouter();
     const vendorId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [poDialogOpen, setPoDialogOpen] = useState(false);
+    const [poDescription, setPoDescription] = useState("");
+    const [poAmount, setPoAmount] = useState("");
+    const updateVendor = useUpdateVendor();
+    const createPO = useCreatePurchaseOrder();
 
     const vendor = MOCK_VENDORS.find((v) => v.id === vendorId);
+
+    const handleSuspendVendor = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateVendor.mutateAsync({ id: vendorId, status: "suspended" } as unknown as Parameters<typeof updateVendor.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to suspend vendor:", error);
+        }
+    };
+
+    const handleCreatePO = async () => {
+        if (!poDescription.trim() || !isSupabaseConfigured) return;
+        try {
+            await createPO.mutateAsync({
+                vendor_id: vendorId,
+                description: poDescription,
+                total_amount: poAmount ? Number(poAmount) : 0,
+                status: "draft",
+            } as unknown as Parameters<typeof createPO.mutateAsync>[0]);
+            setPoDialogOpen(false);
+            setPoDescription("");
+            setPoAmount("");
+        } catch (error) {
+            console.error("Failed to create PO:", error);
+        }
+    };
     const vendorPOs = MOCK_POS.filter((po) => po.vendorId === vendorId);
     const vendorInvoices = MOCK_INVOICES.filter((inv) => inv.vendorId === vendorId);
 
@@ -111,6 +146,7 @@ export default function VendorDetailPage() {
     );
 
     return (
+        <>
         <DetailLayout
             backHref="/vendors"
             backLabel="Vendors"
@@ -129,9 +165,9 @@ export default function VendorDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Create Purchase Order", onClick: () => {} },
+                { label: "Create Purchase Order", onClick: () => setPoDialogOpen(true) },
                 { label: "Request Documents", onClick: () => {} },
-                { label: "Suspend Vendor", onClick: () => {}, variant: "destructive" },
+                { label: updateVendor.isPending ? "Suspending..." : "Suspend Vendor", onClick: handleSuspendVendor, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -217,7 +253,7 @@ export default function VendorDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Purchase Orders</CardTitle>
-                        <Button size="sm">Create PO</Button>
+                        <Button size="sm" onClick={() => setPoDialogOpen(true)}>Create PO</Button>
                     </CardHeader>
                     <CardContent>
                         {vendorPOs.length === 0 ? (
@@ -225,7 +261,7 @@ export default function VendorDetailPage() {
                                 icon={FileText}
                                 title="No purchase orders"
                                 description="Create a purchase order for this vendor"
-                                action={{ label: "Create PO", onClick: () => {} }}
+                                action={{ label: "Create PO", onClick: () => setPoDialogOpen(true) }}
                             />
                         ) : (
                             <div className="space-y-2">
@@ -337,5 +373,41 @@ export default function VendorDetailPage() {
                 </Card>
             )}
         </DetailLayout>
+
+            {/* Create PO Dialog */}
+            <Dialog open={poDialogOpen} onOpenChange={setPoDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create Purchase Order</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-sm font-medium">Description</label>
+                            <Input
+                                placeholder="PO description"
+                                value={poDescription}
+                                onChange={(e) => setPoDescription(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium">Amount</label>
+                            <Input
+                                type="number"
+                                placeholder="0.00"
+                                value={poAmount}
+                                onChange={(e) => setPoAmount(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setPoDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreatePO} disabled={!poDescription.trim() || createPO.isPending}>
+                            {createPO.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Create PO
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

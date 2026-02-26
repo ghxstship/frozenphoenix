@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { SearchInput } from "@/components/ui/search-input";
-import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/mock-data-crm-revenue";
+import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
 // ACCOUNT_RISK_LEVEL_MAP available for future drill-down views
 import type { AccountHealthScore } from "@/types";
 import {

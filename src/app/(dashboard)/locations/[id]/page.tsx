@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_LOCATIONS, MOCK_ACTIVATIONS, MOCK_EVENTS } from "@/lib/mock-data-production";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_LOCATIONS, MOCK_ACTIVATIONS, MOCK_EVENTS } from "@/lib/demo-data-production";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {

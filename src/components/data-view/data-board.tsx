@@ -194,7 +194,11 @@ export function DataBoard<T extends object>({
 
     return (
         <div
-            className={cn("flex gap-4 overflow-x-auto pb-4", className)}
+            className={cn(
+                "flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth",
+                "scrollbar-thin",
+                className
+            )}
             role="region"
             aria-label="Kanban board"
         >
@@ -205,10 +209,10 @@ export function DataBoard<T extends object>({
                 return (
                     <div
                         key={column.id}
-                        className="flex-shrink-0 flex flex-col"
+                        className="flex-shrink-0 flex flex-col snap-start"
                         style={{ width: columnWidth }}
                         role="group"
-                        aria-label={`${column.title} column, ${(groupedData[column.id] ?? []).length} items`}
+                        aria-label={`${column.title} column, ${count} items`}
                     >
                         {/* Column Header */}
                         <div className="flex items-center justify-between mb-3 px-1">
@@ -216,17 +220,24 @@ export function DataBoard<T extends object>({
                                 <Badge variant={column.variant ?? "secondary"} className="font-medium">
                                     {column.title}
                                 </Badge>
-                                <span className="text-xs text-muted-foreground font-medium">
+                                <span className="text-xs text-muted-foreground font-medium tabular-nums">
                                     {count}
                                 </span>
                             </div>
                         </div>
 
                         {/* Column Content */}
-                        <div className="flex-1 space-y-2 min-h-[200px] p-1 rounded-lg bg-muted/30">
+                        <div className={cn(
+                            "flex-1 space-y-2 min-h-[200px] p-2 rounded-lg transition-colors",
+                            items.length === 0
+                                ? "border-2 border-dashed border-border/50 bg-muted/10"
+                                : "bg-muted/30"
+                        )}>
                             {items.length === 0 ? (
-                                <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                                    {emptyColumnState ?? "No items"}
+                                <div className="flex flex-col items-center justify-center h-full gap-1 py-8">
+                                    <p className="text-sm text-muted-foreground/60">
+                                        {emptyColumnState ?? "No items"}
+                                    </p>
                                 </div>
                             ) : (
                                 items.map(renderCard)

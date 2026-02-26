@@ -167,6 +167,17 @@ export function useUpdateProject() {
     });
 }
 
+export function useDeleteProject() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase().from("projects").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
+    });
+}
+
 // ─── Tasks ───
 export function useTasks(projectId?: string) {
     return useQuery({
@@ -208,6 +219,17 @@ export function useUpdateTask() {
     });
 }
 
+export function useDeleteTask() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase().from("tasks").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    });
+}
+
 // ─── Crew Members ───
 export function useCrewMembers() {
     return useQuery({
@@ -235,6 +257,18 @@ export function useCreateCrewMember() {
     });
 }
 
+export function useUpdateCrewMember() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"crew_members"> & { id: string }) => {
+            const { data, error } = await getSupabase().from("crew_members").update(updates).eq("id", id).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"crew_members">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crew_members"] }),
+    });
+}
+
 // ─── Assets ───
 export function useAssets() {
     return useQuery({
@@ -252,6 +286,18 @@ export function useCreateAsset() {
     return useMutation({
         mutationFn: async (asset: TablesInsert<"assets">) => {
             const { data, error } = await getSupabase().from("assets").insert(asset).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"assets">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assets"] }),
+    });
+}
+
+export function useUpdateAsset() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"assets"> & { id: string }) => {
+            const { data, error } = await getSupabase().from("assets").update(updates).eq("id", id).select().single();
             if (error) throw error;
             return data as unknown as Tables<"assets">;
         },
@@ -292,6 +338,30 @@ export function useCreateVendor() {
             return data as unknown as Tables<"vendors">;
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
+    });
+}
+
+export function useUpdateVendor() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"vendors"> & { id: string }) => {
+            const { data, error } = await getSupabase().from("vendors").update(updates).eq("id", id).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"vendors">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
+    });
+}
+
+export function useCreatePurchaseOrder() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (po: TablesInsert<"purchase_orders">) => {
+            const { data, error } = await getSupabase().from("purchase_orders").insert(po).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"purchase_orders">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["purchase_orders"] }),
     });
 }
 
@@ -1019,7 +1089,31 @@ export function useBudgets(projectId: string) {
     });
 }
 
+export function useCreateBudget() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (budget: TablesInsert<"budgets">) => {
+            const { data, error } = await getSupabase().from("budgets").insert(budget).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"budgets">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["budgets"] }),
+    });
+}
+
 // ─── Contracts ───
+export function useCreateContract() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (contract: TablesInsert<"contracts">) => {
+            const { data, error } = await getSupabase().from("contracts").insert(contract).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"contracts">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contracts"] }),
+    });
+}
+
 export function useContracts(projectId?: string) {
     return useQuery({
         queryKey: ["contracts", projectId],
@@ -1086,6 +1180,21 @@ export function useAssetAssignments(projectId?: string, assetId?: string) {
     });
 }
 
+export function useCreateAssetAssignment() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (assignment: TablesInsert<"asset_assignments">) => {
+            const { data, error } = await getSupabase().from("asset_assignments").insert(assignment).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"asset_assignments">;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["asset_assignments"] });
+            queryClient.invalidateQueries({ queryKey: ["assets"] });
+        },
+    });
+}
+
 // ─── Crew Availability ───
 export function useCrewAvailability(crewMemberId?: string, startDate?: string, endDate?: string) {
     return useQuery({
@@ -1121,6 +1230,18 @@ export function useKnowledgeBaseArticles(category?: string, department?: string)
             if (error) throw error;
             return data as unknown as KBArticleWithProfile[];
         },
+    });
+}
+
+export function useCreateKBArticle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (article: TablesInsert<"knowledge_base_articles">) => {
+            const { data, error } = await getSupabase().from("knowledge_base_articles").insert(article).select().single();
+            if (error) throw error;
+            return data as unknown as Tables<"knowledge_base_articles">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["knowledge_base_articles"] }),
     });
 }
 

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     Fingerprint, Plus,
 } from "lucide-react";
-import { MOCK_IP_RIGHTS } from "@/lib/mock-data-governance";
+import { MOCK_IP_RIGHTS } from "@/lib/demo-data-governance";
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
     logo: "Logo", trademark: "Trademark", design: "Design", photograph: "Photograph",

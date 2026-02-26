@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ENTITY_RELATIONSHIP_MAP } from "@/config/production-config";
 import type { EntityType, LinkedRecord } from "@/types/production";
-import { ChevronRight, ChevronDown, Plus, ExternalLink } from "lucide-react";
+import { ChevronRight, Plus, ExternalLink } from "lucide-react";
 
 interface RelationshipGroup {
     entityType: EntityType;
@@ -92,23 +92,22 @@ export function RelationshipBrowser({
                     <div className="space-y-2">
                         <button
                             onClick={() => toggleGroup("children")}
-                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full"
+                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            aria-expanded={expandedGroups.has("children")}
                         >
-                            {expandedGroups.has("children") ? (
-                                <ChevronDown className="h-3 w-3" />
-                            ) : (
-                                <ChevronRight className="h-3 w-3" />
-                            )}
+                            <ChevronRight className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("children") ? "rotate-90" : ""}`} />
                             Child Records
                         </button>
                         
-                        {expandedGroups.has("children") && (
-                            <div className="space-y-3 pl-4">
-                                {childGroups.map((group) => (
-                                    <RelationshipGroupSection key={group.entityType} group={group} />
-                                ))}
+                        <div className={`grid transition-all duration-200 ease-out ${expandedGroups.has("children") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+                            <div className="overflow-hidden">
+                                <div className="space-y-3 pl-4 pt-1">
+                                    {childGroups.map((group) => (
+                                        <RelationshipGroupSection key={group.entityType} group={group} />
+                                    ))}
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
 
@@ -116,23 +115,22 @@ export function RelationshipBrowser({
                     <div className="space-y-2">
                         <button
                             onClick={() => toggleGroup("related")}
-                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full"
+                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            aria-expanded={expandedGroups.has("related")}
                         >
-                            {expandedGroups.has("related") ? (
-                                <ChevronDown className="h-3 w-3" />
-                            ) : (
-                                <ChevronRight className="h-3 w-3" />
-                            )}
+                            <ChevronRight className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("related") ? "rotate-90" : ""}`} />
                             Related Records
                         </button>
                         
-                        {expandedGroups.has("related") && (
-                            <div className="space-y-3 pl-4">
-                                {relatedGroups.map((group) => (
-                                    <RelationshipGroupSection key={group.entityType} group={group} />
-                                ))}
+                        <div className={`grid transition-all duration-200 ease-out ${expandedGroups.has("related") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+                            <div className="overflow-hidden">
+                                <div className="space-y-3 pl-4 pt-1">
+                                    {relatedGroups.map((group) => (
+                                        <RelationshipGroupSection key={group.entityType} group={group} />
+                                    ))}
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
             </CardContent>
@@ -171,7 +169,7 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                         <Link
                             key={record.id}
                             href={`${config.path}/${record.id}`}
-                            className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-secondary/50 transition-colors group"
+                            className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-secondary/50 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             <span className="truncate text-primary group-hover:underline">{record.name}</span>
                             {record.status && (

@@ -14,7 +14,7 @@ import {
     Users, Plus, UserCheck, UserX, Clock, AlertTriangle,
     Star, MapPin, Briefcase, ChevronRight,
 } from "lucide-react";
-import { MOCK_WORKER_PROFILES } from "@/lib/mock-data-workforce";
+import { MOCK_WORKER_PROFILES } from "@/lib/demo-data-workforce";
 import type { WorkerLifecycleStatus, WorkerClassification } from "@/types/workforce";
 
 const LIFECYCLE_CONFIG: Record<WorkerLifecycleStatus, { label: string; variant: "default" | "info" | "warning" | "success" | "destructive" }> = {

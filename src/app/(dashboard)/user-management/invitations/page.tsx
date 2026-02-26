@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_INVITATIONS } from "@/lib/mock-data-user-lifecycle";
+import { MOCK_INVITATIONS } from "@/lib/demo-data-user-lifecycle";
 import {
     UserPlus, Mail, Clock, CheckCircle2, XCircle, RotateCcw, Send,
 } from "lucide-react";

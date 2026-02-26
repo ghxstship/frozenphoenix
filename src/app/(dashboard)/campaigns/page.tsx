@@ -18,7 +18,7 @@ import {
     MOCK_CAMPAIGN_CHANNELS,
     MOCK_CAMPAIGN_ASSETS,
     MOCK_CAMPAIGN_KPIS,
-} from "@/lib/mock-data-creative-brand";
+} from "@/lib/demo-data-creative-brand";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
     Plus,

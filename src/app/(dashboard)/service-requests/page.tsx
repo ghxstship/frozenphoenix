@@ -15,7 +15,7 @@ import {
     AlertTriangle, Calendar, User, Mail, Phone, MapPin,
     FileSignature, ClipboardList, FolderKanban, Megaphone,
 } from "lucide-react";
-import { MOCK_SERVICE_REQUESTS } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_SERVICE_REQUESTS } from "@/lib/demo-data-vendor-lifecycle";
 import type { ServiceRequestStatus, ServiceRequestPriority } from "@/types/vendor-lifecycle";
 
 const SERVICE_REQUEST_STATUSES: ServiceRequestStatus[] = ["new", "acknowledged", "assessment_scheduled", "quoted", "approved", "converted", "declined", "cancelled", "archived"];

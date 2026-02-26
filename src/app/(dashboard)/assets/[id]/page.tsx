@@ -6,10 +6,13 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ConditionBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_ASSETS } from "@/lib/mock-data";
+import { MOCK_ASSETS } from "@/lib/demo-data";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
+import { useUpdateAsset, useCreateAssetAssignment, useAssets, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
@@ -20,6 +23,7 @@ import {
     Package,
     History,
     AlertTriangle,
+    Loader2,
 } from "lucide-react";
 
 type TabId = "overview" | "history" | "maintenance";
@@ -29,8 +33,71 @@ export default function AssetDetailPage() {
     const router = useRouter();
     const assetId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [checkoutOpen, setCheckoutOpen] = useState(false);
+    const [maintenanceOpen, setMaintenanceOpen] = useState(false);
+    const [checkoutProject, setCheckoutProject] = useState("");
+    const [maintenanceNote, setMaintenanceNote] = useState("");
+    const updateAsset = useUpdateAsset();
+    const createAssignment = useCreateAssetAssignment();
+    const { data: sbAssets } = useAssets();
 
-    const asset = MOCK_ASSETS.find((a) => a.id === assetId);
+    const sbAsset = sbAssets?.find((a) => a.id === assetId);
+    const asset = isSupabaseConfigured && sbAsset
+        ? {
+            id: sbAsset.id,
+            name: sbAsset.name,
+            category: sbAsset.category,
+            barcode: sbAsset.barcode ?? "",
+            location: sbAsset.location ?? "",
+            condition: sbAsset.condition as "excellent" | "good" | "fair" | "needs_repair",
+            ownedOrRental: sbAsset.owned_or_rental as "owned" | "rental",
+            purchasePrice: sbAsset.purchase_price ?? 0,
+            dailyRentalCost: (sbAsset as Record<string, unknown>).daily_rental_cost as number | undefined,
+            rentalReturnDate: (sbAsset as Record<string, unknown>).rental_return_date as string | undefined,
+            notes: sbAsset.notes ?? "",
+            status: (sbAsset as Record<string, unknown>).status as string ?? "available",
+        }
+        : MOCK_ASSETS.find((a) => a.id === assetId);
+
+    const handleCheckOut = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await createAssignment.mutateAsync({
+                asset_id: assetId,
+                project_id: checkoutProject || null,
+                status: "checked_out",
+            } as unknown as Parameters<typeof createAssignment.mutateAsync>[0]);
+            await updateAsset.mutateAsync({ id: assetId, status: "checked_out" } as unknown as Parameters<typeof updateAsset.mutateAsync>[0]);
+            setCheckoutOpen(false);
+            setCheckoutProject("");
+        } catch (error) {
+            console.error("Failed to check out asset:", error);
+        }
+    };
+
+    const handleLogMaintenance = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateAsset.mutateAsync({
+                id: assetId,
+                condition: "good",
+                notes: maintenanceNote || "Maintenance performed",
+            } as unknown as Parameters<typeof updateAsset.mutateAsync>[0]);
+            setMaintenanceOpen(false);
+            setMaintenanceNote("");
+        } catch (error) {
+            console.error("Failed to log maintenance:", error);
+        }
+    };
+
+    const handleDecommission = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateAsset.mutateAsync({ id: assetId, status: "decommissioned" } as unknown as Parameters<typeof updateAsset.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to decommission asset:", error);
+        }
+    };
 
     if (!asset) {
         return (
@@ -123,6 +190,7 @@ export default function AssetDetailPage() {
     );
 
     return (
+        <>
         <DetailLayout
             backHref="/assets"
             backLabel="Assets"
@@ -141,10 +209,10 @@ export default function AssetDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Check Out", onClick: () => {} },
-                { label: "Schedule Maintenance", onClick: () => {} },
-                { label: "Print Label", onClick: () => {} },
-                { label: "Decommission", onClick: () => {}, variant: "destructive" },
+                { label: "Check Out", onClick: () => setCheckoutOpen(true) },
+                { label: "Log Maintenance", onClick: () => setMaintenanceOpen(true) },
+                { label: "Print Label", onClick: () => window.print() },
+                { label: updateAsset.isPending ? "Decommissioning..." : "Decommission", onClick: handleDecommission, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -236,18 +304,68 @@ export default function AssetDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Maintenance Records</CardTitle>
-                        <Button size="sm">Log Maintenance</Button>
+                        <Button size="sm" onClick={() => setMaintenanceOpen(true)}>Log Maintenance</Button>
                     </CardHeader>
                     <CardContent>
                         <EmptyState
                             icon={Package}
                             title="No maintenance records"
                             description="Log maintenance activities to track asset health"
-                            action={{ label: "Log Maintenance", onClick: () => {} }}
+                            action={{ label: "Log Maintenance", onClick: () => setMaintenanceOpen(true) }}
                         />
                     </CardContent>
                 </Card>
             )}
         </DetailLayout>
+
+            {/* Check Out Dialog */}
+            <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Check Out Asset</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium">Project ID (optional)</label>
+                        <Input
+                            placeholder="Enter project ID"
+                            value={checkoutProject}
+                            onChange={(e) => setCheckoutProject(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setCheckoutOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCheckOut} disabled={createAssignment.isPending}>
+                            {createAssignment.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Check Out
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Log Maintenance Dialog */}
+            <Dialog open={maintenanceOpen} onOpenChange={setMaintenanceOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Log Maintenance</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium">Maintenance Notes</label>
+                        <textarea
+                            className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[100px]"
+                            placeholder="Describe maintenance performed..."
+                            value={maintenanceNote}
+                            onChange={(e) => setMaintenanceNote(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setMaintenanceOpen(false)}>Cancel</Button>
+                        <Button onClick={handleLogMaintenance} disabled={updateAsset.isPending}>
+                            {updateAsset.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Save
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

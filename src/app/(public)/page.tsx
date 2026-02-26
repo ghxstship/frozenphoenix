@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_CASE_STUDIES } from "@/lib/mock-data";
+import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
 import { brandConfig } from "@/config/brand";
 import { StaggerItem } from "@/components/ui/stagger-container";

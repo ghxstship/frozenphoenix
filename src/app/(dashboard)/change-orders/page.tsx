@@ -12,7 +12,7 @@ import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_CHANGE_ORDERS } from "@/lib/mock-data-crm-revenue";
+import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
 import type { ChangeOrder } from "@/types";
 import {

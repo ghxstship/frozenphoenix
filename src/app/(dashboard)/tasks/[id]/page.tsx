@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, PriorityBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_TASKS, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_TASKS, MOCK_PROJECTS } from "@/lib/demo-data";
 import { PROJECT_PHASE_MAP, FABRICATION_STATUS_MAP } from "@/config/domain-config";
+import { useUpdateTask, useDeleteTask, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
@@ -28,9 +29,30 @@ export default function TaskDetailPage() {
     const router = useRouter();
     const taskId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const updateTask = useUpdateTask();
+    const deleteTask = useDeleteTask();
 
     const task = MOCK_TASKS.find((t) => t.id === taskId);
     const project = task ? MOCK_PROJECTS.find((p) => p.id === task.projectId) : null;
+
+    const handleMarkComplete = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateTask.mutateAsync({ id: taskId, status: "done" } as unknown as Parameters<typeof updateTask.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to mark task complete:", error);
+        }
+    };
+
+    const handleDeleteTask = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await deleteTask.mutateAsync(taskId);
+            router.push("/tasks");
+        } catch (error) {
+            console.error("Failed to delete task:", error);
+        }
+    };
 
     if (!task) {
         return (
@@ -132,9 +154,9 @@ export default function TaskDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Mark Complete", onClick: () => {} },
+                { label: updateTask.isPending ? "Completing..." : "Mark Complete", onClick: handleMarkComplete },
                 { label: "Duplicate Task", onClick: () => {} },
-                { label: "Delete Task", onClick: () => {}, variant: "destructive" },
+                { label: deleteTask.isPending ? "Deleting..." : "Delete Task", onClick: handleDeleteTask, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}

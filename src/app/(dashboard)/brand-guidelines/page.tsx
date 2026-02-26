@@ -12,7 +12,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     MOCK_BRAND_GUIDELINES,
     MOCK_BRAND_GUIDELINE_SECTIONS,
-} from "@/lib/mock-data-creative-brand";
+} from "@/lib/demo-data-creative-brand";
 import type { BrandGuideline, BrandGuidelineSection, BrandLevel } from "@/types";
 import {
     Plus,

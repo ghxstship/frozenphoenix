@@ -12,7 +12,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_CREATIVE_BRIEFS, MOCK_BRIEF_TEMPLATES } from "@/lib/mock-data-creative-brand";
+import { MOCK_CREATIVE_BRIEFS, MOCK_BRIEF_TEMPLATES } from "@/lib/demo-data-creative-brand";
 import type { CreativeBrief, CreativeBriefStatus, CreativeBriefType } from "@/types";
 import {
     Plus,

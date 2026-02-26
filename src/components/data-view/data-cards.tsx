@@ -116,7 +116,7 @@ export function DataCards<T extends Record<string, unknown>>({
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <div className="flex items-center justify-center py-12 text-muted-foreground animate-fade-in">
                 {emptyState ?? "No data available"}
             </div>
         );
@@ -136,8 +136,8 @@ export function DataCards<T extends Record<string, unknown>>({
                     <Card
                         key={key}
                         className={cn(
-                            "overflow-hidden transition-all duration-200",
-                            onCardClick && "cursor-pointer hover:shadow-md hover:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                            "overflow-hidden transition-all duration-200 group",
+                            onCardClick && "cursor-pointer hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                             cardClassName
                         )}
                         onClick={() => onCardClick?.(row)}

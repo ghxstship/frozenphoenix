@@ -7,10 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { StatusBadge, PriorityBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS, MOCK_STAKEHOLDERS } from "@/lib/mock-data";
+import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS, MOCK_STAKEHOLDERS } from "@/lib/demo-data";
 import { PROJECT_PHASE_MAP } from "@/config/domain-config";
+import { useUpdateProject, useDeleteProject, useCreateTask, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
@@ -22,6 +25,7 @@ import {
     TrendingUp,
     AlertTriangle,
     FolderKanban,
+    Loader2,
 } from "lucide-react";
 
 type TabId = "overview" | "tasks" | "team" | "budget" | "approvals";
@@ -31,8 +35,49 @@ export default function ProjectDetailPage() {
     const router = useRouter();
     const projectId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [addTaskOpen, setAddTaskOpen] = useState(false);
+    const [taskTitle, setTaskTitle] = useState("");
+    const updateProject = useUpdateProject();
+    const deleteProject = useDeleteProject();
+    const createTask = useCreateTask();
 
     const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+
+    const handleArchive = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await updateProject.mutateAsync({ id: projectId, status: "completed" } as unknown as Parameters<typeof updateProject.mutateAsync>[0]);
+        } catch (error) {
+            console.error("Failed to archive project:", error);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            await deleteProject.mutateAsync(projectId);
+            router.push("/projects");
+        } catch (error) {
+            console.error("Failed to delete project:", error);
+        }
+    };
+
+    const handleAddTask = async () => {
+        if (!taskTitle.trim() || !isSupabaseConfigured) return;
+        try {
+            await createTask.mutateAsync({
+                project_id: projectId,
+                title: taskTitle,
+                status: "todo",
+                priority: "medium",
+                phase: "pre_production",
+            } as unknown as Parameters<typeof createTask.mutateAsync>[0]);
+            setAddTaskOpen(false);
+            setTaskTitle("");
+        } catch (error) {
+            console.error("Failed to add task:", error);
+        }
+    };
     const projectTasks = MOCK_TASKS.filter((t) => t.projectId === projectId);
     const projectApprovals = MOCK_APPROVALS.filter((a) => a.projectId === projectId);
     const projectStakeholders = MOCK_STAKEHOLDERS.filter((s) => s.projectIds.includes(projectId));
@@ -110,6 +155,7 @@ export default function ProjectDetailPage() {
     );
 
     return (
+        <>
         <DetailLayout
             backHref="/projects"
             backLabel="Projects"
@@ -129,8 +175,8 @@ export default function ProjectDetailPage() {
             }
             menuItems={[
                 { label: "Duplicate Project", onClick: () => {} },
-                { label: "Archive Project", onClick: () => {} },
-                { label: "Delete Project", onClick: () => {}, variant: "destructive" },
+                { label: updateProject.isPending ? "Archiving..." : "Archive Project", onClick: handleArchive },
+                { label: deleteProject.isPending ? "Deleting..." : "Delete Project", onClick: handleDelete, variant: "destructive" },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -218,7 +264,7 @@ export default function ProjectDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">All Tasks</CardTitle>
-                        <Button size="sm">Add Task</Button>
+                        <Button size="sm" onClick={() => setAddTaskOpen(true)}>Add Task</Button>
                     </CardHeader>
                     <CardContent>
                         {projectTasks.length === 0 ? (
@@ -226,7 +272,7 @@ export default function ProjectDetailPage() {
                                 icon={CheckSquare}
                                 title="No tasks"
                                 description="Create your first task for this project"
-                                action={{ label: "Add Task", onClick: () => {} }}
+                                action={{ label: "Add Task", onClick: () => setAddTaskOpen(true) }}
                             />
                         ) : (
                             <div className="space-y-2">
@@ -266,7 +312,7 @@ export default function ProjectDetailPage() {
                                 icon={Users}
                                 title="No team members"
                                 description="Add team members to this project"
-                                action={{ label: "Add Member", onClick: () => {} }}
+                                action={{ label: "Add Member", onClick: () => {} /* TODO: wire add member dialog */ }}
                             />
                         ) : (
                             <div className="space-y-3">
@@ -344,5 +390,30 @@ export default function ProjectDetailPage() {
                 </Card>
             )}
         </DetailLayout>
+
+            {/* Add Task Dialog */}
+            <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Task</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium">Task Title</label>
+                        <Input
+                            placeholder="Enter task title"
+                            value={taskTitle}
+                            onChange={(e) => setTaskTitle(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setAddTaskOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddTask} disabled={!taskTitle.trim() || createTask.isPending}>
+                            {createTask.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Add Task
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

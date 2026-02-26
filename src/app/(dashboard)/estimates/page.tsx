@@ -14,7 +14,7 @@ import {
     FileSignature, Plus, Send, Eye, CheckCircle2,
     Clock, DollarSign, LayoutGrid, Table2,
 } from "lucide-react";
-import { MOCK_ESTIMATES } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_ESTIMATES } from "@/lib/demo-data-vendor-lifecycle";
 import type { EstimateStatus } from "@/types/vendor-lifecycle";
 
 type ViewMode = "cards" | "table";

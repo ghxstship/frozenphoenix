@@ -110,10 +110,10 @@ export interface CaseStudy {
 }
 
 // ─── Production ───
-export type ProjectPhase = "pre_production" | "fabrication" | "logistics" | "load_in" | "show" | "strike" | "load_out";
-export type ProjectStatus = "draft" | "active" | "on_hold" | "completed" | "cancelled";
-export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done";
-export type TaskPriority = "critical" | "high" | "medium" | "low";
+export type ProjectPhase = "pre_production" | "fabrication" | "logistics" | "load_in" | "show" | "strike" | "load_out" | "discovery" | "design" | "procurement" | "rehearsal" | "wrap";
+export type ProjectStatus = "draft" | "active" | "on_hold" | "completed" | "cancelled" | "planning" | "pre_production" | "in_production" | "wrap";
+export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done" | "blocked" | "completed" | "cancelled";
+export type TaskPriority = "critical" | "high" | "medium" | "low" | "urgent";
 export type FabricationStatus = "not_started" | "design" | "cutting" | "assembly" | "finishing" | "complete";
 
 export interface Project {
@@ -191,7 +191,7 @@ export interface Shift {
 }
 
 // ─── Assets & Fleet ───
-export type AssetCondition = "excellent" | "good" | "fair" | "needs_repair" | "decommissioned";
+export type AssetCondition = "new" | "excellent" | "good" | "fair" | "needs_repair" | "decommissioned";
 
 export interface Asset {
     id: string;
@@ -414,7 +414,7 @@ export interface Expense {
 }
 
 // ─── Budget ───
-export type BudgetCategory = "labor" | "materials" | "equipment" | "rentals" | "travel" | "shipping" | "permits" | "contingency" | "overhead";
+export type BudgetCategory = "labor" | "materials" | "equipment" | "rentals" | "travel" | "shipping" | "permits" | "contingency" | "overhead" | "equipment_rental" | "equipment_purchase" | "fabrication" | "print" | "av" | "lighting" | "scenic" | "lodging" | "per_diem" | "trucking" | "venue" | "insurance" | "talent" | "catering" | "staffing" | "security" | "markup";
 
 export interface BudgetLineItem {
     id: string;

@@ -9,11 +9,12 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { CONTRACT_STATUS_MAP, CONTRACT_TYPE_MAP, type ContractStatusType, type ContractType } from "@/config/domain-config";
+import { useContracts, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     FileSignature, Plus, Calendar, Building2, AlertTriangle,
-    CheckCircle2, Clock, DollarSign,
+    CheckCircle2, Clock, DollarSign, Loader2,
 } from "lucide-react";
 
 interface ContractListItem {
@@ -45,8 +46,41 @@ export default function ContractsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const { data: sbContracts, isLoading } = useContracts();
 
-    const filtered = mockContracts.filter((c) => {
+    const now = new Date();
+    const contracts: ContractListItem[] = isSupabaseConfigured && sbContracts
+        ? sbContracts.map(c => {
+            const raw = c as unknown as Record<string, unknown>;
+            const contractNumber = String(raw.contract_number || "");
+            const effectiveDate = String(raw.effective_date || "");
+            const expirationDate = String(raw.expiration_date || "");
+            return {
+                id: c.id,
+                title: String(raw.title || contractNumber || "Untitled"),
+                contractNumber,
+                type: String(raw.type || "msa") as ContractType,
+                status: String(raw.status || "draft") as ContractStatusType,
+                vendorName: ((c as unknown as { vendors?: { name: string } }).vendors?.name) || undefined,
+                clientName: undefined,
+                value: Number(raw.value || 0),
+                effectiveDate,
+                expirationDate,
+                autoRenew: Boolean(raw.auto_renew),
+                daysUntilExpiry: Math.ceil((new Date(expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+            };
+        })
+        : mockContracts;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = contracts.filter((c) => {
         const matchesSearch =
             c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.contractNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -10,7 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { DataTable } from "@/components/data-view/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_USER_DIRECTORY } from "@/lib/mock-data-user-lifecycle";
+import { MOCK_USER_DIRECTORY } from "@/lib/demo-data-user-lifecycle";
 import {
     Users, UserPlus, Shield, UserCheck, UserX, Clock,
 } from "lucide-react";

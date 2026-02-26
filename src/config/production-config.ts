@@ -120,23 +120,9 @@ export const DEPARTMENT_CONFIG = {
     creative: { label: "Creative", icon: Sparkles, color: "#EC4899" },
 } as const;
 
-export const TASK_STATUS_CONFIG = {
-    backlog: { label: "Backlog", variant: "secondary", order: 0 },
-    todo: { label: "To Do", variant: "default", order: 1 },
-    in_progress: { label: "In Progress", variant: "info", order: 2 },
-    review: { label: "Review", variant: "warning", order: 3 },
-    blocked: { label: "Blocked", variant: "destructive", order: 4 },
-    completed: { label: "Completed", variant: "success", order: 5 },
-    cancelled: { label: "Cancelled", variant: "secondary", order: 6 },
-} as const;
-
-export const TASK_PRIORITY_CONFIG = {
-    low: { label: "Low", variant: "secondary", order: 0, color: "#6B7280" },
-    medium: { label: "Medium", variant: "default", order: 1, color: "#3B82F6" },
-    high: { label: "High", variant: "warning", order: 2, color: "#F59E0B" },
-    urgent: { label: "Urgent", variant: "destructive", order: 3, color: "#EF4444" },
-    critical: { label: "Critical", variant: "destructive", order: 4, color: "#DC2626" },
-} as const;
+// TASK_STATUS_CONFIG and TASK_PRIORITY_CONFIG have been consolidated into
+// @/config/domain-config (TASK_STATUS_MAP, TASK_PRIORITY_MAP) as part of
+// 3NF/SSOT remediation. Import from domain-config instead.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PROCUREMENT CONFIGURATION

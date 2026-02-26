@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     ShieldCheck, CheckCircle2, Clock, XCircle,
 } from "lucide-react";
-import { MOCK_PAYMENT_APPROVALS } from "@/lib/mock-data-governance";
+import { MOCK_PAYMENT_APPROVALS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus } from "@/types/governance";
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";

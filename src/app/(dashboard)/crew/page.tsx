@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_CREW } from "@/lib/mock-data";
+import { MOCK_CREW } from "@/lib/demo-data";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Plus, ShieldAlert, ShieldCheck, AlertTriangle, Loader2, LayoutGrid, Table2, Kanban } from "lucide-react";
 import type { CrewMember, CertificationType } from "@/types";
@@ -132,6 +133,7 @@ const boardCardFields: CardField<CrewMember>[] = [
 ];
 
 export default function CrewPage() {
+    const router = useRouter();
     const [viewMode, setViewMode] = React.useState<ViewMode>("cards");
     const { data: sbCrew, isLoading } = useCrewMembers();
 
@@ -236,7 +238,7 @@ export default function CrewPage() {
                     keyField="id"
                     cardTitle="name"
                     cardFields={boardCardFields}
-                    onCardClick={(member) => console.log("View crew:", member.id)}
+                    onCardClick={(member) => router.push(`/crew/${member.id}`)}
                 />
             )}
 

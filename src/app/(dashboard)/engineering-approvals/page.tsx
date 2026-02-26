@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
     Wrench, Plus, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
-import { MOCK_ENGINEERING_APPROVALS } from "@/lib/mock-data-governance";
+import { MOCK_ENGINEERING_APPROVALS } from "@/lib/demo-data-governance";
 import type { EngineeringApprovalStatus } from "@/types/governance";
 
 const APPROVAL_STATUSES: EngineeringApprovalStatus[] = [

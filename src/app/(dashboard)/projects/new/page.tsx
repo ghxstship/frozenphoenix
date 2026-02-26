@@ -6,9 +6,11 @@ import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, DatePicker, CurrencyInput } from "@/components/ui/form";
 import { PROJECT_STATUSES, PROJECT_PHASES } from "@/config/domain-config";
+import { useCreateProject, isSupabaseConfigured } from "@/lib/supabase/hooks";
 
 export default function NewProjectPage() {
     const router = useRouter();
+    const createProject = useCreateProject();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -19,20 +21,27 @@ export default function NewProjectPage() {
         endDate: "",
         budgetPlanned: 0,
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // In real app, call useCreateProject mutation here
-        console.log("Creating project:", formData);
-
-        setIsSubmitting(false);
-        router.push("/projects");
+        try {
+            if (isSupabaseConfigured) {
+                const projectData = {
+                    name: formData.name,
+                    client: formData.client,
+                    status: formData.status,
+                    current_phase: formData.currentPhase,
+                    start_date: formData.startDate || null,
+                    end_date: formData.endDate || null,
+                    budget_planned: formData.budgetPlanned || null,
+                };
+                await createProject.mutateAsync(projectData as unknown as Parameters<typeof createProject.mutateAsync>[0]);
+            }
+            router.push("/projects");
+        } catch (error) {
+            console.error("Failed to create project:", error);
+        }
     };
 
     const statusOptions = PROJECT_STATUSES.map((s) => ({ value: s.value, label: s.label }));
@@ -47,7 +56,7 @@ export default function NewProjectPage() {
             title="New Project"
             description="Create a new project to track production work"
             onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={createProject.isPending}
             isValid={isValid}
             submitLabel="Create Project"
         >

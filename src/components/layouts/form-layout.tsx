@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,14 +43,30 @@ export function FormLayout({
     className,
     children,
 }: FormLayoutProps) {
+    const formRef = useRef<HTMLFormElement>(null);
+
+    // Ctrl/Cmd+S to submit
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+                e.preventDefault();
+                if (isValid && !isSubmitting) {
+                    formRef.current?.requestSubmit();
+                }
+            }
+        };
+        document.addEventListener("keydown", handleKey);
+        return () => document.removeEventListener("keydown", handleKey);
+    }, [isValid, isSubmitting]);
+
     return (
         <div className={cn("animate-fade-in max-w-3xl", className)}>
             {/* Back Link */}
             <Link
                 href={backHref}
-                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+                className="group inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
             >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
                 {backLabel}
             </Link>
 
@@ -63,39 +79,44 @@ export function FormLayout({
             </div>
 
             {/* Form */}
-            <form onSubmit={onSubmit}>
+            <form ref={formRef} onSubmit={onSubmit}>
                 <div className="space-y-6">
                     {children}
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-border">
-                    {onCancel ? (
+                {/* Actions — sticky on scroll */}
+                <div className="flex items-center justify-between gap-3 mt-8 pt-4 pb-2 border-t border-border sticky bottom-0 bg-background/95 backdrop-blur-sm z-10">
+                    <div className="text-xs text-muted-foreground/50 hidden sm:block">
+                        <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">⌘S</kbd> to save
+                    </div>
+                    <div className="flex items-center gap-3 ml-auto">
+                        {onCancel ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={onCancel}
+                                disabled={isSubmitting}
+                            >
+                                {cancelLabel}
+                            </Button>
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                asChild
+                                disabled={isSubmitting}
+                            >
+                                <Link href={backHref}>{cancelLabel}</Link>
+                            </Button>
+                        )}
                         <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={onCancel}
-                            disabled={isSubmitting}
+                            type="submit"
+                            disabled={isSubmitting || !isValid}
                         >
-                            {cancelLabel}
+                            {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {submitLabel}
                         </Button>
-                    ) : (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            asChild
-                            disabled={isSubmitting}
-                        >
-                            <Link href={backHref}>{cancelLabel}</Link>
-                        </Button>
-                    )}
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting || !isValid}
-                    >
-                        {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                        {submitLabel}
-                    </Button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -105,6 +126,8 @@ export function FormLayout({
 export interface FormSectionProps {
     title: string;
     description?: string;
+    collapsible?: boolean;
+    defaultOpen?: boolean;
     className?: string;
     children: React.ReactNode;
 }
@@ -116,11 +139,11 @@ export function FormSection({
     children,
 }: FormSectionProps) {
     return (
-        <Card className={className}>
-            <CardHeader>
+        <Card className={cn("transition-shadow hover:shadow-sm", className)}>
+            <CardHeader className="pb-3">
                 <CardTitle className="text-lg">{title}</CardTitle>
                 {description && (
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
                 )}
             </CardHeader>
             <CardContent className="space-y-4">

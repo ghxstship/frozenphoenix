@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useVendors, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_VENDORS } from "@/lib/mock-data";
+import { MOCK_VENDORS } from "@/lib/demo-data";
 import { Plus, ShieldCheck, ShieldAlert, FileText, Star, Store, Loader2, Table2, LayoutGrid } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";

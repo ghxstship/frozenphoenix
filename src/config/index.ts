@@ -40,5 +40,8 @@ export * from "./domain-config";
 // Navigation Structure
 export * from "./navigation";
 
+// Production Domain Configuration
+export * from "./production-config";
+
 // RBAC Permissions
 export * from "./rbac";

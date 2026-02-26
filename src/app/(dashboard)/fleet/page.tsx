@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useVehicles, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_VEHICLES } from "@/lib/mock-data";
+import { MOCK_VEHICLES } from "@/lib/demo-data";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Plus,

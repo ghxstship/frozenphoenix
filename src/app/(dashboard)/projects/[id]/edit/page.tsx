@@ -6,27 +6,29 @@ import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, DatePicker, CurrencyInput } from "@/components/ui/form";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { PROJECT_STATUSES, PROJECT_PHASES } from "@/config/domain-config";
+import { useUpdateProject, useProject, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { FolderKanban } from "lucide-react";
 
 export default function EditProjectPage() {
     const params = useParams();
     const router = useRouter();
     const projectId = params.id as string;
+    const updateProject = useUpdateProject();
+    const { data: supabaseProject } = useProject(projectId);
 
-    const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+    const project = isSupabaseConfigured && supabaseProject ? supabaseProject : MOCK_PROJECTS.find((p) => p.id === projectId);
 
     const [formData, setFormData] = useState({
         name: project?.name || "",
         client: project?.client || "",
         status: project?.status || "draft",
-        currentPhase: project?.currentPhase || "pre_production",
-        startDate: project?.startDate || "",
-        endDate: project?.endDate || "",
-        budgetPlanned: project?.budgetPlanned || 0,
+        currentPhase: (project as Record<string, unknown>)?.currentPhase as string || (project as Record<string, unknown>)?.current_phase as string || "pre_production",
+        startDate: (project as Record<string, unknown>)?.startDate as string || (project as Record<string, unknown>)?.start_date as string || "",
+        endDate: (project as Record<string, unknown>)?.endDate as string || (project as Record<string, unknown>)?.end_date as string || "",
+        budgetPlanned: (project as Record<string, unknown>)?.budgetPlanned as number || (project as Record<string, unknown>)?.budget_planned as number || 0,
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!project) {
         return (
@@ -41,16 +43,25 @@ export default function EditProjectPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // In real app, call useUpdateProject mutation here
-        console.log("Updating project:", formData);
-
-        setIsSubmitting(false);
-        router.push(`/projects/${projectId}`);
+        try {
+            if (isSupabaseConfigured) {
+                const updateData = {
+                    id: projectId,
+                    name: formData.name,
+                    client: formData.client,
+                    status: formData.status,
+                    current_phase: formData.currentPhase,
+                    start_date: formData.startDate || null,
+                    end_date: formData.endDate || null,
+                    budget_planned: formData.budgetPlanned || null,
+                };
+                await updateProject.mutateAsync(updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]);
+            }
+            router.push(`/projects/${projectId}`);
+        } catch (error) {
+            console.error("Failed to update project:", error);
+        }
     };
 
     const statusOptions = PROJECT_STATUSES.map((s) => ({ value: s.value, label: s.label }));
@@ -63,7 +74,7 @@ export default function EditProjectPage() {
             title={`Edit ${project.name}`}
             description="Update project details and settings"
             onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={updateProject.isPending}
             submitLabel="Save Changes"
         >
             <FormSection title="Basic Information" description="Core project details">

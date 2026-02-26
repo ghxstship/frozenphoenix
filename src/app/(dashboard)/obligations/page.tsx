@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     ClipboardMinus, Plus, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
-import { MOCK_CONTRACT_OBLIGATIONS } from "@/lib/mock-data-governance";
+import { MOCK_CONTRACT_OBLIGATIONS } from "@/lib/demo-data-governance";
 import type { ObligationStatus } from "@/types/governance";
 
 const OBLIGATION_STATUSES: ObligationStatus[] = [

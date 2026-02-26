@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { MOCK_POS, MOCK_VENDORS, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_POS, MOCK_VENDORS, MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {

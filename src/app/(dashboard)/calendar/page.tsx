@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProjects, useTasks, useApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS } from "@/lib/mock-data";
+import { MOCK_PROJECTS, MOCK_TASKS, MOCK_APPROVALS } from "@/lib/demo-data";
 import { formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Loader2 } from "lucide-react";

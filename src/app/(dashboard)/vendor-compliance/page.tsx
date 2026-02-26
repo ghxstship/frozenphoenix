@@ -13,7 +13,7 @@ import {
     ShieldCheck, ShieldAlert, FileText, AlertTriangle,
     CheckCircle2, Clock, XCircle, RefreshCw,
 } from "lucide-react";
-import { MOCK_VENDOR_COMPLIANCE_DOCS, MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_VENDOR_COMPLIANCE_DOCS, MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/demo-data-vendor-lifecycle";
 import type { ComplianceDocStatus } from "@/types/vendor-lifecycle";
 
 const COMPLIANCE_STATUSES: ComplianceDocStatus[] = ["not_submitted", "pending_review", "approved", "rejected", "expired", "expiring_soon"];

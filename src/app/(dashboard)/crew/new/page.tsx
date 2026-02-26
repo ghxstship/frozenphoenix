@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, CurrencyInput } from "@/components/ui/form";
+import { useCreateCrewMember, isSupabaseConfigured } from "@/lib/supabase/hooks";
 
 const STATUS_OPTIONS = [
     { value: "available", label: "Available" },
@@ -27,6 +28,7 @@ const ROLE_OPTIONS = [
 
 export default function NewCrewMemberPage() {
     const router = useRouter();
+    const createCrewMember = useCreateCrewMember();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -36,17 +38,26 @@ export default function NewCrewMemberPage() {
         hourlyRate: 0,
         status: "available",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Creating crew member:", formData);
-
-        setIsSubmitting(false);
-        router.push("/crew");
+        try {
+            if (isSupabaseConfigured) {
+                const memberData = {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone || null,
+                    role: formData.role,
+                    hourly_rate: formData.hourlyRate || null,
+                    status: formData.status,
+                };
+                await createCrewMember.mutateAsync(memberData as unknown as Parameters<typeof createCrewMember.mutateAsync>[0]);
+            }
+            router.push("/crew");
+        } catch (error) {
+            console.error("Failed to create crew member:", error);
+        }
     };
 
     const isValid = formData.name.trim() !== "" && formData.email.trim() !== "" && formData.role !== "";
@@ -58,7 +69,7 @@ export default function NewCrewMemberPage() {
             title="Add Crew Member"
             description="Add a new crew member to your team"
             onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={createCrewMember.isPending}
             isValid={isValid}
             submitLabel="Add Crew Member"
         >

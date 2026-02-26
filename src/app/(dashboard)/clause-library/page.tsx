@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     BookLock, Plus,
 } from "lucide-react";
-import { MOCK_CONTRACT_CLAUSES } from "@/lib/mock-data-governance";
+import { MOCK_CONTRACT_CLAUSES } from "@/lib/demo-data-governance";
 import type { ClauseRiskLevel } from "@/types/governance";
 
 const CLAUSE_TYPE_LABELS: Record<string, string> = {

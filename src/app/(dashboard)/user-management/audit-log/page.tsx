@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
-import { MOCK_LOGIN_AUDIT, MOCK_ROLE_CHANGES } from "@/lib/mock-data-user-lifecycle";
+import { MOCK_LOGIN_AUDIT, MOCK_ROLE_CHANGES } from "@/lib/demo-data-user-lifecycle";
 import {
     KeyRound, ShieldCheck, ShieldAlert, LogIn, LogOut, AlertTriangle,
     Clock, Globe, Monitor, Smartphone, Download,

@@ -13,6 +13,11 @@ export interface EmptyStateProps {
         label: string;
         onClick: () => void;
     };
+    secondaryAction?: {
+        label: string;
+        onClick: () => void;
+    };
+    compact?: boolean;
     className?: string;
 }
 
@@ -21,28 +26,50 @@ export function EmptyState({
     title,
     description,
     action,
+    secondaryAction,
+    compact = false,
     className,
 }: EmptyStateProps) {
     return (
         <div
             className={cn(
-                "flex flex-col items-center justify-center py-16 px-4 text-center",
+                "flex flex-col items-center justify-center text-center animate-fade-in",
+                compact ? "py-8 px-4" : "py-16 px-4",
                 className
             )}
+            role="status"
         >
-            <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                <Icon className="h-8 w-8 text-muted-foreground" />
+            <div className={cn(
+                "rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 ring-1 ring-border/50",
+                compact ? "h-12 w-12" : "h-16 w-16"
+            )}>
+                <Icon className={cn(
+                    "text-muted-foreground/60",
+                    compact ? "h-6 w-6" : "h-8 w-8"
+                )} />
             </div>
-            <h3 className="text-lg font-semibold mb-1">{title}</h3>
+            <h3 className={cn(
+                "font-semibold mb-1",
+                compact ? "text-base" : "text-lg"
+            )}>{title}</h3>
             {description && (
-                <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                <p className="text-sm text-muted-foreground max-w-sm mb-5 leading-relaxed">
                     {description}
                 </p>
             )}
-            {action && (
-                <Button onClick={action.onClick}>
-                    {action.label}
-                </Button>
+            {(action || secondaryAction) && (
+                <div className="flex items-center gap-3">
+                    {secondaryAction && (
+                        <Button variant="ghost" size="sm" onClick={secondaryAction.onClick}>
+                            {secondaryAction.label}
+                        </Button>
+                    )}
+                    {action && (
+                        <Button size={compact ? "sm" : "default"} onClick={action.onClick}>
+                            {action.label}
+                        </Button>
+                    )}
+                </div>
             )}
         </div>
     );

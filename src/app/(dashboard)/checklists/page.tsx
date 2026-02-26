@@ -14,7 +14,7 @@ import {
     ListChecks, Plus, CheckCircle2, Circle, Clock,
     Percent,
 } from "lucide-react";
-import { MOCK_JOB_CHECKLISTS, MOCK_CHECKLIST_TEMPLATES } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_JOB_CHECKLISTS, MOCK_CHECKLIST_TEMPLATES } from "@/lib/demo-data-vendor-lifecycle";
 
 type ViewTab = "active" | "templates";
 

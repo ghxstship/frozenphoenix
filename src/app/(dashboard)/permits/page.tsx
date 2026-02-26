@@ -12,7 +12,7 @@ import {
     FileBadge, Plus, AlertTriangle, CheckCircle2,
     Clock, XCircle, MapPin,
 } from "lucide-react";
-import { MOCK_PERMITS } from "@/lib/mock-data-governance";
+import { MOCK_PERMITS } from "@/lib/demo-data-governance";
 import type { PermitStatus } from "@/types/governance";
 
 const PERMIT_STATUSES: PermitStatus[] = [

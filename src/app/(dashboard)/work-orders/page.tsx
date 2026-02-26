@@ -16,7 +16,7 @@ import {
     Play, Users, Gavel, Calendar,
     LayoutGrid, Table2,
 } from "lucide-react";
-import { MOCK_WORK_ORDERS } from "@/lib/mock-data-vendor-lifecycle";
+import { MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
 import type { WorkOrderStatus, WorkOrderPriority } from "@/types/vendor-lifecycle";
 
 type ViewMode = "cards" | "table";

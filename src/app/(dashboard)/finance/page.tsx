@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { usePurchaseOrders, useInvoices, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { MOCK_POS, MOCK_INVOICES } from "@/lib/mock-data";
+import { MOCK_POS, MOCK_INVOICES } from "@/lib/demo-data";
 import { formatCurrency } from "@/lib/utils";
 import { Receipt, AlertTriangle, CheckCircle2, DollarSign, Loader2 } from "lucide-react";
 import type { PurchaseOrder, Invoice } from "@/types";

@@ -12,6 +12,8 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import type { DealStage } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useDeals, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { MOCK_DEALS } from "@/lib/demo-data";
 import {
     DollarSign, Plus, TrendingUp, Building2,
     Calendar, User, ArrowRight,
@@ -29,28 +31,44 @@ interface DealListItem {
     lastActivity: string;
 }
 
-const mockDeals: DealListItem[] = [
-    { id: "1", title: "Nike Air Max Launch 2026", company: "Nike Inc.", value: 850000, stage: "negotiation", probability: 75, owner: "Sarah Chen", expectedClose: "2026-03-15", lastActivity: "2026-02-24" },
-    { id: "2", title: "Red Bull Festival Activation", company: "Red Bull GmbH", value: 425000, stage: "proposal", probability: 50, owner: "Mike Johnson", expectedClose: "2026-04-01", lastActivity: "2026-02-22" },
-    { id: "3", title: "Glossier Pop-Up Experience", company: "Glossier Inc.", value: 320000, stage: "qualified", probability: 30, owner: "Sarah Chen", expectedClose: "2026-05-10", lastActivity: "2026-02-20" },
-    { id: "4", title: "Coachella Brand Experience", company: "Goldenvoice LLC", value: 1200000, stage: "won", probability: 100, owner: "Sarah Chen", expectedClose: "2026-01-15", lastActivity: "2026-01-15" },
-    { id: "5", title: "Adidas Originals Launch", company: "Adidas AG", value: 560000, stage: "lead", probability: 15, owner: "Mike Johnson", expectedClose: "2026-06-01", lastActivity: "2026-02-18" },
-    { id: "6", title: "Spotify Wrapped Experience", company: "Spotify AB", value: 680000, stage: "lost", probability: 0, owner: "Sarah Chen", expectedClose: "2026-02-01", lastActivity: "2026-02-05" },
-];
-
 export default function DealsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [stageFilter, setStageFilter] = useState<string>("all");
+    const { data: sbDeals } = useDeals();
 
-    const filtered = mockDeals.filter((d) => {
+    const deals: DealListItem[] = isSupabaseConfigured && sbDeals
+        ? sbDeals.map(d => ({
+            id: d.id,
+            title: d.title,
+            company: d.company ?? "",
+            value: d.value ?? 0,
+            stage: d.stage as DealStage,
+            probability: d.probability ?? 0,
+            owner: d.assigned_to ?? "",
+            expectedClose: d.expected_close_date ?? "",
+            lastActivity: d.updated_at ?? d.created_at ?? "",
+        }))
+        : MOCK_DEALS.map(d => ({
+            id: d.id,
+            title: d.title,
+            company: d.company ?? "",
+            value: d.value ?? 0,
+            stage: d.stage,
+            probability: d.probability ?? 0,
+            owner: d.assignedTo ?? "",
+            expectedClose: d.expectedCloseDate ?? "",
+            lastActivity: d.updatedAt ?? d.createdAt ?? "",
+        }));
+
+    const filtered = deals.filter((d) => {
         const matchesSearch = d.title.toLowerCase().includes(searchQuery.toLowerCase()) || d.company.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStage = stageFilter === "all" || d.stage === stageFilter;
         return matchesSearch && matchesStage;
     });
 
-    const totalPipeline = mockDeals.filter(d => d.stage !== "won" && d.stage !== "lost").reduce((sum, d) => sum + d.value, 0);
-    const weightedPipeline = mockDeals.filter(d => d.stage !== "won" && d.stage !== "lost").reduce((sum, d) => sum + d.value * (d.probability / 100), 0);
-    const wonValue = mockDeals.filter(d => d.stage === "won").reduce((sum, d) => sum + d.value, 0);
+    const totalPipeline = deals.filter(d => d.stage !== "won" && d.stage !== "lost").reduce((sum, d) => sum + d.value, 0);
+    const weightedPipeline = deals.filter(d => d.stage !== "won" && d.stage !== "lost").reduce((sum, d) => sum + d.value * (d.probability / 100), 0);
+    const wonValue = deals.filter(d => d.stage === "won").reduce((sum, d) => sum + d.value, 0);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -62,7 +80,7 @@ export default function DealsPage() {
                 <StatCard title="Total Pipeline" value={formatCurrency(totalPipeline)} icon={DollarSign} />
                 <StatCard title="Weighted Value" value={formatCurrency(weightedPipeline)} icon={TrendingUp} />
                 <StatCard title="Won (YTD)" value={formatCurrency(wonValue)} icon={DollarSign} />
-                <StatCard title="Active Deals" value={mockDeals.filter(d => d.stage !== "won" && d.stage !== "lost").length} icon={Building2} />
+                <StatCard title="Active Deals" value={deals.filter(d => d.stage !== "won" && d.stage !== "lost").length} icon={Building2} />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">

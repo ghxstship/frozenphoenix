@@ -1,31 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════
-   CONSTANTS — Re-exports from SSOT Config Files
+   CONSTANTS — REMOVED (3NF/SSOT Remediation)
    ═══════════════════════════════════════════════════════════════
    
-   DEPRECATED: Import directly from "@/config" instead.
-   This file exists for backward compatibility only.
+   This file has been emptied as part of 3NF/SSOT compliance.
+   All consumers now import directly from their canonical sources:
    
-   All domain configs are now in:
-   - @/config/domain-config (enums, labels, variants)
-   - @/config/design-tokens (breakpoints, layout)
+   - Domain configs → @/config/domain-config
+   - Design tokens  → @/config/design-tokens  
+   - SIDEBAR_WIDTH  → LAYOUT.sidebar from @/config/design-tokens
+   
+   This file will be deleted in a future cleanup pass.
    ═══════════════════════════════════════════════════════════════ */
-
-// Re-export from SSOT sources for backward compatibility
-export {
-    DEAL_STAGE_MAP as DEAL_STAGE_CONFIG,
-    PROJECT_PHASE_ORDER,
-    PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
-    PROJECT_STATUS_MAP as PROJECT_STATUS_CONFIG,
-    TASK_STATUS_MAP as TASK_STATUS_CONFIG,
-    TASK_PRIORITY_MAP as TASK_PRIORITY_CONFIG,
-    FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
-    ASSET_CONDITION_MAP as ASSET_CONDITION_CONFIG,
-} from "./domain-config";
-
-export { BREAKPOINTS, LAYOUT } from "./design-tokens";
-
-// Backward compatibility alias
-export const SIDEBAR_WIDTH = {
-    expanded: 260,
-    collapsed: 68,
-} as const;

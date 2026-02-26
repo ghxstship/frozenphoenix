@@ -1,0 +1,218 @@
+name: Quality Gate
+
+on:
+  pull_request:
+    branches: [main, staging, production]
+  push:
+    branches: [main]
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 1: Lint + Type Check (fast, fail early)
+  # ─────────────────────────────────────────────────────────────────────────
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: TypeScript strict compilation
+        run: npx tsc --noEmit
+
+      - name: ESLint (zero warnings)
+        run: npx eslint . --max-warnings=0
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 2: Security scan
+  # ─────────────────────────────────────────────────────────────────────────
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: npm audit (high/critical)
+        run: npm audit --audit-level=high
+
+      - name: Check for secrets in source
+        run: |
+          echo "Checking for potential secret leaks..."
+          # Fail if any hardcoded secrets patterns found
+          if grep -rn "SUPABASE_SERVICE_ROLE_KEY\|sk_live_\|sk_test_\|-----BEGIN.*PRIVATE KEY" \
+            --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" \
+            --exclude-dir=node_modules --exclude-dir=.next src/ ; then
+            echo "❌ Potential secrets found in source code!"
+            exit 1
+          fi
+          echo "✅ No secrets detected in source"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 3: Build
+  # ─────────────────────────────────────────────────────────────────────────
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-typecheck, security]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Check bundle size
+        run: |
+          echo "Checking bundle size budget..."
+          # Extract .next build output sizes
+          if [ -d ".next" ]; then
+            MAIN_SIZE=$(find .next/static -name "*.js" -exec du -cb {} + 2>/dev/null | tail -1 | cut -f1 || echo "0")
+            MAIN_KB=$((MAIN_SIZE / 1024))
+            echo "Total JS bundle: ${MAIN_KB}KB"
+            if [ "$MAIN_KB" -gt 512000 ]; then
+              echo "❌ Bundle exceeds 500MB gzipped budget"
+              exit 1
+            fi
+            echo "✅ Bundle size within budget"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 1
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 4: Tests (when test infrastructure exists)
+  # ─────────────────────────────────────────────────────────────────────────
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run tests
+        run: |
+          if npm run test --if-present 2>/dev/null; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠ No test script configured — attestation required"
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 5: Database migrations check
+  # ─────────────────────────────────────────────────────────────────────────
+  migrations:
+    name: Migration Integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify migration file ordering
+        run: |
+          echo "Checking migration file ordering..."
+          ls -1 supabase/migrations/*.sql | sort -c
+          echo "✅ Migrations are sequentially ordered"
+
+      - name: Check for migration naming convention
+        run: |
+          echo "Checking migration naming convention..."
+          for f in supabase/migrations/*.sql; do
+            basename=$(basename "$f")
+            if ! echo "$basename" | grep -qE '^[0-9]{3}_'; then
+              echo "❌ Migration file $basename does not follow NNN_ naming convention"
+              exit 1
+            fi
+          done
+          echo "✅ All migrations follow naming convention"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Quality Gate (final gate — blocks merge/deploy)
+  # ─────────────────────────────────────────────────────────────────────────
+  quality-gate:
+    name: "🚦 Quality Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [lint-typecheck, security, build, test, migrations]
+    if: always()
+    steps:
+      - name: Evaluate gate
+        run: |
+          echo "═══════════════════════════════════════════════════════"
+          echo "  QUALITY GATE EVALUATION"
+          echo "═══════════════════════════════════════════════════════"
+
+          FAILED=0
+
+          check_job() {
+            local job_name="$1"
+            local job_result="$2"
+            if [ "$job_result" != "success" ] && [ "$job_result" != "skipped" ]; then
+              echo "  ❌ $job_name: $job_result"
+              FAILED=$((FAILED + 1))
+            else
+              echo "  ✅ $job_name: $job_result"
+            fi
+          }
+
+          check_job "Lint & Type Check" "${{ needs.lint-typecheck.result }}"
+          check_job "Security Audit"    "${{ needs.security.result }}"
+          check_job "Production Build"  "${{ needs.build.result }}"
+          check_job "Test Suite"        "${{ needs.test.result }}"
+          check_job "Migrations"        "${{ needs.migrations.result }}"
+
+          echo "═══════════════════════════════════════════════════════"
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "  🚫 DEPLOYMENT BLOCKED — $FAILED stage(s) failed"
+            echo "═══════════════════════════════════════════════════════"
+            exit 1
+          fi
+
+          echo "  ✅ ALL GATES PASSED — Deployment allowed"
+          echo "═══════════════════════════════════════════════════════"

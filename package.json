@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "type-check": "tsc --noEmit",
+    "quality-gate": "npx tsx scripts/quality-gate.ts",
+    "quality-gate:automated": "npx tsx scripts/quality-gate.ts --automated",
+    "quality-gate:report": "npx tsx scripts/quality-gate.ts --report",
+    "quality-gate:section": "npx tsx scripts/quality-gate.ts --section",
+    "predeploy": "npm run type-check && npm run lint && npm run build && npm run quality-gate:automated"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

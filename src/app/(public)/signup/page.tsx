@@ -32,7 +32,7 @@ export default function SignupPage() {
                 return;
             }
 
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -45,6 +45,13 @@ export default function SignupPage() {
 
             if (error) {
                 setError(error.message);
+                return;
+            }
+
+            // When email confirmations are disabled (autoconfirm), Supabase
+            // returns a session directly — redirect to dashboard.
+            if (data?.session) {
+                router.push("/dashboard");
                 return;
             }
 

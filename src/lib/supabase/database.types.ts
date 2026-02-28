@@ -10441,6 +10441,943 @@ export type Database = {
           },
         ]
       }
+      access_audit_log: {
+        Row: {
+          id: string
+          user_id: string
+          resource: string
+          action: string
+          scope_type: string | null
+          scope_id: string | null
+          granted: boolean
+          role_key: string | null
+          ip_address: string | null
+          user_agent: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          resource: string
+          action: string
+          scope_type?: string | null
+          scope_id?: string | null
+          granted: boolean
+          role_key?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          resource?: string
+          action?: string
+          scope_type?: string | null
+          scope_id?: string | null
+          granted?: boolean
+          role_key?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      brands: {
+        Row: {
+          id: string
+          organization_id: string | null
+          key: string
+          label: string
+          is_active: boolean | null
+          color_primary: string | null
+          color_accent: string | null
+          color_background: string | null
+          color_foreground: string | null
+          color_muted: string | null
+          font_family: string | null
+          font_heading: string | null
+          font_mono: string | null
+          logo_icon_url: string | null
+          logo_wordmark_url: string | null
+          favicon_url: string | null
+          support_email: string | null
+          support_phone: string | null
+          support_url: string | null
+          social_links: Json | null
+          enable_dark_mode: boolean | null
+          enable_animations: boolean | null
+          enable_glass_effects: boolean | null
+          custom_domain: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string | null
+          key: string
+          label: string
+          is_active?: boolean | null
+          color_primary?: string | null
+          color_accent?: string | null
+          color_background?: string | null
+          color_foreground?: string | null
+          color_muted?: string | null
+          font_family?: string | null
+          font_heading?: string | null
+          font_mono?: string | null
+          logo_icon_url?: string | null
+          logo_wordmark_url?: string | null
+          favicon_url?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          support_url?: string | null
+          social_links?: Json | null
+          enable_dark_mode?: boolean | null
+          enable_animations?: boolean | null
+          enable_glass_effects?: boolean | null
+          custom_domain?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string | null
+          key?: string
+          label?: string
+          is_active?: boolean | null
+          color_primary?: string | null
+          color_accent?: string | null
+          color_background?: string | null
+          color_foreground?: string | null
+          color_muted?: string | null
+          font_family?: string | null
+          font_heading?: string | null
+          font_mono?: string | null
+          logo_icon_url?: string | null
+          logo_wordmark_url?: string | null
+          favicon_url?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          support_url?: string | null
+          social_links?: Json | null
+          enable_dark_mode?: boolean | null
+          enable_animations?: boolean | null
+          enable_glass_effects?: boolean | null
+          custom_domain?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brands_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flag_overrides: {
+        Row: {
+          id: string
+          flag_id: string
+          scope_type: Database["public"]["Enums"]["feature_flag_override_scope"]
+          scope_id: string
+          value: Json
+          reason: string | null
+          created_by: string | null
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          flag_id: string
+          scope_type: Database["public"]["Enums"]["feature_flag_override_scope"]
+          scope_id: string
+          value: Json
+          reason?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          flag_id?: string
+          scope_type?: Database["public"]["Enums"]["feature_flag_override_scope"]
+          scope_id?: string
+          value?: Json
+          reason?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flag_overrides_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flags: {
+        Row: {
+          id: string
+          key: string
+          label: string
+          description: string | null
+          flag_type: Database["public"]["Enums"]["feature_flag_type"]
+          default_value: Json
+          is_active: boolean | null
+          target_orgs: string[] | null
+          target_roles: string[] | null
+          target_environments: string[] | null
+          target_regions: string[] | null
+          target_user_ids: string[] | null
+          rollout_percentage: number | null
+          variants: Json | null
+          starts_at: string | null
+          expires_at: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label: string
+          description?: string | null
+          flag_type?: Database["public"]["Enums"]["feature_flag_type"]
+          default_value?: Json
+          is_active?: boolean | null
+          target_orgs?: string[] | null
+          target_roles?: string[] | null
+          target_environments?: string[] | null
+          target_regions?: string[] | null
+          target_user_ids?: string[] | null
+          rollout_percentage?: number | null
+          variants?: Json | null
+          starts_at?: string | null
+          expires_at?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label?: string
+          description?: string | null
+          flag_type?: Database["public"]["Enums"]["feature_flag_type"]
+          default_value?: Json
+          is_active?: boolean | null
+          target_orgs?: string[] | null
+          target_roles?: string[] | null
+          target_environments?: string[] | null
+          target_regions?: string[] | null
+          target_user_ids?: string[] | null
+          rollout_percentage?: number | null
+          variants?: Json | null
+          starts_at?: string | null
+          expires_at?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          id: string
+          organization_id: string
+          email: string
+          role: string
+          token: string
+          status: Database["public"]["Enums"]["invitation_status"]
+          invited_by: string
+          personal_message: string | null
+          project_ids: string[] | null
+          expires_at: string
+          accepted_at: string | null
+          accepted_by: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          email: string
+          role?: string
+          token: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          invited_by: string
+          personal_message?: string | null
+          project_ids?: string[] | null
+          expires_at?: string
+          accepted_at?: string | null
+          accepted_by?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          email?: string
+          role?: string
+          token?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          invited_by?: string
+          personal_message?: string | null
+          project_ids?: string[] | null
+          expires_at?: string
+          accepted_at?: string | null
+          accepted_by?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      login_audit_log: {
+        Row: {
+          id: string
+          user_id: string | null
+          email: string | null
+          event_type: string
+          auth_method: string | null
+          ip_address: string | null
+          user_agent: string | null
+          device_fingerprint: string | null
+          country_code: string | null
+          city: string | null
+          success: boolean
+          failure_reason: string | null
+          session_id: string | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          email?: string | null
+          event_type: string
+          auth_method?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          device_fingerprint?: string | null
+          country_code?: string | null
+          city?: string | null
+          success?: boolean
+          failure_reason?: string | null
+          session_id?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          email?: string | null
+          event_type?: string
+          auth_method?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          device_fingerprint?: string | null
+          country_code?: string | null
+          city?: string | null
+          success?: boolean
+          failure_reason?: string | null
+          session_id?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      onboarding_step_definitions: {
+        Row: {
+          id: string
+          role: string
+          step_key: string
+          title: string
+          description: string | null
+          sort_order: number
+          is_required: boolean
+          is_active: boolean
+          gate_access: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          role: string
+          step_key: string
+          title: string
+          description?: string | null
+          sort_order?: number
+          is_required?: boolean
+          is_active?: boolean
+          gate_access?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          role?: string
+          step_key?: string
+          title?: string
+          description?: string | null
+          sort_order?: number
+          is_required?: boolean
+          is_active?: boolean
+          gate_access?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      org_memberships: {
+        Row: {
+          id: string
+          user_id: string
+          organization_id: string
+          role: string
+          status: Database["public"]["Enums"]["org_membership_status"]
+          is_default_org: boolean
+          invited_by: string | null
+          invited_at: string | null
+          joined_at: string | null
+          expires_at: string | null
+          suspended_at: string | null
+          suspended_reason: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          organization_id: string
+          role?: string
+          status?: Database["public"]["Enums"]["org_membership_status"]
+          is_default_org?: boolean
+          invited_by?: string | null
+          invited_at?: string | null
+          joined_at?: string | null
+          expires_at?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          organization_id?: string
+          role?: string
+          status?: Database["public"]["Enums"]["org_membership_status"]
+          is_default_org?: boolean
+          invited_by?: string | null
+          invited_at?: string | null
+          joined_at?: string | null
+          expires_at?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permission_grants: {
+        Row: {
+          id: string
+          role_definition_id: string
+          resource: string
+          action: Database["public"]["Enums"]["permission_action"]
+          scope_type: Database["public"]["Enums"]["permission_scope_type"] | null
+          scope_id: string | null
+          conditions: Json | null
+          field_restrictions: string[] | null
+          field_exclusions: string[] | null
+          is_active: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          role_definition_id: string
+          resource: string
+          action: Database["public"]["Enums"]["permission_action"]
+          scope_type?: Database["public"]["Enums"]["permission_scope_type"] | null
+          scope_id?: string | null
+          conditions?: Json | null
+          field_restrictions?: string[] | null
+          field_exclusions?: string[] | null
+          is_active?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          role_definition_id?: string
+          resource?: string
+          action?: Database["public"]["Enums"]["permission_action"]
+          scope_type?: Database["public"]["Enums"]["permission_scope_type"] | null
+          scope_id?: string | null
+          conditions?: Json | null
+          field_restrictions?: string[] | null
+          field_exclusions?: string[] | null
+          is_active?: boolean | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_grants_role_definition_id_fkey"
+            columns: ["role_definition_id"]
+            isOneToOne: false
+            referencedRelation: "role_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_definitions: {
+        Row: {
+          id: string
+          organization_id: string | null
+          key: string
+          label: string
+          description: string | null
+          is_system: boolean | null
+          is_active: boolean | null
+          parent_role_id: string | null
+          priority: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string | null
+          key: string
+          label: string
+          description?: string | null
+          is_system?: boolean | null
+          is_active?: boolean | null
+          parent_role_id?: string | null
+          priority?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string | null
+          key?: string
+          label?: string
+          description?: string | null
+          is_system?: boolean | null
+          is_active?: boolean | null
+          parent_role_id?: string | null
+          priority?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_definitions_parent_role_id_fkey"
+            columns: ["parent_role_id"]
+            isOneToOne: false
+            referencedRelation: "role_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setting_definitions: {
+        Row: {
+          id: string
+          category: Database["public"]["Enums"]["setting_category"]
+          key: string
+          label: string
+          description: string | null
+          value_type: Database["public"]["Enums"]["setting_value_type"]
+          default_value: Json
+          allowed_values: Json | null
+          min_value: number | null
+          max_value: number | null
+          min_scope: Database["public"]["Enums"]["setting_scope"]
+          max_scope: Database["public"]["Enums"]["setting_scope"]
+          is_sensitive: boolean | null
+          requires_restart: boolean | null
+          requires_approval: boolean | null
+          display_order: number | null
+          deprecated_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category: Database["public"]["Enums"]["setting_category"]
+          key: string
+          label: string
+          description?: string | null
+          value_type: Database["public"]["Enums"]["setting_value_type"]
+          default_value: Json
+          allowed_values?: Json | null
+          min_value?: number | null
+          max_value?: number | null
+          min_scope?: Database["public"]["Enums"]["setting_scope"]
+          max_scope?: Database["public"]["Enums"]["setting_scope"]
+          is_sensitive?: boolean | null
+          requires_restart?: boolean | null
+          requires_approval?: boolean | null
+          display_order?: number | null
+          deprecated_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category?: Database["public"]["Enums"]["setting_category"]
+          key?: string
+          label?: string
+          description?: string | null
+          value_type?: Database["public"]["Enums"]["setting_value_type"]
+          default_value?: Json
+          allowed_values?: Json | null
+          min_value?: number | null
+          max_value?: number | null
+          min_scope?: Database["public"]["Enums"]["setting_scope"]
+          max_scope?: Database["public"]["Enums"]["setting_scope"]
+          is_sensitive?: boolean | null
+          requires_restart?: boolean | null
+          requires_approval?: boolean | null
+          display_order?: number | null
+          deprecated_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          id: string
+          definition_id: string
+          scope_type: Database["public"]["Enums"]["setting_scope"]
+          scope_id: string | null
+          value: Json
+          is_locked: boolean | null
+          locked_by: string | null
+          locked_at: string | null
+          locked_reason: string | null
+          inherit_from_parent: boolean | null
+          version: number
+          previous_value: Json | null
+          changed_by: string | null
+          changed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          definition_id: string
+          scope_type: Database["public"]["Enums"]["setting_scope"]
+          scope_id?: string | null
+          value: Json
+          is_locked?: boolean | null
+          locked_by?: string | null
+          locked_at?: string | null
+          locked_reason?: string | null
+          inherit_from_parent?: boolean | null
+          version?: number
+          previous_value?: Json | null
+          changed_by?: string | null
+          changed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          definition_id?: string
+          scope_type?: Database["public"]["Enums"]["setting_scope"]
+          scope_id?: string | null
+          value?: Json
+          is_locked?: boolean | null
+          locked_by?: string | null
+          locked_at?: string | null
+          locked_reason?: string | null
+          inherit_from_parent?: boolean | null
+          version?: number
+          previous_value?: Json | null
+          changed_by?: string | null
+          changed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "setting_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      settings_change_log: {
+        Row: {
+          id: string
+          setting_id: string
+          definition_id: string
+          scope_type: Database["public"]["Enums"]["setting_scope"]
+          scope_id: string | null
+          old_value: Json | null
+          new_value: Json | null
+          changed_by: string
+          change_reason: string | null
+          ip_address: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          setting_id: string
+          definition_id: string
+          scope_type: Database["public"]["Enums"]["setting_scope"]
+          scope_id?: string | null
+          old_value?: Json | null
+          new_value?: Json | null
+          changed_by: string
+          change_reason?: string | null
+          ip_address?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          setting_id?: string
+          definition_id?: string
+          scope_type?: Database["public"]["Enums"]["setting_scope"]
+          scope_id?: string | null
+          old_value?: Json | null
+          new_value?: Json | null
+          changed_by?: string
+          change_reason?: string | null
+          ip_address?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_change_log_setting_id_fkey"
+            columns: ["setting_id"]
+            isOneToOne: false
+            referencedRelation: "settings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "settings_change_log_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "setting_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      settings_change_requests: {
+        Row: {
+          id: string
+          organization_id: string
+          setting_key: string
+          scope_type: string
+          scope_id: string | null
+          current_value: Json | null
+          proposed_value: Json
+          reason: string | null
+          status: Database["public"]["Enums"]["settings_approval_status"]
+          requested_by: string
+          reviewed_by: string | null
+          review_comment: string | null
+          requested_at: string
+          reviewed_at: string | null
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          setting_key: string
+          scope_type?: string
+          scope_id?: string | null
+          current_value?: Json | null
+          proposed_value: Json
+          reason?: string | null
+          status?: Database["public"]["Enums"]["settings_approval_status"]
+          requested_by: string
+          reviewed_by?: string | null
+          review_comment?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          setting_key?: string
+          scope_type?: string
+          scope_id?: string | null
+          current_value?: Json | null
+          proposed_value?: Json
+          reason?: string | null
+          status?: Database["public"]["Enums"]["settings_approval_status"]
+          requested_by?: string
+          reviewed_by?: string | null
+          review_comment?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_change_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_onboarding_progress: {
+        Row: {
+          id: string
+          user_id: string
+          step_definition_id: string
+          status: Database["public"]["Enums"]["onboarding_step_status"]
+          completed_at: string | null
+          skipped_at: string | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          step_definition_id: string
+          status?: Database["public"]["Enums"]["onboarding_step_status"]
+          completed_at?: string | null
+          skipped_at?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          step_definition_id?: string
+          status?: Database["public"]["Enums"]["onboarding_step_status"]
+          completed_at?: string | null
+          skipped_at?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_onboarding_progress_step_definition_id_fkey"
+            columns: ["step_definition_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_step_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          session_token_hash: string
+          ip_address: string | null
+          user_agent: string | null
+          device_name: string | null
+          device_type: string | null
+          browser: string | null
+          os: string | null
+          country_code: string | null
+          city: string | null
+          is_current: boolean
+          last_active_at: string | null
+          expires_at: string
+          revoked_at: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_token_hash: string
+          ip_address?: string | null
+          user_agent?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          browser?: string | null
+          os?: string | null
+          country_code?: string | null
+          city?: string | null
+          is_current?: boolean
+          last_active_at?: string | null
+          expires_at?: string
+          revoked_at?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_token_hash?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          browser?: string | null
+          os?: string | null
+          country_code?: string | null
+          city?: string | null
+          is_current?: boolean
+          last_active_at?: string | null
+          expires_at?: string
+          revoked_at?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       lead_pipeline_stats: {
@@ -11093,6 +12030,12 @@ export type Database = {
         | "training"
         | "press"
         | "vip"
+      feature_flag_override_scope:
+        | "organization"
+        | "project"
+        | "user"
+        | "role"
+      feature_flag_type: "boolean" | "percentage" | "variant"
       expense_status:
         | "draft"
         | "submitted"
@@ -11118,6 +12061,7 @@ export type Database = {
         | "vendor_issue"
         | "client_complaint"
         | "other"
+      invitation_status: "pending" | "accepted" | "expired" | "revoked"
       invoice_delivery_status:
         | "draft"
         | "sent"
@@ -11172,6 +12116,8 @@ export type Database = {
         | "hotel"
         | "airport"
         | "other"
+      onboarding_step_status: "not_started" | "in_progress" | "completed" | "skipped"
+      org_membership_status: "invited" | "active" | "suspended" | "expired" | "revoked"
       milestone_status:
         | "pending"
         | "in_progress"
@@ -11187,6 +12133,8 @@ export type Database = {
         | "wire"
         | "ach"
       payment_status: "pending" | "partial" | "paid" | "refunded" | "failed"
+      permission_action: "read" | "write" | "delete" | "manage"
+      permission_scope_type: "global" | "organization" | "project" | "activation" | "team"
       payroll_status:
         | "draft"
         | "pending_approval"
@@ -11263,6 +12211,39 @@ export type Database = {
         | "on_break"
         | "checked_out"
         | "no_show"
+        | "cancelled"
+      setting_category:
+        | "governance"
+        | "security"
+        | "operational"
+        | "branding"
+        | "feature_access"
+        | "notifications"
+        | "preferences"
+      setting_scope:
+        | "platform"
+        | "environment"
+        | "organization"
+        | "brand"
+        | "department"
+        | "project"
+        | "activation"
+        | "team"
+        | "role"
+        | "user"
+      setting_value_type:
+        | "boolean"
+        | "integer"
+        | "float"
+        | "text"
+        | "enum"
+        | "text_array"
+        | "jsonb"
+      settings_approval_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "expired"
         | "cancelled"
       shipment_priority: "standard" | "expedited" | "rush" | "hot"
       shipment_status:

@@ -100,7 +100,8 @@ export function DetailLayout({
         }
 
         buttons[nextIndex]?.focus();
-        onTabChange?.(tabs[nextIndex].id);
+        const nextTab = tabs[nextIndex];
+        if (nextTab) onTabChange?.(nextTab.id);
     }, [tabs, onTabChange]);
 
     return (

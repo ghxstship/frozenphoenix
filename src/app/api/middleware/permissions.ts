@@ -4,6 +4,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { createServerClient } from "@supabase/ssr";
+import type { Database } from "@/lib/supabase/database.types";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/config";
@@ -37,7 +38,7 @@ export async function checkPermission(
 
     const cookieStore = await cookies();
 
-    const supabase = createServerClient(
+    const supabase = createServerClient<Database>(
         supabaseUrl,
         supabaseAnonKey,
         {
@@ -59,13 +60,11 @@ export async function checkPermission(
     }
 
     // Resolve role + grants from cache (or DB on miss)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fromTable = (table: string) => (supabase as any).from(table);
 
     let cached: CachedPermission;
     try {
         // First fetch membership to get orgId (needed as cache key)
-        const { data: membership } = await fromTable("org_memberships")
+        const { data: membership } = await supabase.from("org_memberships")
             .select("organization_id, role")
             .eq("user_id", user.id)
             .eq("status", "active")
@@ -80,7 +79,7 @@ export async function checkPermission(
         const userRole = membership.role as string;
 
         cached = await cachedPermissionCheck(user.id, userOrgId, async () => {
-            const { data: grants } = await fromTable("permission_grants")
+            const { data: grants } = await supabase.from("permission_grants")
                 .select("id, resource, action, scope_id, role_definition_id, role_definitions!inner(key, is_active)")
                 .eq("role_definitions.key", userRole)
                 .eq("role_definitions.is_active", true)
@@ -124,7 +123,7 @@ export async function checkPermission(
     if (!hasPermission) {
         // Log denied access (non-blocking)
         try {
-            await fromTable("access_audit_log").insert({
+            await supabase.from("access_audit_log").insert({
                 user_id: user.id,
                 resource,
                 action,

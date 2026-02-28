@@ -34,8 +34,10 @@ function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): bool
     if (!role) return false;
     if (role === "exec") return true;
     if (!item.permission) return true;
-    const [resource, action] = item.permission.split(".");
-    return hasPermission(role, resource, action as "read" | "write" | "delete" | "manage");
+    const parts = item.permission.split(".");
+    const resource = parts[0] ?? "";
+    const action = parts[1] as "read" | "write" | "delete" | "manage" | undefined;
+    return hasPermission(role, resource, action ?? "read");
 }
 
 function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undefined): NavItem[] {

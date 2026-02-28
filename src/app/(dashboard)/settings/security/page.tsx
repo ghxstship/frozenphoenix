@@ -90,8 +90,7 @@ export default function SecuritySettingsPage() {
                 const supabase = createClient();
                 if (!supabase || !user) return;
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { data } = await (supabase as any)
+                const { data } = await supabase
                     .from("login_audit_log")
                     .select("id, user_agent, ip_address, created_at")
                     .eq("user_id", user.id)

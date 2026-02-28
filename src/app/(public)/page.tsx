@@ -37,7 +37,7 @@ export default function LandingPage() {
     const { data: reviewStats } = useReviewStats();
 
     const handleSubmit = async () => {
-        const [firstName, ...lastParts] = formData.name.split(" ");
+        const [firstName = "", ...lastParts] = formData.name.split(" ");
         const lastName = lastParts.join(" ") || undefined;
         
         try {

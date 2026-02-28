@@ -52,7 +52,8 @@ export function PageShell({
         else return;
 
         buttons[next]?.focus();
-        onTabChange?.(tabs[next].id);
+        const nextTab = tabs[next];
+        if (nextTab) onTabChange?.(nextTab.id);
     }, [tabs, onTabChange]);
 
     return (

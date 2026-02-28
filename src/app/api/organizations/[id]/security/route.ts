@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
+import type { Json } from "@/lib/supabase/database.types";
 
 export async function GET(
     _request: NextRequest,
@@ -21,7 +18,7 @@ export async function GET(
     }
 
     // Verify the user is exec in this org
-    const { data: membership } = await fromTable(supabase, "org_memberships")
+    const { data: membership } = await supabase.from("org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -32,7 +29,7 @@ export async function GET(
         return NextResponse.json({ error: "Only executives can view security settings" }, { status: 403 });
     }
 
-    const { data: org, error } = await fromTable(supabase, "organizations")
+    const { data: org, error } = await supabase.from("organizations")
         .select(
             "id, name, slug, require_mfa, enforce_sso, sso_domain, allowed_email_domains, session_timeout_hours, max_sessions_per_user, invitation_expiry_days, default_role"
         )
@@ -62,7 +59,7 @@ export async function PATCH(
     }
 
     // Verify the user is exec in this org
-    const { data: membership } = await fromTable(supabase, "org_memberships")
+    const { data: membership } = await supabase.from("org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -98,7 +95,7 @@ export async function PATCH(
         return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
-    const { data: org, error } = await fromTable(supabase, "organizations")
+    const { data: org, error } = await supabase.from("organizations")
         .update(allowedFields)
         .eq("id", orgId)
         .select(
@@ -112,10 +109,10 @@ export async function PATCH(
 
     // Audit log the change
     try {
-        await fromTable(supabase, "login_audit_log").insert({
+        await supabase.from("login_audit_log").insert({
             user_id: user.id,
             event_type: "org_security_updated",
-            metadata: { organization_id: orgId, changes: allowedFields },
+            metadata: { organization_id: orgId, changes: Object.keys(allowedFields) } as unknown as Json,
         });
     } catch {
         // Non-blocking — audit table may not exist

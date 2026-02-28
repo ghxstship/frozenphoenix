@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
+import type { Database } from "@/lib/supabase/database.types";
 
 export async function GET(request: NextRequest) {
     const supabase = await createClient();
@@ -23,14 +20,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "organization_id is required" }, { status: 400 });
     }
 
-    const query = fromTable(supabase, "settings_change_requests")
+    const query = supabase.from("settings_change_requests")
         .select("*")
         .eq("organization_id", orgId)
         .order("created_at", { ascending: false })
         .limit(50);
 
     if (status !== "all") {
-        query.eq("status", status);
+        query.eq("status", status as Database["public"]["Enums"]["settings_approval_status"]);
     }
 
     const { data, error } = await query;
@@ -63,7 +60,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const { data, error } = await fromTable(supabase, "settings_change_requests")
+    const { data, error } = await supabase.from("settings_change_requests")
         .insert({
             organization_id,
             setting_key,

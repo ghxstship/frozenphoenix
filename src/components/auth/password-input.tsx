@@ -48,7 +48,7 @@ export function calculatePasswordStrength(password: string): PasswordStrength {
         4: "Very strong",
     };
 
-    return { score, label: labels[score], requirements };
+    return { score, label: labels[score] ?? "Too weak", requirements };
 }
 
 const STRENGTH_COLORS: Record<number, string> = {

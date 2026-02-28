@@ -180,6 +180,23 @@ export const commentCreateSchema = z.object({
     content: nonEmptyString.max(5000),
 });
 
+// ─── Invitations ───
+export const invitationCreateSchema = z.object({
+    emails: z.array(emailField).min(1, "At least one email is required").max(50, "Maximum 50 invitations at once"),
+    organization_id: uuidField,
+    role: z.enum(["exec", "pm", "client", "vendor"]).default("pm"),
+    message: z.string().max(1000).optional(),
+});
+
+// ─── Organizations ───
+export const organizationCreateSchema = z.object({
+    name: z.string().min(2, "Organization name must be at least 2 characters").max(200),
+    slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens").max(100).optional(),
+    industry: z.string().max(100).optional(),
+    timezone: z.string().max(50).optional(),
+    currency: z.string().length(3, "Currency must be a 3-letter code").optional(),
+});
+
 // ─── Validation helper ───
 export type ValidationResult<T> =
     | { success: true; data: T }

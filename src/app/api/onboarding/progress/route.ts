@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
 
 export async function GET() {
     const supabase = await createClient();
@@ -26,13 +22,13 @@ export async function GET() {
     const userRole = profile?.role || "pm";
 
     // Get step definitions relevant to this user's role
-    const { data: steps } = await fromTable(supabase, "onboarding_step_definitions")
+    const { data: steps } = await supabase.from("onboarding_step_definitions")
         .select("*")
         .or(`role.eq.all,role.eq.${userRole}`)
         .order("sort_order", { ascending: true });
 
     // Get user's progress
-    const { data: progress } = await fromTable(supabase, "user_onboarding_progress")
+    const { data: progress } = await supabase.from("user_onboarding_progress")
         .select("*")
         .eq("user_id", user.id);
 
@@ -85,7 +81,7 @@ export async function POST(request: NextRequest) {
     const validStatuses = ["not_started", "in_progress", "completed", "skipped"];
     const stepStatus = validStatuses.includes(status) ? status : "completed";
 
-    const { data, error } = await fromTable(supabase, "user_onboarding_progress")
+    const { data, error } = await supabase.from("user_onboarding_progress")
         .upsert(
             {
                 user_id: user.id,

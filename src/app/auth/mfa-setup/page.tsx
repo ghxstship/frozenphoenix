@@ -167,6 +167,8 @@ function MfaSetupForm() {
                                 Scan this QR code with your authenticator app
                             </div>
                             <div className="flex justify-center p-4 bg-white rounded-xl">
+                                {/* Data URI from Supabase TOTP enrollment — not optimizable by next/image */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={enrollment.totp.qr_code}
                                     alt="MFA QR Code — scan with your authenticator app"

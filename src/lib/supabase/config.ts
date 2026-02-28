@@ -27,7 +27,9 @@ function extractProjectRefFromAnonKey(anonKey: string | null): string | null {
         return null;
     }
 
-    const payload = decodeBase64Url(parts[1]);
+    const payloadPart = parts[1];
+    if (!payloadPart) return null;
+    const payload = decodeBase64Url(payloadPart);
     if (!payload) {
         return null;
     }

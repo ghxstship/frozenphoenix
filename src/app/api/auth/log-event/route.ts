@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
@@ -46,7 +42,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || "unknown";
 
     // Attempt to insert into login_audit_log
-    const { error } = await fromTable(supabase, "login_audit_log")
+    const { error } = await supabase.from("login_audit_log")
         .insert({
             user_id: user.id,
             event_type,

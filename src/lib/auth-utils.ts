@@ -78,7 +78,7 @@ export function recordFailedAttempt() {
     const now = Date.now();
     const newAttempts = state.attempts + 1;
     const lockoutIdx = Math.min(newAttempts, LOCKOUT_DURATIONS.length - 1);
-    const lockoutMs = LOCKOUT_DURATIONS[lockoutIdx];
+    const lockoutMs = LOCKOUT_DURATIONS[lockoutIdx] ?? 0;
 
     setRateLimitState({
         attempts: newAttempts,

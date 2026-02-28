@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
 
 interface DriftItem {
     setting_key: string;
@@ -32,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify exec access
-    const { data: membership } = await fromTable(supabase, "org_memberships")
+    const { data: membership } = await supabase.from("org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -46,12 +42,12 @@ export async function GET(request: NextRequest) {
     const driftItems: DriftItem[] = [];
 
     // Fetch setting definitions
-    const { data: definitions } = await fromTable(supabase, "setting_definitions")
+    const { data: definitions } = await supabase.from("setting_definitions")
         .select("*")
         .eq("is_active", true);
 
     // Fetch current settings for this org
-    const { data: settings } = await fromTable(supabase, "settings")
+    const { data: settings } = await supabase.from("settings")
         .select("*")
         .eq("organization_id", orgId);
 
@@ -153,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     // Sort by severity: critical first, then warning, then info
     const severityOrder: Record<string, number> = { critical: 0, warning: 1, info: 2 };
-    driftItems.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    driftItems.sort((a, b) => (severityOrder[a.severity] ?? 99) - (severityOrder[b.severity] ?? 99));
 
     return NextResponse.json({
         organization_id: orgId,

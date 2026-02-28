@@ -224,8 +224,8 @@ export default function ForecastingPage() {
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-semibold">{b.project}</p>
-                                                <Badge variant={BUDGET_STATUS_CONFIG[b.status].variant} className="text-[10px]">
-                                                    {BUDGET_STATUS_CONFIG[b.status].label}
+                                                <Badge variant={BUDGET_STATUS_CONFIG[b.status]?.variant} className="text-[10px]">
+                                                    {BUDGET_STATUS_CONFIG[b.status]?.label}
                                                 </Badge>
                                             </div>
                                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -312,8 +312,8 @@ export default function ForecastingPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-semibold">{h.role}</p>
-                                        <Badge variant={URGENCY_CONFIG[h.urgency].variant} className="text-[10px]">
-                                            {URGENCY_CONFIG[h.urgency].label}
+                                        <Badge variant={URGENCY_CONFIG[h.urgency]?.variant} className="text-[10px]">
+                                            {URGENCY_CONFIG[h.urgency]?.label}
                                         </Badge>
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-0.5">{h.department} — {h.reason}</p>

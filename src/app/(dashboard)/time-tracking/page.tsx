@@ -262,7 +262,7 @@ export default function TimeTrackingPage() {
                                         <td className="p-3 text-xs">Daily Total</td>
                                         {weekDays.map((_, i) => (
                                             <td key={i} className="text-center p-3 text-xs tabular-nums">
-                                                {weeklyData.reduce((s, r) => s + r.hours[i], 0)}
+                                                {weeklyData.reduce((s, r) => s + (r.hours[i] ?? 0), 0)}
                                             </td>
                                         ))}
                                         <td className="text-center p-3 text-xs tabular-nums">

@@ -341,7 +341,8 @@ export default function BrandKitDetailPage() {
                                             value={section.title}
                                             onChange={(e) => {
                                                 const updated = [...guidelineSections];
-                                                updated[i] = { ...updated[i], title: e.target.value };
+                                                const current = updated[i];
+                                                if (current) updated[i] = { ...current, title: e.target.value };
                                                 setGuidelineSections(updated);
                                             }}
                                             className="text-base font-semibold border-none shadow-none p-0 h-auto focus-visible:ring-0 max-w-md"
@@ -356,7 +357,8 @@ export default function BrandKitDetailPage() {
                                         value={section.content}
                                         onChange={(e) => {
                                             const updated = [...guidelineSections];
-                                            updated[i] = { ...updated[i], content: e.target.value };
+                                            const current = updated[i];
+                                            if (current) updated[i] = { ...current, content: e.target.value };
                                             setGuidelineSections(updated);
                                         }}
                                         rows={4}

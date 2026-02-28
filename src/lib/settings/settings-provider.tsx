@@ -129,6 +129,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     const supabase = useMemo(() => createClient(), []);
+    /* Dynamic table accessor — scoped any cast (see settings/hooks.ts for rationale) */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fromTable = useCallback((table: string) => (supabase as any)?.from(table), [supabase]);
 

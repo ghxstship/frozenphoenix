@@ -29,7 +29,7 @@ function ThemeSwitcher() {
         { mode: "system" as const, icon: Monitor, label: "System" },
     ];
     const currentIndex = modes.findIndex((m) => m.mode === colorMode);
-    const next = modes[(currentIndex + 1) % modes.length];
+    const next = modes[(currentIndex + 1) % modes.length]!;
 
     return (
         <button

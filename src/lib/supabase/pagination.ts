@@ -59,8 +59,7 @@ export function usePaginatedQuery<T>({
         queryKey: [...queryKey, "paginated", page, effectivePageSize, JSON.stringify(filters)],
         queryFn: async () => {
             const supabase = getSupabase();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let query = (supabase.from as any)(table)
+            let query = supabase.from(table as never)
                 .select(select, { count: "exact" })
                 .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                 .range(from, to);
@@ -108,8 +107,7 @@ export function usePaginatedQuery<T>({
                 queryKey: [...queryKey, "paginated", page + 1, effectivePageSize, JSON.stringify(filters)],
                 queryFn: async () => {
                     const supabase = getSupabase();
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    let query = (supabase.from as any)(table)
+                    let query = supabase.from(table as never)
                         .select(select, { count: "exact" })
                         .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                         .range(nextFrom, nextTo);

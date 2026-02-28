@@ -28,6 +28,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* SECURITY: dangerouslySetInnerHTML is safe here — static string literal with zero user input.
+            Purpose: FOUC-free theme initialization before React hydration. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var s=JSON.parse(localStorage.getItem('pb-theme')||'{}');var m=(s.state&&s.state.colorMode)||'dark';if(m==='system'){m=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}document.documentElement.classList.add(m);}catch(e){document.documentElement.classList.add('dark');}})();`,

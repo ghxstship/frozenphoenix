@@ -42,8 +42,8 @@ export default function OrgChartPage() {
                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                                 <User className="h-5 w-5 text-primary" />
                             </div>
-                            <p className="text-sm font-bold">{orgTree[0].name}</p>
-                            <OverlineText>{orgTree[0].role}</OverlineText>
+                            <p className="text-sm font-bold">{orgTree[0]!.name}</p>
+                            <OverlineText>{orgTree[0]!.role}</OverlineText>
                         </div>
 
                         {/* Connector */}

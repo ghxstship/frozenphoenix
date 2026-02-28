@@ -176,7 +176,7 @@ function getWeekDates(startDate: Date): Date[] {
 }
 
 function formatDate(date: Date): string {
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split("T")[0] ?? "";
 }
 
 function isDateInRange(date: string, startDate: string, endDate: string): boolean {
@@ -302,7 +302,7 @@ export default function ResourcePlannerPage() {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                     <span className="ml-4 text-lg font-semibold">
-                        {formatDisplayDate(weekDates[0], "long")}
+                        {weekDates[0] ? formatDisplayDate(weekDates[0], "long") : ""}
                     </span>
                 </div>
                 <div className="flex items-center gap-4">

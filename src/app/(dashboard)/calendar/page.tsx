@@ -143,7 +143,7 @@ export default function CalendarPage() {
         ...approvals.map((a) => ({
             id: `approval-${a.id}`,
             title: a.milestoneName,
-            date: a.deadline.split("T")[0],
+            date: a.deadline.split("T")[0] ?? "",
             type: "approval" as EventType,
             status: a.status,
         })),

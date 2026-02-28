@@ -28,7 +28,7 @@ const mockReadings: MockReading[] = [
     { id: "3", recordedAt: "2026-02-24T17:00:00Z", temperatureF: 74, humidityPercent: 42, windSpeedMph: 7, windGustsMph: 12, noiseLevelDb: 78, noiseLocation: "VIP Lounge", totalPowerLoadAmps: 620, powerCapacityAmps: 800, generatorFuelPercent: 85, weatherAlert: undefined },
 ];
 
-const latest = mockReadings[0];
+const latest = mockReadings[0]!;
 const powerUtil = Math.round((latest.totalPowerLoadAmps / latest.powerCapacityAmps) * 100);
 
 export default function EnvironmentPage() {

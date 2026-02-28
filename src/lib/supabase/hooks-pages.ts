@@ -8,11 +8,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient, isSupabaseConfigured } from "./client";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getSupabase(): any {
+function getSupabase() {
     const client = createClient();
     if (!client) throw new Error("Supabase client not configured");
     return client;
+}
+
+/* Generic table accessor for CRUD wrappers that use Record<string, unknown> payloads.
+   Scoped any-cast — see settings/hooks.ts for rationale on dynamic table typing. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromTable(table: string): any {
+    return getSupabase().from(table as never);
 }
 
 export { isSupabaseConfigured };
@@ -25,8 +31,7 @@ export function useCampaigns(projectId?: string) {
     return useQuery({
         queryKey: ["campaigns", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("campaigns")
+            let query = fromTable("campaigns")
                 .select("*, projects(name), profiles(name)")
                 .order("start_date", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -40,9 +45,8 @@ export function useCampaigns(projectId?: string) {
 export function useCreateCampaign() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (c: any) => {
-            const { data, error } = await getSupabase().from("campaigns").insert(c).select().single();
+        mutationFn: async (c: Record<string, unknown>) => {
+            const { data, error } = await fromTable("campaigns").insert(c).select().single();
             if (error) throw error;
             return data;
         },
@@ -58,8 +62,7 @@ export function useProposals(status?: string) {
     return useQuery({
         queryKey: ["proposals", status],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("proposals")
+            let query = fromTable("proposals")
                 .select("*, deals(title, company_name), profiles(name)")
                 .order("created_at", { ascending: false });
             if (status && status !== "all") query = query.eq("status", status);
@@ -73,9 +76,8 @@ export function useProposals(status?: string) {
 export function useCreateProposal() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (p: any) => {
-            const { data, error } = await getSupabase().from("proposals").insert(p).select().single();
+        mutationFn: async (p: Record<string, unknown>) => {
+            const { data, error } = await fromTable("proposals").insert(p).select().single();
             if (error) throw error;
             return data;
         },
@@ -86,9 +88,8 @@ export function useCreateProposal() {
 export function useUpdateProposal() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async ({ id, ...updates }: any) => {
-            const { data, error } = await getSupabase().from("proposals").update(updates).eq("id", id).select().single();
+        mutationFn: async ({ id, ...updates }: Record<string, unknown>) => {
+            const { data, error } = await fromTable("proposals").update(updates).eq("id", id as string).select().single();
             if (error) throw error;
             return data;
         },
@@ -104,8 +105,7 @@ export function useBriefs(projectId?: string) {
     return useQuery({
         queryKey: ["briefs", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("briefs")
+            let query = fromTable("briefs")
                 .select("*, projects(name), profiles(name)")
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -119,9 +119,8 @@ export function useBriefs(projectId?: string) {
 export function useCreateBrief() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (b: any) => {
-            const { data, error } = await getSupabase().from("briefs").insert(b).select().single();
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("briefs").insert(b).select().single();
             if (error) throw error;
             return data;
         },
@@ -137,8 +136,7 @@ export function useClientInvoices(status?: string) {
     return useQuery({
         queryKey: ["client_invoices", status],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("client_invoices")
+            let query = fromTable("client_invoices")
                 .select("*, projects(name), profiles(name)")
                 .order("due_date", { ascending: false });
             if (status && status !== "all") query = query.eq("status", status);
@@ -152,9 +150,8 @@ export function useClientInvoices(status?: string) {
 export function useCreateClientInvoice() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (inv: any) => {
-            const { data, error } = await getSupabase().from("client_invoices").insert(inv).select().single();
+        mutationFn: async (inv: Record<string, unknown>) => {
+            const { data, error } = await fromTable("client_invoices").insert(inv).select().single();
             if (error) throw error;
             return data;
         },
@@ -170,8 +167,7 @@ export function useCompanies() {
     return useQuery({
         queryKey: ["companies"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("stakeholders")
+            const { data, error } = await fromTable("stakeholders")
                 .select("*")
                 .order("name");
             if (error) throw error;
@@ -188,8 +184,7 @@ export function useEstimates() {
     return useQuery({
         queryKey: ["estimates"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("estimates")
+            const { data, error } = await fromTable("estimates")
                 .select("*, deals(title, company_name), profiles(name)")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -201,9 +196,8 @@ export function useEstimates() {
 export function useCreateEstimate() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (e: any) => {
-            const { data, error } = await getSupabase().from("estimates").insert(e).select().single();
+        mutationFn: async (e: Record<string, unknown>) => {
+            const { data, error } = await fromTable("estimates").insert(e).select().single();
             if (error) throw error;
             return data;
         },
@@ -219,8 +213,7 @@ export function useDigitalAssets(projectId?: string) {
     return useQuery({
         queryKey: ["digital_assets", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("digital_assets")
+            let query = fromTable("digital_assets")
                 .select("*, profiles(name), projects(name)")
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -234,9 +227,8 @@ export function useDigitalAssets(projectId?: string) {
 export function useCreateDigitalAsset() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (a: any) => {
-            const { data, error } = await getSupabase().from("digital_assets").insert(a).select().single();
+        mutationFn: async (a: Record<string, unknown>) => {
+            const { data, error } = await fromTable("digital_assets").insert(a).select().single();
             if (error) throw error;
             return data;
         },
@@ -252,8 +244,7 @@ export function useCertifications(crewMemberId?: string) {
     return useQuery({
         queryKey: ["certifications", crewMemberId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("certifications")
+            let query = fromTable("certifications")
                 .select("*, crew_members(name)")
                 .order("expiry_date");
             if (crewMemberId) query = query.eq("crew_member_id", crewMemberId);
@@ -272,8 +263,7 @@ export function useChangeOrders(projectId?: string) {
     return useQuery({
         queryKey: ["change_orders", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("change_orders")
+            let query = fromTable("change_orders")
                 .select("*, projects(name), profiles(name)")
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -287,9 +277,8 @@ export function useChangeOrders(projectId?: string) {
 export function useCreateChangeOrder() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (co: any) => {
-            const { data, error } = await getSupabase().from("change_orders").insert(co).select().single();
+        mutationFn: async (co: Record<string, unknown>) => {
+            const { data, error } = await fromTable("change_orders").insert(co).select().single();
             if (error) throw error;
             return data;
         },
@@ -305,8 +294,7 @@ export function useComplianceChecklists() {
     return useQuery({
         queryKey: ["compliance_checklists"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("compliance_checklists")
+            const { data, error } = await fromTable("compliance_checklists")
                 .select("*, profiles(name)")
                 .order("name");
             if (error) throw error;
@@ -323,8 +311,7 @@ export function useCallSheets(projectId?: string) {
     return useQuery({
         queryKey: ["call_sheets", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("call_sheets")
+            let query = fromTable("call_sheets")
                 .select("*, projects(name), profiles(name), events(name), locations(name)")
                 .order("date", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -338,9 +325,8 @@ export function useCallSheets(projectId?: string) {
 export function useCreateCallSheet() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (cs: any) => {
-            const { data, error } = await getSupabase().from("call_sheets").insert(cs).select().single();
+        mutationFn: async (cs: Record<string, unknown>) => {
+            const { data, error } = await fromTable("call_sheets").insert(cs).select().single();
             if (error) throw error;
             return data;
         },
@@ -356,8 +342,7 @@ export function useAutomations() {
     return useQuery({
         queryKey: ["automations"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("automations")
+            const { data, error } = await fromTable("automations")
                 .select("*, profiles(name)")
                 .order("name");
             if (error) throw error;
@@ -369,9 +354,8 @@ export function useAutomations() {
 export function useCreateAutomation() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (a: any) => {
-            const { data, error } = await getSupabase().from("automations").insert(a).select().single();
+        mutationFn: async (a: Record<string, unknown>) => {
+            const { data, error } = await fromTable("automations").insert(a).select().single();
             if (error) throw error;
             return data;
         },
@@ -387,8 +371,7 @@ export function useScopesOfWork(projectId?: string) {
     return useQuery({
         queryKey: ["scopes_of_work", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("scopes_of_work")
+            let query = fromTable("scopes_of_work")
                 .select("*, projects(name), profiles(name)")
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -402,9 +385,8 @@ export function useScopesOfWork(projectId?: string) {
 export function useCreateScopeOfWork() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (s: any) => {
-            const { data, error } = await getSupabase().from("scopes_of_work").insert(s).select().single();
+        mutationFn: async (s: Record<string, unknown>) => {
+            const { data, error } = await fromTable("scopes_of_work").insert(s).select().single();
             if (error) throw error;
             return data;
         },
@@ -420,8 +402,7 @@ export function useLeads(status?: string) {
     return useQuery({
         queryKey: ["leads", status],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("leads")
+            let query = fromTable("leads")
                 .select("*, profiles(name)")
                 .order("created_at", { ascending: false });
             if (status && status !== "all") query = query.eq("status", status);
@@ -435,9 +416,8 @@ export function useLeads(status?: string) {
 export function useCreateLead() {
     const qc = useQueryClient();
     return useMutation({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mutationFn: async (l: any) => {
-            const { data, error } = await getSupabase().from("leads").insert(l).select().single();
+        mutationFn: async (l: Record<string, unknown>) => {
+            const { data, error } = await fromTable("leads").insert(l).select().single();
             if (error) throw error;
             return data;
         },
@@ -453,8 +433,7 @@ export function useVendorReviews(vendorId?: string) {
     return useQuery({
         queryKey: ["vendor_reviews", vendorId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("vendor_reviews")
+            let query = fromTable("vendor_reviews")
                 .select("*, vendors(name), profiles(name), projects(name)")
                 .order("created_at", { ascending: false });
             if (vendorId) query = query.eq("vendor_id", vendorId);
@@ -473,8 +452,7 @@ export function useESignatures(contractId?: string) {
     return useQuery({
         queryKey: ["e_signatures", contractId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("e_signatures")
+            let query = fromTable("e_signatures")
                 .select("*, contracts(title), profiles(name)")
                 .order("created_at", { ascending: false });
             if (contractId) query = query.eq("contract_id", contractId);
@@ -493,8 +471,7 @@ export function useDocuments(projectId?: string) {
     return useQuery({
         queryKey: ["documents", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("vault_documents")
+            let query = fromTable("vault_documents")
                 .select("*, profiles(name)")
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
@@ -513,8 +490,7 @@ export function useFleetVehicles() {
     return useQuery({
         queryKey: ["fleet_vehicles"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("vehicles")
+            const { data, error } = await fromTable("vehicles")
                 .select("*")
                 .order("name");
             if (error) throw error;
@@ -531,8 +507,7 @@ export function useAccounts() {
     return useQuery({
         queryKey: ["accounts"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("stakeholders")
+            const { data, error } = await fromTable("stakeholders")
                 .select("*")
                 .eq("type", "company")
                 .order("name");
@@ -546,9 +521,7 @@ export function usePeople() {
     return useQuery({
         queryKey: ["people"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("profiles")
+            const { data, error } = await fromTable("profiles")
                 .select("*")
                 .order("full_name");
             if (error) throw error;
@@ -565,8 +538,7 @@ export function useCreativeAssets(campaignId?: string) {
     return useQuery({
         queryKey: ["campaign_assets", campaignId],
         queryFn: async () => {
-            const supabase = getSupabase();
-            let q = supabase.from("campaign_assets").select("*").order("created_at", { ascending: false });
+            let q = fromTable("campaign_assets").select("*").order("created_at", { ascending: false });
             if (campaignId) q = q.eq("campaign_id", campaignId);
             const { data, error } = await q;
             if (error) throw error;
@@ -583,8 +555,7 @@ export function useOpportunities(stage?: string) {
     return useQuery({
         queryKey: ["opportunities", stage],
         queryFn: async () => {
-            const supabase = getSupabase();
-            let q = supabase.from("opportunities").select("*").order("created_at", { ascending: false });
+            let q = fromTable("opportunities").select("*").order("created_at", { ascending: false });
             if (stage) q = q.eq("stage", stage);
             const { data, error } = await q;
             if (error) throw error;
@@ -601,9 +572,7 @@ export function useIncidents() {
     return useQuery({
         queryKey: ["incidents"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("incidents")
+            const { data, error } = await fromTable("incidents")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -620,9 +589,7 @@ export function useBrandGuidelines() {
     return useQuery({
         queryKey: ["brand_guidelines"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("brand_guidelines")
+            const { data, error } = await fromTable("brand_guidelines")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -639,8 +606,7 @@ export function usePurchaseOrders(status?: string) {
     return useQuery({
         queryKey: ["purchase_orders", status],
         queryFn: async () => {
-            const supabase = getSupabase();
-            let q = supabase.from("purchase_orders").select("*").order("created_at", { ascending: false });
+            let q = fromTable("purchase_orders").select("*").order("created_at", { ascending: false });
             if (status) q = q.eq("status", status);
             const { data, error } = await q;
             if (error) throw error;
@@ -657,9 +623,7 @@ export function useExpenses() {
     return useQuery({
         queryKey: ["expenses"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("production_expenses")
+            const { data, error } = await fromTable("production_expenses")
                 .select("*")
                 .order("expense_date", { ascending: false });
             if (error) throw error;
@@ -676,9 +640,7 @@ export function useExpenseReports() {
     return useQuery({
         queryKey: ["expense_reports"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("expense_reports")
+            const { data, error } = await fromTable("expense_reports")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -695,9 +657,7 @@ export function useTimesheets() {
     return useQuery({
         queryKey: ["timesheets"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("timesheets")
+            const { data, error } = await fromTable("timesheets")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -714,9 +674,7 @@ export function useWorkflows() {
     return useQuery({
         queryKey: ["workflows"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("workflows")
+            const { data, error } = await fromTable("workflows")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -733,9 +691,7 @@ export function useInsurancePolicies() {
     return useQuery({
         queryKey: ["insurance_policies"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("insurance_policies")
+            const { data, error } = await fromTable("insurance_policies")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -752,9 +708,7 @@ export function usePermits() {
     return useQuery({
         queryKey: ["permits"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("permits")
+            const { data, error } = await fromTable("permits")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -771,9 +725,7 @@ export function useRiskAssessments() {
     return useQuery({
         queryKey: ["risk_assessments"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("risk_assessments")
+            const { data, error } = await fromTable("risk_assessments")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -790,9 +742,7 @@ export function useShipments() {
     return useQuery({
         queryKey: ["shipments"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("shipments")
+            const { data, error } = await fromTable("shipments")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -809,9 +759,7 @@ export function useWarehouses() {
     return useQuery({
         queryKey: ["warehouses"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("warehouses")
+            const { data, error } = await fromTable("warehouses")
                 .select("*")
                 .order("name");
             if (error) throw error;
@@ -828,9 +776,7 @@ export function useDispatch() {
     return useQuery({
         queryKey: ["dispatch"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("shipments")
+            const { data, error } = await fromTable("shipments")
                 .select("*")
                 .in("status", ["pending", "in_transit", "dispatched"])
                 .order("created_at", { ascending: false });
@@ -848,9 +794,7 @@ export function usePayroll() {
     return useQuery({
         queryKey: ["payroll_batches"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("payroll_batches")
+            const { data, error } = await fromTable("payroll_batches")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -867,9 +811,7 @@ export function useCreditNotes() {
     return useQuery({
         queryKey: ["credit_notes"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("credit_notes")
+            const { data, error } = await fromTable("credit_notes")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -886,9 +828,7 @@ export function useWorkOrders() {
     return useQuery({
         queryKey: ["work_orders"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("work_orders")
+            const { data, error } = await fromTable("work_orders")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -905,9 +845,7 @@ export function useWorkerProfiles() {
     return useQuery({
         queryKey: ["worker_profiles"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("worker_profiles")
+            const { data, error } = await fromTable("worker_profiles")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -924,9 +862,7 @@ export function useBudgetApprovals() {
     return useQuery({
         queryKey: ["budget_approvals"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("budget_approvals")
+            const { data, error } = await fromTable("budget_approvals")
                 .select("*")
                 .order("requested_at", { ascending: false });
             if (error) throw error;
@@ -943,9 +879,7 @@ export function useChecklists() {
     return useQuery({
         queryKey: ["checklists"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("checklists")
+            const { data, error } = await fromTable("checklists")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -962,9 +896,7 @@ export function useServiceRequests() {
     return useQuery({
         queryKey: ["service_requests"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("service_requests")
+            const { data, error } = await fromTable("service_requests")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -981,9 +913,7 @@ export function useActivityLog() {
     return useQuery({
         queryKey: ["activity_log"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("activity_log")
+            const { data, error } = await fromTable("activity_log")
                 .select("*")
                 .order("created_at", { ascending: false })
                 .limit(200);
@@ -1001,9 +931,7 @@ export function useVendorComplianceDocs() {
     return useQuery({
         queryKey: ["vendor_compliance_documents"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("vendor_compliance_documents")
+            const { data, error } = await fromTable("vendor_compliance_documents")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1020,9 +948,7 @@ export function useTimeEntries() {
     return useQuery({
         queryKey: ["time_entries"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("production_time_entries")
+            const { data, error } = await fromTable("production_time_entries")
                 .select("*")
                 .order("entry_date", { ascending: false });
             if (error) throw error;
@@ -1039,9 +965,7 @@ export function usePayments() {
     return useQuery({
         queryKey: ["payments"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("payments")
+            const { data, error } = await fromTable("payments")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1058,9 +982,7 @@ export function usePurchaseRequisitions() {
     return useQuery({
         queryKey: ["purchase_requisitions"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("purchase_requisitions")
+            const { data, error } = await fromTable("purchase_requisitions")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1077,9 +999,7 @@ export function useRecurringInvoices() {
     return useQuery({
         queryKey: ["recurring_invoices"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("recurring_invoices")
+            const { data, error } = await fromTable("recurring_invoices")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1096,9 +1016,7 @@ export function useKnowledgeBaseArticles() {
     return useQuery({
         queryKey: ["knowledge_base_articles"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("knowledge_base_articles")
+            const { data, error } = await fromTable("knowledge_base_articles")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1115,9 +1033,7 @@ export function useInventoryItems() {
     return useQuery({
         queryKey: ["inventory_items"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("consumables")
+            const { data, error } = await fromTable("consumables")
                 .select("*")
                 .order("name");
             if (error) throw error;
@@ -1134,9 +1050,7 @@ export function useIpRights() {
     return useQuery({
         queryKey: ["ip_rights"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("ip_rights")
+            const { data, error } = await fromTable("ip_rights")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1153,9 +1067,7 @@ export function useContractObligations() {
     return useQuery({
         queryKey: ["contract_obligations"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("contract_obligations")
+            const { data, error } = await fromTable("contract_obligations")
                 .select("*")
                 .order("due_date", { ascending: true });
             if (error) throw error;
@@ -1172,9 +1084,7 @@ export function useGoodsReceipts() {
     return useQuery({
         queryKey: ["goods_receipts"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("goods_receipts")
+            const { data, error } = await fromTable("goods_receipts")
                 .select("*")
                 .order("received_at", { ascending: false });
             if (error) throw error;
@@ -1191,9 +1101,7 @@ export function useTechSheets() {
     return useQuery({
         queryKey: ["tech_sheets"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("tech_sheets")
+            const { data, error } = await fromTable("tech_sheets")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1210,9 +1118,7 @@ export function useRateCards() {
     return useQuery({
         queryKey: ["rate_cards"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("rate_cards")
+            const { data, error } = await fromTable("rate_cards")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1229,9 +1135,7 @@ export function useRevenueSchedules() {
     return useQuery({
         queryKey: ["revenue_schedules"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("revenue_schedules")
+            const { data, error } = await fromTable("revenue_schedules")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1248,9 +1152,7 @@ export function useGlAccounts() {
     return useQuery({
         queryKey: ["gl_accounts"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("gl_accounts")
+            const { data, error } = await fromTable("gl_accounts")
                 .select("*")
                 .order("account_code");
             if (error) throw error;
@@ -1267,9 +1169,7 @@ export function useTemplates() {
     return useQuery({
         queryKey: ["document_templates"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("document_templates")
+            const { data, error } = await fromTable("document_templates")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1286,9 +1186,7 @@ export function useUserDirectory() {
     return useQuery({
         queryKey: ["user_directory"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("profiles")
+            const { data, error } = await fromTable("profiles")
                 .select("*")
                 .order("name");
             if (error) throw error;
@@ -1305,9 +1203,7 @@ export function useVendorOnboarding() {
     return useQuery({
         queryKey: ["vendor_onboarding"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("vendors")
+            const { data, error } = await fromTable("vendors")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1324,9 +1220,7 @@ export function useEngineeringApprovals() {
     return useQuery({
         queryKey: ["engineering_approvals"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("engineering_approvals")
+            const { data, error } = await fromTable("engineering_approvals")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1343,9 +1237,7 @@ export function useJobCostEntries() {
     return useQuery({
         queryKey: ["job_cost_entries"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("job_cost_entries")
+            const { data, error } = await fromTable("job_cost_entries")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -1362,9 +1254,7 @@ export function useClauseLibrary() {
     return useQuery({
         queryKey: ["clause_library"],
         queryFn: async () => {
-            const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("clause_library")
+            const { data, error } = await fromTable("clause_library")
                 .select("*")
                 .order("created_at", { ascending: false });
             if (error) throw error;

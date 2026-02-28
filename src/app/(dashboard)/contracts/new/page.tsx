@@ -41,11 +41,13 @@ export default function NewContractPage() {
 
     const goNext = () => {
         const idx = currentStepIndex + 1;
-        if (idx < STEPS.length) setCurrentStep(STEPS[idx].key);
+        const step = STEPS[idx];
+        if (idx < STEPS.length && step) setCurrentStep(step.key);
     };
     const goBack = () => {
         const idx = currentStepIndex - 1;
-        if (idx >= 0) setCurrentStep(STEPS[idx].key);
+        const step = STEPS[idx];
+        if (idx >= 0 && step) setCurrentStep(step.key);
     };
 
     return (

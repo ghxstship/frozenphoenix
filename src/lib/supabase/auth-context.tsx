@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (match) return match;
         }
         // Fallback: default org, or first membership
-        return memberships.find((m) => m.is_default) || memberships[0];
+        return memberships.find((m) => m.is_default) ?? memberships[0] ?? null;
     }, [memberships, activeOrgId]);
 
     const switchOrg = useCallback((orgId: string) => {
@@ -73,8 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchMemberships = useCallback(async (userId: string) => {
         if (!supabase) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any)
+        const { data } = await supabase
             .from("org_memberships")
             .select("id, user_id, organization_id, role, status, is_default, organizations(id, name, slug)")
             .eq("user_id", userId)
@@ -93,8 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
         if (defaultOrg) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: created } = await (supabase as any)
+            const { data: created } = await supabase
                 .from("org_memberships")
                 .upsert(
                     {

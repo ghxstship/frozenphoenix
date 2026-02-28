@@ -286,7 +286,7 @@ export default function ComplianceDashboardPage() {
                     <CardContent>
                         <ul className="space-y-2" role="list">
                             {driftReport.items.map((item, idx) => {
-                                const style = SEVERITY_STYLES[item.severity] || SEVERITY_STYLES.info;
+                                const style = SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info!;
                                 return (
                                     <li
                                         key={`${item.setting_key}-${idx}`}

@@ -19,8 +19,10 @@ export function useFocusTrap(isActive: boolean = true) {
 
         if (focusableElements.length === 0) return;
 
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+        const firstElement = focusableElements[0] as HTMLElement | undefined;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement | undefined;
+
+        if (!firstElement || !lastElement) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key !== "Tab") return;
@@ -39,7 +41,7 @@ export function useFocusTrap(isActive: boolean = true) {
         };
 
         container.addEventListener("keydown", handleKeyDown);
-        firstElement.focus();
+        firstElement?.focus();
 
         return () => {
             container.removeEventListener("keydown", handleKeyDown);

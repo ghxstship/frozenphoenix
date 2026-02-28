@@ -1,35 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { parseAndValidate, ApiErrors } from "@/lib/api-utils";
+import { invitationCreateSchema } from "@/lib/validation/schemas";
 import { randomBytes } from "crypto";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fromTable = (sb: SupabaseClient, table: string) => (sb as any).from(table);
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
-    const body = await request.json();
-    const { emails, organization_id, role, message } = body;
+    // Validate request body with Zod
+    const parsed = await parseAndValidate(request, invitationCreateSchema);
+    if (!parsed.success) return parsed.response;
 
-    if (!emails || !Array.isArray(emails) || emails.length === 0) {
-        return NextResponse.json({ error: "At least one email is required" }, { status: 400 });
-    }
-
-    if (!organization_id) {
-        return NextResponse.json({ error: "Organization ID is required" }, { status: 400 });
-    }
+    const { emails, organization_id, role, message } = parsed.data;
 
     // Verify the inviter has permission (exec or pm)
-    const { data: membership } = await fromTable(supabase, "org_memberships")
+    const { data: membership } = await supabase.from("org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", organization_id)
@@ -37,30 +30,31 @@ export async function POST(request: NextRequest) {
         .single();
 
     if (!membership || !["exec", "pm"].includes(membership.role)) {
-        return NextResponse.json({ error: "Insufficient permissions to invite users" }, { status: 403 });
+        return ApiErrors.forbidden("Insufficient permissions to invite users");
     }
 
-    const assignedRole = role || "pm";
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const invitations = emails.map((email: string) => ({
         email: email.trim().toLowerCase(),
         organization_id,
-        role: assignedRole,
+        role,
         invited_by: user.id,
         token: randomBytes(32).toString("base64url"),
-        status: "pending",
+        status: "pending" as const,
         expires_at: expiresAt,
         personal_message: message || null,
     }));
 
-    const { data, error } = await fromTable(supabase, "invitations")
+    const { data, error } = await supabase.from("invitations")
         .insert(invitations)
-        .select("id, email, role, token, expires_at");
+        .select("id, email, role, expires_at");
 
     if (error) {
-        return NextResponse.json({ error: "Failed to create invitations" }, { status: 500 });
+        return ApiErrors.internalError("Failed to create invitations");
     }
 
+    // SECURITY: tokens are intentionally excluded from the response.
+    // Invitation tokens should only be delivered via email to the invitee.
     return NextResponse.json({ invitations: data }, { status: 201 });
 }

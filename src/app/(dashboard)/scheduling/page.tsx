@@ -137,8 +137,8 @@ export default function SchedulingPage() {
         );
 
     const totalScheduledHours = shifts.reduce((sum, shift) => {
-        const start = parseInt(shift.startTime.split(":")[0]);
-        const end = parseInt(shift.endTime.split(":")[0]);
+        const start = parseInt(shift.startTime.split(":")[0] ?? "0");
+        const end = parseInt(shift.endTime.split(":")[0] ?? "0");
         return sum + (end - start);
     }, 0);
 
@@ -190,8 +190,8 @@ export default function SchedulingPage() {
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
                             <span className="text-sm font-medium min-w-40 text-center">
-                                {formatDate(weekDays[0], "compact")} —{" "}
-                                {formatDate(weekDays[6], "medium")}
+                                {weekDays[0] ? formatDate(weekDays[0], "compact") : ""} —{" "}
+                                {weekDays[6] ? formatDate(weekDays[6], "medium") : ""}
                             </span>
                             <button
                                 onClick={() => navigateWeek(1)}

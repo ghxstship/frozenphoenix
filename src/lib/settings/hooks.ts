@@ -24,14 +24,12 @@ function getSupabase() {
     return client;
 }
 
-// The generated database.types.ts does not yet include tables from migrations
-// 026-029 (setting_definitions, settings, settings_change_log, feature_flags,
-// feature_flag_overrides, role_definitions, permission_grants, access_audit_log,
-// brands). We use an untyped `.from()` accessor until types are regenerated.
+/* Dynamic table accessor — table names are valid Database keys but TypeScript
+   cannot resolve the generic overload from a runtime string. The `any` cast is
+   scoped to this single helper; all call-sites stay type-safe via return casts. */
 function fromTable(table: string) {
-    const sb = getSupabase();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (sb as any).from(table);
+    return (getSupabase() as any).from(table);
 }
 
 // ─── Setting Definitions ───

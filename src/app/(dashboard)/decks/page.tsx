@@ -70,8 +70,8 @@ export default function DecksPage() {
         title: d.title,
         status: d.status as DeckStatus,
         slideCount: ((d as unknown as { deck_slides?: unknown[] }).deck_slides || []).length,
-        lastUpdated: (d.updated_at ?? new Date().toISOString()).split('T')[0],
-        presentedAt: (d as unknown as { presented_at?: string }).presented_at?.split('T')[0],
+        lastUpdated: (d.updated_at ?? new Date().toISOString()).split('T')[0] ?? "",
+        presentedAt: (d as unknown as { presented_at?: string }).presented_at?.split('T')[0] ?? undefined,
     })) : MOCK_DECKS;
 
     const projects: Project[] = isSupabaseConfigured && sbProjects ? sbProjects.map(p => ({

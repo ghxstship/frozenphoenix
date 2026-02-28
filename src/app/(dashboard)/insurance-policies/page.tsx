@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -10,9 +11,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import {
     Shield, Plus, AlertTriangle, CheckCircle2,
-    Clock, XCircle,
+    Clock, XCircle, Loader2,
 } from "lucide-react";
 import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/demo-data-governance";
+import { useInsurancePolicies, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { InsurancePolicyStatus } from "@/types/governance";
 
 const POLICY_STATUSES: InsurancePolicyStatus[] = [
@@ -36,8 +39,9 @@ const holderNames: Record<string, string> = {
 export default function InsurancePoliciesPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbPolicies, isLoading } = useInsurancePolicies();
 
-    const policies = MOCK_INSURANCE_POLICIES;
+    const policies = isSupabaseConfigured && sbPolicies ? (sbPolicies as unknown as typeof MOCK_INSURANCE_POLICIES) : MOCK_INSURANCE_POLICIES;
 
     const filtered = policies.filter(p => {
         const holderName = holderNames[p.holder_id] || p.holder_id;
@@ -51,10 +55,19 @@ export default function InsurancePoliciesPage() {
     const expired = policies.filter(p => p.status === "expired").length;
     const totalCoverage = policies.filter(p => p.status === "active").reduce((sum, p) => sum + p.coverage_amount, 0);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="insurance_policies" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Insurance Policies" description="Unified insurance registry — verify coverage, track expiration, auto-suspend on lapse">
-                <Button size="sm"><Plus className="h-4 w-4" /> Add Policy</Button>
+                <Link href="/insurance-policies/new"><Button size="sm"><Plus className="h-4 w-4" /> Add Policy</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -152,5 +165,6 @@ export default function InsurancePoliciesPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

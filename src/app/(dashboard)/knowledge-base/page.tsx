@@ -20,6 +20,7 @@ import {
     Clock,
     Users,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 const MOCK_KB_ARTICLES = [
     {
@@ -139,6 +140,7 @@ export default function KnowledgeBasePage() {
     );
 
     return (
+        <PermissionGate resource="knowledge_base" action="read">
         <PageShell
             title="Knowledge Base"
             description="SOPs, templates, guides, and documentation"
@@ -161,9 +163,8 @@ export default function KnowledgeBasePage() {
                             variant={categoryFilter === category ? "default" : "outline"}
                             size="sm"
                             onClick={() => setCategoryFilter(category)}
-                            className="capitalize"
                         >
-                            {category === "sop" ? "SOPs" : category}
+                            {category === "all" ? "All" : category === "sop" ? "SOPs" : (DOCUMENT_CATEGORY_CONFIG[category as keyof typeof DOCUMENT_CATEGORY_CONFIG]?.label ?? category)}
                         </Button>
                     ))}
                 </div>
@@ -281,5 +282,6 @@ export default function KnowledgeBasePage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

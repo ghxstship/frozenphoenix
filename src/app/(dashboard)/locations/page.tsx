@@ -24,6 +24,7 @@ import {
     ChevronRight,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function LocationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -81,6 +82,7 @@ export default function LocationsPage() {
     const locationTypes = Object.entries(LOCATION_TYPE_CONFIG);
 
     return (
+        <PermissionGate resource="locations" action="read">
         <PageShell
             title="Locations"
             description="Manage venues, warehouses, and project locations"
@@ -197,5 +199,6 @@ export default function LocationsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

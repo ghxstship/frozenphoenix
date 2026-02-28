@@ -144,7 +144,7 @@ export default function TaskDetailPage() {
             status={task.status}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <CheckSquare className="h-7 w-7 text-white" />
+                    <CheckSquare className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={

@@ -16,6 +16,7 @@ import {
     User,
 } from "lucide-react";
 import type { DataExportStatus } from "@/types";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface ExportRequest {
     id: string;
@@ -52,6 +53,7 @@ export default function DataExportPage() {
     };
 
     return (
+        <PermissionGate resource="data_export" action="read">
         <div className="space-y-6" id="main-content">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Data Export</h1>
@@ -120,7 +122,7 @@ export default function DataExportPage() {
                                         <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
                                     )}
                                     <div>
-                                        <p className="text-sm font-medium">Personal Data Export ({exp.format.toUpperCase()})</p>
+                                        <p className="text-sm font-medium">Personal Data Export ({exp.format === "json" ? "JSON" : "CSV"})</p>
                                         <p className="text-xs text-muted-foreground">Requested {exp.requestedAt}</p>
                                     </div>
                                 </div>
@@ -143,10 +145,10 @@ export default function DataExportPage() {
             </Card>
 
             {/* Privacy Notice */}
-            <Card className="border-amber-500/20 bg-amber-500/5">
+            <Card className="border-warning/20 bg-warning/5">
                 <CardContent className="py-4">
                     <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <AlertTriangle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
                         <div>
                             <p className="text-sm font-medium">Privacy Notice</p>
                             <p className="text-xs text-muted-foreground mt-1">
@@ -159,5 +161,6 @@ export default function DataExportPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

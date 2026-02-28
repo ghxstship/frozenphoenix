@@ -12,18 +12,66 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     ListChecks, Plus, CheckCircle2, Circle, Clock,
-    Percent,
+    Percent, Loader2,
 } from "lucide-react";
 import { MOCK_JOB_CHECKLISTS, MOCK_CHECKLIST_TEMPLATES } from "@/lib/demo-data-vendor-lifecycle";
+import { useChecklists, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ViewTab = "active" | "templates";
+
+interface ChecklistItem {
+    id: string;
+    title: string;
+    completed: boolean;
+    required: boolean;
+    completedBy?: string;
+}
+
+interface ChecklistEntry {
+    id: string;
+    title: string;
+    status: string;
+    dueDate?: string;
+    completionPercent: number;
+    completedItems: number;
+    totalItems: number;
+    items: ChecklistItem[];
+}
 
 export default function ChecklistsPage() {
     const [search, setSearch] = useState("");
     const [tab, setTab] = useState<ViewTab>("active");
 
-    const checklists = MOCK_JOB_CHECKLISTS;
+    const { data: sbChecklists, isLoading } = useChecklists();
+
+    const checklists: ChecklistEntry[] = isSupabaseConfigured && sbChecklists
+        ? sbChecklists.map((c: Record<string, unknown>) => ({
+            id: (c.id as string) ?? "",
+            title: (c.title as string) ?? "",
+            status: (c.status as string) ?? "not_started",
+            dueDate: (c.due_date as string) ?? undefined,
+            completionPercent: (c.completion_percent as number) ?? 0,
+            completedItems: (c.completed_items as number) ?? 0,
+            totalItems: (c.total_items as number) ?? 0,
+            items: ((c.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
+                id: (item.id as string) ?? "",
+                title: (item.title as string) ?? "",
+                completed: (item.completed as boolean) ?? false,
+                required: (item.required as boolean) ?? false,
+                completedBy: (item.completed_by as string) ?? undefined,
+            })),
+        }))
+        : MOCK_JOB_CHECKLISTS;
     const templates = MOCK_CHECKLIST_TEMPLATES;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filteredChecklists = checklists.filter(c =>
         !search || c.title.toLowerCase().includes(search.toLowerCase())
@@ -39,6 +87,7 @@ export default function ChecklistsPage() {
         : 0;
 
     return (
+        <PermissionGate resource="checklists" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Job Checklists" description="Template-based checklists for work orders, quality assurance, and safety compliance">
                 <div className="flex items-center gap-2">
@@ -143,5 +192,6 @@ export default function ChecklistsPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

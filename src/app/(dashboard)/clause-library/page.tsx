@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { MOCK_CONTRACT_CLAUSES } from "@/lib/demo-data-governance";
 import type { ClauseRiskLevel } from "@/types/governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const CLAUSE_TYPE_LABELS: Record<string, string> = {
     indemnification: "Indemnification", limitation_of_liability: "Limitation of Liability",
@@ -44,6 +45,7 @@ export default function ClauseLibraryPage() {
     const highRisk = clauses.filter(c => c.risk_level === "high" || c.risk_level === "critical").length;
 
     return (
+        <PermissionGate resource="clause_library" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Clause Library" description="Standard contract clauses with risk classification — reuse across contracts to ensure consistency">
                 <Button size="sm"><Plus className="h-4 w-4" /> Add Clause</Button>
@@ -95,5 +97,6 @@ export default function ClauseLibraryPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

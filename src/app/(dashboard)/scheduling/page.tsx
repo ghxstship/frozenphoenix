@@ -21,6 +21,7 @@ import {
     CheckCircle2,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface Shift {
     id: string;
@@ -149,6 +150,7 @@ export default function SchedulingPage() {
     };
 
     return (
+        <PermissionGate resource="scheduling" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Crew Scheduling" description="Shift management and labor allocation across productions">
                 <div className="flex items-center gap-2">
@@ -275,5 +277,6 @@ export default function SchedulingPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

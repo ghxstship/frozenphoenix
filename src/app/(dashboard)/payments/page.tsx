@@ -10,8 +10,10 @@ import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import {
     Banknote, Plus,
-    TrendingUp, ArrowDownRight, ArrowUpRight,
+    TrendingUp, ArrowDownRight, ArrowUpRight, Loader2,
 } from "lucide-react";
+import { usePayments, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type PaymentMethod = "bank_transfer" | "credit_card" | "check" | "ach" | "wire" | "other";
 type PaymentDirection = "incoming" | "outgoing";
@@ -51,17 +53,43 @@ export default function PaymentsPage() {
     const [search, setSearch] = useState("");
     const [dirFilter, setDirFilter] = useState<"all" | PaymentDirection>("all");
 
-    const filtered = mockPayments.filter((p) => {
+    const { data: sbPayments, isLoading } = usePayments();
+
+    const payments: Payment[] = isSupabaseConfigured && sbPayments
+        ? sbPayments.map((p: Record<string, unknown>) => ({
+            id: (p.id as string) ?? "",
+            direction: ((p.direction as string) ?? "incoming") as PaymentDirection,
+            invoiceNumber: (p.invoice_number as string) ?? "",
+            counterparty: (p.counterparty as string) ?? "",
+            amount: (p.amount as number) ?? 0,
+            method: ((p.method as string) ?? "other") as PaymentMethod,
+            date: (p.payment_date as string) ?? (p.date as string) ?? "",
+            reference: (p.reference as string) ?? "",
+            project: (p.project_name as string) ?? "",
+            notes: (p.notes as string) ?? "",
+        }))
+        : mockPayments;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = payments.filter((p) => {
         if (dirFilter !== "all" && p.direction !== dirFilter) return false;
         if (search && !p.counterparty.toLowerCase().includes(search.toLowerCase()) && !p.invoiceNumber.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
-    const totalIncoming = mockPayments.filter((p) => p.direction === "incoming").reduce((s, p) => s + p.amount, 0);
-    const totalOutgoing = mockPayments.filter((p) => p.direction === "outgoing").reduce((s, p) => s + p.amount, 0);
+    const totalIncoming = payments.filter((p) => p.direction === "incoming").reduce((s, p) => s + p.amount, 0);
+    const totalOutgoing = payments.filter((p) => p.direction === "outgoing").reduce((s, p) => s + p.amount, 0);
     const netCashFlow = totalIncoming - totalOutgoing;
 
     return (
+        <PermissionGate resource="payments" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Payments" description="Track incoming and outgoing payments across all projects">
                 <Button>
@@ -73,15 +101,15 @@ export default function PaymentsPage() {
                 <StatCard title="Received" value={formatCurrency(totalIncoming)} description="this period" icon={ArrowDownRight} change={15} />
                 <StatCard title="Paid Out" value={formatCurrency(totalOutgoing)} description="this period" icon={ArrowUpRight} />
                 <StatCard title="Net Cash Flow" value={formatCurrency(netCashFlow)} description="incoming - outgoing" icon={TrendingUp} change={8} />
-                <StatCard title="Transactions" value={mockPayments.length} description="this period" icon={Banknote} />
+                <StatCard title="Transactions" value={payments.length} description="this period" icon={Banknote} />
             </div>
 
             <div className="flex items-center gap-4">
                 <SearchInput value={search} onValueChange={setSearch} placeholder="Search payments..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "incoming", "outgoing"] as const).map((f) => (
-                        <Button key={f} variant={dirFilter === f ? "default" : "ghost"} size="sm" onClick={() => setDirFilter(f)} className="text-xs capitalize">
-                            {f}
+                        <Button key={f} variant={dirFilter === f ? "default" : "ghost"} size="sm" onClick={() => setDirFilter(f)} className="text-xs">
+                            {{ all: "All", incoming: "Incoming", outgoing: "Outgoing" }[f]}
                         </Button>
                     ))}
                 </div>
@@ -116,5 +144,6 @@ export default function PaymentsPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

@@ -12,8 +12,10 @@ import { formatCurrency } from "@/lib/utils";
 import {
     Clock, Plus, Play, Pause, Square,
     Calendar, AlertTriangle, Timer,
-    ChevronLeft, ChevronRight, BarChart3,
+    ChevronLeft, ChevronRight, BarChart3, Loader2,
 } from "lucide-react";
+import { useTimeEntries, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type TimeEntryStatus = "draft" | "submitted" | "approved" | "rejected";
 type TrackingMode = "daily" | "weekly" | "timer";
@@ -66,12 +68,36 @@ export default function TimeTrackingPage() {
     const [timerSeconds, setTimerSeconds] = useState(0);
     const [timerProject] = useState("Nike Air Max Launch");
 
-    const todayEntries = mockEntries.filter((e) => e.date === "2026-02-25");
+    const { data: sbEntries, isLoading } = useTimeEntries();
+
+    const entries: TimeEntry[] = isSupabaseConfigured && sbEntries
+        ? sbEntries.map((e: Record<string, unknown>) => ({
+            id: (e.id as string) ?? "",
+            date: (e.entry_date as string) ?? "",
+            project: (e.project_name as string) ?? "",
+            task: (e.task as string) ?? "",
+            hours: (e.hours as number) ?? 0,
+            description: (e.description as string) ?? "",
+            billable: (e.billable as boolean) ?? false,
+            status: ((e.status as string) ?? "draft") as TimeEntryStatus,
+            rate: (e.rate as number) ?? 0,
+        }))
+        : mockEntries;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const todayEntries = entries.filter((e) => e.date === "2026-02-25");
     const totalHoursToday = todayEntries.reduce((s, e) => s + e.hours, 0);
     const billableToday = todayEntries.filter((e) => e.billable).reduce((s, e) => s + e.hours, 0);
-    const totalWeekHours = mockEntries.reduce((s, e) => s + e.hours, 0);
-    const billableWeek = mockEntries.filter((e) => e.billable).reduce((s, e) => s + e.hours, 0);
-    const pendingApproval = mockEntries.filter((e) => e.status === "submitted").length;
+    const totalWeekHours = entries.reduce((s, e) => s + e.hours, 0);
+    const billableWeek = entries.filter((e) => e.billable).reduce((s, e) => s + e.hours, 0);
+    const pendingApproval = entries.filter((e) => e.status === "submitted").length;
 
     const formatTimer = (secs: number) => {
         const h = Math.floor(secs / 3600);
@@ -80,11 +106,12 @@ export default function TimeTrackingPage() {
         return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
     };
 
-    const filtered = mockEntries.filter((e) =>
+    const filtered = entries.filter((e) =>
         !search || e.project.toLowerCase().includes(search.toLowerCase()) || e.task.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
+        <PermissionGate resource="time_tracking" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Time Tracking"
@@ -131,11 +158,11 @@ export default function TimeTrackingPage() {
             {/* Mode Tabs */}
             <div className="flex items-center gap-2 border-b pb-2">
                 {(["daily", "weekly", "timer"] as TrackingMode[]).map((m) => (
-                    <Button key={m} variant={mode === m ? "default" : "ghost"} size="sm" onClick={() => setMode(m)} className="capitalize">
+                    <Button key={m} variant={mode === m ? "default" : "ghost"} size="sm" onClick={() => setMode(m)}>
                         {m === "timer" && <Timer className="mr-1 h-3.5 w-3.5" />}
                         {m === "daily" && <Clock className="mr-1 h-3.5 w-3.5" />}
                         {m === "weekly" && <Calendar className="mr-1 h-3.5 w-3.5" />}
-                        {m}
+                        {{ daily: "Daily", weekly: "Weekly", timer: "Timer" }[m]}
                     </Button>
                 ))}
                 <div className="flex-1" />
@@ -295,5 +322,6 @@ export default function TimeTrackingPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

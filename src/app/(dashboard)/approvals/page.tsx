@@ -17,6 +17,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import type { Approval } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DateField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 const approvalColumns: ColumnDef<Approval>[] = [
     {
@@ -151,6 +152,7 @@ export default function ApprovalsPage() {
     const lifecycleTotal = mockLifecycleStages.length;
 
     return (
+        <PermissionGate resource="approvals" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Approval Shield" description="Lifecycle approval matrix with 72-hour auto-escalation workflow engine">
                 <div className="flex gap-2">
@@ -383,5 +385,6 @@ export default function ApprovalsPage() {
                 </>
             )}
         </div>
+        </PermissionGate>
     );
 }

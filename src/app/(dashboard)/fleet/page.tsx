@@ -23,6 +23,7 @@ import {
 import type { Vehicle } from "@/types";
 import { getStatusVariant, getStatusLabel, getStatusBgColor } from "@/config/ui-variants";
 import type { BadgeVariant } from "@/config/ui-variants";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function FleetPage() {
     const { data: sbVehicles, isLoading } = useVehicles();
@@ -51,6 +52,7 @@ export default function FleetPage() {
     const inTransitCount = vehicles.filter((v) => v.status === "in_transit").length;
 
     return (
+        <PermissionGate resource="fleet" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Fleet Management" description="Vehicle tracking, dispatch, and logistics coordination">
                 <Button size="sm">
@@ -81,7 +83,7 @@ export default function FleetPage() {
                                             className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                                         >
                                             <div className={`h-12 w-12 rounded-xl ${getStatusBgColor(vehicle.status)} flex items-center justify-center`}>
-                                                <Truck className="h-6 w-6 text-white" />
+                                                <Truck className="h-6 w-6 text-primary-foreground" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
@@ -196,5 +198,6 @@ export default function FleetPage() {
                 </div>
             </div>
         </div>
+        </PermissionGate>
     );
 }

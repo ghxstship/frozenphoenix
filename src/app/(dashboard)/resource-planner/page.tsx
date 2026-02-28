@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
+import { PermissionGate } from "@/components/permission-guard";
 
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
@@ -226,6 +227,7 @@ export default function ResourcePlannerPage() {
     };
 
     return (
+        <PermissionGate resource="resource_planner" action="read">
         <div className="flex flex-col gap-6 p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -353,7 +355,7 @@ export default function ResourcePlannerPage() {
                                 <div className="p-3 border-r flex items-center gap-3">
                                     <div
                                         className={cn(
-                                            "h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-medium",
+                                            "h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium",
                                             crew.utilizationPercent >= 100
                                                 ? "bg-destructive"
                                                 : crew.utilizationPercent >= 80
@@ -390,10 +392,10 @@ export default function ResourcePlannerPage() {
                                                 <div
                                                     key={booking.id}
                                                     className={cn(
-                                                        "rounded px-1 py-0.5 text-xs text-white mb-1 cursor-pointer hover:opacity-80 truncate",
+                                                        "rounded px-1 py-0.5 text-xs text-primary-foreground mb-1 cursor-pointer hover:opacity-80 truncate",
                                                         bookingColors[booking.bookingType],
                                                         statusOpacity[booking.status],
-                                                        booking.hasConflict && "ring-2 ring-red-500"
+                                                        booking.hasConflict && "ring-2 ring-destructive"
                                                     )}
                                                     title={booking.projectName || booking.bookingType}
                                                 >
@@ -447,5 +449,6 @@ export default function ResourcePlannerPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

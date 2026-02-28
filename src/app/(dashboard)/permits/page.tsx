@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -10,9 +11,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import {
     FileBadge, Plus, AlertTriangle, CheckCircle2,
-    Clock, XCircle, MapPin,
+    Clock, XCircle, MapPin, Loader2,
 } from "lucide-react";
 import { MOCK_PERMITS } from "@/lib/demo-data-governance";
+import { usePermits, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { PermitStatus } from "@/types/governance";
 
 const PERMIT_STATUSES: PermitStatus[] = [
@@ -33,8 +36,9 @@ const PERMIT_TYPE_LABELS: Record<string, string> = {
 export default function PermitsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbPermits, isLoading } = usePermits();
 
-    const permits = MOCK_PERMITS;
+    const permits = isSupabaseConfigured && sbPermits ? (sbPermits as unknown as typeof MOCK_PERMITS) : MOCK_PERMITS;
 
     const filtered = permits.filter(p => {
         const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.jurisdiction.toLowerCase().includes(search.toLowerCase());
@@ -47,10 +51,19 @@ export default function PermitsPage() {
     const required = permits.filter(p => p.status === "required" || p.status === "application_draft").length;
     const expired = permits.filter(p => p.status === "expired" || p.status === "revoked").length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="permits" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Permits & Licenses" description="Track permits, licenses, and regulatory approvals across all jurisdictions and entities">
-                <Button size="sm"><Plus className="h-4 w-4" /> New Permit</Button>
+                <Link href="/permits/new"><Button size="sm"><Plus className="h-4 w-4" /> New Permit</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -122,5 +135,6 @@ export default function PermitsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

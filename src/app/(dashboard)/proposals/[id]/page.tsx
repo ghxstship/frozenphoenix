@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { brandConfig } from "@/config/brand";
+import { OverlineText } from "@/components/ui/overline-text";
 import {
     ArrowLeft,
     Save,
@@ -428,7 +429,7 @@ export default function ProposalDetailPage() {
                         {/* Executive Summary */}
                         {notes && (
                             <div>
-                                <h3 className="text-sm font-semibold mb-2 uppercase tracking-wider text-muted-foreground">Executive Summary</h3>
+                                <OverlineText as="h3" className="text-sm mb-2">Executive Summary</OverlineText>
                                 <p className="text-sm leading-relaxed">{notes}</p>
                             </div>
                         )}
@@ -438,7 +439,7 @@ export default function ProposalDetailPage() {
                             const sectionTotal = section.items.reduce((sum, i) => sum + i.total, 0);
                             return (
                                 <div key={section.id}>
-                                    <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider text-muted-foreground">{section.title}</h3>
+                                    <OverlineText as="h3" className="text-sm mb-3">{section.title}</OverlineText>
                                     <div className="border border-border rounded-lg overflow-hidden">
                                         <div className="grid grid-cols-12 gap-2 bg-secondary/30 px-4 py-2 text-xs font-medium text-muted-foreground">
                                             <div className="col-span-6">Description</div>
@@ -474,7 +475,7 @@ export default function ProposalDetailPage() {
                         {/* Terms */}
                         {terms && (
                             <div>
-                                <h3 className="text-sm font-semibold mb-2 uppercase tracking-wider text-muted-foreground">Terms & Conditions</h3>
+                                <OverlineText as="h3" className="text-sm mb-2">Terms & Conditions</OverlineText>
                                 <p className="text-sm text-muted-foreground leading-relaxed">{terms}</p>
                             </div>
                         )}

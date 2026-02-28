@@ -11,9 +11,11 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import {
     UserPlus, CheckCircle2, Clock,
-    FileText, Users,
+    FileText, Users, Loader2,
 } from "lucide-react";
 import type { OnboardingStatus } from "@/types/vendor-lifecycle";
+import { useVendorOnboarding, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface OnboardingVendor {
     id: string;
@@ -67,7 +69,34 @@ export default function VendorOnboardingPage() {
     const [search, setSearch] = useState("");
     const [viewMode, setViewMode] = useState<"pipeline" | "list">("pipeline");
 
-    const filtered = mockOnboardingVendors.filter(v =>
+    const { data: sbVendors, isLoading } = useVendorOnboarding();
+
+    const vendors: OnboardingVendor[] = isSupabaseConfigured && sbVendors
+        ? sbVendors.map((v: Record<string, unknown>) => ({
+            id: (v.id as string) ?? "",
+            name: (v.name as string) ?? "",
+            type: (v.type as string) ?? "",
+            contactName: (v.contact_name as string) ?? "",
+            email: (v.email as string) ?? "",
+            status: ((v.status as string) ?? "invited") as OnboardingStatus,
+            invitedAt: (v.invited_at as string) ?? "",
+            docsSubmitted: (v.docs_submitted as number) ?? 0,
+            docsRequired: (v.docs_required as number) ?? 0,
+            docsApproved: (v.docs_approved as number) ?? 0,
+            categories: (v.categories as string[]) ?? [],
+            lastActivity: (v.last_activity as string) ?? "",
+        }))
+        : mockOnboardingVendors;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = vendors.filter(v =>
         !search || v.name.toLowerCase().includes(search.toLowerCase()) || v.contactName.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -76,10 +105,11 @@ export default function VendorOnboardingPage() {
         vendors: filtered.filter(v => v.status === stage.id),
     }));
 
-    const pending = mockOnboardingVendors.filter(v => !["approved", "rejected", "archived"].includes(v.status));
-    const docsPending = mockOnboardingVendors.filter(v => v.docsSubmitted < v.docsRequired);
+    const pending = vendors.filter(v => !["approved", "rejected", "archived"].includes(v.status));
+    const docsPending = vendors.filter(v => v.docsSubmitted < v.docsRequired);
 
     return (
+        <PermissionGate resource="vendor_onboarding" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Vendor Onboarding" description="Pipeline view of vendor/subcontractor onboarding with compliance document tracking">
                 <div className="flex items-center gap-2">
@@ -183,5 +213,6 @@ export default function VendorOnboardingPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

@@ -9,6 +9,7 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
 import { Radio, Users, AlertTriangle, Activity } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { PermissionGate } from "@/components/permission-guard";
 
 type EventPhase = "advance" | "load_in" | "setup" | "rehearsal" | "ready" | "live" | "hold" | "strike" | "wrapped";
 
@@ -54,6 +55,7 @@ export default function LiveOpsPage() {
     const filtered = mockEvents.filter(e => phaseFilter === "all" || e.phase === phaseFilter);
 
     return (
+        <PermissionGate resource="live_ops" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Live Operations — Command Dashboard" description="Real-time operational overview of all active live events">
                 <Button size="sm"><Radio className="mr-2 h-4 w-4" />New Live Event</Button>
@@ -135,5 +137,6 @@ export default function LiveOpsPage() {
                 </CardContent></Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

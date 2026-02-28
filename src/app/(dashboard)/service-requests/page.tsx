@@ -13,10 +13,12 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Inbox, Plus, Clock, ArrowRightCircle,
     AlertTriangle, Calendar, User, Mail, Phone, MapPin,
-    FileSignature, ClipboardList, FolderKanban, Megaphone,
+    FileSignature, ClipboardList, FolderKanban, Megaphone, Loader2,
 } from "lucide-react";
 import { MOCK_SERVICE_REQUESTS } from "@/lib/demo-data-vendor-lifecycle";
-import type { ServiceRequestStatus, ServiceRequestPriority } from "@/types/vendor-lifecycle";
+import type { ServiceRequest, ServiceRequestStatus, ServiceRequestPriority } from "@/types/vendor-lifecycle";
+import { useServiceRequests, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 const SERVICE_REQUEST_STATUSES: ServiceRequestStatus[] = ["new", "acknowledged", "assessment_scheduled", "quoted", "approved", "converted", "declined", "cancelled", "archived"];
 
@@ -52,7 +54,39 @@ export default function ServiceRequestsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const requests = MOCK_SERVICE_REQUESTS;
+    const { data: sbRequests, isLoading } = useServiceRequests();
+
+    const requests: ServiceRequest[] = isSupabaseConfigured && sbRequests
+        ? sbRequests.map((r: Record<string, unknown>) => ({
+            id: (r.id as string) ?? "",
+            title: (r.title as string) ?? "",
+            description: (r.description as string) ?? "",
+            status: ((r.status as string) ?? "new") as ServiceRequestStatus,
+            priority: ((r.priority as string) ?? "normal") as ServiceRequestPriority,
+            source: (r.source as string) ?? "email",
+            category: (r.category as string) ?? "",
+            serviceType: (r.service_type as string) ?? "",
+            companyName: (r.company_name as string) ?? "",
+            contactName: (r.contact_name as string) ?? "",
+            requesterName: (r.requester_name as string) ?? "",
+            requesterEmail: (r.requester_email as string) ?? "",
+            preferredDate: (r.preferred_date as string) ?? "",
+            isFlexible: (r.is_flexible as boolean) ?? false,
+            requiresAssessment: (r.requires_assessment as boolean) ?? false,
+            assignedToName: (r.assigned_to_name as string) ?? "",
+            convertedToType: (r.converted_to_type as string) ?? undefined,
+            attachmentUrls: ((r.attachment_urls as string[]) ?? []),
+            createdAt: (r.created_at as string) ?? "",
+        } as ServiceRequest))
+        : MOCK_SERVICE_REQUESTS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
     const filtered = requests.filter(r => {
         const matchesSearch = !search || r.title.toLowerCase().includes(search.toLowerCase()) || (r.companyName || "").toLowerCase().includes(search.toLowerCase()) || (r.contactName || r.requesterName || "").toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === "all" || r.status === statusFilter;
@@ -65,6 +99,7 @@ export default function ServiceRequestsPage() {
     const urgentCount = requests.filter(r => ["urgent", "emergency"].includes(r.priority) && !["converted", "declined", "cancelled", "archived"].includes(r.status)).length;
 
     return (
+        <PermissionGate resource="service_requests" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Service Requests" description="Triage incoming work requests from clients, online booking, and other channels into estimates, work orders, or projects">
                 <Button size="sm"><Plus className="h-4 w-4" /> New Request</Button>
@@ -188,5 +223,6 @@ export default function ServiceRequestsPage() {
                 )}
             </div>
         </div>
+        </PermissionGate>
     );
 }

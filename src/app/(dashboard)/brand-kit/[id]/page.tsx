@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { OverlineText } from "@/components/ui/overline-text";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     ArrowLeft,
@@ -119,7 +120,7 @@ export default function BrandKitDetailPage() {
                     </Button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg font-bold text-white" style={{ background: `linear-gradient(135deg, ${mockBrand.primaryColor}, ${mockBrand.accentColor})` }}>
+                            <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg font-bold text-primary-foreground" style={{ background: `linear-gradient(135deg, ${mockBrand.primaryColor}, ${mockBrand.accentColor})` }}>
                                 {mockBrand.clientName.charAt(0)}
                             </div>
                             <div>
@@ -176,7 +177,7 @@ export default function BrandKitDetailPage() {
                                     >
                                         {copiedColor === c.color && (
                                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                <CheckCircle2 className="h-5 w-5 text-white" />
+                                                <CheckCircle2 className="h-5 w-5 text-primary-foreground" />
                                             </div>
                                         )}
                                     </button>
@@ -194,7 +195,7 @@ export default function BrandKitDetailPage() {
 
                             {/* Palette Preview */}
                             <div className="pt-4 border-t border-border">
-                                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Palette Preview</p>
+                                <OverlineText className="mb-2">Palette Preview</OverlineText>
                                 <div className="h-12 rounded-lg overflow-hidden flex">
                                     <div className="flex-[3]" style={{ backgroundColor: mockBrand.primaryColor }} />
                                     <div className="flex-[2]" style={{ backgroundColor: mockBrand.secondaryColor }} />
@@ -208,7 +209,7 @@ export default function BrandKitDetailPage() {
                         <CardHeader><CardTitle className="text-base flex items-center gap-2"><Type className="h-4 w-4" />Typography</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Heading Font</p>
+                                <OverlineText className="mb-2">Heading Font</OverlineText>
                                 <div className="p-4 rounded-lg bg-secondary/30">
                                     <p className="text-3xl font-bold" style={{ fontFamily: mockBrand.fontFamily }}>{mockBrand.headingFont}</p>
                                     <p className="text-sm text-muted-foreground mt-1">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
@@ -217,7 +218,7 @@ export default function BrandKitDetailPage() {
                                 </div>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Body Font</p>
+                                <OverlineText className="mb-2">Body Font</OverlineText>
                                 <div className="p-4 rounded-lg bg-secondary/30">
                                     <p className="text-lg">{mockBrand.bodyFont}</p>
                                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
@@ -226,7 +227,7 @@ export default function BrandKitDetailPage() {
                                 </div>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Type Scale</p>
+                                <OverlineText className="mb-2">Type Scale</OverlineText>
                                 <div className="space-y-2">
                                     {[
                                         { label: "H1", size: "36px", weight: "Bold" },
@@ -263,7 +264,7 @@ export default function BrandKitDetailPage() {
                                     size="sm"
                                     onClick={() => setAssetFilter(type)}
                                 >
-                                    {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+                                    {type === "all" ? "All" : ({ logo: "Logo", icon: "Icon", photo: "Photo", pattern: "Pattern", illustration: "Illustration" }[type] ?? type)}
                                     {type !== "all" && (
                                         <span className="ml-1 text-xs">({mockAssets.filter((a) => a.type === type).length})</span>
                                     )}
@@ -280,7 +281,7 @@ export default function BrandKitDetailPage() {
                                     <div className="h-32 rounded-lg bg-secondary/30 flex items-center justify-center mb-3 border border-border/50">
                                         <div className="text-center">
                                             {asset.type === "logo" || asset.type === "icon" ? (
-                                                <div className="h-16 w-16 rounded-xl mx-auto flex items-center justify-center text-2xl font-bold text-white" style={{ backgroundColor: mockBrand.primaryColor }}>
+                                                <div className="h-16 w-16 rounded-xl mx-auto flex items-center justify-center text-2xl font-bold text-primary-foreground" style={{ backgroundColor: mockBrand.primaryColor }}>
                                                     {mockBrand.clientName.charAt(0)}
                                                 </div>
                                             ) : asset.type === "pattern" ? (

@@ -8,7 +8,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Chip } from "@/components/ui/chip";
-import { Image, FileText, Film, Music, Lock } from "lucide-react";
+import { Image, FileText, Film, Music, Lock, Loader2 } from "lucide-react";
+import { useDigitalAssets, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface MockDigitalAsset {
     id: string;
@@ -46,22 +48,50 @@ const CLASS_ICONS: Record<string, typeof Image> = {
 export default function DigitalAssetsPage() {
     const [search, setSearch] = useState("");
 
-    const filtered = mockAssets.filter(a =>
+    const { data: sbAssets, isLoading } = useDigitalAssets();
+
+    const assets: MockDigitalAsset[] = isSupabaseConfigured && sbAssets
+        ? sbAssets.map((a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            name: (a.name as string) ?? "",
+            assetClass: (a.asset_class as string) ?? "document",
+            status: (a.status as string) ?? "draft",
+            version: (a.version as number) ?? 1,
+            mimeType: (a.mime_type as string) ?? "",
+            fileSize: (a.file_size as string) ?? "0 B",
+            uploadedBy: (a.uploaded_by as string) ?? "",
+            uploadedAt: (a.uploaded_at as string) ?? "",
+            projectName: (a.project_name as string) ?? undefined,
+            tags: ((a.tags as string[]) ?? []),
+            isLocked: (a.is_locked as boolean) ?? false,
+        }))
+        : mockAssets;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = assets.filter(a =>
         !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.tags.some(t => t.includes(search.toLowerCase()))
     );
 
     const byStatus = {
-        approved: mockAssets.filter(a => a.status === "approved").length,
-        inReview: mockAssets.filter(a => a.status === "in_review").length,
-        locked: mockAssets.filter(a => a.isLocked).length,
+        approved: assets.filter(a => a.status === "approved").length,
+        inReview: assets.filter(a => a.status === "in_review").length,
+        locked: assets.filter(a => a.isLocked).length,
     };
 
     return (
+        <PermissionGate resource="digital_assets" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Digital Assets" description="Centralized asset library — images, video, documents, audio — with versioning and access control" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Assets" value={mockAssets.length} icon={Image} />
+                <StatCard title="Total Assets" value={assets.length} icon={Image} />
                 <StatCard title="Approved" value={byStatus.approved} icon={Image} />
                 <StatCard title="In Review" value={byStatus.inReview} icon={FileText} />
                 <StatCard title="Locked" value={byStatus.locked} icon={Lock} />
@@ -106,5 +136,6 @@ export default function DigitalAssetsPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

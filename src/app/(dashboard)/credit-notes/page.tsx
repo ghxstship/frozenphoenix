@@ -10,8 +10,10 @@ import { formatCurrency } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
     ReceiptText, Plus, DollarSign,
-    FileText, ArrowDownRight,
+    FileText, ArrowDownRight, Loader2,
 } from "lucide-react";
+import { useCreditNotes, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type CreditNoteStatus = "draft" | "issued" | "applied" | "void";
 
@@ -38,15 +40,41 @@ const mockCreditNotes: CreditNote[] = [
 export default function CreditNotesPage() {
     const [search, setSearch] = useState("");
 
-    const filtered = mockCreditNotes.filter((cn) =>
+    const { data: sbCreditNotes, isLoading } = useCreditNotes();
+
+    const creditNotes: CreditNote[] = isSupabaseConfigured && sbCreditNotes
+        ? sbCreditNotes.map((cn: Record<string, unknown>) => ({
+            id: (cn.id as string) ?? "",
+            number: (cn.credit_note_number as string) ?? "",
+            invoiceNumber: (cn.invoice_number as string) ?? "",
+            client: (cn.client_name as string) ?? "",
+            project: (cn.project_name as string) ?? "",
+            reason: (cn.reason as string) ?? "",
+            amount: (cn.amount as number) ?? 0,
+            status: ((cn.status as string) ?? "draft") as CreditNoteStatus,
+            issuedDate: (cn.issued_date as string) ?? "",
+            appliedDate: (cn.applied_date as string) ?? null,
+        }))
+        : mockCreditNotes;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = creditNotes.filter((cn) =>
         !search || cn.client.toLowerCase().includes(search.toLowerCase()) || cn.number.toLowerCase().includes(search.toLowerCase())
     );
 
-    const totalIssued = mockCreditNotes.filter((cn) => cn.status !== "void").reduce((s, cn) => s + cn.amount, 0);
-    const totalApplied = mockCreditNotes.filter((cn) => cn.status === "applied").reduce((s, cn) => s + cn.amount, 0);
-    const pendingCredits = mockCreditNotes.filter((cn) => cn.status === "issued" || cn.status === "draft").reduce((s, cn) => s + cn.amount, 0);
+    const totalIssued = creditNotes.filter((cn) => cn.status !== "void").reduce((s, cn) => s + cn.amount, 0);
+    const totalApplied = creditNotes.filter((cn) => cn.status === "applied").reduce((s, cn) => s + cn.amount, 0);
+    const pendingCredits = creditNotes.filter((cn) => cn.status === "issued" || cn.status === "draft").reduce((s, cn) => s + cn.amount, 0);
 
     return (
+        <PermissionGate resource="credit_notes" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Credit Notes" description="Issue and track credit notes against client invoices">
                 <Button>
@@ -90,5 +118,6 @@ export default function CreditNotesPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

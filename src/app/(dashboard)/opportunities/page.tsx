@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -13,10 +14,12 @@ import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/demo-data-crm-revenue";
 import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
+import { useOpportunities, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { Opportunity, OpportunityStage } from "@/types";
 import {
     Plus, Columns, List, Target, DollarSign, TrendingUp, Clock,
-    GripVertical, Calendar, User, Building2,
+    GripVertical, Calendar, User, Building2, Loader2,
 } from "lucide-react";
 
 type ViewMode = "board" | "table";
@@ -109,8 +112,9 @@ export default function OpportunitiesPage() {
     const [search, setSearch] = useState("");
     const [stageFilter, setStageFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const { data: sbOpps, isLoading } = useOpportunities();
 
-    const opportunities = MOCK_OPPORTUNITIES;
+    const opportunities = isSupabaseConfigured && sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
 
     const filtered = useMemo(() => {
         let result = opportunities;
@@ -140,12 +144,23 @@ export default function OpportunitiesPage() {
 
     const boardStages = OPPORTUNITY_STAGES.filter((s) => s.id !== "won" && s.id !== "lost");
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="opportunities" action="read">
         <div className="space-y-6">
             <PageHeader title="Opportunities" description="Sales pipeline — track opportunities from discovery to close">
-                <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" /> New Opportunity
-                </Button>
+                <Link href="/opportunities/new">
+                    <Button size="sm">
+                        <Plus className="mr-2 h-4 w-4" /> New Opportunity
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -264,5 +279,6 @@ export default function OpportunitiesPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

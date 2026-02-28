@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { OverlineText } from "@/components/ui/overline-text";
 import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
 import { brandConfig } from "@/config/brand";
@@ -63,7 +64,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                            <Flame className="h-4.5 w-4.5 text-white" />
+                            <Flame className="h-4.5 w-4.5 text-primary-foreground" />
                         </div>
                         <span className="text-base font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             {brandConfig.name}
@@ -219,7 +220,7 @@ export default function LandingPage() {
                                 {cs.metrics.map((metric) => (
                                     <div key={metric.label} className="px-4 py-2 rounded-xl bg-secondary">
                                         <p className="text-xl font-bold">{metric.value}</p>
-                                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{metric.label}</p>
+                                        <OverlineText>{metric.label}</OverlineText>
                                     </div>
                                 ))}
                             </div>
@@ -238,7 +239,7 @@ export default function LandingPage() {
                                     <>
                                         <div className="flex items-center gap-1">
                                             {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className={`h-5 w-5 ${i < Math.round(reviewStats.average_rating || 4.8) ? "text-yellow-500 fill-yellow-500" : "text-muted"}`} />
+                                                <Star key={i} className={`h-5 w-5 ${i < Math.round(reviewStats.average_rating || 4.8) ? "text-star-rating fill-star-rating" : "text-muted"}`} />
                                             ))}
                                         </div>
                                         <span className="text-lg font-bold">{reviewStats.average_rating || "4.8"}</span>
@@ -254,7 +255,7 @@ export default function LandingPage() {
                                 <div key={testimonial.id} className="spatial-card p-6">
                                     <div className="flex items-center gap-1 mb-4">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`h-4 w-4 ${i < (testimonial.rating || 5) ? "text-yellow-500 fill-yellow-500" : "text-muted"}`} />
+                                            <Star key={i} className={`h-4 w-4 ${i < (testimonial.rating || 5) ? "text-star-rating fill-star-rating" : "text-muted"}`} />
                                         ))}
                                     </div>
                                     <p className="text-sm leading-relaxed mb-4 italic">&ldquo;{testimonial.quote}&rdquo;</p>

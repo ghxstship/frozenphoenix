@@ -86,8 +86,8 @@ export default function WorkforceOnboardingPage() {
                                             <CardTitle className="text-sm">{run.workerName}</CardTitle>
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 {isOnboarding && (typedRun as typeof onboardingRuns[0]).classification && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
-                                                        {(typedRun as typeof onboardingRuns[0]).classification?.replace(/_/g, " ")}
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                        {{ new_hire: "New Hire", rehire: "Rehire", transfer: "Transfer", contractor: "Contractor", intern: "Intern" }[(typedRun as typeof onboardingRuns[0]).classification as string] ?? (typedRun as typeof onboardingRuns[0]).classification?.replace(/_/g, " ")}
                                                     </span>
                                                 )}
                                                 <Badge variant={run.status === "completed" ? "success" : run.status === "in_progress" ? "info" : "default"} className="text-[10px]">

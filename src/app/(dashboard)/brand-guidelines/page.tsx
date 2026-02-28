@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -13,6 +15,8 @@ import {
     MOCK_BRAND_GUIDELINES,
     MOCK_BRAND_GUIDELINE_SECTIONS,
 } from "@/lib/demo-data-creative-brand";
+import { useBrandGuidelines, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { BrandGuideline, BrandGuidelineSection, BrandLevel } from "@/types";
 import {
     Plus,
@@ -32,6 +36,7 @@ import {
     Grid3X3,
     Layout,
     Brush,
+    Loader2,
 } from "lucide-react";
 
 const LEVEL_LABELS: Record<BrandLevel, string> = {
@@ -64,8 +69,9 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
 export default function BrandGuidelinesPage() {
     const [search, setSearch] = useState("");
     const [expandedGuideline, setExpandedGuideline] = useState<string | null>("bg-1");
+    const { data: sbGuidelines, isLoading } = useBrandGuidelines();
 
-    const guidelines = MOCK_BRAND_GUIDELINES;
+    const guidelines = isSupabaseConfigured && sbGuidelines ? (sbGuidelines as unknown as BrandGuideline[]) : MOCK_BRAND_GUIDELINES;
     const sections = MOCK_BRAND_GUIDELINE_SECTIONS;
 
     const filtered = useMemo(() => {
@@ -91,16 +97,27 @@ export default function BrandGuidelinesPage() {
 
     const rootGuidelines = filtered.filter((g) => g.parent_id === null);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="brand_guidelines" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Brand Guidelines"
                 description="Multi-brand governance with versioned visual identity, typography, voice, and compliance standards"
             >
-                <Button size="sm">
-                    <Plus className="h-4 w-4" />
-                    New Guideline
-                </Button>
+                <Link href="/brand-guidelines/new">
+                    <Button size="sm">
+                        <Plus className="h-4 w-4" />
+                        New Guideline
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -136,6 +153,7 @@ export default function BrandGuidelinesPage() {
                 )}
             </div>
         </div>
+        </PermissionGate>
     );
 }
 
@@ -220,9 +238,9 @@ function GuidelineNode({
                     {/* Expanded Sections */}
                     {isExpanded && sections.length > 0 && (
                         <div className="mt-4 ml-7 space-y-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            <OverlineText>
                                 Guideline Sections
-                            </p>
+                            </OverlineText>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {sections
                                     .sort((a, b) => a.display_order - b.display_order)

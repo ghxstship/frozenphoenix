@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_CREW } from "@/lib/demo-data";
@@ -15,6 +16,7 @@ import type { CrewMember, CertificationType } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DataBoard, type BoardColumn, type CardField } from "@/components/data-view/data-board";
 import { CurrencyField, EmailField, PhoneField, TagsField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ViewMode = "cards" | "table" | "board";
 
@@ -176,6 +178,7 @@ export default function CrewPage() {
     const expiredCerts = crew.flatMap(c => c.certifications.filter(cert => !cert.isValid));
 
     return (
+        <PermissionGate resource="crew" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Crew & Labor Command" description="Shift scheduling, certifications, and crew management">
                 <div className="flex items-center gap-2">
@@ -275,7 +278,7 @@ export default function CrewPage() {
 
                                     {/* Certifications */}
                                     <div className="mt-4 space-y-1.5">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Certifications</p>
+                                        <OverlineText>Certifications</OverlineText>
                                         <div className="flex flex-wrap gap-1.5">
                                             {member.certifications.map((cert) => (
                                                 <div
@@ -318,5 +321,6 @@ export default function CrewPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

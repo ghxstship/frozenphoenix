@@ -177,7 +177,7 @@ export function Topbar() {
                     >
                         <Bell className="h-4 w-4" />
                         {unreadCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-white flex items-center justify-center font-bold px-1">
+                            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold px-1">
                                 {unreadCount > 9 ? "9+" : unreadCount}
                             </span>
                         )}

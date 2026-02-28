@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { brandConfig } from "@/config/brand";
+import { useAuth } from "@/lib/supabase/auth-context";
+import { useSettings } from "@/lib/settings/settings-provider";
+import {
+    useNotificationPreferences,
+    useUpsertNotificationPreferences,
+    useUserSessions,
+    useRevokeSession,
+} from "@/lib/settings/hooks";
+import { SettingRow } from "@/components/settings/setting-row";
+import { PermissionGate } from "@/components/permission-guard";
+import { useTheme } from "@/components/theme-provider";
+import type { ColorMode } from "@/components/theme-provider";
+import type { SettingCategory, ResolvedSetting } from "@/types/settings";
 import {
     Settings,
     User,
@@ -21,7 +33,17 @@ import {
     Moon,
     Sun,
     Monitor,
+    Loader2,
+    LogOut,
+    Smartphone,
 } from "lucide-react";
+
+const ROLE_LABELS: Record<string, string> = {
+    exec: "Executive",
+    pm: "Project Manager",
+    client: "Client",
+    vendor: "Vendor",
+};
 
 type SettingsTab = "profile" | "organization" | "notifications" | "security" | "appearance";
 
@@ -33,9 +55,92 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Settings }[] = [
     { id: "appearance", label: "Appearance", icon: Palette },
 ];
 
+function SettingsCategorySection({
+    category,
+    settings,
+    onSave,
+}: {
+    category: SettingCategory;
+    settings: Map<string, ResolvedSetting>;
+    onSave: (category: SettingCategory, key: string, value: unknown) => Promise<void>;
+}) {
+    const filtered = Array.from(settings.values()).filter(
+        (s) => s.definition.category === category
+    );
+    if (filtered.length === 0) return null;
+
+    return (
+        <div className="space-y-1">
+            {filtered
+                .sort((a, b) => a.definition.display_order - b.definition.display_order)
+                .map((setting) => (
+                    <SettingRow key={setting.definition.key} setting={setting} onSave={onSave} />
+                ))}
+        </div>
+    );
+}
+
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
-    const [theme, setTheme] = useState<"light" | "dark" | "system">("dark");
+    const { colorMode, setColorMode } = useTheme();
+    const { user, profile, memberships, activeOrg } = useAuth();
+    const { settings, loading: settingsLoading, updateSetting } = useSettings();
+
+    // Profile form state — pre-populated from auth context
+    const [profileName, setProfileName] = useState(profile?.name ?? "");
+    const [profileEmail] = useState(user?.email ?? "");
+    const [profileSaving, setProfileSaving] = useState(false);
+
+    // Notification preferences
+    const { data: notifPrefs } = useNotificationPreferences(user?.id ?? null);
+    const upsertNotifPrefs = useUpsertNotificationPreferences();
+
+    // Sessions
+    const { data: sessions } = useUserSessions(user?.id ?? null);
+    const revokeSession = useRevokeSession();
+
+    const handleNotifToggle = useCallback(
+        (channel: string, enabled: boolean) => {
+            if (!user?.id) return;
+            upsertNotifPrefs.mutate({
+                user_id: user.id,
+                [channel]: enabled,
+            });
+        },
+        [user?.id, upsertNotifPrefs]
+    );
+
+    const handleSaveSetting = useCallback(
+        async (category: SettingCategory, key: string, value: unknown) => {
+            await updateSetting(category, key, value);
+        },
+        [updateSetting]
+    );
+
+    const handleSaveProfile = useCallback(async () => {
+        if (!user?.id) return;
+        setProfileSaving(true);
+        try {
+            const { createClient } = await import("@/lib/supabase/client");
+            const sb = createClient();
+            if (sb) {
+                await sb
+                    .from("profiles")
+                    .update({ name: profileName })
+                    .eq("id", user.id);
+            }
+        } finally {
+            setProfileSaving(false);
+        }
+    }, [user?.id, profileName]);
+
+    const userRole = activeOrg?.role ?? profile?.role ?? "vendor";
+    const userInitials = (profile?.name ?? "U")
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -44,13 +149,14 @@ export default function SettingsPage() {
             <div className="flex flex-col lg:flex-row gap-6">
                 <Card className="lg:w-64 shrink-0">
                     <CardContent className="p-2">
-                        <nav className="space-y-1">
+                        <nav className="space-y-1" aria-label="Settings navigation">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon;
                                 return (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
+                                        aria-current={activeTab === tab.id ? "page" : undefined}
                                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
                                             ? "bg-primary/10 text-primary"
                                             : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -66,6 +172,7 @@ export default function SettingsPage() {
                 </Card>
 
                 <div className="flex-1 space-y-6">
+                    {/* ─── Profile Tab ─── */}
                     {activeTab === "profile" && (
                         <>
                             <Card>
@@ -74,8 +181,8 @@ export default function SettingsPage() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-white">
-                                            AR
+                                        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
+                                            {userInitials}
                                         </div>
                                         <div>
                                             <Button variant="ghost" size="sm">
@@ -88,36 +195,61 @@ export default function SettingsPage() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Full Name</label>
-                                            <Input defaultValue="Alex Rivera" />
+                                            <label htmlFor="profile-name" className="text-sm font-medium">Full Name</label>
+                                            <Input
+                                                id="profile-name"
+                                                value={profileName}
+                                                onChange={(e) => setProfileName(e.target.value)}
+                                            />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Email</label>
-                                            <Input defaultValue={`alex@${brandConfig.name.toLowerCase().replace(/\s+/g, '')}.com`} type="email" />
+                                            <label htmlFor="profile-email" className="text-sm font-medium">Email</label>
+                                            <Input id="profile-email" value={profileEmail} type="email" disabled />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Role</label>
-                                            <Input defaultValue="Executive Producer" disabled />
+                                            <label htmlFor="profile-role" className="text-sm font-medium">Role</label>
+                                            <Input id="profile-role" value={ROLE_LABELS[userRole] ?? userRole} disabled />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Phone</label>
-                                            <Input defaultValue="(555) 123-4567" type="tel" />
+                                            <label htmlFor="profile-org" className="text-sm font-medium">Organization</label>
+                                            <Input
+                                                id="profile-org"
+                                                value={activeOrg?.organizations?.name ?? "—"}
+                                                disabled
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="flex justify-end">
-                                        <Button>
-                                            <Save className="h-4 w-4" />
+                                        <Button onClick={handleSaveProfile} disabled={profileSaving}>
+                                            {profileSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                             Save Changes
                                         </Button>
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {/* User Preferences from settings framework */}
+                            {!settingsLoading && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Preferences</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <SettingsCategorySection
+                                            category="preferences"
+                                            settings={settings}
+                                            onSave={handleSaveSetting}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            )}
                         </>
                     )}
 
+                    {/* ─── Organization Tab ─── */}
                     {activeTab === "organization" && (
-                        <>
+                        <PermissionGate resource="settings" action="read">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Organization Details</CardTitle>
@@ -125,28 +257,13 @@ export default function SettingsPage() {
                                 <CardContent className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Organization Name</label>
-                                            <Input defaultValue={brandConfig.name} />
+                                            <label htmlFor="org-name" className="text-sm font-medium">Organization Name</label>
+                                            <Input id="org-name" value={activeOrg?.organizations?.name ?? "—"} disabled />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Website</label>
-                                            <Input defaultValue={brandConfig.support.url.replace('/support', '')} type="url" />
+                                            <label htmlFor="org-role" className="text-sm font-medium">Your Role</label>
+                                            <Input id="org-role" value={ROLE_LABELS[userRole] ?? userRole} disabled />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Industry</label>
-                                            <Input defaultValue="Technical Production & Fabrication" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Team Size</label>
-                                            <Input defaultValue="25-50" />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-end">
-                                        <Button>
-                                            <Save className="h-4 w-4" />
-                                            Save Changes
-                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -157,92 +274,116 @@ export default function SettingsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-3">
-                                        {[
-                                            { name: "Alex Rivera", email: `alex@${brandConfig.name.toLowerCase().replace(/\s+/g, '')}.com`, role: "exec" },
-                                            { name: "Jordan Park", email: `jordan@${brandConfig.name.toLowerCase().replace(/\s+/g, '')}.com`, role: "pm" },
-                                            { name: "Sarah Chen", email: "sarah@nike.com", role: "client" },
-                                        ].map((member) => (
-                                            <div key={member.email} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                                        {memberships.map((m) => (
+                                            <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold">
-                                                        {member.name.split(" ").map((n) => n[0]).join("")}
+                                                        {m.user_id === user?.id ? userInitials : "??"}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-medium">{member.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{member.email}</p>
+                                                        <p className="text-sm font-medium">
+                                                            {m.user_id === user?.id ? (profile?.name ?? "You") : m.user_id.slice(0, 8)}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">{m.organizations?.name ?? "—"}</p>
                                                     </div>
                                                 </div>
-                                                <Badge variant={member.role === "exec" ? "default" : member.role === "pm" ? "info" : "warning"}>
-                                                    {member.role.toUpperCase()}
+                                                <Badge variant={m.role === "exec" ? "default" : m.role === "pm" ? "info" : "warning"}>
+                                                    {ROLE_LABELS[m.role] ?? m.role}
                                                 </Badge>
                                             </div>
                                         ))}
                                     </div>
-                                    <Button variant="ghost" className="w-full mt-3">
-                                        <User className="h-4 w-4" />
-                                        Invite Team Member
-                                    </Button>
+                                    <PermissionGate resource="invitations" action="write" silent>
+                                        <Button variant="ghost" className="w-full mt-3">
+                                            <User className="h-4 w-4" />
+                                            Invite Team Member
+                                        </Button>
+                                    </PermissionGate>
                                 </CardContent>
                             </Card>
-                        </>
+
+                            {/* Org-scoped settings */}
+                            {!settingsLoading && (
+                                <>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Governance & Compliance</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <SettingsCategorySection category="governance" settings={settings} onSave={handleSaveSetting} />
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Security Controls</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <SettingsCategorySection category="security" settings={settings} onSave={handleSaveSetting} />
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Operational Controls</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <SettingsCategorySection category="operational" settings={settings} onSave={handleSaveSetting} />
+                                        </CardContent>
+                                    </Card>
+                                </>
+                            )}
+                        </PermissionGate>
                     )}
 
+                    {/* ─── Notifications Tab ─── */}
                     {activeTab === "notifications" && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Notification Preferences</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {[
-                                    { id: "approvals", label: "Approval Requests", description: "Get notified when approvals are pending or overdue", enabled: true },
-                                    { id: "tasks", label: "Task Updates", description: "Notifications for task assignments and status changes", enabled: true },
-                                    { id: "projects", label: "Project Milestones", description: "Phase transitions and project completions", enabled: true },
-                                    { id: "finance", label: "Financial Alerts", description: "Budget warnings and invoice notifications", enabled: false },
-                                    { id: "crew", label: "Crew & Scheduling", description: "Shift changes and certification expirations", enabled: true },
-                                    { id: "vendors", label: "Vendor Updates", description: "COI expirations and vendor status changes", enabled: false },
-                                ].map((pref) => (
-                                    <div key={pref.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors">
-                                        <div>
-                                            <p className="text-sm font-medium">{pref.label}</p>
-                                            <p className="text-xs text-muted-foreground">{pref.description}</p>
-                                        </div>
-                                        <button
-                                            className={`h-6 w-11 rounded-full transition-colors ${pref.enabled ? "bg-primary" : "bg-muted"}`}
-                                        >
-                                            <div
-                                                className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${pref.enabled ? "translate-x-5" : "translate-x-0.5"}`}
-                                            />
-                                        </button>
-                                    </div>
-                                ))}
+                                {/* Category settings from framework */}
+                                {!settingsLoading && (
+                                    <SettingsCategorySection category="notifications" settings={settings} onSave={handleSaveSetting} />
+                                )}
 
                                 <div className="pt-4 border-t border-border">
                                     <h4 className="text-sm font-semibold mb-3">Delivery Methods</h4>
                                     <div className="space-y-2">
                                         {[
-                                            { id: "email", label: "Email", icon: Mail, enabled: true },
-                                            { id: "push", label: "Push Notifications", icon: Bell, enabled: true },
-                                        ].map((method) => (
-                                            <div key={method.id} className="flex items-center justify-between p-2">
-                                                <div className="flex items-center gap-2">
-                                                    <method.icon className="h-4 w-4 text-muted-foreground" />
-                                                    <span className="text-sm">{method.label}</span>
+                                            { id: "email_enabled", label: "Email", icon: Mail },
+                                            { id: "push_enabled", label: "Push Notifications", icon: Bell },
+                                            { id: "sms_enabled", label: "SMS", icon: Smartphone },
+                                        ].map((method) => {
+                                            const enabled = notifPrefs
+                                                ? Boolean((notifPrefs as Record<string, unknown>)[method.id] ?? method.id === "email_enabled")
+                                                : method.id === "email_enabled";
+                                            return (
+                                                <div key={method.id} className="flex items-center justify-between p-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <method.icon className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="text-sm">{method.label}</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleNotifToggle(method.id, !enabled)}
+                                                        className={`h-6 w-11 rounded-full transition-colors ${enabled ? "bg-primary" : "bg-muted"}`}
+                                                        role="switch"
+                                                        aria-checked={enabled}
+                                                        aria-label={`Toggle ${method.label}`}
+                                                    >
+                                                        <div
+                                                            className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`}
+                                                        />
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    className={`h-5 w-9 rounded-full transition-colors ${method.enabled ? "bg-primary" : "bg-muted"}`}
-                                                >
-                                                    <div
-                                                        className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${method.enabled ? "translate-x-4" : "translate-x-0.5"}`}
-                                                    />
-                                                </button>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
+                    {/* ─── Security Tab ─── */}
                     {activeTab === "security" && (
                         <>
                             <Card>
@@ -251,16 +392,16 @@ export default function SettingsPage() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Current Password</label>
-                                        <Input type="password" placeholder="••••••••" />
+                                        <label htmlFor="current-password" className="text-sm font-medium">Current Password</label>
+                                        <Input id="current-password" type="password" placeholder="••••••••" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">New Password</label>
-                                        <Input type="password" placeholder="••••••••" />
+                                        <label htmlFor="new-password" className="text-sm font-medium">New Password</label>
+                                        <Input id="new-password" type="password" placeholder="••••••••" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Confirm New Password</label>
-                                        <Input type="password" placeholder="••••••••" />
+                                        <label htmlFor="confirm-password" className="text-sm font-medium">Confirm New Password</label>
+                                        <Input id="confirm-password" type="password" placeholder="••••••••" />
                                     </div>
                                     <Button>
                                         <Key className="h-4 w-4" />
@@ -294,88 +435,144 @@ export default function SettingsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
-                                            <div className="flex items-center gap-3">
-                                                <Monitor className="h-5 w-5 text-primary" />
-                                                <div>
-                                                    <p className="text-sm font-medium">MacBook Pro — Chrome</p>
-                                                    <p className="text-xs text-muted-foreground">Los Angeles, CA · Current session</p>
+                                        {sessions && sessions.length > 0 ? (
+                                            sessions.map((session: Record<string, unknown>) => {
+                                                const s = session as Record<string, unknown>;
+                                                return (
+                                                    <div key={s.id as string} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                                                        <div className="flex items-center gap-3">
+                                                            <Monitor className="h-5 w-5 text-muted-foreground" />
+                                                            <div>
+                                                                <p className="text-sm font-medium">
+                                                                    {(s.device_name as string) ?? "Unknown device"} — {(s.browser as string) ?? "Unknown browser"}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {(s.ip_address as string) ?? "—"} · Last active: {s.last_active_at ? new Date(s.last_active_at as string).toLocaleDateString() : "—"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant={(s.is_active as boolean) ? "success" : "ghost"}>
+                                                                {(s.is_active as boolean) ? "Active" : "Ended"}
+                                                            </Badge>
+                                                            {(s.is_active as boolean) && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => revokeSession.mutate(s.id as string)}
+                                                                >
+                                                                    <LogOut className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                                                <div className="flex items-center gap-3">
+                                                    <Monitor className="h-5 w-5 text-primary" />
+                                                    <div>
+                                                        <p className="text-sm font-medium">Current Session</p>
+                                                        <p className="text-xs text-muted-foreground">Active now</p>
+                                                    </div>
                                                 </div>
+                                                <Badge variant="success">Active</Badge>
                                             </div>
-                                            <Badge variant="success">Active</Badge>
-                                        </div>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
                         </>
                     )}
 
+                    {/* ─── Appearance Tab ─── */}
                     {activeTab === "appearance" && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Theme Preferences</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div>
-                                    <p className="text-sm font-medium mb-3">Color Mode</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        {[
-                                            { id: "light", label: "Light", icon: Sun },
-                                            { id: "dark", label: "Dark", icon: Moon },
-                                            { id: "system", label: "System", icon: Monitor },
-                                        ].map((mode) => (
-                                            <button
-                                                key={mode.id}
-                                                onClick={() => setTheme(mode.id as typeof theme)}
-                                                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${theme === mode.id
-                                                    ? "border-primary bg-primary/5"
-                                                    : "border-border hover:border-primary/50"
-                                                    }`}
-                                            >
-                                                <mode.icon className={`h-6 w-6 ${theme === mode.id ? "text-primary" : "text-muted-foreground"}`} />
-                                                <span className="text-sm font-medium">{mode.label}</span>
-                                            </button>
-                                        ))}
+                        <>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Theme Preferences</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div>
+                                        <p className="text-sm font-medium mb-3">Color Mode</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            {[
+                                                { id: "light" as ColorMode, label: "Light", icon: Sun },
+                                                { id: "dark" as ColorMode, label: "Dark", icon: Moon },
+                                                { id: "system" as ColorMode, label: "System", icon: Monitor },
+                                            ].map((mode) => (
+                                                <button
+                                                    key={mode.id}
+                                                    onClick={() => {
+                                                        setColorMode(mode.id);
+                                                        handleSaveSetting("preferences", "theme", mode.id);
+                                                    }}
+                                                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${colorMode === mode.id
+                                                        ? "border-primary bg-primary/5"
+                                                        : "border-border hover:border-primary/50"
+                                                        }`}
+                                                >
+                                                    <mode.icon className={`h-6 w-6 ${colorMode === mode.id ? "text-primary" : "text-muted-foreground"}`} />
+                                                    <span className="text-sm font-medium">{mode.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <p className="text-sm font-medium mb-3">Accent Color</p>
-                                    <div className="flex gap-2">
-                                        {[
-                                            { color: "bg-blue-500", name: "Blue" },
-                                            { color: "bg-violet-500", name: "Violet" },
-                                            { color: "bg-rose-500", name: "Rose" },
-                                            { color: "bg-orange-500", name: "Orange" },
-                                            { color: "bg-emerald-500", name: "Emerald" },
-                                        ].map((accent) => (
-                                            <button
-                                                key={accent.name}
-                                                className={`h-8 w-8 rounded-full ${accent.color} ring-2 ring-offset-2 ring-offset-background ring-transparent hover:ring-primary transition-all`}
-                                                title={accent.name}
-                                            />
-                                        ))}
+                                    <div>
+                                        <p className="text-sm font-medium mb-3">Accent Color</p>
+                                        <div className="flex gap-2">
+                                            {[
+                                                { color: "bg-blue-500", name: "Blue" },
+                                                { color: "bg-violet-500", name: "Violet" },
+                                                { color: "bg-rose-500", name: "Rose" },
+                                                { color: "bg-orange-500", name: "Orange" },
+                                                { color: "bg-emerald-500", name: "Emerald" },
+                                            ].map((accent) => (
+                                                <button
+                                                    key={accent.name}
+                                                    className={`h-8 w-8 rounded-full ${accent.color} ring-2 ring-offset-2 ring-offset-background ring-transparent hover:ring-primary transition-all`}
+                                                    title={accent.name}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <p className="text-sm font-medium mb-3">Density</p>
-                                    <div className="flex gap-2">
-                                        {["Compact", "Default", "Comfortable"].map((density) => (
-                                            <button
-                                                key={density}
-                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${density === "Default"
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : "bg-secondary hover:bg-secondary/80"
-                                                    }`}
-                                            >
-                                                {density}
-                                            </button>
-                                        ))}
+                                    <div>
+                                        <p className="text-sm font-medium mb-3">Density</p>
+                                        <div className="flex gap-2">
+                                            {["compact", "default", "comfortable"].map((density) => (
+                                                <button
+                                                    key={density}
+                                                    onClick={() => handleSaveSetting("preferences", "layout_density", density)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${density === "default"
+                                                        ? "bg-primary text-primary-foreground"
+                                                        : "bg-secondary hover:bg-secondary/80"
+                                                        }`}
+                                                >
+                                                    {{ compact: "Compact", default: "Default", comfortable: "Comfortable" }[density]}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+
+                            {/* Branding settings (exec only) */}
+                            {!settingsLoading && (
+                                <PermissionGate resource="brand" action="write" silent>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Branding</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <SettingsCategorySection category="branding" settings={settings} onSave={handleSaveSetting} />
+                                        </CardContent>
+                                    </Card>
+                                </PermissionGate>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

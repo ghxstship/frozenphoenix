@@ -14,8 +14,10 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     FileText, Plus, Building2, Calendar,
-    DollarSign, CheckCircle2, AlertTriangle, Send,
+    DollarSign, CheckCircle2, AlertTriangle, Send, Loader2,
 } from "lucide-react";
+import { useClientInvoices, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface InvoiceListItem {
     id: string;
@@ -44,7 +46,33 @@ export default function InvoicesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const filtered = mockInvoices.filter((inv) => {
+    const { data: sbInvoices, isLoading } = useClientInvoices();
+
+    const invoices: InvoiceListItem[] = isSupabaseConfigured && sbInvoices
+        ? sbInvoices.map((inv: Record<string, unknown>) => ({
+            id: (inv.id as string) ?? "",
+            invoiceNumber: (inv.invoice_number as string) ?? "",
+            companyName: (inv.company_name as string) ?? "",
+            projectName: (inv.project_name as string) ?? "",
+            amount: (inv.total_amount as number) ?? 0,
+            currency: (inv.currency as string) ?? "USD",
+            status: ((inv.status as string) ?? "draft") as InvoiceDeliveryStatusType,
+            issueDate: (inv.issue_date as string) ?? "",
+            dueDate: (inv.due_date as string) ?? "",
+            paidAmount: (inv.paid_amount as number) ?? 0,
+            daysOverdue: (inv.days_overdue as number) ?? 0,
+        }))
+        : mockInvoices;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = invoices.filter((inv) => {
         const matchesSearch =
             inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
             inv.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,11 +81,12 @@ export default function InvoicesPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const totalOutstanding = mockInvoices.filter(i => !["paid", "void"].includes(i.status)).reduce((sum, i) => sum + (i.amount - i.paidAmount), 0);
-    const totalOverdue = mockInvoices.filter(i => i.status === "overdue").reduce((sum, i) => sum + i.amount, 0);
-    const totalPaid = mockInvoices.filter(i => i.status === "paid").reduce((sum, i) => sum + i.paidAmount, 0);
+    const totalOutstanding = invoices.filter(i => !["paid", "void"].includes(i.status)).reduce((sum, i) => sum + (i.amount - i.paidAmount), 0);
+    const totalOverdue = invoices.filter(i => i.status === "overdue").reduce((sum, i) => sum + i.amount, 0);
+    const totalPaid = invoices.filter(i => i.status === "paid").reduce((sum, i) => sum + i.paidAmount, 0);
 
     return (
+        <PermissionGate resource="invoices" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Invoice Management" description="Create, send, and track invoices across all projects">
                 <Link href="/invoices/new">
@@ -69,7 +98,7 @@ export default function InvoicesPage() {
                 <StatCard title="Total Outstanding" value={formatCurrency(totalOutstanding)} icon={DollarSign} />
                 <StatCard title="Overdue" value={formatCurrency(totalOverdue)} icon={AlertTriangle} />
                 <StatCard title="Paid (YTD)" value={formatCurrency(totalPaid)} icon={CheckCircle2} />
-                <StatCard title="Invoices Sent" value={mockInvoices.filter(i => i.status !== "draft").length} icon={Send} />
+                <StatCard title="Invoices Sent" value={invoices.filter(i => i.status !== "draft").length} icon={Send} />
             </div>
 
             {totalOverdue > 0 && (
@@ -155,5 +184,6 @@ export default function InvoicesPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

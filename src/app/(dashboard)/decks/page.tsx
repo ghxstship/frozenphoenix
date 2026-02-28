@@ -25,6 +25,7 @@ import {
     FileText,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type DeckType = "pitch" | "progress" | "wrap";
 type DeckStatus = "draft" | "ready" | "presented";
@@ -107,6 +108,7 @@ export default function DecksPage() {
     });
 
     return (
+        <PermissionGate resource="decks" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Presentation Decks" description="Auto-generated pitch, progress, and wrap decks with live data binding">
                 <div className="flex items-center gap-2">
@@ -176,19 +178,19 @@ export default function DecksPage() {
                             >
                                 <div className={`h-32 ${type.color} relative`}>
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <Presentation className="h-12 w-12 text-white/30" />
+                                        <Presentation className="h-12 w-12 text-primary-foreground/30" />
                                     </div>
                                     <div className="absolute top-3 left-3">
-                                        <Badge variant="secondary" className="text-[9px] bg-white/20 text-white border-0">
+                                        <Badge variant="secondary" className="text-[9px] bg-foreground/20 text-primary-foreground border-0">
                                             {type.label}
                                         </Badge>
                                     </div>
                                     <div className="absolute bottom-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
-                                            <Play className="h-4 w-4 text-white" />
+                                        <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors">
+                                            <Play className="h-4 w-4 text-primary-foreground" />
                                         </button>
-                                        <button className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
-                                            <Download className="h-4 w-4 text-white" />
+                                        <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors">
+                                            <Download className="h-4 w-4 text-primary-foreground" />
                                         </button>
                                     </div>
                                 </div>
@@ -263,7 +265,7 @@ export default function DecksPage() {
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-2">
                                                     <div className={`h-8 w-8 rounded-lg ${type.color} flex items-center justify-center`}>
-                                                        <Presentation className="h-4 w-4 text-white" />
+                                                        <Presentation className="h-4 w-4 text-primary-foreground" />
                                                     </div>
                                                     <span className="text-sm font-medium">{deck.title}</span>
                                                 </div>
@@ -299,5 +301,6 @@ export default function DecksPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

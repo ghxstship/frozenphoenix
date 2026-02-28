@@ -276,25 +276,88 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
     ],
 };
 
+// ─── DB-backed Permission Grant shape (mirrors permission_grants table) ───
+export interface DbPermissionGrant {
+    role_definition_id: string;
+    resource: string;
+    action: string;
+    scope_type: string;
+    scope_id: string | null;
+    effect: "allow" | "deny";
+    conditions: Record<string, unknown> | null;
+}
+
+// ─── Permission check: DB grants first, static fallback ───
+
 export function hasPermission(
     level: PermissionLevel,
     resource: string,
     action: "read" | "write" | "delete" | "manage",
-    options?: { scopeId?: string }
+    options?: { scopeId?: string; dbGrants?: DbPermissionGrant[] }
 ): boolean {
+    // If DB grants are provided, check them first (allows deny rules)
+    if (options?.dbGrants && options.dbGrants.length > 0) {
+        const denied = options.dbGrants.some(
+            (g) =>
+                g.effect === "deny" &&
+                (g.resource === "*" || g.resource === resource) &&
+                g.action === action
+        );
+        if (denied) return false;
+
+        const allowed = options.dbGrants.some(
+            (g) =>
+                g.effect === "allow" &&
+                (g.resource === "*" || g.resource === resource) &&
+                g.action === action
+        );
+        if (allowed) return true;
+
+        // DB grants exist but none match — fall through to static matrix
+    }
+
+    // Static fallback: check the hardcoded PERMISSION_MATRIX
     const permissions = PERMISSION_MATRIX[level];
-    const hasBase = permissions.some(
+    return permissions.some(
         (p) =>
             (p.resource === "*" || p.resource === resource) &&
             p.actions.includes(action)
     );
-    // Scope validation: when options.scopeId is provided, the caller must also verify
-    // the user belongs to that project/org via RLS or membership check.
-    // This function validates the permission tier; scope is enforced at the DB layer.
-    if (options?.scopeId) {
-        // Future: integrate with project_members / org_memberships lookup
+}
+
+// ─── Batch check: resolve all permissions for a role from DB grants ───
+
+export function resolvePermissionsFromGrants(
+    grants: DbPermissionGrant[]
+): Permission[] {
+    const byResource = new Map<string, Set<string>>();
+    const denied = new Map<string, Set<string>>();
+
+    for (const g of grants) {
+        if (g.effect === "deny") {
+            const set = denied.get(g.resource) ?? new Set();
+            set.add(g.action);
+            denied.set(g.resource, set);
+        } else {
+            const set = byResource.get(g.resource) ?? new Set();
+            set.add(g.action);
+            byResource.set(g.resource, set);
+        }
     }
-    return hasBase;
+
+    // Remove denied actions
+    for (const [resource, actions] of denied) {
+        const allowed = byResource.get(resource);
+        if (allowed) {
+            for (const a of actions) allowed.delete(a);
+            if (allowed.size === 0) byResource.delete(resource);
+        }
+    }
+
+    return Array.from(byResource.entries()).map(([resource, actions]) => ({
+        resource,
+        actions: Array.from(actions) as Permission["actions"],
+    }));
 }
 
 // ─── Field-Level Permission Masks ───

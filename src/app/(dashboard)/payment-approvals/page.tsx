@@ -14,6 +14,7 @@ import {
 import { MOCK_PAYMENT_APPROVALS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus } from "@/types/governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const APPROVAL_STATUSES: ApprovalStatus[] = [
     "pending", "approved", "rejected", "revision_requested", "escalated", "expired", "delegated",
@@ -36,6 +37,7 @@ export default function PaymentApprovalsPage() {
     const totalPending = approvals.filter(a => a.status === "pending").reduce((sum, a) => sum + a.amount, 0);
 
     return (
+        <PermissionGate resource="payment_approvals" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Payment Approvals" description="Payment authorization workflow with threshold-based routing and 3-way match verification" />
 
@@ -95,5 +97,6 @@ export default function PaymentApprovalsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

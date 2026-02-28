@@ -225,7 +225,7 @@ export function DataTable<T extends object>({
             <th
                 key={column.id}
                 className={cn(
-                    "px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                    "px-4 py-3 text-left text-xs font-semibold text-muted-foreground",
                     column.sticky && "sticky left-0 bg-background z-10",
                     column.align === "center" && "text-center",
                     column.align === "right" && "text-right",

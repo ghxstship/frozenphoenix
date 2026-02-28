@@ -75,28 +75,28 @@ export default function DeckEditorPage({ params }: { params: Promise<{ id: strin
 
     if (isPresenting && current) {
         return (
-            <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setIsPresenting(false)}>
-                <div className="max-w-4xl w-full mx-auto p-12 text-white text-center">
+            <div className="fixed inset-0 bg-sidebar-background z-50 flex items-center justify-center" onClick={() => setIsPresenting(false)}>
+                <div className="max-w-4xl w-full mx-auto p-12 text-sidebar-foreground text-center">
                     {current.type === "title" ? (
                         <>
                             <h1 className="text-5xl font-bold mb-4">{current.title}</h1>
-                            <p className="text-xl text-white/70">{current.body}</p>
+                            <p className="text-xl text-sidebar-foreground/70">{current.body}</p>
                         </>
                     ) : current.type === "quote" ? (
                         <>
                             <p className="text-3xl italic mb-6">{current.body}</p>
-                            <p className="text-lg text-white/60">— {current.title}</p>
+                            <p className="text-lg text-sidebar-foreground/60">— {current.title}</p>
                         </>
                     ) : (
                         <>
                             <h2 className="text-3xl font-bold mb-6">{current.title}</h2>
-                            <p className="text-lg text-white/80 whitespace-pre-wrap">{current.body}</p>
+                            <p className="text-lg text-sidebar-foreground/80 whitespace-pre-wrap">{current.body}</p>
                         </>
                     )}
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 text-white/40 text-sm">
-                        <Button variant="ghost" size="sm" className="text-white/40" onClick={(e) => { e.stopPropagation(); setSelectedSlide(Math.max(0, selectedSlide - 1)); }}><ChevronLeft className="h-4 w-4" /></Button>
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 text-sidebar-foreground/40 text-sm">
+                        <Button variant="ghost" size="sm" className="text-sidebar-foreground/40" onClick={(e) => { e.stopPropagation(); setSelectedSlide(Math.max(0, selectedSlide - 1)); }}><ChevronLeft className="h-4 w-4" /></Button>
                         <span>{selectedSlide + 1} / {slides.length}</span>
-                        <Button variant="ghost" size="sm" className="text-white/40" onClick={(e) => { e.stopPropagation(); setSelectedSlide(Math.min(slides.length - 1, selectedSlide + 1)); }}><ChevronRight className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" className="text-sidebar-foreground/40" onClick={(e) => { e.stopPropagation(); setSelectedSlide(Math.min(slides.length - 1, selectedSlide + 1)); }}><ChevronRight className="h-4 w-4" /></Button>
                     </div>
                 </div>
             </div>
@@ -156,48 +156,48 @@ export default function DeckEditorPage({ params }: { params: Promise<{ id: strin
                 {/* Slide Canvas */}
                 <div className="col-span-7">
                     <Card className="overflow-hidden">
-                        <div className="aspect-video bg-gradient-to-br from-zinc-900 to-zinc-800 flex items-center justify-center p-8 relative">
+                        <div className="aspect-video bg-gradient-to-br from-sidebar-background to-sidebar-accent flex items-center justify-center p-8 relative">
                             {current?.type === "title" ? (
-                                <div className="text-center text-white">
+                                <div className="text-center text-sidebar-foreground">
                                     <h1 className="text-3xl font-bold mb-2">{current.title || "Title"}</h1>
-                                    <p className="text-sm text-white/60">{current.body || "Subtitle"}</p>
+                                    <p className="text-sm text-sidebar-foreground/60">{current.body || "Subtitle"}</p>
                                 </div>
                             ) : current?.type === "quote" ? (
-                                <div className="text-center text-white max-w-lg">
+                                <div className="text-center text-sidebar-foreground max-w-lg">
                                     <p className="text-xl italic">{current.body || "\"Quote text\""}</p>
-                                    <p className="text-sm text-white/50 mt-4">— {current.title || "Attribution"}</p>
+                                    <p className="text-sm text-sidebar-foreground/50 mt-4">— {current.title || "Attribution"}</p>
                                 </div>
                             ) : current?.type === "image" ? (
-                                <div className="text-center text-white/30">
+                                <div className="text-center text-sidebar-foreground/30">
                                     <ImageIcon className="h-16 w-16 mx-auto mb-2" />
                                     <p className="text-sm">{current.title || "Drop image here"}</p>
                                 </div>
                             ) : current?.type === "chart" ? (
-                                <div className="text-center text-white w-full">
+                                <div className="text-center text-sidebar-foreground w-full">
                                     <h2 className="text-xl font-bold mb-4">{current.title || "Chart Title"}</h2>
                                     <div className="flex items-end justify-center gap-3 h-32">
                                         {[65, 45, 80, 35, 55, 70].map((h, i) => (
                                             <div key={i} className="w-8 bg-primary/60 rounded-t" style={{ height: `${h}%` }} />
                                         ))}
                                     </div>
-                                    <p className="text-xs text-white/50 mt-3">{current.body}</p>
+                                    <p className="text-xs text-sidebar-foreground/50 mt-3">{current.body}</p>
                                 </div>
                             ) : current?.type === "two_column" ? (
-                                <div className="text-white w-full">
+                                <div className="text-sidebar-foreground w-full">
                                     <h2 className="text-xl font-bold mb-4 text-center">{current.title || "Two Column"}</h2>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-white/5 rounded-lg p-3 min-h-[100px]"><p className="text-xs text-white/60">Left column</p></div>
-                                        <div className="bg-white/5 rounded-lg p-3 min-h-[100px]"><p className="text-xs text-white/60">Right column</p></div>
+                                        <div className="bg-sidebar-foreground/5 rounded-lg p-3 min-h-[100px]"><p className="text-xs text-sidebar-foreground/60">Left column</p></div>
+                                        <div className="bg-sidebar-foreground/5 rounded-lg p-3 min-h-[100px]"><p className="text-xs text-sidebar-foreground/60">Right column</p></div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-white w-full">
+                                <div className="text-sidebar-foreground w-full">
                                     <h2 className="text-xl font-bold mb-3">{current?.title || "Content"}</h2>
-                                    <p className="text-sm text-white/70 whitespace-pre-wrap">{current?.body || "Slide content..."}</p>
+                                    <p className="text-sm text-sidebar-foreground/70 whitespace-pre-wrap">{current?.body || "Slide content..."}</p>
                                 </div>
                             )}
-                            <div className="absolute bottom-2 right-3 text-white/20 text-[10px] font-mono">{selectedSlide + 1}/{slides.length}</div>
-                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-white/30 hover:text-white" onClick={() => setIsPresenting(true)}>
+                            <div className="absolute bottom-2 right-3 text-sidebar-foreground/20 text-[10px] font-mono">{selectedSlide + 1}/{slides.length}</div>
+                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-sidebar-foreground/30 hover:text-sidebar-foreground" onClick={() => setIsPresenting(true)}>
                                 <Maximize className="h-4 w-4" />
                             </Button>
                         </div>

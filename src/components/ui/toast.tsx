@@ -163,7 +163,7 @@ function ToastItem({
             </div>
             {/* Auto-dismiss timer bar */}
             {duration > 0 && (
-                <div className="w-full h-0.5 rounded-full overflow-hidden mt-2 bg-black/5" aria-hidden="true">
+                <div className="w-full h-0.5 rounded-full overflow-hidden mt-2 bg-foreground/5" aria-hidden="true">
                     <div
                         className={cn(
                             "h-full rounded-full origin-left",

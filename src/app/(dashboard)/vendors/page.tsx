@@ -12,6 +12,7 @@ import { Plus, ShieldCheck, ShieldAlert, FileText, Star, Store, Loader2, Table2,
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { RatingField, EmailField, PhoneField, BooleanField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 type Vendor = (typeof MOCK_VENDORS)[number];
 type ViewMode = "cards" | "table";
@@ -120,6 +121,7 @@ export default function VendorsPage() {
     }
 
     return (
+        <PermissionGate resource="vendors" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Vendor Vault" description="Centralized vendor management with COI validation, 1099s, and NDAs">
                 <div className="flex items-center gap-2">
@@ -236,5 +238,6 @@ export default function VendorsPage() {
             </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

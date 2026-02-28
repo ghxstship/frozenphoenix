@@ -900,19 +900,31 @@ export const CONDITION_LABELS: Record<string, string> = {
  * Get human-readable label for any status
  */
 export function getStatusLabel(status: string): string {
-    return STATUS_LABELS[status] ?? status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const explicit = STATUS_LABELS[status];
+    if (!explicit && process.env.NODE_ENV === "development") {
+        console.warn(`[casing] Missing STATUS_LABELS entry for "${status}". Add an explicit label to ui-variants.ts.`);
+    }
+    return explicit ?? status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /**
  * Get human-readable label for priority
  */
 export function getPriorityLabel(priority: string): string {
-    return PRIORITY_LABELS[priority] ?? priority.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const explicit = PRIORITY_LABELS[priority];
+    if (!explicit && process.env.NODE_ENV === "development") {
+        console.warn(`[casing] Missing PRIORITY_LABELS entry for "${priority}". Add an explicit label to ui-variants.ts.`);
+    }
+    return explicit ?? priority.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /**
  * Get human-readable label for condition
  */
 export function getConditionLabel(condition: string): string {
-    return CONDITION_LABELS[condition] ?? condition.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const explicit = CONDITION_LABELS[condition];
+    if (!explicit && process.env.NODE_ENV === "development") {
+        console.warn(`[casing] Missing CONDITION_LABELS entry for "${condition}". Add an explicit label to ui-variants.ts.`);
+    }
+    return explicit ?? condition.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -11,9 +12,11 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Plus, CheckCircle2, Clock, AlertTriangle,
+    Plus, CheckCircle2, Clock, AlertTriangle, Loader2,
 } from "lucide-react";
 import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/demo-data-governance";
+import { useComplianceChecklists, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceChecklistStatus } from "@/types/governance";
 
 const CHECKLIST_STATUSES: ComplianceChecklistStatus[] = [
@@ -30,8 +33,9 @@ const CHECKLIST_TYPE_LABELS: Record<string, string> = {
 export default function ComplianceChecklistsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbChecklists, isLoading } = useComplianceChecklists();
 
-    const checklists = MOCK_COMPLIANCE_CHECKLISTS;
+    const checklists = isSupabaseConfigured && sbChecklists ? (sbChecklists as unknown as typeof MOCK_COMPLIANCE_CHECKLISTS) : MOCK_COMPLIANCE_CHECKLISTS;
 
     const filtered = checklists.filter(c => {
         const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
@@ -43,10 +47,19 @@ export default function ComplianceChecklistsPage() {
     const inProgress = checklists.filter(c => c.status === "in_progress").length;
     const notStarted = checklists.filter(c => c.status === "not_started" || c.status === "failed").length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="compliance_checklists" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Compliance Checklists" description="ADA, OSHA, fire safety, and other compliance inspections across locations, activations, and events">
-                <Button size="sm"><Plus className="h-4 w-4" /> New Checklist</Button>
+                <Link href="/compliance-checklists/new"><Button size="sm"><Plus className="h-4 w-4" /> New Checklist</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -94,5 +107,6 @@ export default function ComplianceChecklistsPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

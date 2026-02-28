@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,11 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Star, Plus, ThumbsUp, ThumbsDown, TrendingUp,
+    Star, Plus, ThumbsUp, ThumbsDown, TrendingUp, Loader2,
 } from "lucide-react";
 import { MOCK_VENDOR_REVIEWS } from "@/lib/demo-data-vendor-lifecycle";
+import { useVendorReviews, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { VendorReviewType } from "@/types/vendor-lifecycle";
 
 const REVIEW_TYPE_LABELS: Record<VendorReviewType, { label: string; variant: "default" | "info" | "warning" | "destructive" }> = {
@@ -26,7 +29,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
     return (
         <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map(i => (
-                <Star key={i} className={`${px} ${i <= rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"}`} />
+                <Star key={i} className={`${px} ${i <= rating ? "text-star-rating fill-star-rating" : "text-muted-foreground/30"}`} />
             ))}
         </div>
     );
@@ -34,8 +37,9 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
 
 export default function VendorReviewsPage() {
     const [search, setSearch] = useState("");
+    const { data: sbReviews, isLoading } = useVendorReviews();
 
-    const reviews = MOCK_VENDOR_REVIEWS;
+    const reviews = isSupabaseConfigured && sbReviews ? (sbReviews as unknown as typeof MOCK_VENDOR_REVIEWS) : MOCK_VENDOR_REVIEWS;
     const filtered = reviews.filter(r =>
         !search || (r.vendorName || "").toLowerCase().includes(search.toLowerCase()) || (r.projectName || "").toLowerCase().includes(search.toLowerCase())
     );
@@ -44,10 +48,19 @@ export default function VendorReviewsPage() {
     const wouldRehireCount = reviews.filter(r => r.wouldRehire).length;
     const wouldNotRehireCount = reviews.filter(r => r.wouldRehire === false).length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="vendor_reviews" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Vendor Reviews" description="Performance reviews, ratings, and rehire recommendations for all vendors and subcontractors">
-                <Button size="sm"><Plus className="h-4 w-4" /> New Review</Button>
+                <Link href="/vendor-reviews/new"><Button size="sm"><Plus className="h-4 w-4" /> New Review</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -139,5 +152,6 @@ export default function VendorReviewsPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

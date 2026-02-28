@@ -18,6 +18,7 @@ import {
     DollarSign, TrendingUp, CheckCircle, Clock,
     ArrowRight, Receipt,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 const tableColumns: ColumnDef<RevenueSchedule>[] = [
     {
@@ -139,6 +140,7 @@ export default function RevenuePage() {
     }, [schedules]);
 
     return (
+        <PermissionGate resource="revenue" action="read">
         <div className="space-y-6">
             <PageHeader title="Revenue Recognition" description="ASC 606-compliant revenue tracking across all projects">
                 <Button size="sm">
@@ -205,5 +207,6 @@ export default function RevenuePage() {
 
             <DataTable columns={tableColumns} data={filtered} keyField="id" />
         </div>
+        </PermissionGate>
     );
 }

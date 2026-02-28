@@ -8,9 +8,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import {
-    ShieldCheck, CheckCircle2, Clock, XCircle,
+    ShieldCheck, CheckCircle2, Clock, XCircle, Loader2,
 } from "lucide-react";
 import { MOCK_BUDGET_APPROVALS } from "@/lib/demo-data-governance";
+import { useBudgetApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus } from "@/types/governance";
 
@@ -21,8 +23,9 @@ const APPROVAL_STATUSES: ApprovalStatus[] = [
 export default function BudgetApprovalsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbApprovals, isLoading } = useBudgetApprovals();
 
-    const approvals = MOCK_BUDGET_APPROVALS;
+    const approvals = isSupabaseConfigured && sbApprovals ? (sbApprovals as unknown as typeof MOCK_BUDGET_APPROVALS) : MOCK_BUDGET_APPROVALS;
 
     const filtered = approvals.filter(a => {
         const matchesSearch = !search || a.entity_type.toLowerCase().includes(search.toLowerCase()) || (a.justification || "").toLowerCase().includes(search.toLowerCase());
@@ -35,7 +38,16 @@ export default function BudgetApprovalsPage() {
     const rejected = approvals.filter(a => a.status === "rejected").length;
     const totalApproved = approvals.filter(a => a.status === "approved").reduce((sum, a) => sum + a.amount, 0);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="budget_approvals" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Budget Approvals" description="Multi-tier budget approval workflow with delegation and threshold-based routing" />
 
@@ -93,5 +105,6 @@ export default function BudgetApprovalsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

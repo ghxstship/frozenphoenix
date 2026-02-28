@@ -39,18 +39,18 @@ export const PROJECT_STATUS_CONFIG = {
 } as const;
 
 export const PRODUCTION_PHASE_CONFIG = {
-    discovery: { label: "Discovery", order: 1, color: "#8B5CF6" },
-    design: { label: "Design", order: 2, color: "#EC4899" },
-    pre_production: { label: "Pre-Production", order: 3, color: "#F59E0B" },
-    procurement: { label: "Procurement", order: 4, color: "#10B981" },
-    fabrication: { label: "Fabrication", order: 5, color: "#3B82F6" },
-    logistics: { label: "Logistics", order: 6, color: "#6366F1" },
-    load_in: { label: "Load In", order: 7, color: "#14B8A6" },
-    rehearsal: { label: "Rehearsal", order: 8, color: "#F97316" },
-    show: { label: "Show", order: 9, color: "#EF4444" },
-    strike: { label: "Strike", order: 10, color: "#8B5CF6" },
-    load_out: { label: "Load Out", order: 11, color: "#6366F1" },
-    wrap: { label: "Wrap", order: 12, color: "#22C55E" },
+    discovery: { label: "Discovery", order: 1, color: "hsl(var(--chart-2))" },
+    design: { label: "Design", order: 2, color: "hsl(var(--chart-7))" },
+    pre_production: { label: "Pre-Production", order: 3, color: "hsl(var(--chart-8))" },
+    procurement: { label: "Procurement", order: 4, color: "hsl(var(--chart-4))" },
+    fabrication: { label: "Fabrication", order: 5, color: "hsl(var(--chart-1))" },
+    logistics: { label: "Logistics", order: 6, color: "hsl(var(--chart-2))" },
+    load_in: { label: "Load In", order: 7, color: "hsl(var(--chart-6))" },
+    rehearsal: { label: "Rehearsal", order: 8, color: "hsl(var(--chart-3))" },
+    show: { label: "Show", order: 9, color: "hsl(var(--chart-5))" },
+    strike: { label: "Strike", order: 10, color: "hsl(var(--chart-2))" },
+    load_out: { label: "Load Out", order: 11, color: "hsl(var(--chart-2))" },
+    wrap: { label: "Wrap", order: 12, color: "hsl(var(--chart-4))" },
 } as const;
 
 export const LOCATION_TYPE_CONFIG = {
@@ -103,21 +103,21 @@ export const ACTIVITY_TYPE_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const DEPARTMENT_CONFIG = {
-    production: { label: "Production", icon: FolderKanban, color: "#8B5CF6" },
-    construction: { label: "Construction", icon: Hammer, color: "#F59E0B" },
-    technical: { label: "Technical", icon: Zap, color: "#3B82F6" },
-    fabrication: { label: "Fabrication", icon: Wrench, color: "#10B981" },
-    print: { label: "Print", icon: Printer, color: "#EC4899" },
-    scenic: { label: "Scenic", icon: Sparkles, color: "#6366F1" },
-    props: { label: "Props", icon: Package, color: "#14B8A6" },
-    av: { label: "AV", icon: Zap, color: "#EF4444" },
-    lighting: { label: "Lighting", icon: Zap, color: "#F97316" },
-    rigging: { label: "Rigging", icon: HardHat, color: "#8B5CF6" },
-    food_beverage: { label: "Food & Beverage", icon: Utensils, color: "#22C55E" },
-    staffing: { label: "Staffing", icon: Users, color: "#3B82F6" },
-    logistics: { label: "Logistics", icon: Truck, color: "#6366F1" },
-    finance: { label: "Finance", icon: DollarSign, color: "#10B981" },
-    creative: { label: "Creative", icon: Sparkles, color: "#EC4899" },
+    production: { label: "Production", icon: FolderKanban, color: "hsl(var(--chart-2))" },
+    construction: { label: "Construction", icon: Hammer, color: "hsl(var(--chart-8))" },
+    technical: { label: "Technical", icon: Zap, color: "hsl(var(--chart-1))" },
+    fabrication: { label: "Fabrication", icon: Wrench, color: "hsl(var(--chart-4))" },
+    print: { label: "Print", icon: Printer, color: "hsl(var(--chart-7))" },
+    scenic: { label: "Scenic", icon: Sparkles, color: "hsl(var(--chart-2))" },
+    props: { label: "Props", icon: Package, color: "hsl(var(--chart-6))" },
+    av: { label: "AV", icon: Zap, color: "hsl(var(--chart-5))" },
+    lighting: { label: "Lighting", icon: Zap, color: "hsl(var(--chart-3))" },
+    rigging: { label: "Rigging", icon: HardHat, color: "hsl(var(--chart-2))" },
+    food_beverage: { label: "Food & Beverage", icon: Utensils, color: "hsl(var(--chart-4))" },
+    staffing: { label: "Staffing", icon: Users, color: "hsl(var(--chart-1))" },
+    logistics: { label: "Logistics", icon: Truck, color: "hsl(var(--chart-2))" },
+    finance: { label: "Finance", icon: DollarSign, color: "hsl(var(--chart-4))" },
+    creative: { label: "Creative", icon: Sparkles, color: "hsl(var(--chart-7))" },
 } as const;
 
 // TASK_STATUS_CONFIG and TASK_PRIORITY_CONFIG have been consolidated into
@@ -224,10 +224,10 @@ export const ASSET_OWNERSHIP_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const SHIPMENT_TYPE_CONFIG = {
-    outbound: { label: "Outbound", icon: Send, color: "#3B82F6" },
-    inbound: { label: "Inbound", icon: Package, color: "#10B981" },
-    transfer: { label: "Transfer", icon: Truck, color: "#F59E0B" },
-    return: { label: "Return", icon: Archive, color: "#6366F1" },
+    outbound: { label: "Outbound", icon: Send, color: "hsl(var(--chart-1))" },
+    inbound: { label: "Inbound", icon: Package, color: "hsl(var(--chart-4))" },
+    transfer: { label: "Transfer", icon: Truck, color: "hsl(var(--chart-8))" },
+    return: { label: "Return", icon: Archive, color: "hsl(var(--chart-2))" },
 } as const;
 
 export const SHIPMENT_STATUS_CONFIG = {
@@ -316,23 +316,23 @@ export const PAYMENT_METHOD_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const INCIDENT_TYPE_CONFIG = {
-    safety: { label: "Safety", icon: Shield, color: "#EF4444" },
-    injury: { label: "Injury", icon: AlertTriangle, color: "#DC2626" },
-    property_damage: { label: "Property Damage", icon: AlertTriangle, color: "#F59E0B" },
-    theft: { label: "Theft", icon: AlertTriangle, color: "#EF4444" },
-    security: { label: "Security", icon: Shield, color: "#F59E0B" },
-    weather: { label: "Weather", icon: AlertTriangle, color: "#3B82F6" },
-    equipment_failure: { label: "Equipment Failure", icon: Wrench, color: "#F59E0B" },
-    vendor_issue: { label: "Vendor Issue", icon: AlertTriangle, color: "#F59E0B" },
-    client_complaint: { label: "Client Complaint", icon: AlertTriangle, color: "#F59E0B" },
-    other: { label: "Other", icon: AlertTriangle, color: "#6B7280" },
+    safety: { label: "Safety", icon: Shield, color: "hsl(var(--chart-5))" },
+    injury: { label: "Injury", icon: AlertTriangle, color: "hsl(var(--destructive))" },
+    property_damage: { label: "Property Damage", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
+    theft: { label: "Theft", icon: AlertTriangle, color: "hsl(var(--chart-5))" },
+    security: { label: "Security", icon: Shield, color: "hsl(var(--chart-8))" },
+    weather: { label: "Weather", icon: AlertTriangle, color: "hsl(var(--chart-1))" },
+    equipment_failure: { label: "Equipment Failure", icon: Wrench, color: "hsl(var(--chart-8))" },
+    vendor_issue: { label: "Vendor Issue", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
+    client_complaint: { label: "Client Complaint", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
+    other: { label: "Other", icon: AlertTriangle, color: "hsl(var(--muted-foreground))" },
 } as const;
 
 export const INCIDENT_SEVERITY_CONFIG = {
-    minor: { label: "Minor", variant: "secondary", color: "#6B7280" },
-    moderate: { label: "Moderate", variant: "warning", color: "#F59E0B" },
-    major: { label: "Major", variant: "destructive", color: "#EF4444" },
-    critical: { label: "Critical", variant: "destructive", color: "#DC2626" },
+    minor: { label: "Minor", variant: "secondary", color: "hsl(var(--muted-foreground))" },
+    moderate: { label: "Moderate", variant: "warning", color: "hsl(var(--warning))" },
+    major: { label: "Major", variant: "destructive", color: "hsl(var(--chart-5))" },
+    critical: { label: "Critical", variant: "destructive", color: "hsl(var(--destructive))" },
 } as const;
 
 export const INCIDENT_STATUS_CONFIG = {

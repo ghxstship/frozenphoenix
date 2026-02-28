@@ -12,6 +12,7 @@ import {
     Calendar, CheckCircle2, Clock, Eye, Download, FileSignature,
     Plus, CreditCard, MessageSquare,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface PortalProject {
     id: string;
@@ -85,6 +86,7 @@ export default function ClientPortalPage() {
     const pendingApprovals = mockApprovals.filter(a => a.status === "pending").length;
 
     return (
+        <PermissionGate resource="client_portal" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Client Portal" description="View projects, estimates, invoices, and pending approvals. Request new work or make payments.">
                 <div className="flex items-center gap-2">
@@ -230,5 +232,6 @@ export default function ClientPortalPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

@@ -11,8 +11,10 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Warehouse, Plus, MapPin, Package,
-    Thermometer, Shield, Truck,
+    Thermometer, Shield, Truck, Loader2,
 } from "lucide-react";
+import { useWarehouses, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type WarehouseStatus = "active" | "maintenance" | "full" | "inactive";
 
@@ -40,24 +42,51 @@ const mockWarehouses: WarehouseItem[] = [
 export default function WarehousesPage() {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filtered = mockWarehouses.filter((w) =>
+    const { data: sbWarehouses, isLoading } = useWarehouses();
+
+    const warehouses: WarehouseItem[] = isSupabaseConfigured && sbWarehouses
+        ? sbWarehouses.map((w: Record<string, unknown>) => ({
+            id: (w.id as string) ?? "",
+            name: (w.name as string) ?? "",
+            address: (w.address as string) ?? "",
+            city: (w.city as string) ?? "",
+            status: ((w.status as string) ?? "active") as WarehouseStatus,
+            capacity: (w.capacity as number) ?? 0,
+            utilized: (w.utilized as number) ?? 0,
+            climate: (w.climate as string) ?? "",
+            securityLevel: (w.security_level as string) ?? "",
+            manager: (w.manager as string) ?? "",
+            activeShipments: (w.active_shipments as number) ?? 0,
+        }))
+        : mockWarehouses;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = warehouses.filter((w) =>
         w.name.toLowerCase().includes(searchQuery.toLowerCase()) || w.city.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const totalCapacity = mockWarehouses.reduce((sum, w) => sum + w.capacity, 0);
-    const totalUtilized = mockWarehouses.reduce((sum, w) => sum + w.utilized, 0);
+    const totalCapacity = warehouses.reduce((sum, w) => sum + w.capacity, 0);
+    const totalUtilized = warehouses.reduce((sum, w) => sum + w.utilized, 0);
 
     return (
+        <PermissionGate resource="warehouses" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Warehouses" description="Manage storage facilities and inventory locations">
                 <Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Warehouse</Button>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Facilities" value={mockWarehouses.length} icon={Warehouse} />
-                <StatCard title="Active" value={mockWarehouses.filter(w => w.status === "active").length} icon={Shield} />
+                <StatCard title="Total Facilities" value={warehouses.length} icon={Warehouse} />
+                <StatCard title="Active" value={warehouses.filter(w => w.status === "active").length} icon={Shield} />
                 <StatCard title="Utilization" value={`${Math.round((totalUtilized / totalCapacity) * 100)}%`} icon={Package} />
-                <StatCard title="Active Shipments" value={mockWarehouses.reduce((sum, w) => sum + w.activeShipments, 0)} icon={Truck} />
+                <StatCard title="Active Shipments" value={warehouses.reduce((sum, w) => sum + w.activeShipments, 0)} icon={Truck} />
             </div>
 
             <SearchInput
@@ -106,5 +135,6 @@ export default function WarehousesPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

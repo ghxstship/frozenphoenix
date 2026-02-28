@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { CONTRACT_STATUS_MAP, CONTRACT_TYPE_MAP, type ContractStatusType, type ContractType } from "@/config/domain-config";
 import { useContracts, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
@@ -92,14 +93,15 @@ export default function ContractsPage() {
     });
 
     const stats = {
-        total: mockContracts.length,
-        active: mockContracts.filter((c) => c.status === "active").length,
-        pendingSignature: mockContracts.filter((c) => c.status === "pending_signature" || c.status === "pending_review").length,
-        expiringSoon: mockContracts.filter((c) => c.daysUntilExpiry > 0 && c.daysUntilExpiry <= 90).length,
-        totalValue: mockContracts.filter((c) => c.status === "active").reduce((sum, c) => sum + c.value, 0),
+        total: contracts.length,
+        active: contracts.filter((c) => c.status === "active").length,
+        pendingSignature: contracts.filter((c) => c.status === "pending_signature" || c.status === "pending_review").length,
+        expiringSoon: contracts.filter((c) => c.daysUntilExpiry > 0 && c.daysUntilExpiry <= 90).length,
+        totalValue: contracts.filter((c) => c.status === "active").reduce((sum, c) => sum + c.value, 0),
     };
 
     return (
+        <PermissionGate resource="contracts" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Contract Management" description="Track contracts, NDAs, SOWs, and amendments across all projects">
                 <Link href="/contracts/new">
@@ -222,5 +224,6 @@ export default function ContractsPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

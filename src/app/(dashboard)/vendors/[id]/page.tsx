@@ -154,7 +154,7 @@ export default function VendorDetailPage() {
             subtitle={vendor.specialty}
             status={vendor.status}
             avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-white">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     {vendor.name.charAt(0)}
                 </div>
             }

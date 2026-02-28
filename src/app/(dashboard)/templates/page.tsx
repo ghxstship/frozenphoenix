@@ -15,6 +15,7 @@ import {
     LayoutTemplate, Plus, FileText, Copy,
     Star, Clock, Tag,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type TemplateCategory = "proposal" | "contract" | "invoice" | "call_sheet" | "tech_sheet" | "sow" | "report" | "email";
 
@@ -66,6 +67,7 @@ export default function TemplatesPage() {
     });
 
     return (
+        <PermissionGate resource="templates" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Document Templates" description="Reusable templates for proposals, contracts, invoices, call sheets, and more">
                 <Button><Plus className="mr-2 h-4 w-4" />New Template</Button>
@@ -142,5 +144,6 @@ export default function TemplatesPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

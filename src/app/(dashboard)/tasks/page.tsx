@@ -17,6 +17,7 @@ import type { Task, TaskStatus, TaskPriority, ProjectPhase, FabricationStatus, P
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { DataBoard, type BoardColumn, type CardField } from "@/components/data-view/data-board";
 import { CurrencyField, DateField, PriorityField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ViewMode = "list" | "table" | "board";
 
@@ -192,6 +193,7 @@ export default function TasksPage() {
         : allTasks.filter((t) => t.projectId === filterProject);
 
     return (
+        <PermissionGate resource="tasks" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Tasks" description="Granular task management with fabrication tracking">
                 <div className="flex items-center gap-2">
@@ -334,5 +336,6 @@ export default function TasksPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

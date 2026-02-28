@@ -11,10 +11,12 @@ import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
 import { useActivations, useLocations, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { MOCK_ACTIVATIONS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
+import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import {
     Plus,
@@ -98,6 +100,7 @@ export default function ActivationsPage() {
     const statuses = ["all", "planning", "design", "build", "installed", "active"];
 
     return (
+        <PermissionGate resource="activations" action="read">
         <PageShell
             title="Activations"
             description="Manage brand activations, installations, and experiences"
@@ -120,9 +123,8 @@ export default function ActivationsPage() {
                             variant={statusFilter === status ? "default" : "outline"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize"
                         >
-                            {status}
+                            {status === "all" ? "All" : getStatusLabel(status)}
                         </Button>
                     ))}
                 </div>
@@ -157,7 +159,7 @@ export default function ActivationsPage() {
                                 <Card className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer">
                                     <CardContent className="flex items-center gap-4 py-4">
                                         <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                                            <Sparkles className="h-6 w-6 text-white" />
+                                            <Sparkles className="h-6 w-6 text-primary-foreground" />
                                         </div>
                                         
                                         <div className="flex-1 min-w-0">
@@ -224,5 +226,6 @@ export default function ActivationsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

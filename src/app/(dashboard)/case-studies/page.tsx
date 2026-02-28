@@ -3,12 +3,14 @@
 import React from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
 import { useCaseStudies, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
 import { Award, Globe, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function CaseStudiesPage() {
     const { data: sbCaseStudies, isLoading } = useCaseStudies();
@@ -36,6 +38,7 @@ export default function CaseStudiesPage() {
         );
     }
     return (
+        <PermissionGate resource="case_studies" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Case Studies" description="Auto-published from completed productions">
                 <Button size="sm"><Award className="h-4 w-4" /> Publish New</Button>
@@ -58,7 +61,7 @@ export default function CaseStudiesPage() {
                                 {cs.metrics.map((m) => (
                                     <div key={m.label} className="px-3 py-2 rounded-xl bg-secondary">
                                         <p className="text-lg font-bold">{m.value}</p>
-                                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</p>
+                                        <OverlineText>{m.label}</OverlineText>
                                     </div>
                                 ))}
                             </div>
@@ -75,5 +78,6 @@ export default function CaseStudiesPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

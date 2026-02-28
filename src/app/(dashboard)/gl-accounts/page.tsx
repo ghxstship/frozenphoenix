@@ -11,6 +11,7 @@ import {
     CircleDollarSign, Plus,
 } from "lucide-react";
 import { MOCK_GL_ACCOUNTS } from "@/lib/demo-data-governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
     asset: "Asset", liability: "Liability", equity: "Equity",
@@ -39,6 +40,7 @@ export default function GLAccountsPage() {
     const assetAccounts = accounts.filter(a => a.account_type === "asset").length;
 
     return (
+        <PermissionGate resource="gl_accounts" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="GL Accounts" description="Chart of accounts for financial reporting — maps budgets, expenses, invoices, and payments to GL codes">
                 <Button size="sm"><Plus className="h-4 w-4" /> Add Account</Button>
@@ -93,7 +95,7 @@ export default function GLAccountsPage() {
                                                 {ACCOUNT_TYPE_LABELS[a.account_type]}
                                             </Badge>
                                         </td>
-                                        <td className="p-3 text-xs">{a.capex_opex ? a.capex_opex.toUpperCase() : "—"}</td>
+                                        <td className="p-3 text-xs">{a.capex_opex ? (a.capex_opex === "capex" ? "CapEx" : "OpEx") : "—"}</td>
                                         <td className="p-3 text-xs text-muted-foreground">{a.department || "—"}</td>
                                         <td className="p-3">
                                             <Badge variant={a.is_active ? "success" : "ghost"} className="text-[10px]">
@@ -108,5 +110,6 @@ export default function GLAccountsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -8,14 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { OverlineText } from "@/components/ui/overline-text";
 import { SearchInput } from "@/components/ui/search-input";
 import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
-// ACCOUNT_RISK_LEVEL_MAP available for future drill-down views
+import { useAccounts, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { AccountHealthScore } from "@/types";
 import {
     Building2, DollarSign, AlertTriangle,
     HeartPulse, ChevronRight, Target, FolderKanban, FileWarning,
-    Shield,
+    Shield, Loader2,
 } from "lucide-react";
 
 function getRiskColor(risk: string): string {
@@ -50,8 +53,9 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 export default function AccountsPage() {
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<string>("all");
+    const { data: sbAccounts, isLoading } = useAccounts();
 
-    const accounts = MOCK_ACCOUNT_HEALTH_SCORES;
+    const accounts = isSupabaseConfigured && sbAccounts ? (sbAccounts as unknown as typeof MOCK_ACCOUNT_HEALTH_SCORES) : MOCK_ACCOUNT_HEALTH_SCORES;
 
     const filtered = useMemo(() => {
         let result = accounts;
@@ -73,12 +77,23 @@ export default function AccountsPage() {
         return { totalRevenue, avgHealth, atRisk, totalOpps };
     }, [accounts]);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="accounts" action="read">
         <div className="space-y-6">
             <PageHeader title="Accounts" description="Client relationship health and revenue overview">
-                <Button size="sm">
-                    <Building2 className="mr-2 h-4 w-4" /> New Account
-                </Button>
+                <Link href="/accounts/new">
+                    <Button size="sm">
+                        <Building2 className="mr-2 h-4 w-4" /> New Account
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -112,6 +127,7 @@ export default function AccountsPage() {
                 )}
             </div>
         </div>
+        </PermissionGate>
     );
 }
 
@@ -145,21 +161,21 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                     <div>
                         <div className="text-lg font-semibold">{account.lifetimeRevenue > 0 ? formatCurrency(account.lifetimeRevenue) : "$0"}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Revenue</div>
+                        <OverlineText>Revenue</OverlineText>
                     </div>
                     <div>
                         <div className="text-lg font-semibold flex items-center justify-center gap-1">
                             <FolderKanban className="h-3.5 w-3.5 text-muted-foreground" />
                             {account.activeProjectCount}
                         </div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</div>
+                        <OverlineText>Projects</OverlineText>
                     </div>
                     <div>
                         <div className="text-lg font-semibold flex items-center justify-center gap-1">
                             <Target className="h-3.5 w-3.5 text-muted-foreground" />
                             {account.openOpportunityCount}
                         </div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Opps</div>
+                        <OverlineText>Opps</OverlineText>
                     </div>
                     <div>
                         <div className="text-lg font-semibold flex items-center justify-center gap-1">
@@ -170,7 +186,7 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
                             )}
                             {account.overdueInvoiceCount}
                         </div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Overdue</div>
+                        <OverlineText>Overdue</OverlineText>
                     </div>
                 </div>
 

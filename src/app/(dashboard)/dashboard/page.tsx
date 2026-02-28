@@ -10,6 +10,7 @@ import { MOCK_PROJECTS, MOCK_DEALS, MOCK_NOTIFICATIONS, MOCK_APPROVALS, MOCK_TAS
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import {
     DollarSign,
     FolderKanban,
@@ -22,6 +23,7 @@ import {
     Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function DashboardPage() {
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
@@ -125,7 +127,9 @@ export default function DashboardPage() {
     }
 
     return (
+        <PermissionGate resource="dashboard" action="read">
         <div className="space-y-6 animate-fade-in">
+            <OnboardingChecklist />
             <PageHeader
                 title="Command Center"
                 description="Real-time overview of your production ecosystem"
@@ -281,5 +285,6 @@ export default function DashboardPage() {
                 </div>
             </div>
         </div>
+        </PermissionGate>
     );
 }

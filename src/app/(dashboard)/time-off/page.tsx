@@ -13,8 +13,18 @@ import {
     XCircle, Palmtree, Stethoscope, GraduationCap,
     Heart, User,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type LeaveType = "vacation" | "sick" | "personal" | "training" | "parental" | "bereavement";
+
+const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
+    vacation: "Vacation",
+    sick: "Sick",
+    personal: "Personal",
+    training: "Training",
+    parental: "Parental",
+    bereavement: "Bereavement",
+};
 type LeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 interface LeaveRequest {
@@ -72,6 +82,7 @@ export default function TimeOffPage() {
     const filtered = filter === "all" ? mockRequests : mockRequests.filter((r) => r.status === filter);
 
     return (
+        <PermissionGate resource="time_off" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Time Off" description="Manage leave requests, approvals, and PTO balances">
                 <Button>
@@ -120,8 +131,8 @@ export default function TimeOffPage() {
             {/* Filter Tabs */}
             <div className="flex gap-2 border-b pb-2">
                 {(["all", "pending", "approved", "rejected"] as const).map((f) => (
-                    <Button key={f} variant={filter === f ? "default" : "ghost"} size="sm" onClick={() => setFilter(f)} className="capitalize">
-                        {f}
+                    <Button key={f} variant={filter === f ? "default" : "ghost"} size="sm" onClick={() => setFilter(f)}>
+                        {{ all: "All", pending: "Pending", approved: "Approved", rejected: "Rejected" }[f]}
                         {f === "pending" && pending > 0 && (
                             <Badge variant="warning" className="ml-1.5 text-[9px] px-1.5">{pending}</Badge>
                         )}
@@ -145,7 +156,7 @@ export default function TimeOffPage() {
                                         <StatusBadge status={req.status} className="text-[10px]" />
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                        {req.type.charAt(0).toUpperCase() + req.type.slice(1)} — {req.reason}
+                                        {LEAVE_TYPE_LABELS[req.type]} — {req.reason}
                                     </p>
                                 </div>
                                 <div className="text-right shrink-0">
@@ -168,5 +179,6 @@ export default function TimeOffPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

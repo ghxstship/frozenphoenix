@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +16,9 @@ import {
     Clock, DollarSign, LayoutGrid, Table2,
 } from "lucide-react";
 import { MOCK_ESTIMATES } from "@/lib/demo-data-vendor-lifecycle";
+import { useEstimates, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
+import { Loader2 } from "lucide-react";
 import type { EstimateStatus } from "@/types/vendor-lifecycle";
 
 type ViewMode = "cards" | "table";
@@ -25,8 +29,9 @@ export default function EstimatesPage() {
     const [viewMode, setViewMode] = useState<ViewMode>("cards");
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbEstimates, isLoading } = useEstimates();
 
-    const estimates = MOCK_ESTIMATES;
+    const estimates = isSupabaseConfigured && sbEstimates ? sbEstimates as unknown as typeof MOCK_ESTIMATES : MOCK_ESTIMATES;
     const filtered = estimates.filter(est => {
         const matchesSearch = !search || est.title.toLowerCase().includes(search.toLowerCase()) || est.number.toLowerCase().includes(search.toLowerCase()) || (est.companyName || "").toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === "all" || est.status === statusFilter;
@@ -37,7 +42,16 @@ export default function EstimatesPage() {
     const acceptedValue = estimates.filter(e => e.status === "accepted").reduce((s, e) => s + e.total, 0);
     const pendingCount = estimates.filter(e => ["sent", "viewed"].includes(e.status)).length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="estimates" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Estimates" description="Client-facing estimates and quotes with e-signature support and project conversion">
                 <div className="flex items-center gap-2">
@@ -51,7 +65,7 @@ export default function EstimatesPage() {
                             </button>
                         ))}
                     </div>
-                    <Button size="sm"><Plus className="h-4 w-4" /> New Estimate</Button>
+                    <Link href="/estimates/new"><Button size="sm"><Plus className="h-4 w-4" /> New Estimate</Button></Link>
                 </div>
             </PageHeader>
 
@@ -170,5 +184,6 @@ export default function EstimatesPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

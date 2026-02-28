@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { MOCK_ENGINEERING_APPROVALS } from "@/lib/demo-data-governance";
 import type { EngineeringApprovalStatus } from "@/types/governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const APPROVAL_STATUSES: EngineeringApprovalStatus[] = [
     "pending", "submitted", "under_review", "conditions_issued",
@@ -42,6 +43,7 @@ export default function EngineeringApprovalsPage() {
     const issues = approvals.filter(a => ["rejected", "expired", "inspection_failed"].includes(a.status)).length;
 
     return (
+        <PermissionGate resource="engineering_approvals" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Engineering Approvals" description="Track structural, electrical, mechanical, fire safety, and rigging approvals from licensed engineers">
                 <Button size="sm"><Plus className="h-4 w-4" /> Request Approval</Button>
@@ -99,5 +101,6 @@ export default function EngineeringApprovalsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

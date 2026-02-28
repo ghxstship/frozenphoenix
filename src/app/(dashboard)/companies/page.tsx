@@ -46,6 +46,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
+import { useCompanies, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
 type CompanyStatus = "prospect" | "active" | "inactive" | "churned";
@@ -173,7 +176,38 @@ export default function CompaniesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [view, setView] = useState<"table" | "cards">("table");
 
-    const filteredCompanies = mockCompanies.filter((company) => {
+    const { data: sbCompanies, isLoading } = useCompanies();
+
+    const companies: Company[] = isSupabaseConfigured && sbCompanies
+        ? sbCompanies.map((c: Record<string, unknown>) => ({
+            id: (c.id as string) ?? "",
+            name: (c.name as string) ?? "",
+            legalName: (c.legal_name as string) ?? undefined,
+            industry: (c.industry as string) ?? undefined,
+            website: (c.website as string) ?? undefined,
+            phone: (c.phone as string) ?? undefined,
+            email: (c.email as string) ?? undefined,
+            companyType: ((c.company_type as string) ?? "client") as CompanyType,
+            status: ((c.status as string) ?? "prospect") as CompanyStatus,
+            accountManagerName: (c.account_manager_name as string) ?? undefined,
+            logoUrl: (c.logo_url as string) ?? undefined,
+            city: (c.city as string) ?? undefined,
+            state: (c.state as string) ?? undefined,
+            projectCount: (c.project_count as number) ?? 0,
+            totalRevenue: (c.total_revenue as number) ?? 0,
+            tags: ((c.tags as string[]) ?? []),
+        }))
+        : mockCompanies;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filteredCompanies = companies.filter((company) => {
         const matchesSearch =
             company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             company.industry?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -183,13 +217,14 @@ export default function CompaniesPage() {
     });
 
     const stats = {
-        total: mockCompanies.length,
-        active: mockCompanies.filter((c) => c.status === "active").length,
-        prospects: mockCompanies.filter((c) => c.status === "prospect").length,
-        totalRevenue: mockCompanies.reduce((sum, c) => sum + c.totalRevenue, 0),
+        total: companies.length,
+        active: companies.filter((c) => c.status === "active").length,
+        prospects: companies.filter((c) => c.status === "prospect").length,
+        totalRevenue: companies.reduce((sum, c) => sum + c.totalRevenue, 0),
     };
 
     return (
+        <PermissionGate resource="companies" action="read">
         <div className="flex flex-col gap-6 p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -407,5 +442,6 @@ export default function CompaniesPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

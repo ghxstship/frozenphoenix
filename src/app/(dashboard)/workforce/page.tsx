@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,11 @@ import { Chip } from "@/components/ui/chip";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Users, Plus, UserCheck, UserX, Clock, AlertTriangle,
-    Star, MapPin, Briefcase, ChevronRight,
+    Star, MapPin, Briefcase, ChevronRight, Loader2,
 } from "lucide-react";
 import { MOCK_WORKER_PROFILES } from "@/lib/demo-data-workforce";
+import { useWorkerProfiles, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { WorkerLifecycleStatus, WorkerClassification } from "@/types/workforce";
 
 const LIFECYCLE_CONFIG: Record<WorkerLifecycleStatus, { label: string; variant: "default" | "info" | "warning" | "success" | "destructive" }> = {
@@ -55,7 +58,7 @@ function StarRating({ rating }: { rating: number }) {
     if (!rating) return <span className="text-[10px] text-muted-foreground">No reviews</span>;
     return (
         <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            <Star className="h-3 w-3 fill-star-rating text-star-rating" />
             <span className="text-xs font-medium">{rating.toFixed(1)}</span>
         </div>
     );
@@ -65,8 +68,9 @@ export default function WorkforcePage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [classFilter, setClassFilter] = useState<string>("all");
+    const { data: sbWorkers, isLoading } = useWorkerProfiles();
 
-    const workers = MOCK_WORKER_PROFILES;
+    const workers = isSupabaseConfigured && sbWorkers ? (sbWorkers as unknown as typeof MOCK_WORKER_PROFILES) : MOCK_WORKER_PROFILES;
     const filtered = workers.filter(w => {
         const matchesSearch = !search ||
             `${w.firstName} ${w.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
@@ -83,10 +87,19 @@ export default function WorkforcePage() {
     const complianceIssues = workers.filter(w => (w.complianceScore || 0) < 80 && w.lifecycleStatus === "active").length;
     const suspendedCount = workers.filter(w => w.lifecycleStatus === "suspended").length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="workforce" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Workforce Directory" description="Unified view of all workers across all employment classifications — employees, contractors, freelancers, vendors, and more">
-                <Button size="sm"><Plus className="h-4 w-4" /> Add Worker</Button>
+                <Link href="/workforce/new"><Button size="sm"><Plus className="h-4 w-4" /> Add Worker</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -125,7 +138,7 @@ export default function WorkforcePage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
                                         <h3 className="text-sm font-bold truncate">{worker.firstName} {worker.lastName}</h3>
-                                        {worker.preferred && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />}
+                                        {worker.preferred && <Star className="h-3 w-3 fill-star-rating text-star-rating shrink-0" />}
                                         <Badge variant={LIFECYCLE_CONFIG[worker.lifecycleStatus].variant} className="text-[10px] shrink-0">
                                             {LIFECYCLE_CONFIG[worker.lifecycleStatus].label}
                                         </Badge>
@@ -192,5 +205,6 @@ export default function WorkforcePage() {
                 Showing {filtered.length} of {workers.length} workers
             </div>
         </div>
+        </PermissionGate>
     );
 }

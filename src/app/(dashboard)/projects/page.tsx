@@ -7,6 +7,7 @@ import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -171,6 +172,7 @@ export default function ProjectsPage() {
     }
 
     return (
+        <PermissionGate resource="projects" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Productions" description="Manage your active productions and their lifecycle">
                 <div className="flex items-center gap-2">
@@ -333,5 +335,6 @@ export default function ProjectsPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

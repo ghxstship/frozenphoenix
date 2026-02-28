@@ -11,10 +11,12 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import {
     ShieldCheck, ShieldAlert, FileText, AlertTriangle,
-    CheckCircle2, Clock, XCircle, RefreshCw,
+    CheckCircle2, Clock, XCircle, RefreshCw, Loader2,
 } from "lucide-react";
 import { MOCK_VENDOR_COMPLIANCE_DOCS, MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/demo-data-vendor-lifecycle";
-import type { ComplianceDocStatus } from "@/types/vendor-lifecycle";
+import { useVendorComplianceDocs, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
+import type { ComplianceDocStatus, VendorComplianceDoc } from "@/types/vendor-lifecycle";
 
 const COMPLIANCE_STATUSES: ComplianceDocStatus[] = ["not_submitted", "pending_review", "approved", "rejected", "expired", "expiring_soon"];
 
@@ -51,8 +53,30 @@ export default function VendorCompliancePage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const docs = MOCK_VENDOR_COMPLIANCE_DOCS;
+    const { data: sbDocs, isLoading } = useVendorComplianceDocs();
+
+    const docs: VendorComplianceDoc[] = isSupabaseConfigured && sbDocs
+        ? sbDocs.map((d: Record<string, unknown>) => ({
+            id: (d.id as string) ?? "",
+            vendorId: (d.vendor_id as string) ?? "",
+            docType: (d.doc_type as string) ?? "other",
+            docName: (d.doc_name as string) ?? "",
+            status: ((d.status as string) ?? "not_submitted") as ComplianceDocStatus,
+            expiryDate: (d.expiry_date as string) ?? undefined,
+            submittedAt: (d.submitted_at as string) ?? "",
+            coverageAmount: (d.coverage_amount as number) ?? undefined,
+            carrierName: (d.carrier_name as string) ?? undefined,
+        } as VendorComplianceDoc))
+        : MOCK_VENDOR_COMPLIANCE_DOCS;
     const requirements = MOCK_COMPLIANCE_REQUIREMENTS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = docs.filter(doc => {
         const vendorName = vendorNames[doc.vendorId] || doc.vendorId;
@@ -74,8 +98,9 @@ export default function VendorCompliancePage() {
     };
 
     return (
+        <PermissionGate resource="vendor_compliance" action="read">
         <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Vendor Compliance" description="Track compliance documents, expiry dates, and auto-suspension gates across all vendors">
+            <PageHeader title="Vendor Compliance" description="Document tracking, verification status, and compliance requirement management for all vendors">
                 <Button size="sm"><RefreshCw className="h-4 w-4" /> Sync Status</Button>
             </PageHeader>
 
@@ -198,5 +223,6 @@ export default function VendorCompliancePage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

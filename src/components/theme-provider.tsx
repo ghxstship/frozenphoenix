@@ -21,6 +21,8 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getBrand } from "@/config/brands";
+import type { BrandId, BrandColorPalette } from "@/config/brands";
 
 // ─── Theme Token Override Shape ───
 
@@ -124,32 +126,51 @@ export function useTheme() {
 
 // ─── Token Application Logic ───
 
+const TOKEN_CSS_MAP: Record<keyof ThemeTokens, string> = {
+    primary: "--primary",
+    primaryForeground: "--primary-foreground",
+    secondary: "--secondary",
+    secondaryForeground: "--secondary-foreground",
+    accent: "--accent",
+    accentForeground: "--accent-foreground",
+    background: "--background",
+    foreground: "--foreground",
+    muted: "--muted",
+    mutedForeground: "--muted-foreground",
+    card: "--card",
+    cardForeground: "--card-foreground",
+    border: "--border",
+    ring: "--ring",
+    radius: "--radius",
+};
+
 function applyTokensToDOM(tokens: ThemeTokens) {
     const root = document.documentElement;
-    const mapping: Record<keyof ThemeTokens, string> = {
-        primary: "--primary",
-        primaryForeground: "--primary-foreground",
-        secondary: "--secondary",
-        secondaryForeground: "--secondary-foreground",
-        accent: "--accent",
-        accentForeground: "--accent-foreground",
-        background: "--background",
-        foreground: "--foreground",
-        muted: "--muted",
-        mutedForeground: "--muted-foreground",
-        card: "--card",
-        cardForeground: "--card-foreground",
-        border: "--border",
-        ring: "--ring",
-        radius: "--radius",
-    };
-
-    for (const [key, cssVar] of Object.entries(mapping)) {
+    for (const [key, cssVar] of Object.entries(TOKEN_CSS_MAP)) {
         const value = tokens[key as keyof ThemeTokens];
         if (value) {
             root.style.setProperty(cssVar, value);
         }
     }
+}
+
+function brandPaletteToTokens(palette: BrandColorPalette): ThemeTokens {
+    return {
+        primary: palette.primary,
+        primaryForeground: palette.primaryForeground,
+        secondary: palette.secondary,
+        secondaryForeground: palette.secondaryForeground,
+        accent: palette.accent,
+        accentForeground: palette.accentForeground,
+        background: palette.background,
+        foreground: palette.foreground,
+        muted: palette.muted,
+        mutedForeground: palette.mutedForeground,
+        card: palette.card,
+        cardForeground: palette.cardForeground,
+        border: palette.border,
+        ring: palette.ring,
+    };
 }
 
 function clearCustomTokensFromDOM() {
@@ -190,6 +211,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const html = document.documentElement;
 
+        // Enable smooth theme transition (except on first paint)
+        html.classList.add("theme-transition");
+        const transitionTimer = setTimeout(() => html.classList.remove("theme-transition"), 300);
+
         // Resolve color mode
         let resolved: "light" | "dark" = "dark";
         if (colorMode === "system") {
@@ -203,6 +228,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         html.classList.remove("light", "dark");
         html.classList.add(resolved);
 
+        // Persist resolved mode as cookie for potential SSR usage
+        document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
+
         // Apply brand attribute
         if (brandId !== "playbook") {
             html.setAttribute("data-brand", brandId);
@@ -210,12 +238,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             html.removeAttribute("data-brand");
         }
 
-        // Apply cascading token overrides (org → project → user)
+        // Apply cascading token overrides: brand → org → project → user
         clearCustomTokensFromDOM();
-        const merged = mergeTokens(orgTokens, projectTokens, userTokens);
+
+        // Inject brand palette as base layer
+        let brandTokens: ThemeTokens | null = null;
+        try {
+            const brand = getBrand(brandId as BrandId);
+            if (brand && brandId !== "playbook") {
+                brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+            }
+        } catch {
+            // Brand not found — use platform defaults
+        }
+
+        const merged = mergeTokens(brandTokens, orgTokens, projectTokens, userTokens);
         if (Object.keys(merged).length > 0) {
             applyTokensToDOM(merged);
         }
+
+        return () => clearTimeout(transitionTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [colorMode, brandId, orgTokens, projectTokens, userTokens]);
 
@@ -226,35 +268,78 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const handler = () => {
             const resolved = mq.matches ? "dark" : "light";
             setResolvedMode(resolved);
-            document.documentElement.classList.remove("light", "dark");
-            document.documentElement.classList.add(resolved);
+            const html = document.documentElement;
+            html.classList.add("theme-transition");
+            html.classList.remove("light", "dark");
+            html.classList.add(resolved);
+            document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
+
+            // Re-apply brand tokens for the new resolved mode
+            clearCustomTokensFromDOM();
+            let brandTokens: ThemeTokens | null = null;
+            try {
+                const store = useThemeStore.getState();
+                const brand = getBrand(store.brandId as BrandId);
+                if (brand && store.brandId !== "playbook") {
+                    brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+                }
+            } catch { /* use defaults */ }
+            const merged = mergeTokens(brandTokens, useThemeStore.getState().orgTokens, useThemeStore.getState().projectTokens, useThemeStore.getState().userTokens);
+            if (Object.keys(merged).length > 0) {
+                applyTokensToDOM(merged);
+            }
+
+            setTimeout(() => html.classList.remove("theme-transition"), 300);
         };
         mq.addEventListener("change", handler);
         return () => mq.removeEventListener("change", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [colorMode]);
 
-    const store = useThemeStore();
+    // Cross-tab synchronization via storage event
+    useEffect(() => {
+        const handler = (e: StorageEvent) => {
+            if (e.key === "pb-theme" && e.newValue) {
+                try {
+                    const parsed = JSON.parse(e.newValue);
+                    const newMode = parsed.state?.colorMode;
+                    if (newMode && newMode !== useThemeStore.getState().colorMode) {
+                        useThemeStore.getState().setColorMode(newMode);
+                    }
+                } catch { /* ignore parse errors */ }
+            }
+        };
+        window.addEventListener("storage", handler);
+        return () => window.removeEventListener("storage", handler);
+    }, []);
+
+    const resolvedMode = useThemeStore((s) => s.resolvedMode);
+    const setColorModeStore = useThemeStore((s) => s.setColorMode);
+    const setBrandIdStore = useThemeStore((s) => s.setBrandId);
+    const setOrgTokensStore = useThemeStore((s) => s.setOrgTokens);
+    const setProjectTokensStore = useThemeStore((s) => s.setProjectTokens);
+    const setUserTokensStore = useThemeStore((s) => s.setUserTokens);
+
     const contextValue = useMemo<ThemeContextValue>(
         () => ({
-            colorMode: store.colorMode,
-            resolvedMode: store.resolvedMode,
-            brandId: store.brandId,
-            setColorMode: store.setColorMode,
-            setBrandId: store.setBrandId,
-            setOrgTokens: store.setOrgTokens,
-            setProjectTokens: store.setProjectTokens,
-            setUserTokens: store.setUserTokens,
+            colorMode,
+            resolvedMode,
+            brandId,
+            setColorMode: setColorModeStore,
+            setBrandId: setBrandIdStore,
+            setOrgTokens: setOrgTokensStore,
+            setProjectTokens: setProjectTokensStore,
+            setUserTokens: setUserTokensStore,
         }),
         [
-            store.colorMode,
-            store.resolvedMode,
-            store.brandId,
-            store.setColorMode,
-            store.setBrandId,
-            store.setOrgTokens,
-            store.setProjectTokens,
-            store.setUserTokens,
+            colorMode,
+            resolvedMode,
+            brandId,
+            setColorModeStore,
+            setBrandIdStore,
+            setOrgTokensStore,
+            setProjectTokensStore,
+            setUserTokensStore,
         ]
     );
 

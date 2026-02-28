@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { MOCK_GOODS_RECEIPTS } from "@/lib/demo-data-governance";
 import type { GoodsReceiptStatus } from "@/types/governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const GR_STATUSES: GoodsReceiptStatus[] = [
     "pending", "partial", "complete", "rejected", "discrepancy",
@@ -34,6 +35,7 @@ export default function GoodsReceiptsPage() {
     const discrepancies = receipts.filter(r => r.status === "discrepancy").length;
 
     return (
+        <PermissionGate resource="goods_receipts" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Goods Receipts" description="Delivery confirmation for 3-way matching — PO + goods receipt + vendor invoice">
                 <Button size="sm"><Plus className="h-4 w-4" /> Record Receipt</Button>
@@ -89,5 +91,6 @@ export default function GoodsReceiptsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

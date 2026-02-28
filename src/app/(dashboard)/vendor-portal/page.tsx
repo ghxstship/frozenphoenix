@@ -11,6 +11,7 @@ import {
     Clock, CheckCircle2, Upload, ClipboardList, Truck,
     DollarSign, ShieldCheck, MessageSquare, Send,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface VendorTask {
     id: string;
@@ -126,6 +127,7 @@ export default function VendorPortalPage() {
     const totalInvoiced = mockInvoiceSubmissions.filter(i => i.status !== "draft").reduce((s, i) => s + i.amount, 0);
 
     return (
+        <PermissionGate resource="vendor_portal" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Vendor Portal" description="Self-service portal: work orders, invoicing, compliance documents, and scheduling">
                 <div className="flex items-center gap-2">
@@ -300,5 +302,6 @@ export default function VendorPortalPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

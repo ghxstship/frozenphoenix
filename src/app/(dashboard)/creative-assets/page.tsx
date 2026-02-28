@@ -3,6 +3,7 @@
 import { formatDate } from "@/lib/locale";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -17,6 +18,8 @@ import {
     MOCK_CREATIVE_REVIEWS,
     MOCK_CAMPAIGNS,
 } from "@/lib/demo-data-creative-brand";
+import { useCreativeAssets, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { CampaignAsset, CreativeReview, CampaignAssetProductionStatus } from "@/types";
 import {
     Plus,
@@ -26,6 +29,7 @@ import {
     Shield,
     Globe,
     Layers,
+    Loader2,
 } from "lucide-react";
 
 const STATUS_ORDER: CampaignAssetProductionStatus[] = [
@@ -50,8 +54,9 @@ export default function CreativeAssetsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [view, setView] = useState<"board" | "list">("board");
+    const { data: sbAssets, isLoading } = useCreativeAssets();
 
-    const assets = MOCK_CAMPAIGN_ASSETS;
+    const assets = isSupabaseConfigured && sbAssets ? (sbAssets as unknown as CampaignAsset[]) : MOCK_CAMPAIGN_ASSETS;
     const reviews = MOCK_CREATIVE_REVIEWS;
     const campaigns = MOCK_CAMPAIGNS;
 
@@ -82,7 +87,16 @@ export default function CreativeAssetsPage() {
             : 0;
     })();
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="creative_assets" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Creative Assets" description="Campaign asset production, review workflow, and brand compliance tracking">
                 <div className="flex gap-2">
@@ -100,10 +114,10 @@ export default function CreativeAssetsPage() {
                             List
                         </button>
                     </div>
-                    <Button size="sm">
+                    <Link href="/creative-assets/new"><Button size="sm">
                         <Plus className="h-4 w-4" />
                         New Asset
-                    </Button>
+                    </Button></Link>
                 </div>
             </PageHeader>
 
@@ -186,6 +200,7 @@ export default function CreativeAssetsPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }
 

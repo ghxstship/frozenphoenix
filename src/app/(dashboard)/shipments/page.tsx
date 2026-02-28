@@ -15,6 +15,7 @@ import { MOCK_SHIPMENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { SHIPMENT_STATUS_CONFIG, SHIPMENT_TYPE_CONFIG } from "@/config/production-config";
+import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Plus,
@@ -26,6 +27,7 @@ import {
     ArrowRight,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function ShipmentsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -95,6 +97,7 @@ export default function ShipmentsPage() {
     const statuses = ["all", "planning", "booked", "in_transit", "delivered"];
 
     return (
+        <PermissionGate resource="shipments" action="read">
         <PageShell
             title="Shipments"
             description="Track and manage logistics and freight"
@@ -117,9 +120,8 @@ export default function ShipmentsPage() {
                             variant={statusFilter === status ? "default" : "outline"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize"
                         >
-                            {status.replace("_", " ")}
+                            {status === "all" ? "All" : getStatusLabel(status)}
                         </Button>
                     ))}
                 </div>
@@ -237,5 +239,6 @@ export default function ShipmentsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

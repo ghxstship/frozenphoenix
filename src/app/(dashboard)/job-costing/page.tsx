@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { MOCK_JOB_COST_ENTRIES } from "@/lib/demo-data-vendor-lifecycle";
 import type { JobCostType } from "@/types/vendor-lifecycle";
+import { PermissionGate } from "@/components/permission-guard";
 
 const COST_TYPE_CONFIG: Record<JobCostType, { label: string; color: string }> = {
     labor: { label: "Labor", color: "bg-info" },
@@ -61,6 +62,7 @@ export default function JobCostingPage() {
     });
 
     return (
+        <PermissionGate resource="job_costing" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Job Costing" description="Per-project profitability tracking with labor, material, equipment, and subcontractor cost breakdown">
                 <Button size="sm"><Calculator className="h-4 w-4" /> Export Report</Button>
@@ -204,5 +206,6 @@ export default function JobCostingPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

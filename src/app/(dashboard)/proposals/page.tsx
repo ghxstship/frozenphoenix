@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useProposals, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import {
     FileText,
     Plus,
@@ -12,6 +15,7 @@ import {
     DollarSign,
     Building2,
     Calendar,
+    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -126,8 +130,35 @@ const statusConfig: Record<ProposalStatus, { label: string; variant: BadgeVarian
 export default function ProposalsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbProposals, isLoading } = useProposals(statusFilter !== "all" ? statusFilter : undefined);
 
-    const filteredProposals = mockProposals.filter((proposal) => {
+    const proposals: Proposal[] = isSupabaseConfigured && sbProposals
+        ? sbProposals.map((p: Record<string, unknown>) => ({
+            id: String(p.id),
+            number: String(p.number || ""),
+            title: String(p.title || "Untitled"),
+            companyName: String((p.deals as Record<string, unknown>)?.company_name || ""),
+            contactName: String((p.deals as Record<string, unknown>)?.title || ""),
+            total: Number(p.total || 0),
+            currency: String(p.currency || "USD"),
+            status: String(p.status || "draft") as ProposalStatus,
+            validUntil: String(p.valid_until || ""),
+            sentAt: p.sent_at ? String(p.sent_at) : undefined,
+            viewedAt: p.viewed_at ? String(p.viewed_at) : undefined,
+            createdAt: String(p.created_at || ""),
+            version: Number(p.version || 1),
+        }))
+        : mockProposals;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filteredProposals = proposals.filter((proposal) => {
         const matchesSearch =
             proposal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             proposal.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,15 +168,16 @@ export default function ProposalsPage() {
     });
 
     const stats = {
-        total: mockProposals.length,
-        totalValue: mockProposals.reduce((sum, p) => sum + p.total, 0),
-        accepted: mockProposals.filter((p) => p.status === "accepted").length,
-        acceptedValue: mockProposals.filter((p) => p.status === "accepted").reduce((sum, p) => sum + p.total, 0),
-        pending: mockProposals.filter((p) => ["sent", "viewed"].includes(p.status)).length,
-        pendingValue: mockProposals.filter((p) => ["sent", "viewed"].includes(p.status)).reduce((sum, p) => sum + p.total, 0),
+        total: proposals.length,
+        totalValue: proposals.reduce((sum, p) => sum + p.total, 0),
+        accepted: proposals.filter((p) => p.status === "accepted").length,
+        acceptedValue: proposals.filter((p) => p.status === "accepted").reduce((sum, p) => sum + p.total, 0),
+        pending: proposals.filter((p) => ["sent", "viewed"].includes(p.status)).length,
+        pendingValue: proposals.filter((p) => ["sent", "viewed"].includes(p.status)).reduce((sum, p) => sum + p.total, 0),
     };
 
     return (
+        <PermissionGate resource="proposals" action="read">
         <div className="flex flex-col gap-6 p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -155,10 +187,12 @@ export default function ProposalsPage() {
                         Create and manage client proposals and quotes
                     </p>
                 </div>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Proposal
-                </Button>
+                <Link href="/proposals/new">
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        New Proposal
+                    </Button>
+                </Link>
             </div>
 
             {/* Stats Cards */}
@@ -306,5 +340,6 @@ export default function ProposalsPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

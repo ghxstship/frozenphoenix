@@ -13,6 +13,7 @@ import {
     Package, Plus, AlertTriangle,
     MapPin, Tag, BarChart3,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "on_order";
 
@@ -61,6 +62,7 @@ export default function InventoryPage() {
     const lowStockCount = mockInventory.filter(i => i.status === "low_stock" || i.status === "out_of_stock").length;
 
     return (
+        <PermissionGate resource="inventory" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Inventory" description="Track stock levels, consumables, and reorder points">
                 <Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Item</Button>
@@ -140,5 +142,6 @@ export default function InventoryPage() {
                 </CardContent></Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

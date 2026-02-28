@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface DashboardWidget {
     id: string;
@@ -69,6 +70,7 @@ export default function DashboardsPage() {
     const [selectedDashboard, setSelectedDashboard] = useState("overview");
 
     return (
+        <PermissionGate resource="dashboards" action="read">
         <div className="flex flex-col gap-6 p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -91,15 +93,14 @@ export default function DashboardsPage() {
 
             {/* Dashboard Tabs */}
             <div className="flex gap-2 border-b pb-2">
-                {["overview", "projects", "sales", "resources"].map((tab) => (
+                {(["overview", "projects", "sales", "resources"] as const).map((tab) => (
                     <Button
                         key={tab}
                         variant={selectedDashboard === tab ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setSelectedDashboard(tab)}
-                        className="capitalize"
                     >
-                        {tab}
+                        {{ overview: "Overview", projects: "Projects", sales: "Sales", resources: "Resources" }[tab]}
                     </Button>
                 ))}
             </div>
@@ -225,7 +226,7 @@ export default function DashboardsPage() {
                                                 opacity: 1 - (index * 0.15)
                                             }}
                                         >
-                                            <span className="text-xs text-white font-medium">
+                                            <span className="text-xs text-primary-foreground font-medium">
                                                 {stage.count} deals
                                             </span>
                                         </div>
@@ -283,5 +284,6 @@ export default function DashboardsPage() {
                 </Card>
             </div>
         </div>
+        </PermissionGate>
     );
 }

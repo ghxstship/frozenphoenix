@@ -12,6 +12,7 @@ import { Receipt, AlertTriangle, CheckCircle2, DollarSign, Loader2 } from "lucid
 import type { PurchaseOrder, Invoice } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 type MatchRow = {
     id: string;
@@ -153,6 +154,7 @@ export default function FinancePage() {
     const disputed = invoices.filter(inv => inv.status === "disputed");
 
     return (
+        <PermissionGate resource="finance" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Financial Operations" description="Three-way match engine — PO ↔ WO ↔ Invoice reconciliation" />
 
@@ -211,5 +213,6 @@ export default function FinancePage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

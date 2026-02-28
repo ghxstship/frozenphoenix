@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -19,6 +21,8 @@ import {
     MOCK_CAMPAIGN_ASSETS,
     MOCK_CAMPAIGN_KPIS,
 } from "@/lib/demo-data-creative-brand";
+import { useCampaigns, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
     Plus,
@@ -29,6 +33,7 @@ import {
     Filter,
     CalendarDays,
     ChevronRight,
+    Loader2,
 } from "lucide-react";
 
 const STATUS_ORDER: CampaignStatus[] = [
@@ -48,8 +53,9 @@ export default function CampaignsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [view, setView] = useState<"cards" | "kanban">("cards");
+    const { data: sbCampaigns, isLoading } = useCampaigns();
 
-    const campaigns = MOCK_CAMPAIGNS;
+    const campaigns = isSupabaseConfigured && sbCampaigns ? (sbCampaigns as unknown as Campaign[]) : MOCK_CAMPAIGNS;
     const channels = MOCK_CAMPAIGN_CHANNELS;
     const assets = MOCK_CAMPAIGN_ASSETS;
     const kpis = MOCK_CAMPAIGN_KPIS;
@@ -75,6 +81,14 @@ export default function CampaignsPage() {
             : "—";
     })();
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     function getChannelsForCampaign(campaignId: string) {
         return channels.filter((ch) => ch.campaign_id === campaignId);
     }
@@ -93,6 +107,7 @@ export default function CampaignsPage() {
     }
 
     return (
+        <PermissionGate resource="campaigns" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Campaigns" description="Multi-channel campaign lifecycle from planning through performance analysis">
                 <div className="flex gap-2">
@@ -110,10 +125,12 @@ export default function CampaignsPage() {
                             Kanban
                         </button>
                     </div>
-                    <Button size="sm">
-                        <Plus className="h-4 w-4" />
-                        New Campaign
-                    </Button>
+                    <Link href="/campaigns/new">
+                        <Button size="sm">
+                            <Plus className="h-4 w-4" />
+                            New Campaign
+                        </Button>
+                    </Link>
                 </div>
             </PageHeader>
 
@@ -236,7 +253,7 @@ export default function CampaignsPage() {
                                     {/* KPI Progress (if available) */}
                                     {campaignKpis.filter((k) => k.current_value !== null).length > 0 && (
                                         <div className="pt-3 mt-3 border-t border-border">
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">KPI Progress</p>
+                                            <OverlineText className="mb-1.5">KPI Progress</OverlineText>
                                             <div className="space-y-1.5">
                                                 {campaignKpis
                                                     .filter((k) => k.current_value !== null)
@@ -339,6 +356,7 @@ export default function CampaignsPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }
 

@@ -13,6 +13,7 @@ import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import type { DealStage } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useDeals, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { MOCK_DEALS } from "@/lib/demo-data";
 import {
     DollarSign, Plus, TrendingUp, Building2,
@@ -71,6 +72,7 @@ export default function DealsPage() {
     const wonValue = deals.filter(d => d.stage === "won").reduce((sum, d) => sum + d.value, 0);
 
     return (
+        <PermissionGate resource="deals" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Deals" description="Track and manage your sales pipeline">
                 <Link href="/pipeline/new"><Button><Plus className="mr-2 h-4 w-4" />New Deal</Button></Link>
@@ -142,5 +144,6 @@ export default function DealsPage() {
                 </CardContent></Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

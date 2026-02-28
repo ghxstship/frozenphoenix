@@ -7,6 +7,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Gauge, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { READINESS_GATE_STATUS_MAP } from "@/config/domain-config";
 import { StaggerItem } from "@/components/ui/stagger-container";
 
 interface MockGate {
@@ -66,7 +67,7 @@ export default function ReadinessGatesPage() {
             <div className="flex gap-2 flex-wrap">
                 {["all", "passed", "in_progress", "not_started", "failed", "waived"].map(s => (
                     <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
-                        {s === "all" ? "All" : s.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                        {s === "all" ? "All" : (READINESS_GATE_STATUS_MAP[s as keyof typeof READINESS_GATE_STATUS_MAP]?.label ?? s)}
                     </Button>
                 ))}
             </div>

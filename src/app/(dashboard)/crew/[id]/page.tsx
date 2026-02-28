@@ -171,7 +171,7 @@ export default function CrewDetailPage() {
             subtitle={crewMember.role}
             status={crewMember.status}
             avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-white">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     {crewMember.name.split(" ").map((n) => n[0]).join("")}
                 </div>
             }

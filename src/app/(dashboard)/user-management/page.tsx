@@ -15,6 +15,7 @@ import {
     Users, UserPlus, Shield, UserCheck, UserX, Clock,
 } from "lucide-react";
 import type { UserLifecycleStatus, PermissionLevel } from "@/types";
+import { PermissionGate } from "@/components/permission-guard";
 
 const LIFECYCLE_FILTERS: { value: UserLifecycleStatus | "all"; label: string }[] = [
     { value: "all", label: "All Users" },
@@ -70,6 +71,7 @@ export default function UserManagementPage() {
     ).length;
 
     return (
+        <PermissionGate resource="user_management" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="User Management" description="Manage users, roles, and access across your organization">
                 <Button>
@@ -202,5 +204,6 @@ export default function UserManagementPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

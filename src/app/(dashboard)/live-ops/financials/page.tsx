@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { DollarSign, TrendingUp, AlertTriangle, Clock } from "lucide-react";
+import { OT_ALERT_LEVEL_MAP } from "@/config/domain-config";
 
 const snapshot = {
     budgetTotal: 185000,
@@ -46,7 +47,7 @@ export default function LiveFinancialsPage() {
                 <Card className="border-warning/30 bg-warning/5">
                     <CardContent className="py-3 flex items-center gap-3">
                         <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
-                        <p className="text-sm font-medium text-warning">Overtime alert: {snapshot.otAlertLevel.toUpperCase()} — labor overtime at {fmt(snapshot.laborOvertime)}</p>
+                        <p className="text-sm font-medium text-warning">Overtime alert: {OT_ALERT_LEVEL_MAP[snapshot.otAlertLevel as keyof typeof OT_ALERT_LEVEL_MAP]?.label ?? snapshot.otAlertLevel} — labor overtime at {fmt(snapshot.laborOvertime)}</p>
                     </CardContent>
                 </Card>
             )}

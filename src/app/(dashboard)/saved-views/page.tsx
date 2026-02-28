@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import {
     LayoutList, Plus, Eye, Star,
     Users, Lock, Globe, Pencil, Copy, Trash2,
     Filter, SortAsc, Columns,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ViewType = "list" | "board" | "table" | "calendar" | "timeline" | "gantt";
 type ViewVisibility = "private" | "team" | "organization";
@@ -74,8 +76,8 @@ export default function SavedViewsPage() {
                 <SearchInput value={search} onValueChange={setSearch} placeholder="Search views..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "private", "team", "organization"] as const).map((f) => (
-                        <Button key={f} variant={visFilter === f ? "default" : "ghost"} size="sm" onClick={() => setVisFilter(f)} className="text-xs capitalize">
-                            {f}
+                        <Button key={f} variant={visFilter === f ? "default" : "ghost"} size="sm" onClick={() => setVisFilter(f)} className="text-xs">
+                            {{ all: "All", private: "Private", team: "Team", organization: "Organization" }[f]}
                         </Button>
                     ))}
                 </div>
@@ -84,9 +86,9 @@ export default function SavedViewsPage() {
             {/* Starred Views */}
             {starred.length > 0 && (
                 <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <OverlineText as="h3" className="flex items-center gap-1">
                         <Star className="h-3 w-3" /> Starred
-                    </h3>
+                    </OverlineText>
                     {starred.map((v) => <ViewCard key={v.id} view={v} />)}
                 </div>
             )}
@@ -94,7 +96,7 @@ export default function SavedViewsPage() {
             {/* All Views */}
             <div className="space-y-2">
                 {starred.length > 0 && (
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">All Views</h3>
+                    <OverlineText as="h3">All Views</OverlineText>
                 )}
                 {unstarred.map((v) => <ViewCard key={v.id} view={v} />)}
             </div>
@@ -106,6 +108,7 @@ function ViewCard({ view }: { view: SavedView }) {
     const VisIcon = VISIBILITY_CONFIG[view.visibility].icon;
 
     return (
+        <PermissionGate resource="saved_views" action="read">
         <Card className="hover:bg-secondary/30 transition-colors cursor-pointer">
             <CardContent className="flex items-center gap-4 py-3">
                 <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -113,13 +116,13 @@ function ViewCard({ view }: { view: SavedView }) {
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        {view.starred && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
+                        {view.starred && <Star className="h-3 w-3 text-star-rating fill-star-rating" />}
                         <p className="text-sm font-semibold">{view.name}</p>
                         <Badge variant={VISIBILITY_CONFIG[view.visibility].variant} className="text-[10px] gap-0.5">
                             <VisIcon className="h-2.5 w-2.5" />
                             {VISIBILITY_CONFIG[view.visibility].label}
                         </Badge>
-                        <Badge variant="ghost" className="text-[10px] capitalize">{view.viewType}</Badge>
+                        <Badge variant="ghost" className="text-[10px]">{{ list: "List", board: "Board", table: "Table", calendar: "Calendar", timeline: "Timeline", gantt: "Gantt" }[view.viewType]}</Badge>
                         <Badge variant="ghost" className="text-[10px]">{view.entityType}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{view.description}</p>
@@ -142,5 +145,6 @@ function ViewCard({ view }: { view: SavedView }) {
                 </div>
             </CardContent>
         </Card>
+        </PermissionGate>
     );
 }

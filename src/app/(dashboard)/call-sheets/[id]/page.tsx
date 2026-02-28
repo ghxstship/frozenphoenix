@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { CALL_SHEET_STATUS_MAP } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
 import {
@@ -134,7 +135,7 @@ export default function CallSheetDetailPage({ params }: { params: Promise<{ id: 
                         <CardContent>
                             {departments.map((dept) => (
                                 <div key={dept} className="mb-4 last:mb-0">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{dept}</p>
+                                    <OverlineText className="mb-2">{dept}</OverlineText>
                                     <div className="space-y-2">
                                         {mockCrew.filter(c => c.department === dept).map((member) => (
                                             <div key={member.id} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20">

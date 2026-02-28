@@ -26,6 +26,7 @@ import {
     TrendingUp,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 
 const BUDGET_LABELS: Record<string, string> = {
@@ -122,6 +123,7 @@ export default function LeadsPage() {
     }
 
     return (
+        <PermissionGate resource="leads" action="read">
         <PageShell
             title="Leads"
             description="Manage incoming leads and opportunities"
@@ -144,7 +146,6 @@ export default function LeadsPage() {
                             variant={statusFilter === status ? "default" : "outline"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize"
                         >
                             {status === "all" ? "All" : getStatusLabel(status)}
                         </Button>
@@ -173,7 +174,7 @@ export default function LeadsPage() {
                                     <div key={stat.status} className="flex-1 p-3 rounded-lg bg-secondary/30">
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className={`h-2 w-2 rounded-full ${stat.status ? getStatusBgColor(stat.status) : "bg-muted"}`} />
-                                            <span className="text-xs font-medium capitalize">{stat.status ? getStatusLabel(stat.status) : "Unknown"}</span>
+                                            <span className="text-xs font-medium">{stat.status ? getStatusLabel(stat.status) : "Unknown"}</span>
                                         </div>
                                         <p className="text-xl font-bold">{stat.count}</p>
                                         {(stat.new_this_week ?? 0) > 0 && (
@@ -267,5 +268,6 @@ export default function LeadsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -9,9 +10,11 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import {
-    BadgeCheck, Plus, CheckCircle2, Clock, XCircle,
+    BadgeCheck, Plus, CheckCircle2, Clock, XCircle, Loader2,
 } from "lucide-react";
 import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
+import { useCertifications, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { AssetCertificationStatus } from "@/types/governance";
 
 const CERT_STATUSES: AssetCertificationStatus[] = [
@@ -34,8 +37,9 @@ const assetNames: Record<string, string> = {
 export default function CertificationsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbCerts, isLoading } = useCertifications();
 
-    const certs = MOCK_ASSET_CERTIFICATIONS;
+    const certs = isSupabaseConfigured && sbCerts ? (sbCerts as unknown as typeof MOCK_ASSET_CERTIFICATIONS) : MOCK_ASSET_CERTIFICATIONS;
 
     const filtered = certs.filter(c => {
         const assetName = assetNames[c.asset_id] || c.asset_id;
@@ -48,10 +52,19 @@ export default function CertificationsPage() {
     const expiringSoon = certs.filter(c => c.status === "expiring_soon").length;
     const expired = certs.filter(c => c.status === "expired" || c.status === "failed").length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="certifications" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Certifications" description="Unified crew and asset certification tracking with expiry enforcement">
-                <Button size="sm"><Plus className="h-4 w-4" /> Add Certification</Button>
+                <Link href="/certifications/new"><Button size="sm"><Plus className="h-4 w-4" /> Add Certification</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -107,5 +120,6 @@ export default function CertificationsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

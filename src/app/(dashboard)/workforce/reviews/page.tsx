@@ -26,7 +26,7 @@ function Stars({ rating }: { rating: number }) {
     return (
         <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map(n => (
-                <Star key={n} className={`h-3.5 w-3.5 ${n <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
+                <Star key={n} className={`h-3.5 w-3.5 ${n <= rating ? "fill-star-rating text-star-rating" : "text-muted-foreground/30"}`} />
             ))}
         </div>
     );
@@ -97,7 +97,7 @@ export default function WorkforceReviewsPage() {
                                     <h3 className="text-sm font-bold">{review.workerName}</h3>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <Badge variant="default" className="text-[10px]">{TARGET_LABELS[review.targetType]}</Badge>
-                                        <span className="text-[10px] text-muted-foreground capitalize">{review.reviewType.replace(/_/g, " ")}</span>
+                                        <span className="text-[10px] text-muted-foreground">{{ annual: "Annual", quarterly: "Quarterly", probationary: "Probationary", peer_review: "Peer Review", self_assessment: "Self Assessment", project_review: "Project Review" }[review.reviewType] ?? review.reviewType.replace(/_/g, " ")}</span>
                                         {review.projectName && <span className="text-[10px] text-muted-foreground">• {review.projectName}</span>}
                                     </div>
                                 </div>

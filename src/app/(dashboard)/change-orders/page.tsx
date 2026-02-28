@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -14,10 +15,12 @@ import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
+import { useChangeOrders, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { ChangeOrder } from "@/types";
 import {
     Plus, DollarSign, Clock, CheckCircle,
-    AlertTriangle, ArrowUpRight, ArrowDownRight, Calendar, FolderKanban,
+    AlertTriangle, ArrowUpRight, ArrowDownRight, Calendar, FolderKanban, Loader2,
 } from "lucide-react";
 
 const tableColumns: ColumnDef<ChangeOrder>[] = [
@@ -111,8 +114,9 @@ export default function ChangeOrdersPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const { data: sbChangeOrders, isLoading } = useChangeOrders();
 
-    const changeOrders = MOCK_CHANGE_ORDERS;
+    const changeOrders = isSupabaseConfigured && sbChangeOrders ? (sbChangeOrders as unknown as ChangeOrder[]) : MOCK_CHANGE_ORDERS;
 
     const filtered = useMemo(() => {
         let result = changeOrders;
@@ -139,12 +143,23 @@ export default function ChangeOrdersPage() {
         return { totalImpact, approvedImpact, pendingCount, totalScheduleImpact };
     }, [changeOrders]);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="change_orders" action="read">
         <div className="space-y-6">
             <PageHeader title="Change Orders" description="Track and manage post-contract scope modifications">
-                <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" /> New Change Order
-                </Button>
+                <Link href="/change-orders/new">
+                    <Button size="sm">
+                        <Plus className="mr-2 h-4 w-4" /> New Change Order
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -191,6 +206,7 @@ export default function ChangeOrdersPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }
 

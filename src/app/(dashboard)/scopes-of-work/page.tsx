@@ -10,10 +10,13 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { getStatusLabel } from "@/config/ui-variants";
 import {
     FileText, Plus, DollarSign,
-    CheckCircle2, Clock,
+    CheckCircle2, Clock, Loader2,
 } from "lucide-react";
+import { useScopesOfWork, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type SOWStatus = "draft" | "pending_review" | "pending_approval" | "approved" | "active" | "on_hold" | "completed" | "cancelled" | "amended";
 
@@ -45,18 +48,46 @@ export default function ScopesOfWorkPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | SOWStatus>("all");
 
-    const filtered = mockSOWs.filter((s) => {
+    const { data: sbSOWs, isLoading } = useScopesOfWork();
+
+    const sows: SOWItem[] = isSupabaseConfigured && sbSOWs
+        ? sbSOWs.map((s: Record<string, unknown>) => ({
+            id: (s.id as string) ?? "",
+            number: (s.sow_number as string) ?? "",
+            title: (s.title as string) ?? "",
+            project: (s.project_name as string) ?? "",
+            client: (s.client_name as string) ?? "",
+            status: ((s.status as string) ?? "draft") as SOWStatus,
+            totalValue: (s.total_value as number) ?? 0,
+            invoiced: (s.invoiced_amount as number) ?? 0,
+            deliverableCount: (s.deliverable_count as number) ?? 0,
+            completedDeliverables: (s.completed_deliverables as number) ?? 0,
+            effectiveDate: (s.effective_date as string) ?? "",
+            billingType: (s.billing_type as string) ?? "fixed_price",
+        }))
+        : mockSOWs;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = sows.filter((s) => {
         if (statusFilter !== "all" && s.status !== statusFilter) return false;
         if (search && !s.title.toLowerCase().includes(search.toLowerCase()) && !s.number.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
-    const totalActive = mockSOWs.filter((s) => s.status === "active").reduce((sum, s) => sum + s.totalValue, 0);
-    const totalInvoiced = mockSOWs.reduce((sum, s) => sum + s.invoiced, 0);
-    const pendingApproval = mockSOWs.filter((s) => s.status === "pending_approval" || s.status === "pending_review").length;
-    const activeCount = mockSOWs.filter((s) => s.status === "active").length;
+    const totalActive = sows.filter((s) => s.status === "active").reduce((sum, s) => sum + s.totalValue, 0);
+    const totalInvoiced = sows.reduce((sum, s) => sum + s.invoiced, 0);
+    const pendingApproval = sows.filter((s) => s.status === "pending_approval" || s.status === "pending_review").length;
+    const activeCount = sows.filter((s) => s.status === "active").length;
 
     return (
+        <PermissionGate resource="scopes_of_work" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Scopes of Work" description="Manage SOW deliverables, billing, and project scope">
                 <Button>
@@ -75,8 +106,8 @@ export default function ScopesOfWorkPage() {
                 <SearchInput value={search} onValueChange={setSearch} placeholder="Search SOWs..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1">
                     {(["all", "active", "draft", "pending_approval", "completed"] as const).map((f) => (
-                        <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs capitalize">
-                            {f === "all" ? "All" : f.replace("_", " ")}
+                        <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs">
+                            {f === "all" ? "All" : getStatusLabel(f)}
                         </Button>
                     ))}
                 </div>
@@ -94,7 +125,7 @@ export default function ScopesOfWorkPage() {
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="text-xs font-mono text-muted-foreground">{sow.number}</span>
                                             <StatusBadge status={sow.status} className="text-[10px]" />
-                                            <Badge variant="ghost" className="text-[10px] capitalize">{sow.billingType.replace("_", " & ")}</Badge>
+                                            <Badge variant="ghost" className="text-[10px]">{{ fixed: "Fixed", time_materials: "Time & Materials", milestone: "Milestone", retainer: "Retainer" }[sow.billingType] ?? sow.billingType}</Badge>
                                         </div>
                                         <p className="text-sm font-semibold truncate">{sow.title}</p>
                                         <p className="text-xs text-muted-foreground">{sow.client} · {sow.project} · Effective {sow.effectiveDate}</p>
@@ -126,5 +157,6 @@ export default function ScopesOfWorkPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

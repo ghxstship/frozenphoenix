@@ -19,6 +19,7 @@ import {
     Gauge,
     Bell,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";
@@ -77,9 +78,9 @@ const mockSlaMetrics: SlaMetric[] = [
 
 const statusIcon = (status: HealthStatus) => {
     switch (status) {
-        case "healthy": return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
-        case "degraded": return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-        case "down": return <XCircle className="h-4 w-4 text-red-500" />;
+        case "healthy": return <CheckCircle2 className="h-4 w-4 text-success" />;
+        case "degraded": return <AlertTriangle className="h-4 w-4 text-warning" />;
+        case "down": return <XCircle className="h-4 w-4 text-destructive" />;
     }
 };
 
@@ -94,17 +95,17 @@ const statusBadge = (status: HealthStatus) => {
 
 const alertIcon = (severity: AlertSeverity) => {
     switch (severity) {
-        case "info": return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
-        case "warning": return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-        case "critical": return <XCircle className="h-4 w-4 text-red-500" />;
+        case "info": return <CheckCircle2 className="h-4 w-4 text-info" />;
+        case "warning": return <AlertTriangle className="h-4 w-4 text-warning" />;
+        case "critical": return <XCircle className="h-4 w-4 text-destructive" />;
     }
 };
 
 const slaStatusColor = (status: string) => {
     switch (status) {
-        case "on_track": return "text-emerald-500";
-        case "at_risk": return "text-amber-500";
-        case "breached": return "text-red-500";
+        case "on_track": return "text-success";
+        case "at_risk": return "text-warning";
+        case "breached": return "text-destructive";
         default: return "text-muted-foreground";
     }
 };
@@ -116,6 +117,7 @@ export default function SystemHealthPage() {
     const activeAlerts = mockAlerts.filter(a => !a.acknowledged).length;
 
     return (
+        <PermissionGate resource="system_health" action="read">
         <div className="space-y-6" id="main-content">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">System Health</h1>
@@ -272,5 +274,6 @@ export default function SystemHealthPage() {
                 <StatCard title="Triggers" value={157} icon={Zap} description="State + audit" />
             </div>
         </div>
+        </PermissionGate>
     );
 }

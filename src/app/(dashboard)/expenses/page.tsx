@@ -13,8 +13,10 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Receipt, Plus, DollarSign, Calendar,
-    User, CheckCircle2, Clock, Upload,
+    User, CheckCircle2, Clock, Upload, Loader2,
 } from "lucide-react";
+import { useExpenses, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ExpenseStatus = "pending" | "approved" | "rejected" | "reimbursed";
 type ExpenseCategory = "travel" | "equipment" | "meals" | "materials" | "transport" | "software" | "miscellaneous";
@@ -52,17 +54,42 @@ export default function ExpensesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const filtered = mockExpenses.filter((e) => {
+    const { data: sbExpenses, isLoading } = useExpenses();
+
+    const expenses: ExpenseItem[] = isSupabaseConfigured && sbExpenses
+        ? sbExpenses.map((e: Record<string, unknown>) => ({
+            id: (e.id as string) ?? "",
+            description: (e.description as string) ?? "",
+            category: ((e.category as string) ?? "miscellaneous") as ExpenseCategory,
+            amount: (e.amount as number) ?? 0,
+            date: (e.date as string) ?? "",
+            submittedBy: (e.submitted_by as string) ?? "",
+            projectName: (e.project_name as string) ?? "",
+            status: ((e.status as string) ?? "pending") as ExpenseStatus,
+            receiptUrl: (e.receipt_url as string) ?? undefined,
+        }))
+        : mockExpenses;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = expenses.filter((e) => {
         const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase()) || e.submittedBy.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === "all" || e.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
-    const totalSpent = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const pendingAmount = mockExpenses.filter(e => e.status === "pending").reduce((sum, e) => sum + e.amount, 0);
-    const reimbursedAmount = mockExpenses.filter(e => e.status === "reimbursed").reduce((sum, e) => sum + e.amount, 0);
+    const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const pendingAmount = expenses.filter(e => e.status === "pending").reduce((sum, e) => sum + e.amount, 0);
+    const reimbursedAmount = expenses.filter(e => e.status === "reimbursed").reduce((sum, e) => sum + e.amount, 0);
 
     return (
+        <PermissionGate resource="expenses" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Expenses" description="Track and manage expense reports and reimbursements">
                 <Button size="sm"><Plus className="mr-2 h-4 w-4" />Submit Expense</Button>
@@ -72,7 +99,7 @@ export default function ExpensesPage() {
                 <StatCard title="Total Expenses" value={formatCurrency(totalSpent)} icon={DollarSign} />
                 <StatCard title="Pending Approval" value={formatCurrency(pendingAmount)} icon={Clock} />
                 <StatCard title="Reimbursed" value={formatCurrency(reimbursedAmount)} icon={CheckCircle2} />
-                <StatCard title="Submissions" value={mockExpenses.length} icon={Receipt} />
+                <StatCard title="Submissions" value={expenses.length} icon={Receipt} />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -132,5 +159,6 @@ export default function ExpensesPage() {
                 </CardContent></Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

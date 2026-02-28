@@ -15,6 +15,7 @@ import {
     Cpu, Plus, MapPin, Zap, Wifi,
     CheckCircle2, FileText, Shield,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface TechSheetListItem {
     id: string;
@@ -55,6 +56,7 @@ export default function TechSheetsPage() {
     const totalEquipment = mockTechSheets.reduce((sum, ts) => sum + ts.equipmentCount, 0);
 
     return (
+        <PermissionGate resource="tech_sheets" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Tech Sheets" description="Technical riders and equipment specifications for venues and events">
                 <Button><Plus className="mr-2 h-4 w-4" />New Tech Sheet</Button>
@@ -143,5 +145,6 @@ export default function TechSheetsPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

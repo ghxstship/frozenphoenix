@@ -31,20 +31,43 @@
   --muted: 220 14% 96%;
   --muted-foreground: 215 16% 47%;
 
-  --accent: 31 97% 60%;
+  --accent: 31 97% 42%;
   --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 0 84% 47%;
   --destructive-foreground: 0 0% 100%;
 
-  --warning: 38 92% 50%;
+  --warning: 38 92% 38%;
   --warning-foreground: 0 0% 100%;
 
-  --success: 152 69% 40%;
+  --success: 152 69% 32%;
   --success-foreground: 0 0% 100%;
 
-  --info: 199 89% 48%;
+  --info: 199 89% 38%;
   --info-foreground: 0 0% 100%;
+
+  /* Surface Elevation */
+  --surface-elevated: 0 0% 100%;
+  --surface-overlay: 220 30% 10% / 0.5;
+  --surface-sunken: 220 14% 93%;
+  --skeleton: 220 14% 90%;
+
+  /* State Tokens */
+  --disabled-opacity: 0.5;
+  --overlay-opacity: 0.5;
+
+  /* Data Visualization Palette */
+  --chart-1: 220 70% 50%;
+  --chart-2: 262 83% 50%;
+  --chart-3: 31 97% 42%;
+  --chart-4: 152 69% 32%;
+  --chart-5: 0 84% 47%;
+  --chart-6: 199 89% 38%;
+  --chart-7: 340 75% 48%;
+  --chart-8: 45 93% 40%;
+
+  /* Feedback */
+  --star-rating: 45 93% 47%;
 
   --border: 220 13% 91%;
   --input: 220 13% 91%;
@@ -129,6 +152,44 @@
   --sidebar-ring: 220 70% 60%;
   --sidebar-muted: 220 16% 22%;
 
+  --warning: 38 92% 60%;
+  --warning-foreground: 38 100% 10%;
+
+  --success: 152 69% 50%;
+  --success-foreground: 152 100% 10%;
+
+  --info: 199 89% 55%;
+  --info-foreground: 199 100% 10%;
+
+  --accent: 31 97% 55%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Surface Elevation */
+  --surface-elevated: 222 25% 12%;
+  --surface-overlay: 0 0% 100% / 0.08;
+  --surface-sunken: 222 30% 5%;
+  --skeleton: 220 20% 14%;
+
+  /* State Tokens */
+  --disabled-opacity: 0.4;
+  --overlay-opacity: 0.5;
+
+  /* Data Visualization Palette */
+  --chart-1: 220 70% 65%;
+  --chart-2: 262 83% 68%;
+  --chart-3: 31 97% 60%;
+  --chart-4: 152 69% 50%;
+  --chart-5: 0 84% 60%;
+  --chart-6: 199 89% 58%;
+  --chart-7: 340 75% 60%;
+  --chart-8: 45 93% 55%;
+
+  /* Feedback */
+  --star-rating: 45 93% 55%;
+
   --glass-bg: rgba(15, 18, 30, 0.72);
   --glass-border: rgba(255, 255, 255, 0.08);
 }
@@ -168,6 +229,19 @@
   --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
   --color-sidebar-muted: hsl(var(--sidebar-muted));
+  --color-surface-elevated: hsl(var(--surface-elevated));
+  --color-surface-overlay: hsl(var(--surface-overlay));
+  --color-surface-sunken: hsl(var(--surface-sunken));
+  --color-skeleton: hsl(var(--skeleton));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+  --color-chart-7: hsl(var(--chart-7));
+  --color-chart-8: hsl(var(--chart-8));
+  --color-star-rating: hsl(var(--star-rating));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -475,6 +549,56 @@ body:not(.keyboard-navigation) *:focus {
 .ms-4 { margin-inline-start: 1rem; }
 .me-4 { margin-inline-end: 1rem; }
 
+/* ═══════ No-JS Fallback ═══════ */
+/* When JS hasn't run (no .dark/.light class on html), honor system preference */
+@media (prefers-color-scheme: light) {
+  html:not(.dark):not(.light) {
+    color-scheme: light;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  html:not(.dark):not(.light) {
+    color-scheme: dark;
+  }
+}
+
+/* ═══════ Forced Colors Mode (Windows High Contrast) ═══════ */
+@media (forced-colors: active) {
+  * {
+    border-color: CanvasText;
+  }
+
+  .spatial-card {
+    border: 2px solid CanvasText;
+    box-shadow: none;
+  }
+
+  .spatial-card:hover {
+    box-shadow: none;
+    transform: none;
+  }
+
+  .glow-primary {
+    box-shadow: none;
+  }
+
+  .glass {
+    background: Canvas;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ═══════ Theme Transition ═══════ */
+/* Smooth color transition when toggling themes (applied via JS after initial paint) */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, box-shadow 200ms ease !important;
+  transition-delay: 0s !important;
+}
+
 /* ═══════ Print Styles ═══════ */
 
 @media print {
@@ -483,8 +607,10 @@ body:not(.keyboard-navigation) *:focus {
   }
   
   body {
-    background: white !important;
-    color: black !important;
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   
   a {

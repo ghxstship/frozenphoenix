@@ -8,14 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
+import { getStatusLabel } from "@/config/ui-variants";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
     FileText, Plus, Globe, Lock,
     Users, Star, FolderOpen,
     BookOpen, StickyNote, FileCode, Presentation,
     ScrollText, LayoutTemplate, Clock, Eye,
-    MessageSquare, Pencil,
+    MessageSquare, Pencil, Loader2,
 } from "lucide-react";
+import { useDocuments, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type DocType = "doc" | "wiki" | "meeting_notes" | "specification" | "proposal_doc" | "sow" | "template";
 type DocStatus = "draft" | "pending_review" | "published" | "archived";
@@ -79,7 +83,41 @@ export default function DocumentsPage() {
     const [typeFilter, setTypeFilter] = useState<"all" | DocType>("all");
     const [statusFilter, setStatusFilter] = useState<"all" | DocStatus>("all");
 
-    const filtered = mockDocs.filter((d) => {
+    const { data: sbDocs, isLoading } = useDocuments();
+
+    const docs: DocItem[] = isSupabaseConfigured && sbDocs
+        ? sbDocs.map((d: Record<string, unknown>) => ({
+            id: (d.id as string) ?? "",
+            title: (d.title as string) ?? "",
+            icon: (d.icon as string) ?? null,
+            documentType: ((d.document_type as string) ?? "doc") as DocType,
+            status: ((d.status as string) ?? "draft") as DocStatus,
+            projectName: (d.project_name as string) ?? null,
+            ownerName: (d.owner_name as string) ?? "",
+            lastEditedBy: (d.last_edited_by as string) ?? "",
+            updatedAt: (d.updated_at as string) ?? "",
+            createdAt: (d.created_at as string) ?? "",
+            isPublic: (d.is_public as boolean) ?? false,
+            canComment: (d.can_comment as boolean) ?? false,
+            canEdit: (d.can_edit as boolean) ?? false,
+            sharedWith: (d.shared_with as number) ?? 0,
+            starred: (d.starred as boolean) ?? false,
+            commentCount: (d.comment_count as number) ?? 0,
+            wordCount: (d.word_count as number) ?? 0,
+            coverImageUrl: (d.cover_image_url as string) ?? null,
+            parentTitle: (d.parent_title as string) ?? null,
+        }))
+        : mockDocs;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = docs.filter((d) => {
         if (typeFilter !== "all" && d.documentType !== typeFilter) return false;
         if (statusFilter !== "all" && d.status !== statusFilter) return false;
         if (search && !d.title.toLowerCase().includes(search.toLowerCase()) && !(d.projectName?.toLowerCase().includes(search.toLowerCase()))) return false;
@@ -122,8 +160,8 @@ export default function DocumentsPage() {
                 </div>
                 <div className="flex gap-1">
                     {(["all", "draft", "published", "pending_review"] as const).map((s) => (
-                        <Button key={s} variant={statusFilter === s ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(s)} className="text-xs capitalize">
-                            {s === "all" ? "All" : s.replace("_", " ")}
+                        <Button key={s} variant={statusFilter === s ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(s)} className="text-xs">
+                            {s === "all" ? "All" : getStatusLabel(s)}
                         </Button>
                     ))}
                 </div>
@@ -132,9 +170,9 @@ export default function DocumentsPage() {
             {/* Starred Docs */}
             {starred.length > 0 && (
                 <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <OverlineText as="h3" className="flex items-center gap-1">
                         <Star className="h-3 w-3" /> Starred
-                    </h3>
+                    </OverlineText>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {starred.map((doc) => <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />)}
                     </div>
@@ -144,9 +182,9 @@ export default function DocumentsPage() {
             {/* Recent Docs */}
             <div className="space-y-2">
                 {starred.length > 0 && (
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <OverlineText as="h3" className="flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Recent
-                    </h3>
+                    </OverlineText>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {recent.map((doc) => <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />)}
@@ -167,6 +205,7 @@ function DocCard({ doc, formatTime }: { doc: DocItem; formatTime: (d: string) =>
     const TypeIcon = DOC_TYPE_ICONS[doc.documentType];
 
     return (
+        <PermissionGate resource="documents" action="read">
         <Card className="hover:bg-secondary/30 transition-colors cursor-pointer group">
             <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -183,7 +222,7 @@ function DocCard({ doc, formatTime }: { doc: DocItem; formatTime: (d: string) =>
                             )}
                         </div>
                     </div>
-                    {doc.starred && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 shrink-0" />}
+                    {doc.starred && <Star className="h-3.5 w-3.5 text-star-rating fill-star-rating shrink-0" />}
                 </div>
 
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -224,5 +263,6 @@ function DocCard({ doc, formatTime }: { doc: DocItem; formatTime: (d: string) =>
                 </div>
             </CardContent>
         </Card>
+        </PermissionGate>
     );
 }

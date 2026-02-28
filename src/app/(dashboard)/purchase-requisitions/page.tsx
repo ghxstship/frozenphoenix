@@ -10,11 +10,13 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    ClipboardList, Plus, CheckCircle2, Clock, AlertTriangle,
+    ClipboardList, Plus, CheckCircle2, Clock, AlertTriangle, Loader2,
 } from "lucide-react";
 import { MOCK_PURCHASE_REQUISITIONS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
-import type { RequisitionStatus } from "@/types/governance";
+import type { PurchaseRequisition, RequisitionStatus } from "@/types/governance";
+import { usePurchaseRequisitions, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 const REQ_STATUSES: RequisitionStatus[] = [
     "draft", "pending_approval", "approved", "rejected", "converted_to_po", "cancelled",
@@ -28,7 +30,32 @@ export default function PurchaseRequisitionsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const reqs = MOCK_PURCHASE_REQUISITIONS;
+    const { data: sbReqs, isLoading } = usePurchaseRequisitions();
+
+    const reqs: PurchaseRequisition[] = isSupabaseConfigured && sbReqs
+        ? sbReqs.map((r: Record<string, unknown>) => ({
+            id: (r.id as string) ?? "",
+            number: (r.number as string) ?? "",
+            title: (r.title as string) ?? "",
+            status: ((r.status as string) ?? "draft") as RequisitionStatus,
+            urgency: (r.urgency as string) ?? "normal",
+            estimated_cost: (r.estimated_cost as number) ?? 0,
+            justification: (r.justification as string) ?? "",
+            needed_by: (r.needed_by as string) ?? undefined,
+            line_items: (r.line_items as unknown[]) ?? [],
+            requested_by: (r.requested_by as string) ?? "",
+            requested_at: (r.requested_at as string) ?? "",
+            department: (r.department as string) ?? "",
+        } as PurchaseRequisition))
+        : MOCK_PURCHASE_REQUISITIONS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = reqs.filter(r => {
         const matchesSearch = !search || r.title.toLowerCase().includes(search.toLowerCase()) || r.number.toLowerCase().includes(search.toLowerCase());
@@ -41,6 +68,7 @@ export default function PurchaseRequisitionsPage() {
     const totalEstimated = reqs.reduce((sum, r) => sum + r.estimated_cost, 0);
 
     return (
+        <PermissionGate resource="purchase_requisitions" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Purchase Requisitions" description="Pre-PO approval workflow — request, justify, and approve purchases before PO issuance">
                 <Button size="sm"><Plus className="h-4 w-4" /> New Requisition</Button>
@@ -103,5 +131,6 @@ export default function PurchaseRequisitionsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

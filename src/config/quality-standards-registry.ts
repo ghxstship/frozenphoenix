@@ -476,17 +476,27 @@ const s14: QualityCriterion[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
+// §15 — CASING NORMALIZATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+const s15: QualityCriterion[] = [
+  c('§15-1-01',15,1,'No CSS capitalize/uppercase in pages','Page files must not use CSS text-transform (capitalize, uppercase) to derive display labels — use SSOT labels or OverlineText component','components','HIGH','automated',{ac:'grep -rn "className=\\"[^\\"]*capitalize\\|className=\\"[^\\"]*uppercase" src/app --include="*.tsx" | grep -v overline-text | wc -l | xargs test 0 -eq',tg:['casing','ssot','css']}),
+  c('§15-1-02',15,1,'No inline runtime casing transforms','No .toUpperCase(), .charAt(0).toUpperCase()+.slice(1), or regex Title Case on domain labels — use SSOT label maps','components','HIGH','automated',{ac:'grep -rn "\\.toUpperCase()\\|\\.charAt(0)\\.toUpperCase()" src/app --include="*.tsx" | grep -v "// casing-ok" | wc -l | xargs test 0 -eq',tg:['casing','ssot','transforms']}),
+  c('§15-1-03',15,1,'SSOT label coverage','All domain enum values rendered in UI must resolve through config label maps (domain-config, production-config, ui-variants) — no raw snake_case/camelCase keys displayed','components','MEDIUM','semi-automated',{at:engA,tg:['casing','ssot','labels']}),
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
 // AGGREGATION & EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const allCriteria: ReadonlyArray<QualityCriterion> = [
   ...s1, ...s2, ...s3, ...s4, ...s5, ...s6, ...s7,
-  ...s8, ...s9, ...s10, ...s11, ...s12, ...s13, ...s14,
+  ...s8, ...s9, ...s10, ...s11, ...s12, ...s13, ...s14, ...s15,
 ] as const;
 
 export const criteriaBySection: ReadonlyMap<number, ReadonlyArray<QualityCriterion>> = new Map([
   [1, s1], [2, s2], [3, s3], [4, s4], [5, s5], [6, s6], [7, s7],
-  [8, s8], [9, s9], [10, s10], [11, s11], [12, s12], [13, s13], [14, s14],
+  [8, s8], [9, s9], [10, s10], [11, s11], [12, s12], [13, s13], [14, s14], [15, s15],
 ]);
 
 export const criteriaByCategory: ReadonlyMap<string, ReadonlyArray<QualityCriterion>> = (() => {

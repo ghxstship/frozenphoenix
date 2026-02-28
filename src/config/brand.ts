@@ -1,35 +1,23 @@
 /* ═══════════════════════════════════════════════════════════════
-   BRAND CONFIGURATION — Single Source of Truth for White-Label
+   BRAND CONFIGURATION — DEPRECATED
+   ═══════════════════════════════════════════════════════════════
+   @deprecated Import from "@/config/brands" instead.
+   This file is a backward-compatible shim. It re-exports
+   the active brand from the BRAND_REGISTRY so existing
+   consumers continue to work during migration.
    ═══════════════════════════════════════════════════════════════ */
 
-export interface BrandConfig {
-    name: string;
-    shortName: string;
-    tagline: string;
-    logo: {
-        icon: string;
-        wordmark?: string;
-    };
-    support: {
-        email: string;
-        url: string;
-    };
-}
+import { getActiveBrand } from "@/config/brands";
+import type { BrandConfig as FullBrandConfig } from "@/config/brands";
 
 /**
- * Default brand configuration.
- * Override via environment variables or tenant-specific config.
+ * @deprecated Use `BrandConfig` from "@/config/brands" instead.
  */
-export const brandConfig: BrandConfig = {
-    name: process.env.NEXT_PUBLIC_BRAND_NAME || "Playbook",
-    shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME || "PB",
-    tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE || "Production Command Center",
-    logo: {
-        icon: process.env.NEXT_PUBLIC_BRAND_LOGO_ICON || "/logo-icon.svg",
-        wordmark: process.env.NEXT_PUBLIC_BRAND_LOGO_WORDMARK || undefined,
-    },
-    support: {
-        email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@playbook.production",
-        url: process.env.NEXT_PUBLIC_SUPPORT_URL || "https://playbook.production/support",
-    },
-};
+export type BrandConfig = FullBrandConfig;
+
+const _active = getActiveBrand();
+
+/**
+ * @deprecated Use `getActiveBrand()` from "@/config/brands" instead.
+ */
+export const brandConfig = _active;

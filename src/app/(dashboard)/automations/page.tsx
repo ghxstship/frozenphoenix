@@ -13,7 +13,10 @@ import { formatDate } from "@/lib/utils";
 import {
     Zap, Plus, Play, Pause, ArrowRight,
     Mail, Bell, CheckSquare, GitBranch, Clock, Activity,
+    Loader2,
 } from "lucide-react";
+import { useAutomations, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 type AutomationsTab = "builder" | "logs";
 type TriggerType = "created" | "updated" | "status_changed" | "due_date_approaching" | "overdue" | "scheduled";
@@ -103,7 +106,32 @@ export default function AutomationsPage() {
     const [activeTab, setActiveTab] = useState<AutomationsTab>("builder");
     const [logFilter, setLogFilter] = useState<string>("all");
 
-    const filtered = mockAutomations.filter((a) => {
+    const { data: sbAutomations, isLoading } = useAutomations();
+
+    const automations: AutomationListItem[] = isSupabaseConfigured && sbAutomations
+        ? sbAutomations.map((a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            name: (a.name as string) ?? "",
+            description: (a.description as string) ?? "",
+            entityType: (a.entity_type as string) ?? "",
+            trigger: ((a.trigger_type as string) ?? "created") as TriggerType,
+            actions: ((a.actions as string[]) ?? []) as ActionType[],
+            status: ((a.status as string) ?? "draft") as WorkflowStatusType,
+            executionCount: (a.execution_count as number) ?? 0,
+            lastExecuted: (a.last_executed_at as string) ?? "",
+            createdBy: (a.created_by as string) ?? "",
+        }))
+        : mockAutomations;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = automations.filter((a) => {
         const matchesSearch =
             a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             a.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -118,18 +146,19 @@ export default function AutomationsPage() {
         return matchesLogFilter && matchesSearch;
     });
 
-    const totalExecutions = mockAutomations.reduce((sum, a) => sum + a.executionCount, 0);
+    const totalExecutions = automations.reduce((sum, a) => sum + a.executionCount, 0);
 
     return (
+        <PermissionGate resource="automations" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Automation Builder" description="Configure trigger-action automations for workflows, notifications, and business logic">
                 <Button><Plus className="mr-2 h-4 w-4" />New Automation</Button>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Automations" value={mockAutomations.length} icon={Zap} />
-                <StatCard title="Active" value={mockAutomations.filter(a => a.status === "active").length} icon={Play} />
-                <StatCard title="Paused" value={mockAutomations.filter(a => a.status === "paused").length} icon={Pause} />
+                <StatCard title="Total Automations" value={automations.length} icon={Zap} />
+                <StatCard title="Active" value={automations.filter(a => a.status === "active").length} icon={Play} />
+                <StatCard title="Paused" value={automations.filter(a => a.status === "paused").length} icon={Pause} />
                 <StatCard title="Total Executions" value={totalExecutions} icon={Activity} />
             </div>
 
@@ -337,5 +366,6 @@ export default function AutomationsPage() {
                 </>
             )}
         </div>
+        </PermissionGate>
     );
 }

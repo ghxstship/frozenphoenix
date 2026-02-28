@@ -91,7 +91,11 @@ interface StatusFieldProps {
 
 export function StatusField({ value, variantMap, labelMap, size = "sm" }: StatusFieldProps) {
     const variant = variantMap?.[value] ?? "ghost";
-    const label = labelMap?.[value] ?? value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const explicit = labelMap?.[value];
+    if (!explicit && process.env.NODE_ENV === "development") {
+        console.warn(`[casing] StatusField missing labelMap entry for "${value}". Pass an explicit labelMap.`);
+    }
+    const label = explicit ?? value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
     return (
         <Badge variant={variant} className={cn(size === "sm" && "text-xs px-2 py-0.5")}>

@@ -15,6 +15,7 @@ import { MOCK_EVENTS, MOCK_LOCATIONS, MOCK_ACTIVATIONS } from "@/lib/demo-data-p
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectStatus, ProjectPhase } from "@/types";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
+import { getStatusLabel } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
 import {
     Plus,
@@ -26,6 +27,7 @@ import {
     Play,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 const STATUS_VARIANTS: Record<string, string> = {
     scheduled: "secondary",
@@ -106,6 +108,7 @@ export default function EventsPage() {
     const statuses = ["all", "scheduled", "confirmed", "in_progress", "completed"];
 
     return (
+        <PermissionGate resource="events" action="read">
         <PageShell
             title="Events"
             description="Manage shows, rehearsals, and scheduled activities"
@@ -128,9 +131,8 @@ export default function EventsPage() {
                             variant={statusFilter === status ? "default" : "outline"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize"
                         >
-                            {status.replace("_", " ")}
+                            {status === "all" ? "All" : getStatusLabel(status)}
                         </Button>
                     ))}
                 </div>
@@ -231,5 +233,6 @@ export default function EventsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

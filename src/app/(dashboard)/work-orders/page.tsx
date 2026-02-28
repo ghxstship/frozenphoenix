@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,9 +15,11 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     ClipboardList, Plus, Clock, CheckCircle2,
     Play, Users, Gavel, Calendar,
-    LayoutGrid, Table2,
+    LayoutGrid, Table2, Loader2,
 } from "lucide-react";
 import { MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
+import { useWorkOrders, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { WorkOrderStatus, WorkOrderPriority } from "@/types/vendor-lifecycle";
 
 type ViewMode = "cards" | "table";
@@ -35,8 +38,9 @@ export default function WorkOrdersPage() {
     const [viewMode, setViewMode] = useState<ViewMode>("cards");
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbWOs, isLoading } = useWorkOrders();
 
-    const workOrders = MOCK_WORK_ORDERS;
+    const workOrders = isSupabaseConfigured && sbWOs ? (sbWOs as unknown as typeof MOCK_WORK_ORDERS) : MOCK_WORK_ORDERS;
     const filtered = workOrders.filter(wo => {
         const matchesSearch = !search || wo.title.toLowerCase().includes(search.toLowerCase()) || wo.number.toLowerCase().includes(search.toLowerCase()) || (wo.vendorName || "").toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === "all" || wo.status === statusFilter;
@@ -48,7 +52,16 @@ export default function WorkOrdersPage() {
     const completedWOs = workOrders.filter(wo => ["completed", "verified", "invoiced"].includes(wo.status));
     const totalEstimated = workOrders.reduce((sum, wo) => sum + (wo.estimatedCost || 0), 0);
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="work_orders" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Work Orders" description="Dispatch, assign, and track all vendor and crew work orders across projects">
                 <div className="flex items-center gap-2">
@@ -62,7 +75,7 @@ export default function WorkOrdersPage() {
                             </button>
                         ))}
                     </div>
-                    <Button size="sm"><Plus className="h-4 w-4" /> New Work Order</Button>
+                    <Link href="/work-orders/new"><Button size="sm"><Plus className="h-4 w-4" /> New Work Order</Button></Link>
                 </div>
             </PageHeader>
 
@@ -187,5 +200,6 @@ export default function WorkOrdersPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

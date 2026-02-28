@@ -240,7 +240,7 @@ export function CommandBar({ className }: CommandBarProps) {
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
+                className="fixed inset-0 z-50 bg-foreground/50 backdrop-blur-sm animate-fade-in"
                 onClick={() => setOpen(false)}
                 aria-hidden="true"
             />

@@ -8,12 +8,15 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import {
-    AlertTriangle, CheckCircle2, ShieldAlert,
+    AlertTriangle, CheckCircle2, ShieldAlert, Loader2,
 } from "lucide-react";
 import { MOCK_VENDOR_RISK_SCORES } from "@/lib/demo-data-governance";
+import { useRiskAssessments, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { VendorRiskLevel } from "@/types/governance";
+import { RISK_LEVEL_MAP } from "@/config/domain-config";
 
 const vendorNames: Record<string, string> = {
     v1: "SteelCraft Fabrication", v2: "EventTech Rentals", v3: "Lumina AV Solutions",
@@ -39,8 +42,9 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 export default function VendorRiskPage() {
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<string>("all");
+    const { data: sbScores, isLoading } = useRiskAssessments();
 
-    const scores = MOCK_VENDOR_RISK_SCORES;
+    const scores = isSupabaseConfigured && sbScores ? (sbScores as unknown as typeof MOCK_VENDOR_RISK_SCORES) : MOCK_VENDOR_RISK_SCORES;
 
     const filtered = scores.filter(s => {
         const vendorName = vendorNames[s.vendor_id] || s.vendor_id;
@@ -53,7 +57,16 @@ export default function VendorRiskPage() {
     const medRisk = scores.filter(s => s.risk_level === "medium").length;
     const highCritical = scores.filter(s => s.risk_level === "high" || s.risk_level === "critical").length;
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="vendor_risk" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Vendor Risk Scoring" description="Composite risk scoring across financial, compliance, performance, and operational dimensions" />
 
@@ -85,7 +98,7 @@ export default function VendorRiskPage() {
                                 </div>
                                 <div className="text-right">
                                     <div className="text-2xl font-bold">{s.overall_score}</div>
-                                    <Badge variant={RISK_VARIANTS[s.risk_level]} className="text-[9px]">{s.risk_level.toUpperCase()}</Badge>
+                                    <Badge variant={RISK_VARIANTS[s.risk_level]} className="text-[9px]">{RISK_LEVEL_MAP[s.risk_level as keyof typeof RISK_LEVEL_MAP]?.label ?? s.risk_level}</Badge>
                                 </div>
                             </div>
                         </CardHeader>
@@ -117,5 +130,6 @@ export default function VendorRiskPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

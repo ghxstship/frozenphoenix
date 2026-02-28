@@ -11,6 +11,7 @@ import {
     CreditCard, Plus, Copy, Pencil,
     DollarSign, Users,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface RateCardItem {
     id: string;
@@ -71,6 +72,7 @@ export default function RateCardsPage() {
     );
 
     return (
+        <PermissionGate resource="rate_cards" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Rate Cards" description="Manage billing rates by role for different clients and scenarios">
                 <Button>
@@ -180,5 +182,6 @@ export default function RateCardsPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

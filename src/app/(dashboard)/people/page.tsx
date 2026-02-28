@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MOCK_STAKEHOLDERS } from "@/lib/demo-data";
-import { Plus, Users, Building2, Wrench, UserCircle, Mail, Phone } from "lucide-react";
+import { usePeople, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
+import { Plus, Users, Building2, Wrench, UserCircle, Mail, Phone, Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { StakeholderType } from "@/types";
 
@@ -19,17 +22,29 @@ const typeConfig: Record<StakeholderType, { label: string; variant: "default" | 
 };
 
 export default function PeoplePage() {
+    const { data: sbPeople, isLoading } = usePeople();
+    const stakeholders = isSupabaseConfigured && sbPeople ? (sbPeople as unknown as typeof MOCK_STAKEHOLDERS) : MOCK_STAKEHOLDERS;
+
     const grouped = {
-        internal: MOCK_STAKEHOLDERS.filter(s => s.type === "internal"),
-        client: MOCK_STAKEHOLDERS.filter(s => s.type === "client"),
-        freelance: MOCK_STAKEHOLDERS.filter(s => s.type === "freelance"),
-        subcontractor: MOCK_STAKEHOLDERS.filter(s => s.type === "subcontractor"),
+        internal: stakeholders.filter(s => s.type === "internal"),
+        client: stakeholders.filter(s => s.type === "client"),
+        freelance: stakeholders.filter(s => s.type === "freelance"),
+        subcontractor: stakeholders.filter(s => s.type === "subcontractor"),
     };
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="people" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Stakeholder Matrix" description="CRM for Internal Team, Clients, Freelance Crew, and Subcontractors">
-                <Button size="sm"><Plus className="h-4 w-4" /> Add Contact</Button>
+                <Link href="/people/new"><Button size="sm"><Plus className="h-4 w-4" /> Add Contact</Button></Link>
             </PageHeader>
 
             {/* Type filters */}
@@ -45,7 +60,7 @@ export default function PeoplePage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {MOCK_STAKEHOLDERS.map((person, i) => {
+                {stakeholders.map((person, i) => {
                     const config = typeConfig[person.type];
                     return (
                         <StaggerItem key={person.id} index={i} stagger="relaxed">
@@ -75,5 +90,6 @@ export default function PeoplePage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

@@ -163,7 +163,7 @@ export default function ProjectDetailPage() {
             subtitle={project.client}
             status={project.status}
             avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-white">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     {project.name.charAt(0)}
                 </div>
             }

@@ -119,7 +119,7 @@ export function ProgressBar({
                         labelPosition === "inside" &&
                         size !== "xs" &&
                         size !== "sm" && (
-                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
                                 {label}
                             </span>
                         )}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { useBrandKits, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
@@ -25,6 +26,7 @@ import {
     ArrowRight,
     FileText,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface BrandKit {
     id: string;
@@ -135,6 +137,7 @@ export default function BrandKitPage() {
     const wizardSteps = ["Client", "Colors", "Typography", "Review"];
 
     return (
+        <PermissionGate resource="brand_kit" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Brand Kit Library" description="Client brand guidelines, colors, and assets for consistent deliverables">
                 <Button size="sm" onClick={() => { setShowWizard(true); setWizardStep(0); }}>
@@ -218,7 +221,7 @@ export default function BrandKitPage() {
                                 <p className="text-sm font-medium">Review Brand Kit</p>
                                 <div className="h-16 rounded-lg overflow-hidden" style={{ background: `linear-gradient(135deg, ${wizardData.primaryColor} 0%, ${wizardData.secondaryColor} 100%)` }}>
                                     <div className="h-full flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-white">{wizardData.clientName.charAt(0) || "?"}</span>
+                                        <span className="text-2xl font-bold text-primary-foreground">{wizardData.clientName.charAt(0) || "?"}</span>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
@@ -258,8 +261,8 @@ export default function BrandKitPage() {
                                 }}
                             >
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-white">{kit.clientName.charAt(0)}</span>
+                                    <div className="h-16 w-16 rounded-2xl bg-foreground/20 backdrop-blur-sm flex items-center justify-center">
+                                        <span className="text-2xl font-bold text-primary-foreground">{kit.clientName.charAt(0)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -278,10 +281,10 @@ export default function BrandKitPage() {
 
                                 <div className="space-y-4">
                                     <div>
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                                        <OverlineText className="mb-2 flex items-center gap-1">
                                             <Palette className="h-3 w-3" />
                                             Color Palette
-                                        </p>
+                                        </OverlineText>
                                         <div className="flex gap-2">
                                             {[
                                                 { label: "Primary", color: kit.primaryColor },
@@ -299,7 +302,7 @@ export default function BrandKitPage() {
                                                     >
                                                         {copiedColor === c.color && (
                                                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                                <CheckCircle2 className="h-4 w-4 text-white" />
+                                                                <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
                                                             </div>
                                                         )}
                                                     </div>
@@ -311,10 +314,10 @@ export default function BrandKitPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                                        <OverlineText className="mb-2 flex items-center gap-1">
                                             <Type className="h-3 w-3" />
                                             Typography
-                                        </p>
+                                        </OverlineText>
                                         <div className="p-3 rounded-lg bg-secondary/50">
                                             <p className="text-lg font-bold" style={{ fontFamily: kit.fontFamily }}>
                                                 {kit.fontFamily}
@@ -356,5 +359,6 @@ export default function BrandKitPage() {
                 </Card>
             </div>
         </div>
+        </PermissionGate>
     );
 }

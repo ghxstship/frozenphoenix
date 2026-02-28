@@ -21,6 +21,7 @@ import {
     CheckSquare,
     ShieldCheck,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type EventType = "project" | "task" | "approval" | "milestone";
 
@@ -177,6 +178,7 @@ export default function CalendarPage() {
     }
 
     return (
+        <PermissionGate resource="calendar" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Calendar" description="Unified view of projects, tasks, and milestones">
                 <div className="flex items-center gap-2">
@@ -251,7 +253,7 @@ export default function CalendarPage() {
                                                     return (
                                                         <div
                                                             key={event.id}
-                                                            className={`text-[10px] px-1.5 py-0.5 rounded truncate ${config.color} text-white`}
+                                                            className={`text-[10px] px-1.5 py-0.5 rounded truncate ${config.color} text-primary-foreground`}
                                                         >
                                                             {event.title}
                                                         </div>
@@ -274,7 +276,7 @@ export default function CalendarPage() {
                         {(Object.entries(eventTypeConfig) as [EventType, typeof eventTypeConfig[EventType]][]).map(([type, config]) => (
                             <div key={type} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <div className={`h-2.5 w-2.5 rounded ${config.color}`} />
-                                <span className="capitalize">{type}</span>
+                                <span>{{ project: "Project", task: "Task", approval: "Approval", milestone: "Milestone" }[type]}</span>
                             </div>
                         ))}
                     </div>
@@ -299,7 +301,7 @@ export default function CalendarPage() {
                                     return (
                                         <div key={event.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
                                             <div className={`h-8 w-8 rounded-lg ${config.color} flex items-center justify-center`}>
-                                                <Icon className="h-4 w-4 text-white" />
+                                                <Icon className="h-4 w-4 text-primary-foreground" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-medium truncate">{event.title}</p>
@@ -344,5 +346,6 @@ export default function CalendarPage() {
                 </Card>
             </div>
         </div>
+        </PermissionGate>
     );
 }

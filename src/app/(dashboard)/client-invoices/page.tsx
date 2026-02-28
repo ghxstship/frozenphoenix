@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -8,9 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency } from "@/lib/utils";
+import { useClientInvoices, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import {
     FileText, Plus, DollarSign,
-    Send, Eye, AlertTriangle,
+    Send, Eye, AlertTriangle, Loader2,
 } from "lucide-react";
 
 type InvoiceStatus = "draft" | "pending_approval" | "approved" | "sent" | "viewed" | "partial" | "paid" | "overdue" | "disputed" | "void";
@@ -44,24 +47,55 @@ const mockInvoices: ClientInvoice[] = [
 export default function ClientInvoicesPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | InvoiceStatus>("all");
+    const { data: sbInvoices, isLoading } = useClientInvoices(statusFilter !== "all" ? statusFilter : undefined);
 
-    const filtered = mockInvoices.filter((inv) => {
+    const invoices: ClientInvoice[] = isSupabaseConfigured && sbInvoices
+        ? sbInvoices.map((i: Record<string, unknown>) => ({
+            id: String(i.id),
+            number: String(i.number || ""),
+            title: String(i.title || ""),
+            project: String((i.projects as Record<string, unknown>)?.name || ""),
+            client: String(i.client_name || ""),
+            status: String(i.status || "draft") as InvoiceStatus,
+            invoiceDate: String(i.invoice_date || ""),
+            dueDate: String(i.due_date || ""),
+            subtotal: Number(i.subtotal || 0),
+            tax: Number(i.tax || 0),
+            total: Number(i.total || 0),
+            amountPaid: Number(i.amount_paid || 0),
+            lineItemCount: Number(i.line_item_count || 0),
+            sowNumber: i.sow_number ? String(i.sow_number) : null,
+        }))
+        : mockInvoices;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = invoices.filter((inv) => {
         if (statusFilter !== "all" && inv.status !== statusFilter) return false;
         if (search && !inv.title.toLowerCase().includes(search.toLowerCase()) && !inv.number.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
-    const totalOutstanding = mockInvoices.filter((i) => ["sent", "viewed", "overdue", "partial"].includes(i.status)).reduce((s, i) => s + i.total - i.amountPaid, 0);
-    const totalOverdue = mockInvoices.filter((i) => i.status === "overdue").reduce((s, i) => s + i.total - i.amountPaid, 0);
-    const totalPaidThisMonth = mockInvoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amountPaid, 0);
-    const draftCount = mockInvoices.filter((i) => i.status === "draft").length;
+    const totalOutstanding = invoices.filter((i) => ["sent", "viewed", "overdue", "partial"].includes(i.status)).reduce((s, i) => s + i.total - i.amountPaid, 0);
+    const totalOverdue = invoices.filter((i) => i.status === "overdue").reduce((s, i) => s + i.total - i.amountPaid, 0);
+    const totalPaidThisMonth = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amountPaid, 0);
+    const draftCount = invoices.filter((i) => i.status === "draft").length;
 
     return (
+        <PermissionGate resource="client_invoices" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Client Invoices" description="Create, send, and track client-facing invoices">
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" /> New Invoice
-                </Button>
+                <Link href="/client-invoices/new">
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" /> New Invoice
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -75,8 +109,8 @@ export default function ClientInvoicesPage() {
                 <SearchInput value={search} onValueChange={setSearch} placeholder="Search invoices..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1 flex-wrap">
                     {(["all", "draft", "sent", "overdue", "paid"] as const).map((f) => (
-                        <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs capitalize">
-                            {f}
+                        <Button key={f} variant={statusFilter === f ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(f)} className="text-xs">
+                            {{ all: "All", draft: "Draft", sent: "Sent", overdue: "Overdue", paid: "Paid" }[f]}
                         </Button>
                     ))}
                 </div>
@@ -128,5 +162,6 @@ export default function ClientInvoicesPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

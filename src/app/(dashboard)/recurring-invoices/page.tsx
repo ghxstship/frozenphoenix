@@ -13,6 +13,7 @@ import {
     RefreshCw, Plus, DollarSign,
     Calendar, Pause, Play,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type RecurringStatus = "active" | "paused" | "completed" | "cancelled";
 type Frequency = "weekly" | "biweekly" | "monthly" | "quarterly" | "annually";
@@ -63,6 +64,7 @@ export default function RecurringInvoicesPage() {
     const activeCount = mockRecurring.filter((r) => r.status === "active").length;
 
     return (
+        <PermissionGate resource="recurring_invoices" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Recurring Invoices" description="Automate invoice generation on a schedule">
                 <Button>
@@ -122,5 +124,6 @@ export default function RecurringInvoicesPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

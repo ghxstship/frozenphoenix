@@ -162,7 +162,7 @@ export default function AuditLogPage() {
                                         size="sm"
                                         onClick={() => setEventFilter(f)}
                                     >
-                                        {f.charAt(0).toUpperCase() + f.slice(1)}
+                                        {f === "all" ? "All" : f === "success" ? "Success" : "Failure"}
                                     </Button>
                                 ))}
                             </div>

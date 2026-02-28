@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { TECH_SHEET_STATUS_MAP } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
 import {
@@ -120,14 +121,14 @@ export default function TechSheetDetailPage({ params }: { params: Promise<{ id: 
                         <CardContent>
                             {categories.map((cat) => (
                                 <div key={cat} className="mb-4 last:mb-0">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                                    <OverlineText className="mb-2 flex items-center gap-1">
                                         {cat === "Video" && <Monitor className="h-3 w-3" />}
                                         {cat === "Lighting" && <Lightbulb className="h-3 w-3" />}
                                         {cat === "Audio" && <Speaker className="h-3 w-3" />}
                                         {cat === "Rigging" && <Server className="h-3 w-3" />}
                                         {cat === "Network" && <Wifi className="h-3 w-3" />}
                                         {cat}
-                                    </p>
+                                    </OverlineText>
                                     <div className="space-y-2">
                                         {mockEquipment.filter(e => e.category === cat).map((item) => (
                                             <div key={item.id} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20">

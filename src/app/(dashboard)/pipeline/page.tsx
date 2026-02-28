@@ -14,6 +14,7 @@ import type { Deal, DealStage } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, DateField, ProgressField } from "@/components/data-view/field-renderers";
 import { DEAL_STAGE_MAP as DEAL_STAGE_CONFIG } from "@/config/domain-config";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ViewMode = "board" | "table";
 
@@ -120,6 +121,7 @@ export default function PipelinePage() {
     }));
 
     return (
+        <PermissionGate resource="pipeline" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Pipeline" description="Manage your sales pipeline and deal flow">
                 <div className="flex items-center gap-2">
@@ -252,5 +254,6 @@ export default function PipelinePage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

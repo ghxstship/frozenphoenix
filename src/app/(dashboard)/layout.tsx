@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layouts/sidebar";
 import { Topbar } from "@/components/layouts/topbar";
 import { SkipLinks } from "@/components/accessibility";
 import { useSidebar, SIDEBAR_WIDTH } from "@/hooks/use-sidebar";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export default function DashboardLayout({
     children,
@@ -37,7 +38,9 @@ export default function DashboardLayout({
                         className="p-4 lg:p-6"
                         tabIndex={-1}
                     >
-                        {children}
+                        <ErrorBoundary level="page">
+                            {children}
+                        </ErrorBoundary>
                     </main>
                 </div>
             </div>

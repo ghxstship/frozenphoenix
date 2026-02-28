@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
@@ -14,6 +15,7 @@ import {
     ArrowRight, Copy, Trash2, CheckCircle2, BarChart3,
     GitCompare,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
@@ -162,6 +164,7 @@ export default function ScenariosPage() {
     const bestMargin = Math.max(...mockScenarios.flatMap((s) => s.outcomes.filter((o) => o.metric.includes("Margin")).map((o) => o.projectedValue)));
 
     return (
+        <PermissionGate resource="scenarios" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Scenario Builder" description="Simulate pricing, resource, and budget outcomes to make data-driven decisions">
                 <Button>
@@ -180,7 +183,7 @@ export default function ScenariosPage() {
                 <SearchInput value={search} onValueChange={setSearch} placeholder="Search scenarios..." className="flex-1 max-w-sm" />
                 <div className="flex gap-1 flex-wrap">
                     {(["all", "combined", "budget", "revenue", "pricing", "hiring", "resource"] as const).map((t) => (
-                        <Button key={t} variant={typeFilter === t ? "default" : "ghost"} size="sm" onClick={() => setTypeFilter(t)} className="text-xs capitalize">
+                        <Button key={t} variant={typeFilter === t ? "default" : "ghost"} size="sm" onClick={() => setTypeFilter(t)} className="text-xs">
                             {t === "all" ? "All" : TYPE_LABELS[t]}
                         </Button>
                     ))}
@@ -242,7 +245,7 @@ export default function ScenariosPage() {
                                 <CardContent className="pt-0 space-y-6">
                                     {/* Variables */}
                                     <div>
-                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Adjustable Variables</h4>
+                                        <OverlineText as="h4" className="mb-3">Adjustable Variables</OverlineText>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {scenario.variables.map((v, i) => {
                                                 const changed = v.baseValue !== v.adjustedValue;
@@ -251,7 +254,7 @@ export default function ScenariosPage() {
                                                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                                                         <div>
                                                             <p className="text-xs font-medium">{v.name}</p>
-                                                            <p className="text-[10px] text-muted-foreground capitalize">{v.category}</p>
+                                                            <p className="text-[10px] text-muted-foreground">{{ budget: "Budget", revenue: "Revenue", pricing: "Pricing", hiring: "Hiring", resource: "Resource" }[v.category] ?? v.category}</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-muted-foreground tabular-nums">
@@ -275,7 +278,7 @@ export default function ScenariosPage() {
 
                                     {/* Projected Outcomes */}
                                     <div>
-                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Projected Outcomes</h4>
+                                        <OverlineText as="h4" className="mb-3">Projected Outcomes</OverlineText>
                                         <div className="border rounded-lg overflow-hidden">
                                             <table className="w-full text-sm">
                                                 <thead>
@@ -331,5 +334,6 @@ export default function ScenariosPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

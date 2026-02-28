@@ -56,6 +56,12 @@ export const SEMANTIC_COLORS = {
         border: "border-muted",
         foreground: "text-muted-foreground",
     },
+    accent: {
+        bg: "bg-accent",
+        text: "text-accent",
+        border: "border-accent",
+        foreground: "text-accent-foreground",
+    },
 } as const;
 
 export type SemanticColor = keyof typeof SEMANTIC_COLORS;
@@ -279,6 +285,38 @@ export const MOTION_SCALE = {
 
 export type MotionScaleToken = keyof typeof MOTION_SCALE;
 
+// ─── Surface Elevation Tokens ───
+export const SURFACE = {
+    elevated: "bg-surface-elevated",
+    overlay: "bg-surface-overlay",
+    sunken: "bg-surface-sunken",
+    skeleton: "bg-skeleton",
+} as const;
+
+export type SurfaceToken = keyof typeof SURFACE;
+
+// ─── Chart Color Tokens ───
+export const CHART_COLORS = {
+    1: "hsl(var(--chart-1))",
+    2: "hsl(var(--chart-2))",
+    3: "hsl(var(--chart-3))",
+    4: "hsl(var(--chart-4))",
+    5: "hsl(var(--chart-5))",
+    6: "hsl(var(--chart-6))",
+    7: "hsl(var(--chart-7))",
+    8: "hsl(var(--chart-8))",
+} as const;
+
+export type ChartColorToken = keyof typeof CHART_COLORS;
+
+// ─── Feedback Tokens ───
+export const FEEDBACK = {
+    starRating: {
+        filled: "text-star-rating fill-star-rating",
+        empty: "text-muted-foreground/30",
+    },
+} as const;
+
 // ─── Stagger Scale ───
 // Delay increments for staggered entrance animations (in ms)
 export const STAGGER_SCALE = {
@@ -335,8 +373,39 @@ export const COMPONENT_SIZES = {
 
 export type ComponentSizeToken = keyof typeof COMPONENT_SIZES;
 
+// ─── Text Variant Tokens ───
+// Standardized text rendering variants for casing control
+export const TEXT_VARIANTS = {
+    overline: {
+        fontSize: "text-[10px]",
+        fontWeight: "font-semibold",
+        letterSpacing: "tracking-wide",
+        textTransform: "uppercase" as const,
+        ariaStrategy: "original-case" as const,
+    },
+    label: {
+        fontSize: "text-sm",
+        fontWeight: "font-medium",
+        letterSpacing: "tracking-normal",
+        textTransform: "none" as const,
+    },
+    caption: {
+        fontSize: "text-xs",
+        fontWeight: "font-normal",
+        letterSpacing: "tracking-normal",
+        textTransform: "none" as const,
+    },
+    tableHeader: {
+        fontSize: "text-xs",
+        fontWeight: "font-semibold",
+        letterSpacing: "tracking-normal",
+        textTransform: "none" as const,
+    },
+} as const;
+
+export type TextVariantToken = keyof typeof TEXT_VARIANTS;
+
 // ─── Contrast Variants ───
-// Accessible color contrast pairs for high-contrast mode
 export const CONTRAST_VARIANTS = {
     default: {
         border: "border-border",

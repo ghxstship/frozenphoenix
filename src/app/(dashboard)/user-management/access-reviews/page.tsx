@@ -110,7 +110,7 @@ export default function AccessReviewsPage() {
                                     size="sm"
                                     onClick={() => setRiskFilter(level)}
                                 >
-                                    {level === "all" ? "All" : `${level.charAt(0).toUpperCase() + level.slice(1)} Risk`}
+                                    {level === "all" ? "All" : `${level === "high" ? "High" : level === "medium" ? "Medium" : "Low"} Risk`}
                                 </Button>
                             ))}
                         </div>
@@ -154,7 +154,7 @@ export default function AccessReviewsPage() {
                                             </td>
                                             <td className="py-2.5 px-3 text-center">
                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${RISK_COLORS[review.riskLevel]}`}>
-                                                    {review.riskLevel.toUpperCase()}
+                                                    {review.riskLevel === "high" ? "High" : review.riskLevel === "medium" ? "Medium" : "Low"}
                                                 </span>
                                             </td>
                                             <td className="py-2.5 pl-3 text-right">

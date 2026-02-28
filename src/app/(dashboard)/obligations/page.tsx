@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { MOCK_CONTRACT_OBLIGATIONS } from "@/lib/demo-data-governance";
 import type { ObligationStatus } from "@/types/governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const OBLIGATION_STATUSES: ObligationStatus[] = [
     "pending", "in_progress", "fulfilled", "breached", "waived", "expired",
@@ -44,6 +45,7 @@ export default function ObligationsPage() {
     const critical = obligations.filter(o => o.is_critical).length;
 
     return (
+        <PermissionGate resource="obligations" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Contract Obligations" description="Track what each party must do — deadlines, recurring obligations, and fulfillment evidence">
                 <Button size="sm"><Plus className="h-4 w-4" /> Add Obligation</Button>
@@ -112,5 +114,6 @@ export default function ObligationsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

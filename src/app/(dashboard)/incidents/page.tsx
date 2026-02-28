@@ -25,6 +25,7 @@ import {
     Shield,
     Loader2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function IncidentsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -94,6 +95,7 @@ export default function IncidentsPage() {
     const criticalIncidents = incidents.filter((i) => i.severity === "critical" || i.severity === "major");
 
     return (
+        <PermissionGate resource="incidents" action="read">
         <PageShell
             title="Incidents"
             description="Track and manage safety incidents, issues, and resolutions"
@@ -116,9 +118,8 @@ export default function IncidentsPage() {
                             variant={statusFilter === status ? "default" : "outline"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize"
                         >
-                            {status.replace("_", " ")}
+                            {status === "all" ? "All" : (INCIDENT_STATUS_CONFIG[status as keyof typeof INCIDENT_STATUS_CONFIG]?.label ?? status.replace("_", " "))}
                         </Button>
                     ))}
                 </div>
@@ -234,5 +235,6 @@ export default function IncidentsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

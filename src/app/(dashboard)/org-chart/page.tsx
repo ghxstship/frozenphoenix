@@ -3,9 +3,11 @@
 import React from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { User } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function OrgChartPage() {
     const orgTree = [
@@ -17,6 +19,7 @@ export default function OrgChartPage() {
     ];
 
     return (
+        <PermissionGate resource="org_chart" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Org Chart" description="Auto-generated chain of command for each production">
                 <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
@@ -36,7 +39,7 @@ export default function OrgChartPage() {
                                 <User className="h-5 w-5 text-primary" />
                             </div>
                             <p className="text-sm font-bold">{orgTree[0].name}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{orgTree[0].role}</p>
+                            <OverlineText>{orgTree[0].role}</OverlineText>
                         </div>
 
                         {/* Connector */}
@@ -76,5 +79,6 @@ export default function OrgChartPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

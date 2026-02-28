@@ -12,6 +12,7 @@ import {
     AlertTriangle, BarChart3, Target,
     ArrowRight,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type ForecastView = "revenue" | "utilization" | "budget" | "hiring";
 
@@ -105,6 +106,7 @@ export default function ForecastingPage() {
     const criticalHires = hiringNeeds.filter((h) => h.urgency === "critical").length;
 
     return (
+        <PermissionGate resource="forecasting" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Forecasting" description="Predict revenue, track budget burns, and plan resource needs" />
 
@@ -119,12 +121,12 @@ export default function ForecastingPage() {
             {/* View Tabs */}
             <div className="flex gap-2 border-b pb-2">
                 {(["revenue", "budget", "utilization", "hiring"] as ForecastView[]).map((v) => (
-                    <Button key={v} variant={view === v ? "default" : "ghost"} size="sm" onClick={() => setView(v)} className="capitalize">
+                    <Button key={v} variant={view === v ? "default" : "ghost"} size="sm" onClick={() => setView(v)}>
                         {v === "revenue" && <DollarSign className="mr-1 h-3.5 w-3.5" />}
                         {v === "budget" && <Target className="mr-1 h-3.5 w-3.5" />}
                         {v === "utilization" && <BarChart3 className="mr-1 h-3.5 w-3.5" />}
                         {v === "hiring" && <Users className="mr-1 h-3.5 w-3.5" />}
-                        {v === "budget" ? "Budget Burn" : v}
+                        {{ revenue: "Revenue", budget: "Budget Burn", utilization: "Utilization", hiring: "Hiring" }[v]}
                     </Button>
                 ))}
             </div>
@@ -156,7 +158,7 @@ export default function ForecastingPage() {
                                                     style={{ width: `${(m.forecast / maxVal) * 100}%` }}
                                                 />
                                                 <div
-                                                    className="absolute h-full border-r-2 border-yellow-500"
+                                                    className="absolute h-full border-r-2 border-warning"
                                                     style={{ left: `${(m.target / maxVal) * 100}%` }}
                                                     title={`Target: ${formatCurrency(m.target)}`}
                                                 />
@@ -187,7 +189,7 @@ export default function ForecastingPage() {
                                             className="h-full bg-info rounded flex items-center justify-end px-2"
                                             style={{ width: `${(s.value * s.probability / 100) / 12000}%`, minWidth: "60px" }}
                                         >
-                                            <span className="text-[10px] text-white font-medium">{s.probability}%</span>
+                                            <span className="text-[10px] text-info-foreground font-medium">{s.probability}%</span>
                                         </div>
                                     </div>
                                     <div className="w-24 text-right text-xs">
@@ -328,5 +330,6 @@ export default function ForecastingPage() {
                 </div>
             )}
         </div>
+        </PermissionGate>
     );
 }

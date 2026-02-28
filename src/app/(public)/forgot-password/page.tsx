@@ -1,139 +1,162 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { brandConfig } from "@/config/brand";
-import { Flame, Mail, AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { AuthLayout, AuthFormField, BotProtection, useBotProtection } from "@/components/auth";
+import { mapAuthError } from "@/lib/auth-utils";
+import { Mail, AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
 
-    const handleReset = async (e: React.FormEvent) => {
+    const botProtection = useBotProtection();
+
+    const handleReset = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+
+        if (!email.trim()) {
+            setError("Please enter your email address.");
+            return;
+        }
+
         setLoading(true);
 
         try {
             const supabase = createClient();
             if (!supabase) {
-                setError("Authentication service unavailable");
+                setError("Authentication service unavailable. Please try again later.");
                 return;
             }
 
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/auth/reset-password`,
             });
 
-            if (error) {
-                setError(error.message);
+            if (resetError) {
+                setError(mapAuthError(resetError.message));
                 return;
             }
 
+            // Always show success to prevent email enumeration
             setSuccess(true);
         } catch {
-            setError("An unexpected error occurred");
+            setError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    }, [email]);
+
+    const handleResend = useCallback(() => {
+        if (cooldown > 0) return;
+        setCooldown(60);
+        setSuccess(false);
+        const timer = setInterval(() => {
+            setCooldown((prev) => {
+                if (prev <= 1) { clearInterval(timer); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+    }, [cooldown]);
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-md space-y-6 animate-fade-in">
-                    <Card>
-                        <CardContent className="pt-6 text-center">
-                            <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10 mb-4">
-                                <CheckCircle2 className="h-7 w-7 text-success" />
-                            </div>
-                            <h2 className="text-xl font-bold mb-2">Check your email</h2>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                If an account exists for <strong>{email}</strong>, we&apos;ve sent a password reset link.
-                            </p>
-                            <Link href="/login">
-                                <Button variant="ghost">
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back to Sign In
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
+            <AuthLayout title="Check your email" subtitle="Password reset instructions sent">
+                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
+                        <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-lg font-semibold">Reset link sent</h2>
+                        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            If an account exists for <strong>{email}</strong>, we&apos;ve sent
+                            a password reset link. Check your inbox and spam folder.
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleResend}
+                            disabled={cooldown > 0}
+                        >
+                            {cooldown > 0 ? `Resend in ${cooldown}s` : "Didn\u2019t receive it? Resend"}
+                        </Button>
+                        <Link href="/login">
+                            <Button variant="ghost" size="sm">
+                                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                                Back to Sign In
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            </AuthLayout>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md space-y-6 animate-fade-in">
-                <div className="text-center">
-                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-4">
-                        <Flame className="h-7 w-7 text-primary-foreground" />
+        <AuthLayout title="Reset your password" subtitle="Enter your email and we\u2019ll send you a reset link">
+            <form onSubmit={handleReset} className="space-y-4" noValidate>
+                {error && (
+                    <div
+                        className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                        role="alert"
+                        aria-live="assertive"
+                    >
+                        <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {error}
                     </div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        {brandConfig.name}
-                    </h1>
-                </div>
+                )}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-center">Reset Password</CardTitle>
-                        <p className="text-sm text-muted-foreground text-center">
-                            Enter your email and we&apos;ll send you a reset link.
-                        </p>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleReset} className="space-y-4">
-                            {error && (
-                                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                                    <AlertCircle className="h-4 w-4 shrink-0" />
-                                    {error}
-                                </div>
-                            )}
+                <AuthFormField
+                    fieldId="forgot-email"
+                    label="Email"
+                    type="email"
+                    icon={Mail}
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    disabled={loading}
+                />
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="email"
-                                        placeholder="you@company.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                <BotProtection
+                    onVerify={botProtection.onVerify}
+                    onError={botProtection.onError}
+                    onExpire={botProtection.onExpire}
+                    action="forgot-password"
+                />
 
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Sending...
-                                    </>
-                                ) : (
-                                    "Send Reset Link"
-                                )}
-                            </Button>
-                        </form>
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                    aria-busy={loading}
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            Sending…
+                        </>
+                    ) : (
+                        "Send Reset Link"
+                    )}
+                </Button>
+            </form>
 
-                        <div className="mt-6 text-center text-sm text-muted-foreground">
-                            <Link href="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
-                                <ArrowLeft className="h-3 w-3" />
-                                Back to Sign In
-                            </Link>
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="text-center text-sm text-muted-foreground">
+                <Link href="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+                    <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+                    Back to Sign In
+                </Link>
             </div>
-        </div>
+        </AuthLayout>
     );
 }

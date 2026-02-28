@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +12,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Truck, Plus, MapPin, Clock, CheckCircle2,
-    Users, Navigation,
+    Users, Navigation, Loader2,
 } from "lucide-react";
 import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
+import { useDispatch, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { DispatchStatus } from "@/types/vendor-lifecycle";
 
 const DISPATCH_STATUSES: DispatchStatus[] = ["unassigned", "offered", "accepted", "declined", "en_route", "on_site", "in_progress", "completed", "no_show"];
@@ -21,8 +24,9 @@ const DISPATCH_STATUSES: DispatchStatus[] = ["unassigned", "offered", "accepted"
 export default function DispatchPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: sbDispatch, isLoading } = useDispatch();
 
-    const dispatches = MOCK_DISPATCH_ENTRIES;
+    const dispatches = isSupabaseConfigured && sbDispatch ? (sbDispatch as unknown as typeof MOCK_DISPATCH_ENTRIES) : MOCK_DISPATCH_ENTRIES;
     const filtered = dispatches.filter(d => {
         const matchesSearch = !search || (d.vendorName || "").toLowerCase().includes(search.toLowerCase()) || (d.crewMemberName || "").toLowerCase().includes(search.toLowerCase()) || (d.workOrderTitle || "").toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === "all" || d.status === statusFilter;
@@ -38,10 +42,19 @@ export default function DispatchPage() {
         return wo ? `${wo.number} — ${wo.title}` : woId;
     };
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="dispatch" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Dispatch Board" description="Real-time crew and vendor dispatch tracking across all active work orders">
-                <Button size="sm"><Plus className="h-4 w-4" /> New Dispatch</Button>
+                <Link href="/dispatch/new"><Button size="sm"><Plus className="h-4 w-4" /> New Dispatch</Button></Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -148,5 +161,6 @@ export default function DispatchPage() {
                 </Card>
             </div>
         </div>
+        </PermissionGate>
     );
 }

@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_PROJECTS, MOCK_DEALS, MOCK_TASKS, MOCK_CREW, MOCK_VENDORS } from "@/lib/demo-data";
+import { useDeals, useProjects, useTasks, useCrewMembers, useVendors, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { getStatusLabel } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     BarChart3,
@@ -19,6 +22,7 @@ import {
     Download,
     FileText,
     Truck,
+    Loader2,
 } from "lucide-react";
 
 interface ReportCard {
@@ -48,19 +52,40 @@ const categoryConfig = {
 
 export default function ReportsPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
+    const { data: sbDeals, isLoading: dealsLoading } = useDeals();
+    const { data: sbProjects, isLoading: projectsLoading } = useProjects();
+    const { data: sbTasks, isLoading: tasksLoading } = useTasks();
+    const { data: sbCrew, isLoading: crewLoading } = useCrewMembers();
+    const { data: sbVendors, isLoading: vendorsLoading } = useVendors();
+
+    const deals = isSupabaseConfigured && sbDeals ? sbDeals : MOCK_DEALS;
+    const projects = isSupabaseConfigured && sbProjects ? sbProjects : MOCK_PROJECTS;
+    const tasks = isSupabaseConfigured && sbTasks ? sbTasks : MOCK_TASKS;
+    const crew = isSupabaseConfigured && sbCrew ? sbCrew : MOCK_CREW;
+    const vendors = isSupabaseConfigured && sbVendors ? sbVendors : MOCK_VENDORS;
+    const isLoading = isSupabaseConfigured && (dealsLoading || projectsLoading || tasksLoading || crewLoading || vendorsLoading);
 
     // Calculate summary stats
-    const totalPipelineValue = MOCK_DEALS.reduce((sum, d) => sum + d.value * (d.probability / 100), 0);
-    const totalBudget = MOCK_PROJECTS.reduce((sum, p) => sum + p.budgetPlanned, 0);
-    const totalActual = MOCK_PROJECTS.reduce((sum, p) => sum + p.budgetActual, 0);
-    const completedTasks = MOCK_TASKS.filter((t) => t.status === "done").length;
-    const availableCrew = MOCK_CREW.filter((c) => c.status === "available").length;
+    const totalPipelineValue = (deals as typeof MOCK_DEALS).reduce((sum, d) => sum + d.value * (d.probability / 100), 0);
+    const totalBudget = (projects as typeof MOCK_PROJECTS).reduce((sum, p) => sum + p.budgetPlanned, 0);
+    const totalActual = (projects as typeof MOCK_PROJECTS).reduce((sum, p) => sum + p.budgetActual, 0);
+    const completedTasks = (tasks as typeof MOCK_TASKS).filter((t) => t.status === "done").length;
+    const availableCrew = (crew as typeof MOCK_CREW).filter((c) => c.status === "available").length;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filteredReports = selectedCategory === "all"
         ? REPORTS
         : REPORTS.filter((r) => r.category === selectedCategory);
 
     return (
+        <PermissionGate resource="reports" action="read">
         <PageShell
             title="Reports"
             description="Analytics and reporting dashboard"
@@ -99,8 +124,8 @@ export default function ReportsPage() {
                             <CheckSquare className="h-4 w-4" />
                             <span className="text-xs">Tasks Completed</span>
                         </div>
-                        <p className="text-xl font-bold">{completedTasks}/{MOCK_TASKS.length}</p>
-                        <p className="text-xs text-muted-foreground">{Math.round((completedTasks / MOCK_TASKS.length) * 100)}% done</p>
+                        <p className="text-xl font-bold">{completedTasks}/{(tasks as typeof MOCK_TASKS).length}</p>
+                        <p className="text-xs text-muted-foreground">{(tasks as typeof MOCK_TASKS).length > 0 ? Math.round((completedTasks / (tasks as typeof MOCK_TASKS).length) * 100) : 0}% done</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -109,7 +134,7 @@ export default function ReportsPage() {
                             <Users className="h-4 w-4" />
                             <span className="text-xs">Crew Available</span>
                         </div>
-                        <p className="text-xl font-bold">{availableCrew}/{MOCK_CREW.length}</p>
+                        <p className="text-xl font-bold">{availableCrew}/{(crew as typeof MOCK_CREW).length}</p>
                         <p className="text-xs text-muted-foreground">ready to assign</p>
                     </CardContent>
                 </Card>
@@ -119,7 +144,7 @@ export default function ReportsPage() {
                             <Truck className="h-4 w-4" />
                             <span className="text-xs">Active Vendors</span>
                         </div>
-                        <p className="text-xl font-bold">{MOCK_VENDORS.filter((v) => v.status === "active").length}</p>
+                        <p className="text-xl font-bold">{(vendors as typeof MOCK_VENDORS).filter((v) => v.status === "active").length}</p>
                         <p className="text-xs text-muted-foreground">vendors</p>
                     </CardContent>
                 </Card>
@@ -198,11 +223,11 @@ export default function ReportsPage() {
                     <CardContent>
                         <div className="space-y-3">
                             {["active", "draft", "completed", "on_hold"].map((status) => {
-                                const count = MOCK_PROJECTS.filter((p) => p.status === status).length;
-                                const percentage = Math.round((count / MOCK_PROJECTS.length) * 100);
+                                const count = (projects as typeof MOCK_PROJECTS).filter((p) => p.status === status).length;
+                                const percentage = (projects as typeof MOCK_PROJECTS).length > 0 ? Math.round((count / (projects as typeof MOCK_PROJECTS).length) * 100) : 0;
                                 return (
                                     <div key={status} className="flex items-center gap-3">
-                                        <div className="w-20 text-xs text-muted-foreground capitalize">{status.replace("_", " ")}</div>
+                                        <div className="w-20 text-xs text-muted-foreground">{getStatusLabel(status)}</div>
                                         <ProgressBar value={percentage} size="md" className="flex-1" />
                                         <div className="w-12 text-xs text-right">{count} ({percentage}%)</div>
                                     </div>
@@ -222,15 +247,15 @@ export default function ReportsPage() {
                     <CardContent>
                         <div className="space-y-3">
                             {["lead", "qualified", "proposal", "negotiation", "won"].map((stage) => {
-                                const deals = MOCK_DEALS.filter((d) => d.stage === stage);
-                                const value = deals.reduce((sum, d) => sum + d.value, 0);
+                                const stageDeals = (deals as typeof MOCK_DEALS).filter((d) => d.stage === stage);
+                                const value = stageDeals.reduce((sum, d) => sum + d.value, 0);
                                 const maxValue = Math.max(...["lead", "qualified", "proposal", "negotiation", "won"].map((s) =>
-                                    MOCK_DEALS.filter((d) => d.stage === s).reduce((sum, d) => sum + d.value, 0)
+                                    (deals as typeof MOCK_DEALS).filter((d) => d.stage === s).reduce((sum, d) => sum + d.value, 0)
                                 ));
                                 const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
                                 return (
                                     <div key={stage} className="flex items-center gap-3">
-                                        <div className="w-20 text-xs text-muted-foreground capitalize">{stage}</div>
+                                        <div className="w-20 text-xs text-muted-foreground">{{ lead: "Lead", qualified: "Qualified", proposal: "Proposal", negotiation: "Negotiation", won: "Won" }[stage]}</div>
                                         <ProgressBar value={percentage} size="md" />
                                         <div className="w-20 text-xs text-right">{formatCurrency(value)}</div>
                                     </div>
@@ -241,5 +266,6 @@ export default function ReportsPage() {
                 </Card>
             </div>
         </PageShell>
+        </PermissionGate>
     );
 }

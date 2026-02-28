@@ -10,10 +10,13 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
 import { MOCK_LOCATIONS, MOCK_ACTIVATIONS, MOCK_EVENTS } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useLocation, useActivations, useEvents, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Edit,
+    Loader2,
     MapPin,
     Phone,
     Mail,
@@ -36,10 +39,64 @@ export default function LocationDetailPage() {
     const locationId = params.id as string;
     const [activeTab, setActiveTab] = useState<TabId>("overview");
 
-    const location = MOCK_LOCATIONS.find((l) => l.id === locationId);
-    const project = location ? MOCK_PROJECTS.find((p) => p.id === location.projectId) : null;
-    const activations = MOCK_ACTIVATIONS.filter((a) => a.locationId === locationId);
-    const events = MOCK_EVENTS.filter((e) => e.locationId === locationId);
+    const { data: sbLocation, isLoading: loadingLocation } = useLocation(locationId);
+    const { data: sbActivations, isLoading: loadingActivations } = useActivations();
+    const { data: sbEvents, isLoading: loadingEvents } = useEvents();
+    const { data: sbProjects } = useProjects();
+
+    const isLoading = loadingLocation || loadingActivations || loadingEvents;
+
+    const location = isSupabaseConfigured && sbLocation ? {
+        id: sbLocation.id,
+        projectId: sbLocation.project_id,
+        name: sbLocation.name,
+        type: sbLocation.type,
+        address: (sbLocation as unknown as { address?: { street1: string; street2?: string; city: string; state: string; postalCode: string } }).address,
+        capacity: sbLocation.capacity ?? undefined,
+        squareFootage: sbLocation.square_footage ?? undefined,
+        dailyRate: sbLocation.daily_rate ?? undefined,
+        totalCost: sbLocation.total_cost ?? undefined,
+        contactName: sbLocation.contact_name ?? undefined,
+        contactEmail: sbLocation.contact_email ?? undefined,
+        contactPhone: sbLocation.contact_phone ?? undefined,
+        accessStartDate: sbLocation.access_start_date ?? undefined,
+        accessEndDate: sbLocation.access_end_date ?? undefined,
+        powerAvailable: sbLocation.power_available ?? undefined,
+        internetAvailable: sbLocation.internet_available ?? false,
+        insuranceRequired: sbLocation.insurance_required ?? false,
+        permitsRequired: (sbLocation as unknown as { permits_required?: string[] }).permits_required ?? [],
+        amenities: (sbLocation as unknown as { amenities?: string[] }).amenities ?? [],
+        restrictions: (sbLocation as unknown as { restrictions?: string[] }).restrictions ?? [],
+        loadInWindows: (sbLocation as unknown as { load_in_windows?: { date: string; startTime: string; endTime: string }[] }).load_in_windows ?? [],
+        loadOutWindows: (sbLocation as unknown as { load_out_windows?: { date: string; startTime: string; endTime: string }[] }).load_out_windows ?? [],
+    } : MOCK_LOCATIONS.find((l) => l.id === locationId);
+
+    const project = isSupabaseConfigured && sbProjects && location
+        ? sbProjects.find((p) => p.id === location.projectId) ?? null
+        : location ? MOCK_PROJECTS.find((p) => p.id === location.projectId) ?? null : null;
+
+    const activations = isSupabaseConfigured && sbActivations
+        ? sbActivations.filter((a) => a.location_id === locationId).map(a => ({
+            id: a.id, name: a.name, type: a.type, status: a.status,
+            zone: a.zone ?? undefined, locationId: a.location_id ?? undefined,
+        }))
+        : MOCK_ACTIVATIONS.filter((a) => a.locationId === locationId);
+
+    const events = isSupabaseConfigured && sbEvents
+        ? sbEvents.filter((e) => e.location_id === locationId).map(e => ({
+            id: e.id, name: e.name, status: e.status,
+            date: e.date ?? '', startTime: e.start_time ?? '', endTime: e.end_time ?? '',
+            locationId: e.location_id ?? undefined,
+        }))
+        : MOCK_EVENTS.filter((e) => e.locationId === locationId);
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!location) {
         return (
@@ -163,6 +220,7 @@ export default function LocationDetailPage() {
     );
 
     return (
+        <PermissionGate resource="locations" action="read">
         <DetailLayout
             backHref="/locations"
             backLabel="Locations"
@@ -171,7 +229,7 @@ export default function LocationDetailPage() {
             status={location.type}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Icon className="h-7 w-7 text-white" />
+                    <Icon className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={
@@ -456,5 +514,6 @@ export default function LocationDetailPage() {
                 </Card>
             )}
         </DetailLayout>
+        </PermissionGate>
     );
 }

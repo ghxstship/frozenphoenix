@@ -15,6 +15,7 @@ import { ASSET_CONDITION_MAP as ASSET_CONDITION_CONFIG } from "@/config/domain-c
 import type { Asset, Vehicle, AssetCondition } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
 import { CurrencyField, LocationField, BooleanField, PhoneField } from "@/components/data-view/field-renderers";
+import { PermissionGate } from "@/components/permission-guard";
 
 function computeDaysUntilReturn(dateStr: string): number {
     return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -215,6 +216,7 @@ export default function AssetsPage() {
     const totalValue = assets.filter(a => a.purchasePrice).reduce((sum, a) => sum + (a.purchasePrice || 0), 0);
 
     return (
+        <PermissionGate resource="assets" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Asset & Fleet Ledger" description="Equipment inventory, rental tracking, and vehicle fleet management">
                 <div className="flex items-center gap-2">
@@ -244,7 +246,7 @@ export default function AssetsPage() {
 
             {/* KPIs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Assets" value={MOCK_ASSETS.length} icon={Package} />
+                <StatCard title="Total Assets" value={assets.length} icon={Package} />
                 <StatCard title="Portfolio Value" value={formatCurrency(totalValue)} icon={Package} />
                 <StatCard title="Active Rentals" value={rentalAssets.length} description="with return dates" icon={Clock} />
                 <StatCard title="Needs Repair" value={needsRepair.length} icon={AlertTriangle} />
@@ -342,5 +344,6 @@ export default function AssetsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGate>
     );
 }

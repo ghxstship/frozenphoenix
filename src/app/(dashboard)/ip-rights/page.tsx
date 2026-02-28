@@ -11,6 +11,7 @@ import {
     Fingerprint, Plus,
 } from "lucide-react";
 import { MOCK_IP_RIGHTS } from "@/lib/demo-data-governance";
+import { PermissionGate } from "@/components/permission-guard";
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
     logo: "Logo", trademark: "Trademark", design: "Design", photograph: "Photograph",
@@ -38,6 +39,7 @@ export default function IPRightsPage() {
     });
 
     return (
+        <PermissionGate resource="ip_rights" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="IP & Usage Rights" description="Intellectual property ownership, licensing terms, and usage rights tracking across all contracts">
                 <Button size="sm"><Plus className="h-4 w-4" /> Add IP Right</Button>
@@ -91,5 +93,6 @@ export default function IPRightsPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

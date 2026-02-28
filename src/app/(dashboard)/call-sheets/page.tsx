@@ -13,8 +13,10 @@ import { formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     ClipboardList, Plus, MapPin, Clock, Users,
-    Calendar, Sun, Send, CheckCircle2,
+    Calendar, Sun, Send, CheckCircle2, Loader2,
 } from "lucide-react";
+import { useCallSheets, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface CallSheetListItem {
     id: string;
@@ -43,7 +45,34 @@ export default function CallSheetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const filtered = mockCallSheets.filter((cs) => {
+    const { data: sbCallSheets, isLoading } = useCallSheets();
+
+    const callSheets: CallSheetListItem[] = isSupabaseConfigured && sbCallSheets
+        ? sbCallSheets.map((cs: Record<string, unknown>) => ({
+            id: (cs.id as string) ?? "",
+            title: (cs.title as string) ?? "",
+            callSheetNumber: (cs.call_sheet_number as string) ?? "",
+            projectName: (cs.project_name as string) ?? "",
+            date: (cs.date as string) ?? "",
+            venueName: (cs.venue_name as string) ?? "",
+            generalCallTime: (cs.general_call_time as string) ?? "",
+            wrapTime: (cs.wrap_time as string) ?? "",
+            crewCount: (cs.crew_count as number) ?? 0,
+            status: ((cs.status as string) ?? "draft") as CallSheetStatusType,
+            weatherForecast: (cs.weather_forecast as string) ?? "",
+            weatherTemp: (cs.weather_temp as string) ?? "",
+        }))
+        : mockCallSheets;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = callSheets.filter((cs) => {
         const matchesSearch =
             cs.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             cs.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,18 +81,19 @@ export default function CallSheetsPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const totalCrew = mockCallSheets.reduce((sum, cs) => sum + cs.crewCount, 0);
+    const totalCrew = callSheets.reduce((sum, cs) => sum + cs.crewCount, 0);
 
     return (
+        <PermissionGate resource="call_sheets" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Call Sheets" description="Generate and distribute daily call sheets for crew and production teams">
                 <Button><Plus className="mr-2 h-4 w-4" />New Call Sheet</Button>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Call Sheets" value={mockCallSheets.length} icon={ClipboardList} />
-                <StatCard title="Distributed" value={mockCallSheets.filter(cs => cs.status === "distributed").length} icon={Send} />
-                <StatCard title="Acknowledged" value={mockCallSheets.filter(cs => cs.status === "acknowledged").length} icon={CheckCircle2} />
+                <StatCard title="Total Call Sheets" value={callSheets.length} icon={ClipboardList} />
+                <StatCard title="Distributed" value={callSheets.filter(cs => cs.status === "distributed").length} icon={Send} />
+                <StatCard title="Acknowledged" value={callSheets.filter(cs => cs.status === "acknowledged").length} icon={CheckCircle2} />
                 <StatCard title="Total Crew" value={totalCrew} description="across all sheets" icon={Users} />
             </div>
 
@@ -135,5 +165,6 @@ export default function CallSheetsPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

@@ -14,6 +14,8 @@ import { MOCK_BUDGETS, MOCK_BUDGET_LINES } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
+import { useBudgets, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PermissionGate } from "@/components/permission-guard";
 import {
     Plus,
     DollarSign,
@@ -21,6 +23,7 @@ import {
     TrendingDown,
     ChevronRight,
     PieChart,
+    Loader2,
 } from "lucide-react";
 
 const STATUS_VARIANTS: Record<string, string> = {
@@ -32,14 +35,37 @@ const STATUS_VARIANTS: Record<string, string> = {
 
 export default function BudgetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    // Supabase dual-path: useBudgets requires a projectId, so we pass empty to get all
+    const { data: sbBudgets, isLoading } = useBudgets("");
 
-    const filteredBudgets = MOCK_BUDGETS.filter((budget) => {
+    const budgets = isSupabaseConfigured && sbBudgets
+        ? sbBudgets.map((b: Record<string, unknown>) => ({
+            id: String(b.id),
+            projectId: String(b.project_id || ""),
+            version: Number(b.version || 1),
+            status: String(b.status || "draft"),
+            totalBudget: Number(b.total_budget || 0),
+            totalActual: Number(b.total_actual || 0),
+            contingencyPercent: Number(b.contingency_percent || 0),
+            markupPercent: Number(b.markup_percent || 0),
+        }))
+        : MOCK_BUDGETS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filteredBudgets = budgets.filter((budget) => {
         const project = MOCK_PROJECTS.find((p) => p.id === budget.projectId);
-        return project?.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return !searchQuery || project?.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
-    const totalBudgeted = MOCK_BUDGETS.reduce((sum, b) => sum + b.totalBudget, 0);
-    const totalActual = MOCK_BUDGETS.reduce((sum, b) => sum + b.totalActual, 0);
+    const totalBudgeted = budgets.reduce((sum, b) => sum + b.totalBudget, 0);
+    const totalActual = budgets.reduce((sum, b) => sum + b.totalActual, 0);
     const totalVariance = totalActual - totalBudgeted;
 
     const categoryTotals = MOCK_BUDGET_LINES.reduce((acc, line) => {
@@ -51,6 +77,7 @@ export default function BudgetsPage() {
     }, {} as Record<string, { budgeted: number; actual: number }>);
 
     return (
+        <PermissionGate resource="budgets" action="read">
         <PageShell
             title="Budgets"
             description="Manage project budgets and track spending"
@@ -106,7 +133,7 @@ export default function BudgetsPage() {
                                 <div key={category} className="p-3 rounded-lg bg-secondary/30">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Icon className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm font-medium capitalize">{config?.label || category}</span>
+                                        <span className="text-sm font-medium">{config?.label || category}</span>
                                     </div>
                                     <div className="space-y-1 text-xs">
                                         <div className="flex justify-between">
@@ -137,7 +164,7 @@ export default function BudgetsPage() {
                     icon={DollarSign}
                     title="No budgets found"
                     description={searchQuery ? "Try adjusting your search" : "Create your first budget"}
-                    action={!searchQuery ? { label: "New Budget", onClick: () => {} } : undefined}
+                    action={!searchQuery ? { label: "New Budget", onClick: () => window.location.assign("/budgets/new") } : undefined}
                 />
             ) : (
                 <div className="space-y-3">
@@ -211,5 +238,6 @@ export default function BudgetsPage() {
                 </div>
             )}
         </PageShell>
+        </PermissionGate>
     );
 }

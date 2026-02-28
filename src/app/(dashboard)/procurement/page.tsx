@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
 import type { BadgeVariant } from "@/config/ui-variants";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface ProcurementRequest {
     id: string;
@@ -70,6 +71,7 @@ export default function ProcurementPage() {
         : MOCK_POS.filter((po) => po.projectId === filterProject);
 
     return (
+        <PermissionGate resource="procurement" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Procurement Hub" description="Purchase requests, vendor orders, and spend tracking">
                 <div className="flex items-center gap-2">
@@ -219,5 +221,6 @@ export default function ProcurementPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

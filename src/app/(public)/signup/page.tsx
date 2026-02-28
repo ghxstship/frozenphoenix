@@ -1,194 +1,278 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Mail, Lock, User, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
-import { brandConfig } from "@/config/brand";
+import { AuthLayout, AuthFormField, PasswordInput, OAuthButtons, BotProtection, useBotProtection } from "@/components/auth";
+import { mapAuthError, validatePassword } from "@/lib/auth-utils";
+import { Mail, User, Building2, AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 
-export default function SignupPage() {
+function SignupForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const inviteToken = searchParams.get("invite");
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [orgName, setOrgName] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
+    const [oauthLoading, setOauthLoading] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const handleSignup = async (e: React.FormEvent) => {
+    const botProtection = useBotProtection();
+
+    const validate = useCallback((): boolean => {
+        const errors: Record<string, string> = {};
+        if (!name.trim()) errors.name = "Name is required.";
+        if (!email.trim()) errors.email = "Email is required.";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email.";
+        const pwError = validatePassword(password);
+        if (pwError) errors.password = pwError;
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    }, [name, email, password]);
+
+    const handleSignup = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+
+        if (!validate()) return;
+
         setLoading(true);
 
         try {
             const supabase = createClient();
             if (!supabase) {
-                setError("Authentication service unavailable");
+                setError("Authentication service unavailable. Please try again later.");
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         name,
+                        org_name: orgName || undefined,
+                        invite_token: inviteToken || undefined,
                     },
                     emailRedirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
-            if (error) {
-                setError(error.message);
+            if (authError) {
+                // Prevent email enumeration — always show generic message for
+                // "User already registered" errors
+                if (authError.message.toLowerCase().includes("already registered")) {
+                    setSuccess(true);
+                    return;
+                }
+                setError(mapAuthError(authError.message));
                 return;
             }
 
-            // When email confirmations are disabled (autoconfirm), Supabase
-            // returns a session directly — redirect to dashboard.
+            // When autoconfirm is enabled, redirect to onboarding
             if (data?.session) {
-                router.push("/dashboard");
+                router.push(inviteToken ? "/dashboard" : "/onboarding/org-setup");
                 return;
             }
 
             setSuccess(true);
         } catch {
-            setError("An unexpected error occurred");
+            setError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    }, [email, password, name, orgName, inviteToken, router, validate]);
+
+    const handleOAuthLogin = useCallback(async (provider: "google" | "github") => {
+        setError(null);
+        setOauthLoading(provider);
+
+        try {
+            const supabase = createClient();
+            if (!supabase) {
+                setError("Authentication service unavailable. Please try again later.");
+                return;
+            }
+
+            const callbackUrl = inviteToken
+                ? `${window.location.origin}/auth/callback?next=/invite/${inviteToken}`
+                : `${window.location.origin}/auth/callback?next=/onboarding/org-setup`;
+
+            const { error: oauthError } = await supabase.auth.signInWithOAuth({
+                provider,
+                options: { redirectTo: callbackUrl },
+            });
+
+            if (oauthError) {
+                setError(mapAuthError(oauthError.message));
+            }
+        } catch {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setOauthLoading(null);
+        }
+    }, [inviteToken]);
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-md space-y-6 animate-fade-in">
-                    <Card>
-                        <CardContent className="pt-6 text-center">
-                            <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10 mb-4">
-                                <CheckCircle2 className="h-7 w-7 text-success" />
-                            </div>
-                            <h2 className="text-xl font-bold mb-2">Check your email</h2>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                We&apos;ve sent a confirmation link to <strong>{email}</strong>.
-                                Click the link to activate your account.
-                            </p>
-                            <Button variant="ghost" onClick={() => router.push("/login")}>
-                                Back to Sign In
-                            </Button>
-                        </CardContent>
-                    </Card>
+            <AuthLayout title="Check your email" subtitle="One more step to get started">
+                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
+                        <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-lg font-semibold">Confirmation link sent</h2>
+                        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            We&apos;ve sent a confirmation link to <strong>{email}</strong>.
+                            Click the link in the email to activate your account.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            Didn&apos;t receive it? Check your spam folder or try again in a few minutes.
+                        </p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
+                        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                        Back to Sign In
+                    </Button>
                 </div>
-            </div>
+            </AuthLayout>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md space-y-6 animate-fade-in">
-                <div className="text-center">
-                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-4">
-                        <Flame className="h-7 w-7 text-white" />
+        <AuthLayout
+            title={inviteToken ? "Accept Invitation" : "Create your account"}
+            subtitle={inviteToken ? "Join your team on the platform" : "Start managing productions in minutes"}
+        >
+            <form onSubmit={handleSignup} className="space-y-4" noValidate>
+                {error && (
+                    <div
+                        className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                        role="alert"
+                        aria-live="assertive"
+                    >
+                        <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {error}
                     </div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        {brandConfig.name}
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        {brandConfig.tagline}
-                    </p>
+                )}
+
+                <AuthFormField
+                    fieldId="signup-name"
+                    label="Full Name"
+                    type="text"
+                    icon={User}
+                    placeholder="Alex Rivera"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: "" })); }}
+                    autoComplete="name"
+                    error={fieldErrors.name}
+                    required
+                    disabled={loading}
+                />
+
+                <AuthFormField
+                    fieldId="signup-email"
+                    label="Email"
+                    type="email"
+                    icon={Mail}
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                    autoComplete="email"
+                    error={fieldErrors.email}
+                    required
+                    disabled={loading}
+                />
+
+                <div className="space-y-2">
+                    <label htmlFor="signup-password" className="text-sm font-medium leading-none">
+                        Password <span className="text-destructive ml-1" aria-hidden="true">*</span>
+                    </label>
+                    <PasswordInput
+                        id="signup-password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                        autoComplete="new-password"
+                        showStrengthMeter
+                        error={fieldErrors.password}
+                        required
+                        disabled={loading}
+                    />
+                    {fieldErrors.password && (
+                        <p className="text-xs text-destructive" role="alert">{fieldErrors.password}</p>
+                    )}
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-center">Create Account</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSignup} className="space-y-4">
-                            {error && (
-                                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                                    <AlertCircle className="h-4 w-4 shrink-0" />
-                                    {error}
-                                </div>
-                            )}
+                {!inviteToken && (
+                    <AuthFormField
+                        fieldId="signup-org"
+                        label="Organization Name"
+                        type="text"
+                        icon={Building2}
+                        placeholder="Acme Productions"
+                        value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)}
+                        description="Optional — you can set this up later."
+                        disabled={loading}
+                    />
+                )}
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Full Name</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="text"
-                                        placeholder="Alex Rivera"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="pl-10"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                <BotProtection
+                    onVerify={botProtection.onVerify}
+                    onError={botProtection.onError}
+                    onExpire={botProtection.onExpire}
+                    action="signup"
+                />
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="email"
-                                        placeholder="you@company.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                    aria-busy={loading}
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            Creating account…
+                        </>
+                    ) : (
+                        "Create Account"
+                    )}
+                </Button>
+            </form>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Password</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10"
-                                        minLength={8}
-                                        required
-                                    />
-                                </div>
-                                <p className="text-[11px] text-muted-foreground">
-                                    Minimum 8 characters
-                                </p>
-                            </div>
+            <OAuthButtons
+                onOAuth={handleOAuthLogin}
+                loading={oauthLoading}
+                disabled={loading}
+            />
 
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Creating account...
-                                    </>
-                                ) : (
-                                    "Create Account"
-                                )}
-                            </Button>
-                        </form>
-
-                        <div className="mt-6 text-center text-sm text-muted-foreground">
-                            Already have an account?{" "}
-                            <Link href="/login" className="text-primary hover:underline font-medium">
-                                Sign in
-                            </Link>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <p className="text-center text-xs text-muted-foreground">
-                    By signing up, you agree to our Terms of Service and Privacy Policy.
-                </p>
+            <div className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:underline font-medium">
+                    Sign in
+                </Link>
             </div>
-        </div>
+        </AuthLayout>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        }>
+            <SignupForm />
+        </Suspense>
     );
 }

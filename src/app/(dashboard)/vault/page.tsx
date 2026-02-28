@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useVaultDocuments, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { Plus, Lock, FileText, Eye, Link, Clock, Shield, Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { PermissionGate } from "@/components/permission-guard";
 
 const MOCK_DOCS = [
     { id: "doc1", name: "Coachella Site Map — Restricted Zone", category: "site_map", accessLevel: "pm", uploadedBy: "Alex Rivera", uploadedAt: "2026-02-10", hasExpLink: true, expLinkExpiry: "2026-03-01" },
@@ -15,6 +16,13 @@ const MOCK_DOCS = [
     { id: "doc3", name: "Fire Marshal Permit — DTLA", category: "permit", accessLevel: "pm", uploadedBy: "Alex Rivera", uploadedAt: "2026-02-20", hasExpLink: true, expLinkExpiry: "2026-02-28" },
     { id: "doc4", name: "Venue Blueprint — Grand Ballroom", category: "blueprint", accessLevel: "pm", uploadedBy: "Jordan Park", uploadedAt: "2026-01-25", hasExpLink: false },
 ];
+
+const ACCESS_LEVEL_LABELS: Record<string, string> = {
+    exec: "Executive",
+    pm: "Project Manager",
+    client: "Client",
+    vendor: "Vendor",
+};
 
 const categoryIcons: Record<string, typeof FileText> = {
     site_map: Shield,
@@ -48,6 +56,7 @@ export default function VaultPage() {
     }
 
     return (
+        <PermissionGate resource="vault" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Secure Document Vault" description="Encrypted storage with expiring view-only links for external stakeholders">
                 <Button size="sm"><Plus className="h-4 w-4" /> Upload Document</Button>
@@ -76,7 +85,7 @@ export default function VaultPage() {
                                     <div className="flex items-center gap-2">
                                         <Badge variant={doc.accessLevel === "exec" ? "destructive" : "warning"} className="text-[9px]">
                                             <Lock className="h-2.5 w-2.5 mr-0.5" />
-                                            {doc.accessLevel.toUpperCase()}
+                                            {ACCESS_LEVEL_LABELS[doc.accessLevel] ?? doc.accessLevel}
                                         </Badge>
                                         {doc.hasExpLink && (
                                             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-info/10 text-info text-[10px] font-medium">
@@ -97,5 +106,6 @@ export default function VaultPage() {
                 })}
             </div>
         </div>
+        </PermissionGate>
     );
 }

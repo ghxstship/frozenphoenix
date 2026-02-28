@@ -9,6 +9,7 @@ import { useSOPs, isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { Plus, BookOpen, CheckCircle2, Clock, User, Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { PermissionGate } from "@/components/permission-guard";
 
 const MOCK_SOPS = [
     { id: "sop1", title: "Load-In Safety Protocol", role: "Lead Fabricator", version: "2.1", lastUpdated: "2026-02-10", acknowledged: 4, total: 5 },
@@ -38,6 +39,7 @@ export default function SOPsPage() {
         );
     }
     return (
+        <PermissionGate resource="sops" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Standard Operating Procedures" description="Role-based SOPs for instant onboarding and compliance">
                 <Button size="sm"><Plus className="h-4 w-4" /> New SOP</Button>
@@ -80,5 +82,6 @@ export default function SOPsPage() {
                 ))}
             </div>
         </div>
+        </PermissionGate>
     );
 }

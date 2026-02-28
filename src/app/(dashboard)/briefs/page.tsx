@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -10,9 +11,13 @@ import { StatCard } from "@/components/ui/stat-card";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { OverlineText } from "@/components/ui/overline-text";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_CREATIVE_BRIEFS, MOCK_BRIEF_TEMPLATES } from "@/lib/demo-data-creative-brand";
+import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
+import { useBriefs, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { PermissionGate } from "@/components/permission-guard";
 import type { CreativeBrief, CreativeBriefStatus, CreativeBriefType } from "@/types";
 import {
     Plus,
@@ -24,6 +29,7 @@ import {
     CalendarDays,
     Users,
     LayoutTemplate,
+    Loader2,
 } from "lucide-react";
 
 const BRIEF_TYPE_ICONS: Record<CreativeBriefType, string> = {
@@ -51,8 +57,9 @@ export default function BriefsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const { data: sbBriefs, isLoading } = useBriefs();
 
-    const briefs = MOCK_CREATIVE_BRIEFS;
+    const briefs = isSupabaseConfigured && sbBriefs ? (sbBriefs as unknown as CreativeBrief[]) : MOCK_CREATIVE_BRIEFS;
     const templates = MOCK_BRIEF_TEMPLATES;
 
     const filtered = useMemo(() => {
@@ -79,13 +86,24 @@ export default function BriefsPage() {
         return idx >= 0 ? Math.round(((idx + 1) / STATUS_ORDER.length) * 100) : 0;
     }
 
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
+        <PermissionGate resource="briefs" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Creative Briefs" description="Strategic briefs connecting creative intent to measurable outcomes">
-                <Button size="sm">
-                    <Plus className="h-4 w-4" />
-                    New Brief
-                </Button>
+                <Link href="/briefs/new">
+                    <Button size="sm">
+                        <Plus className="h-4 w-4" />
+                        New Brief
+                    </Button>
+                </Link>
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -148,7 +166,7 @@ export default function BriefsPage() {
                         <option value="all">All Types</option>
                         {Object.keys(BRIEF_TYPE_ICONS).map((t) => (
                             <option key={t} value={t}>
-                                {t.charAt(0).toUpperCase() + t.slice(1)}
+                                {CREATIVE_BRIEF_TYPE_MAP[t as CreativeBriefType]?.label ?? t}
                             </option>
                         ))}
                     </select>
@@ -168,6 +186,7 @@ export default function BriefsPage() {
                 )}
             </div>
         </div>
+        </PermissionGate>
     );
 }
 
@@ -247,7 +266,7 @@ function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; ind
                 {/* KPIs Preview */}
                 {brief.kpi_definitions.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">KPIs</p>
+                        <OverlineText className="mb-1.5">KPIs</OverlineText>
                         <div className="flex gap-2 flex-wrap">
                             {brief.kpi_definitions.slice(0, 3).map((kpi, j) => (
                                 <span key={j} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/50">
@@ -261,7 +280,7 @@ function BriefCard({ brief, index, statusProgress }: { brief: CreativeBrief; ind
                 {/* Retrospective Notes */}
                 {brief.retrospective_notes && (
                     <div className="mt-3 pt-3 border-t border-border">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Retrospective</p>
+                        <OverlineText className="mb-1">Retrospective</OverlineText>
                         <p className="text-xs text-muted-foreground line-clamp-2">{brief.retrospective_notes}</p>
                     </div>
                 )}

@@ -12,9 +12,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import { MOCK_USER_DIRECTORY } from "@/lib/demo-data-user-lifecycle";
 import {
-    Users, UserPlus, Shield, UserCheck, UserX, Clock,
+    Users, UserPlus, Shield, UserCheck, UserX, Clock, Loader2,
 } from "lucide-react";
 import type { UserLifecycleStatus, PermissionLevel } from "@/types";
+import type { UserDirectoryEntry } from "@/types/user-lifecycle";
+import { useUserDirectory, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const LIFECYCLE_FILTERS: { value: UserLifecycleStatus | "all"; label: string }[] = [
@@ -51,8 +53,26 @@ export default function UserManagementPage() {
     const [statusFilter, setStatusFilter] = useState<UserLifecycleStatus | "all">("all");
     const [roleFilter, setRoleFilter] = useState<PermissionLevel | "all">("all");
 
+    const { data: sbUsers, isLoading } = useUserDirectory();
+
+    const users: UserDirectoryEntry[] = isSupabaseConfigured && sbUsers
+        ? sbUsers.map((u: Record<string, unknown>) => ({
+            id: (u.id as string) ?? "",
+            displayName: (u.display_name as string) ?? (u.full_name as string) ?? "",
+            email: (u.email as string) ?? "",
+            avatarUrl: (u.avatar_url as string) ?? undefined,
+            jobTitle: (u.job_title as string) ?? undefined,
+            lifecycleStatus: ((u.lifecycle_status as string) ?? "active") as UserLifecycleStatus,
+            role: ((u.role as string) ?? "vendor") as PermissionLevel,
+            organizationName: (u.organization_name as string) ?? "",
+            lastActiveAt: (u.last_active_at as string) ?? undefined,
+            onboardingCompletedAt: (u.onboarding_completed_at as string) ?? undefined,
+            createdAt: (u.created_at as string) ?? "",
+        }))
+        : MOCK_USER_DIRECTORY;
+
     const filtered = useMemo(() => {
-        return MOCK_USER_DIRECTORY.filter((u) => {
+        return users.filter((u) => {
             const matchesSearch =
                 !search ||
                 u.displayName.toLowerCase().includes(search.toLowerCase()) ||
@@ -61,14 +81,22 @@ export default function UserManagementPage() {
             const matchesRole = roleFilter === "all" || u.role === roleFilter;
             return matchesSearch && matchesStatus && matchesRole;
         });
-    }, [search, statusFilter, roleFilter]);
+    }, [users, search, statusFilter, roleFilter]);
 
-    const activeCount = MOCK_USER_DIRECTORY.filter((u) => u.lifecycleStatus === "active").length;
-    const onboardingCount = MOCK_USER_DIRECTORY.filter((u) => u.lifecycleStatus === "onboarding").length;
-    const suspendedCount = MOCK_USER_DIRECTORY.filter((u) => u.lifecycleStatus === "suspended").length;
-    const deactivatedCount = MOCK_USER_DIRECTORY.filter((u) =>
+    const activeCount = users.filter((u) => u.lifecycleStatus === "active").length;
+    const onboardingCount = users.filter((u) => u.lifecycleStatus === "onboarding").length;
+    const suspendedCount = users.filter((u) => u.lifecycleStatus === "suspended").length;
+    const deactivatedCount = users.filter((u) =>
         u.lifecycleStatus === "deactivated" || u.lifecycleStatus === "pending_deletion"
     ).length;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <PermissionGate resource="user_management" action="read">
@@ -199,7 +227,7 @@ export default function UserManagementPage() {
 
                     <div className="mt-3 text-xs text-muted-foreground flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {filtered.length} of {MOCK_USER_DIRECTORY.length} users
+                        {filtered.length} of {users.length} users
                     </div>
                 </CardContent>
             </Card>

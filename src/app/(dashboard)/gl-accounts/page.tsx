@@ -8,9 +8,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    CircleDollarSign, Plus,
+    CircleDollarSign, Plus, Loader2,
 } from "lucide-react";
 import { MOCK_GL_ACCOUNTS } from "@/lib/demo-data-governance";
+import type { GLAccount } from "@/types/governance";
+import { useGlAccounts, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
@@ -27,7 +29,28 @@ export default function GLAccountsPage() {
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
-    const accounts = MOCK_GL_ACCOUNTS;
+    const { data: sbAccounts, isLoading } = useGlAccounts();
+
+    const accounts: GLAccount[] = isSupabaseConfigured && sbAccounts
+        ? sbAccounts.map((a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            code: (a.code as string) ?? (a.account_code as string) ?? "",
+            name: (a.name as string) ?? "",
+            account_type: (a.account_type as string) ?? "expense",
+            description: (a.description as string) ?? undefined,
+            department: (a.department as string) ?? undefined,
+            capex_opex: (a.capex_opex as string) ?? undefined,
+            is_active: (a.is_active as boolean) ?? true,
+        } as GLAccount))
+        : MOCK_GL_ACCOUNTS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = accounts.filter(a => {
         const matchesSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.code.includes(search);

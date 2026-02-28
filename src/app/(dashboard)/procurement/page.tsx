@@ -19,7 +19,11 @@ import {
 } from "lucide-react";
 import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
 import type { BadgeVariant } from "@/config/ui-variants";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when procurement_requests table is available
+void isSupabaseConfigured;
 
 interface ProcurementRequest {
     id: string;

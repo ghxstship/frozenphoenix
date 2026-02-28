@@ -16,8 +16,9 @@ import { MOCK_REVENUE_SCHEDULES } from "@/lib/demo-data-crm-revenue";
 import type { RevenueSchedule } from "@/types";
 import {
     DollarSign, TrendingUp, CheckCircle, Clock,
-    ArrowRight, Receipt,
+    ArrowRight, Receipt, Loader2,
 } from "lucide-react";
+import { useRevenueSchedules, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const tableColumns: ColumnDef<RevenueSchedule>[] = [
@@ -114,7 +115,26 @@ export default function RevenuePage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const schedules = MOCK_REVENUE_SCHEDULES;
+    const { data: sbSchedules, isLoading } = useRevenueSchedules();
+
+    const schedules: RevenueSchedule[] = isSupabaseConfigured && sbSchedules
+        ? sbSchedules.map((r: Record<string, unknown>) => ({
+            id: (r.id as string) ?? "",
+            dealId: (r.deal_id as string) ?? "",
+            dealTitle: (r.deal_title as string) ?? "",
+            projectId: (r.project_id as string) ?? undefined,
+            projectName: (r.project_name as string) ?? undefined,
+            description: (r.description as string) ?? "",
+            type: (r.type as string) ?? "milestone",
+            status: (r.status as string) ?? "scheduled",
+            contractedAmount: (r.contracted_amount as number) ?? 0,
+            invoicedAmount: (r.invoiced_amount as number) ?? 0,
+            recognizedAmount: (r.recognized_amount as number) ?? 0,
+            scheduledDate: (r.scheduled_date as string) ?? "",
+            recognizedAt: (r.recognized_at as string) ?? undefined,
+            currency: (r.currency as string) ?? "USD",
+        } as RevenueSchedule))
+        : MOCK_REVENUE_SCHEDULES;
 
     const filtered = useMemo(() => {
         let result = schedules;
@@ -138,6 +158,14 @@ export default function RevenuePage() {
         const backlog = totalContracted - totalRecognized;
         return { totalContracted, totalInvoiced, totalRecognized, backlog };
     }, [schedules]);
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <PermissionGate resource="revenue" action="read">

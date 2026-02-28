@@ -10,10 +10,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    ClipboardMinus, Plus, CheckCircle2, Clock, AlertTriangle,
+    ClipboardMinus, Plus, CheckCircle2, Clock, AlertTriangle, Loader2,
 } from "lucide-react";
 import { MOCK_CONTRACT_OBLIGATIONS } from "@/lib/demo-data-governance";
-import type { ObligationStatus } from "@/types/governance";
+import type { ContractObligation, ObligationStatus } from "@/types/governance";
+import { useContractObligations, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const OBLIGATION_STATUSES: ObligationStatus[] = [
@@ -32,7 +33,30 @@ export default function ObligationsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const obligations = MOCK_CONTRACT_OBLIGATIONS;
+    const { data: sbObligations, isLoading } = useContractObligations();
+
+    const obligations: ContractObligation[] = isSupabaseConfigured && sbObligations
+        ? sbObligations.map((o: Record<string, unknown>) => ({
+            id: (o.id as string) ?? "",
+            contract_id: (o.contract_id as string) ?? "",
+            party: (o.party as string) ?? "us",
+            description: (o.description as string) ?? "",
+            status: ((o.status as string) ?? "pending") as ObligationStatus,
+            due_date: (o.due_date as string) ?? undefined,
+            is_critical: (o.is_critical as boolean) ?? false,
+            is_recurring: (o.is_recurring as boolean) ?? false,
+            recurrence_pattern: (o.recurrence_pattern as string) ?? undefined,
+            clause_reference: (o.clause_reference as string) ?? undefined,
+        } as ContractObligation))
+        : MOCK_CONTRACT_OBLIGATIONS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = obligations.filter(o => {
         const matchesSearch = !search || o.description.toLowerCase().includes(search.toLowerCase());

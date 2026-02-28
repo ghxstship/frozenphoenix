@@ -7,7 +7,11 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { User } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when org_chart/crew_assignments queries are available
+void isSupabaseConfigured;
 
 export default function OrgChartPage() {
     const orgTree = [

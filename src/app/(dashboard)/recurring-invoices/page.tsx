@@ -11,8 +11,9 @@ import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import {
     RefreshCw, Plus, DollarSign,
-    Calendar, Pause, Play,
+    Calendar, Pause, Play, Loader2,
 } from "lucide-react";
+import { useRecurringInvoices, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type RecurringStatus = "active" | "paused" | "completed" | "cancelled";
@@ -52,16 +53,43 @@ const mockRecurring: RecurringInvoice[] = [
 export default function RecurringInvoicesPage() {
     const [search, setSearch] = useState("");
 
-    const filtered = mockRecurring.filter((r) =>
+    const { data: sbRecurring, isLoading } = useRecurringInvoices();
+
+    const invoices: RecurringInvoice[] = isSupabaseConfigured && sbRecurring
+        ? sbRecurring.map((r: Record<string, unknown>) => ({
+            id: (r.id as string) ?? "",
+            title: (r.title as string) ?? "",
+            client: (r.client_name as string) ?? (r.client as string) ?? "",
+            project: (r.project_name as string) ?? (r.project as string) ?? "",
+            amount: (r.amount as number) ?? 0,
+            frequency: ((r.frequency as string) ?? "monthly") as Frequency,
+            status: ((r.status as string) ?? "active") as RecurringStatus,
+            nextDate: (r.next_date as string) ?? "",
+            lastGenerated: (r.last_generated as string) ?? null,
+            totalGenerated: (r.total_generated as number) ?? 0,
+            totalCollected: (r.total_collected as number) ?? 0,
+            occurrencesLeft: (r.occurrences_left as number) ?? null,
+        }))
+        : mockRecurring;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = invoices.filter((r) =>
         !search || r.title.toLowerCase().includes(search.toLowerCase()) || r.client.toLowerCase().includes(search.toLowerCase())
     );
 
-    const monthlyRecurring = mockRecurring.filter((r) => r.status === "active").reduce((s, r) => {
+    const monthlyRecurring = invoices.filter((r) => r.status === "active").reduce((s, r) => {
         const multiplier = r.frequency === "weekly" ? 4.33 : r.frequency === "biweekly" ? 2.17 : r.frequency === "monthly" ? 1 : r.frequency === "quarterly" ? 0.33 : 0.083;
         return s + r.amount * multiplier;
     }, 0);
-    const totalCollected = mockRecurring.reduce((s, r) => s + r.totalCollected, 0);
-    const activeCount = mockRecurring.filter((r) => r.status === "active").length;
+    const totalCollected = invoices.reduce((s, r) => s + r.totalCollected, 0);
+    const activeCount = invoices.filter((r) => r.status === "active").length;
 
     return (
         <PermissionGate resource="recurring_invoices" action="read">

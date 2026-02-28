@@ -8,9 +8,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Fingerprint, Plus,
+    Fingerprint, Plus, Loader2,
 } from "lucide-react";
 import { MOCK_IP_RIGHTS } from "@/lib/demo-data-governance";
+import type { IPRight } from "@/types/governance";
+import { useIpRights, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
@@ -32,7 +34,32 @@ const OWNER_LABELS: Record<string, string> = {
 export default function IPRightsPage() {
     const [search, setSearch] = useState("");
 
-    const rights = MOCK_IP_RIGHTS;
+    const { data: sbRights, isLoading } = useIpRights();
+
+    const rights: IPRight[] = isSupabaseConfigured && sbRights
+        ? sbRights.map((r: Record<string, unknown>) => ({
+            id: (r.id as string) ?? "",
+            contract_id: (r.contract_id as string) ?? "",
+            asset_type: (r.asset_type as string) ?? "other",
+            asset_description: (r.asset_description as string) ?? "",
+            owner: (r.owner as string) ?? "us",
+            license_type: (r.license_type as string) ?? "other",
+            territory: (r.territory as string) ?? "",
+            duration: (r.duration as string) ?? undefined,
+            exclusivity: (r.exclusivity as boolean) ?? false,
+            sublicensable: (r.sublicensable as boolean) ?? false,
+            permitted_uses: (r.permitted_uses as string) ?? undefined,
+            prohibited_uses: (r.prohibited_uses as string) ?? undefined,
+        } as IPRight))
+        : MOCK_IP_RIGHTS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = rights.filter(r => {
         return !search || r.asset_description.toLowerCase().includes(search.toLowerCase()) || r.asset_type.toLowerCase().includes(search.toLowerCase());

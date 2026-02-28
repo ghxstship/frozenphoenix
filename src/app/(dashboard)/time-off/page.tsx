@@ -13,7 +13,11 @@ import {
     XCircle, Palmtree, Stethoscope, GraduationCap,
     Heart, User,
 } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when leave_requests table is available
+void isSupabaseConfigured;
 
 type LeaveType = "vacation" | "sick" | "personal" | "training" | "parental" | "bereavement";
 

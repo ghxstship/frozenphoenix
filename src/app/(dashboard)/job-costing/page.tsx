@@ -11,10 +11,11 @@ import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Calculator, DollarSign, TrendingUp, TrendingDown,
-    BarChart3,
+    BarChart3, Loader2,
 } from "lucide-react";
 import { MOCK_JOB_COST_ENTRIES } from "@/lib/demo-data-vendor-lifecycle";
-import type { JobCostType } from "@/types/vendor-lifecycle";
+import type { JobCostEntry, JobCostType } from "@/types/vendor-lifecycle";
+import { useJobCostEntries, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const COST_TYPE_CONFIG: Record<JobCostType, { label: string; color: string }> = {
@@ -31,7 +32,34 @@ export default function JobCostingPage() {
     const [projectFilter, setProjectFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
-    const entries = MOCK_JOB_COST_ENTRIES;
+    const { data: sbEntries, isLoading } = useJobCostEntries();
+
+    const entries: JobCostEntry[] = isSupabaseConfigured && sbEntries
+        ? sbEntries.map((e: Record<string, unknown>) => ({
+            id: (e.id as string) ?? "",
+            projectId: (e.project_id as string) ?? "",
+            projectName: (e.project_name as string) ?? "",
+            costType: ((e.cost_type as string) ?? "expense") as JobCostType,
+            description: (e.description as string) ?? "",
+            vendorName: (e.vendor_name as string) ?? undefined,
+            crewMemberName: (e.crew_member_name as string) ?? undefined,
+            quantity: (e.quantity as number) ?? 0,
+            unit: (e.unit as string) ?? "",
+            unitCost: (e.unit_cost as number) ?? 0,
+            totalCost: (e.total_cost as number) ?? 0,
+            budgetedAmount: (e.budgeted_amount as number) ?? undefined,
+            billable: (e.billable as boolean) ?? false,
+            costDate: (e.cost_date as string) ?? "",
+        } as JobCostEntry))
+        : MOCK_JOB_COST_ENTRIES;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const projects = [...new Set(entries.map(e => e.projectName).filter(Boolean))] as string[];
 

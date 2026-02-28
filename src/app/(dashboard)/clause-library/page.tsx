@@ -8,10 +8,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    BookLock, Plus,
+    BookLock, Plus, Loader2,
 } from "lucide-react";
 import { MOCK_CONTRACT_CLAUSES } from "@/lib/demo-data-governance";
-import type { ClauseRiskLevel } from "@/types/governance";
+import type { ContractClause, ClauseRiskLevel } from "@/types/governance";
+import { useClauseLibrary, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const CLAUSE_TYPE_LABELS: Record<string, string> = {
@@ -33,7 +34,28 @@ export default function ClauseLibraryPage() {
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<string>("all");
 
-    const clauses = MOCK_CONTRACT_CLAUSES;
+    const { data: sbClauses, isLoading } = useClauseLibrary();
+
+    const clauses: ContractClause[] = isSupabaseConfigured && sbClauses
+        ? sbClauses.map((c: Record<string, unknown>) => ({
+            id: (c.id as string) ?? "",
+            clause_type: (c.clause_type as string) ?? "other",
+            title: (c.title as string) ?? "",
+            body: (c.body as string) ?? "",
+            risk_level: ((c.risk_level as string) ?? "low") as ClauseRiskLevel,
+            is_template: (c.is_template as boolean) ?? false,
+            is_standard: (c.is_standard as boolean) ?? false,
+            negotiable: (c.negotiable as boolean) ?? true,
+        } as ContractClause))
+        : MOCK_CONTRACT_CLAUSES;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = clauses.filter(c => {
         const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.body.toLowerCase().includes(search.toLowerCase());

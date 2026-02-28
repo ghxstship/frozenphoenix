@@ -1317,6 +1317,44 @@ export function useVendorOnboarding() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ENGINEERING APPROVALS
+// ═══════════════════════════════════════════════════════════════
+
+export function useEngineeringApprovals() {
+    return useQuery({
+        queryKey: ["engineering_approvals"],
+        queryFn: async () => {
+            const supabase = getSupabase();
+            const { data, error } = await supabase
+                .from("engineering_approvals")
+                .select("*")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// JOB COST ENTRIES
+// ═══════════════════════════════════════════════════════════════
+
+export function useJobCostEntries() {
+    return useQuery({
+        queryKey: ["job_cost_entries"],
+        queryFn: async () => {
+            const supabase = getSupabase();
+            const { data, error } = await supabase
+                .from("job_cost_entries")
+                .select("*")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // CLAUSE LIBRARY
 // ═══════════════════════════════════════════════════════════════
 

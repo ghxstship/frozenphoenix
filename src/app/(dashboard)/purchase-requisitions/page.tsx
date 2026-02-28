@@ -35,18 +35,21 @@ export default function PurchaseRequisitionsPage() {
     const reqs: PurchaseRequisition[] = isSupabaseConfigured && sbReqs
         ? sbReqs.map((r: Record<string, unknown>) => ({
             id: (r.id as string) ?? "",
+            project_id: (r.project_id as string) ?? "",
             number: (r.number as string) ?? "",
             title: (r.title as string) ?? "",
             status: ((r.status as string) ?? "draft") as RequisitionStatus,
-            urgency: (r.urgency as string) ?? "normal",
+            urgency: ((r.urgency as string) ?? "normal") as PurchaseRequisition["urgency"],
             estimated_cost: (r.estimated_cost as number) ?? 0,
             justification: (r.justification as string) ?? "",
             needed_by: (r.needed_by as string) ?? undefined,
             line_items: (r.line_items as unknown[]) ?? [],
-            requested_by: (r.requested_by as string) ?? "",
-            requested_at: (r.requested_at as string) ?? "",
+            requester_id: (r.requester_id as string) ?? "",
             department: (r.department as string) ?? "",
-        } as PurchaseRequisition))
+            organization_id: (r.organization_id as string) ?? "",
+            created_at: (r.created_at as string) ?? "",
+            updated_at: (r.updated_at as string) ?? "",
+        }))
         : MOCK_PURCHASE_REQUISITIONS;
 
     if (isSupabaseConfigured && isLoading) {

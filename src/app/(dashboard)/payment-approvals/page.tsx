@@ -9,11 +9,12 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import {
-    ShieldCheck, CheckCircle2, Clock, XCircle,
+    ShieldCheck, CheckCircle2, Clock, XCircle, Loader2,
 } from "lucide-react";
 import { MOCK_PAYMENT_APPROVALS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
-import type { ApprovalStatus } from "@/types/governance";
+import type { PaymentApproval, ApprovalStatus } from "@/types/governance";
+import { useBudgetApprovals, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const APPROVAL_STATUSES: ApprovalStatus[] = [
@@ -24,7 +25,36 @@ export default function PaymentApprovalsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const approvals = MOCK_PAYMENT_APPROVALS;
+    const { data: sbApprovals, isLoading } = useBudgetApprovals();
+
+    const approvals: PaymentApproval[] = isSupabaseConfigured && sbApprovals
+        ? sbApprovals.map((a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            payment_type: ((a.payment_type as string) ?? "vendor_invoice") as PaymentApproval["payment_type"],
+            entity_id: (a.entity_id as string) ?? "",
+            amount: (a.amount as number) ?? 0,
+            currency: (a.currency as string) ?? "USD",
+            payee_name: (a.payee_name as string) ?? "",
+            status: ((a.status as string) ?? "pending") as ApprovalStatus,
+            requested_by: (a.requested_by as string) ?? "",
+            requested_at: (a.requested_at as string) ?? "",
+            three_way_match_verified: (a.three_way_match_verified as boolean) ?? false,
+            vendor_compliance_verified: (a.vendor_compliance_verified as boolean) ?? false,
+            budget_within_limit: (a.budget_within_limit as boolean) ?? false,
+            threshold_rule: (a.threshold_rule as string) ?? "",
+            organization_id: (a.organization_id as string) ?? "",
+            created_at: (a.created_at as string) ?? "",
+            updated_at: (a.updated_at as string) ?? "",
+        }))
+        : MOCK_PAYMENT_APPROVALS;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     const filtered = approvals.filter(a => {
         const matchesSearch = !search || (a.payee_name || "").toLowerCase().includes(search.toLowerCase()) || a.payment_type.toLowerCase().includes(search.toLowerCase());

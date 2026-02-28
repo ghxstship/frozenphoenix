@@ -11,8 +11,9 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Package, Plus, AlertTriangle,
-    MapPin, Tag, BarChart3,
+    MapPin, Tag, BarChart3, Loader2,
 } from "lucide-react";
+import { useInventoryItems, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "on_order";
@@ -49,17 +50,42 @@ export default function InventoryPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-    const categories = ["all", ...new Set(mockInventory.map(i => i.category))];
+    const { data: sbItems, isLoading } = useInventoryItems();
 
-    const filtered = mockInventory.filter((item) => {
+    const items: InventoryItem[] = isSupabaseConfigured && sbItems
+        ? sbItems.map((i: Record<string, unknown>) => ({
+            id: (i.id as string) ?? "",
+            name: (i.name as string) ?? "",
+            sku: (i.sku as string) ?? "",
+            category: (i.category as string) ?? "",
+            quantity: (i.quantity as number) ?? 0,
+            minQuantity: (i.min_quantity as number) ?? 0,
+            location: (i.location as string) ?? "",
+            status: ((i.status as string) ?? "in_stock") as StockStatus,
+            unitCost: (i.unit_cost as number) ?? 0,
+            lastRestocked: (i.last_restocked as string) ?? "",
+        }))
+        : mockInventory;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const categories = ["all", ...new Set(items.map(i => i.category))];
+
+    const filtered = items.filter((item) => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.sku.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === "all" || item.status === statusFilter;
         const matchesCat = categoryFilter === "all" || item.category === categoryFilter;
         return matchesSearch && matchesStatus && matchesCat;
     });
 
-    const totalValue = mockInventory.reduce((sum, i) => sum + i.quantity * i.unitCost, 0);
-    const lowStockCount = mockInventory.filter(i => i.status === "low_stock" || i.status === "out_of_stock").length;
+    const totalValue = items.reduce((sum, i) => sum + i.quantity * i.unitCost, 0);
+    const lowStockCount = items.filter(i => i.status === "low_stock" || i.status === "out_of_stock").length;
 
     return (
         <PermissionGate resource="inventory" action="read">
@@ -69,7 +95,7 @@ export default function InventoryPage() {
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Items" value={mockInventory.length} icon={Package} />
+                <StatCard title="Total Items" value={items.length} icon={Package} />
                 <StatCard title="Total Value" value={`$${Math.round(totalValue).toLocaleString()}`} icon={BarChart3} />
                 <StatCard title="Low / Out of Stock" value={lowStockCount} icon={AlertTriangle} />
                 <StatCard title="Categories" value={categories.length - 1} icon={Tag} />

@@ -9,7 +9,11 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
 import { Radio, Users, AlertTriangle, Activity } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when live_events/incidents queries are available
+void isSupabaseConfigured;
 
 type EventPhase = "advance" | "load_in" | "setup" | "rehearsal" | "ready" | "live" | "hold" | "strike" | "wrapped";
 

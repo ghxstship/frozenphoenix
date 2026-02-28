@@ -13,8 +13,9 @@ import { formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     Cpu, Plus, MapPin, Zap, Wifi,
-    CheckCircle2, FileText, Shield,
+    CheckCircle2, FileText, Shield, Loader2,
 } from "lucide-react";
+import { useTechSheets, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface TechSheetListItem {
@@ -44,7 +45,34 @@ export default function TechSheetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const filtered = mockTechSheets.filter((ts) => {
+    const { data: sbSheets, isLoading } = useTechSheets();
+
+    const techSheets: TechSheetListItem[] = isSupabaseConfigured && sbSheets
+        ? sbSheets.map((ts: Record<string, unknown>) => ({
+            id: (ts.id as string) ?? "",
+            title: (ts.title as string) ?? "",
+            techSheetNumber: (ts.tech_sheet_number as string) ?? "",
+            projectName: (ts.project_name as string) ?? "",
+            venueName: (ts.venue_name as string) ?? "",
+            version: (ts.version as number) ?? 1,
+            status: ((ts.status as string) ?? "draft") as TechSheetStatusType,
+            totalAmperage: (ts.total_amperage as number) ?? 0,
+            generatorRequired: (ts.generator_required as boolean) ?? false,
+            internetRequired: (ts.internet_required as boolean) ?? false,
+            equipmentCount: (ts.equipment_count as number) ?? 0,
+            createdAt: (ts.created_at as string) ?? "",
+        }))
+        : mockTechSheets;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = techSheets.filter((ts) => {
         const matchesSearch =
             ts.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ts.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,7 +81,7 @@ export default function TechSheetsPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const totalEquipment = mockTechSheets.reduce((sum, ts) => sum + ts.equipmentCount, 0);
+    const totalEquipment = techSheets.reduce((sum, ts) => sum + ts.equipmentCount, 0);
 
     return (
         <PermissionGate resource="tech_sheets" action="read">
@@ -63,10 +91,10 @@ export default function TechSheetsPage() {
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Tech Sheets" value={mockTechSheets.length} icon={Cpu} />
-                <StatCard title="Approved" value={mockTechSheets.filter(ts => ts.status === "approved").length} icon={CheckCircle2} />
+                <StatCard title="Total Tech Sheets" value={techSheets.length} icon={Cpu} />
+                <StatCard title="Approved" value={techSheets.filter(ts => ts.status === "approved").length} icon={CheckCircle2} />
                 <StatCard title="Equipment Items" value={totalEquipment} icon={FileText} />
-                <StatCard title="Generator Req." value={mockTechSheets.filter(ts => ts.generatorRequired).length} icon={Zap} />
+                <StatCard title="Generator Req." value={techSheets.filter(ts => ts.generatorRequired).length} icon={Zap} />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">

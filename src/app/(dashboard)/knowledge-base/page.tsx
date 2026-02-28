@@ -19,7 +19,9 @@ import {
     ChevronRight,
     Clock,
     Users,
+    Loader2,
 } from "lucide-react";
+import { useKnowledgeBaseArticles, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const MOCK_KB_ARTICLES = [
@@ -121,11 +123,55 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     training: Users,
 };
 
+interface KBArticle {
+    id: string;
+    category: string;
+    department?: string;
+    title: string;
+    summary: string;
+    tags: string[];
+    status: string;
+    version: number;
+    authorName: string;
+    publishedAt: string;
+    requiresAcknowledgment: boolean;
+    acknowledgmentCount?: number;
+    totalRequired?: number;
+}
+
 export default function KnowledgeBasePage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-    const filteredArticles = MOCK_KB_ARTICLES.filter((article) => {
+    const { data: sbArticles, isLoading } = useKnowledgeBaseArticles();
+
+    const articles: KBArticle[] = isSupabaseConfigured && sbArticles
+        ? sbArticles.map((a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            category: (a.category as string) ?? "guide",
+            department: (a.department as string) ?? undefined,
+            title: (a.title as string) ?? "",
+            summary: (a.summary as string) ?? "",
+            tags: (a.tags as string[]) ?? [],
+            status: (a.status as string) ?? "published",
+            version: (a.version as number) ?? 1,
+            authorName: (a.author_name as string) ?? "",
+            publishedAt: (a.published_at as string) ?? "",
+            requiresAcknowledgment: (a.requires_acknowledgment as boolean) ?? false,
+            acknowledgmentCount: (a.acknowledgment_count as number) ?? undefined,
+            totalRequired: (a.total_required as number) ?? undefined,
+        }))
+        : MOCK_KB_ARTICLES;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filteredArticles = articles.filter((article) => {
         const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
             article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -135,7 +181,7 @@ export default function KnowledgeBasePage() {
 
     const categories = ["all", "sop", "checklist", "template", "guide", "policy", "training"];
 
-    const pendingAcknowledgments = MOCK_KB_ARTICLES.filter(
+    const pendingAcknowledgments = articles.filter(
         (a) => a.requiresAcknowledgment && a.acknowledgmentCount !== undefined && a.totalRequired !== undefined && a.acknowledgmentCount < a.totalRequired
     );
 
@@ -172,9 +218,9 @@ export default function KnowledgeBasePage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <StatCard title="Total Articles" value={MOCK_KB_ARTICLES.length} icon={BookOpen} />
-                <StatCard title="SOPs" value={MOCK_KB_ARTICLES.filter((a) => a.category === "sop").length} icon={FileText} />
-                <StatCard title="Checklists" value={MOCK_KB_ARTICLES.filter((a) => a.category === "checklist").length} icon={CheckSquare} />
+                <StatCard title="Total Articles" value={articles.length} icon={BookOpen} />
+                <StatCard title="SOPs" value={articles.filter((a) => a.category === "sop").length} icon={FileText} />
+                <StatCard title="Checklists" value={articles.filter((a) => a.category === "checklist").length} icon={CheckSquare} />
                 <StatCard title="Pending Acknowledgments" value={pendingAcknowledgments.length} icon={Clock} className={pendingAcknowledgments.length > 0 ? "border-warning/50 bg-warning/5" : ""} />
             </div>
 
@@ -186,7 +232,7 @@ export default function KnowledgeBasePage() {
                 <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {Object.entries(DOCUMENT_CATEGORY_CONFIG).map(([key, config]) => {
-                            const count = MOCK_KB_ARTICLES.filter((a) => a.category === key).length;
+                            const count = articles.filter((a) => a.category === key).length;
                             const Icon = CATEGORY_ICONS[key] || BookOpen;
                             
                             return (

@@ -12,7 +12,11 @@ import {
     Users, Lock, Globe, Pencil, Copy, Trash2,
     Filter, SortAsc, Columns,
 } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when saved_views table is available
+void isSupabaseConfigured;
 
 type ViewType = "list" | "board" | "table" | "calendar" | "timeline" | "gantt";
 type ViewVisibility = "private" | "team" | "organization";

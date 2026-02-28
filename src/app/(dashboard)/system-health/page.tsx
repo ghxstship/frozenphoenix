@@ -19,7 +19,11 @@ import {
     Gauge,
     Bell,
 } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+
+// TODO: Wire to Supabase when system_health monitoring queries are available
+void isSupabaseConfigured;
 
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";

@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import {
     CreditCard, Plus, Copy, Pencil,
-    DollarSign, Users,
+    DollarSign, Users, Loader2,
 } from "lucide-react";
+import { useRateCards, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface RateCardItem {
@@ -67,7 +68,30 @@ export default function RateCardsPage() {
     const [search, setSearch] = useState("");
     const [expandedCard, setExpandedCard] = useState<string | null>("1");
 
-    const filtered = mockRateCards.filter((rc) =>
+    const { data: sbCards, isLoading } = useRateCards();
+
+    const rateCards: RateCard[] = isSupabaseConfigured && sbCards
+        ? sbCards.map((rc: Record<string, unknown>) => ({
+            id: (rc.id as string) ?? "",
+            name: (rc.name as string) ?? "",
+            description: (rc.description as string) ?? "",
+            currency: (rc.currency as string) ?? "USD",
+            isDefault: (rc.is_default as boolean) ?? false,
+            clientCount: (rc.client_count as number) ?? 0,
+            items: (rc.items as RateCardItem[]) ?? [],
+            updatedAt: (rc.updated_at as string) ?? "",
+        }))
+        : mockRateCards;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = rateCards.filter((rc) =>
         !search || rc.name.toLowerCase().includes(search.toLowerCase())
     );
 

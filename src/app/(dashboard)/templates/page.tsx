@@ -13,8 +13,9 @@ import { Chip } from "@/components/ui/chip";
 import { formatDate } from "@/lib/utils";
 import {
     LayoutTemplate, Plus, FileText, Copy,
-    Star, Clock, Tag,
+    Star, Clock, Tag, Loader2,
 } from "lucide-react";
+import { useTemplates, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TemplateCategory = "proposal" | "contract" | "invoice" | "call_sheet" | "tech_sheet" | "sow" | "report" | "email";
@@ -57,7 +58,31 @@ export default function TemplatesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-    const filtered = mockTemplates.filter((t) => {
+    const { data: sbTemplates, isLoading } = useTemplates();
+
+    const templates: TemplateListItem[] = isSupabaseConfigured && sbTemplates
+        ? sbTemplates.map((t: Record<string, unknown>) => ({
+            id: (t.id as string) ?? "",
+            name: (t.name as string) ?? "",
+            category: ((t.category as string) ?? "report") as TemplateCategory,
+            description: (t.description as string) ?? "",
+            lastUsed: (t.last_used as string) ?? (t.updated_at as string) ?? "",
+            usageCount: (t.usage_count as number) ?? 0,
+            isDefault: (t.is_default as boolean) ?? false,
+            tags: (t.tags as string[]) ?? [],
+            createdBy: (t.created_by as string) ?? "",
+        }))
+        : mockTemplates;
+
+    if (isSupabaseConfigured && isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const filtered = templates.filter((t) => {
         const matchesSearch =
             t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -74,9 +99,9 @@ export default function TemplatesPage() {
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Templates" value={mockTemplates.length} icon={LayoutTemplate} />
-                <StatCard title="Default Templates" value={mockTemplates.filter(t => t.isDefault).length} icon={Star} />
-                <StatCard title="Total Uses" value={mockTemplates.reduce((sum, t) => sum + t.usageCount, 0)} icon={Copy} />
+                <StatCard title="Total Templates" value={templates.length} icon={LayoutTemplate} />
+                <StatCard title="Default Templates" value={templates.filter(t => t.isDefault).length} icon={Star} />
+                <StatCard title="Total Uses" value={templates.reduce((sum, t) => sum + t.usageCount, 0)} icon={Copy} />
                 <StatCard title="Categories" value={Object.keys(CATEGORY_CONFIG).length} icon={Tag} />
             </div>
 

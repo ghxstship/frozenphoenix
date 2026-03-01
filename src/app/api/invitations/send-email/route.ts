@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import { sendEmailSchema } from "@/lib/validation/api-schemas";
+import { logger } from "@/lib/logger";
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
@@ -24,29 +27,13 @@ const ROLE_LABELS: Record<string, string> = {
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
-    let body: {
-        to: string;
-        token: string;
-        role: string;
-        orgName: string;
-        personalMessage: string | null;
-        appUrl: string;
-    };
+    const validated = await parseAndValidate(request, sendEmailSchema);
+    if (!validated.success) return validated.response;
 
-    try {
-        body = await request.json();
-    } catch {
-        return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-    }
-
-    const { to, token, role, orgName, personalMessage, appUrl } = body;
-
-    if (!to || !token || !appUrl) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+    const { to, token, role, orgName, personalMessage, appUrl } = validated.data;
 
     const inviteUrl = `${appUrl}/invite/${token}`;
     const roleLabel = ROLE_LABELS[role] || role;
@@ -75,14 +62,14 @@ export async function POST(request: NextRequest) {
 
             if (!res.ok) {
                 const err = await res.text();
-                console.error("[send-email] Resend error:", err);
-                return NextResponse.json({ error: "Email delivery failed" }, { status: 502 });
+                logger.error("Resend email delivery error", { err });
+                return ApiErrors.badGateway("Email delivery failed");
             }
 
             return NextResponse.json({ sent: true });
         } catch (err) {
-            console.error("[send-email] Resend exception:", err);
-            return NextResponse.json({ error: "Email delivery failed" }, { status: 502 });
+            logger.error("Resend email delivery exception", { err });
+            return ApiErrors.badGateway("Email delivery failed");
         }
     }
 
@@ -103,25 +90,21 @@ export async function POST(request: NextRequest) {
             // admin.inviteUserByEmail requires service_role — if we only have anon key,
             // fall back to logging the invite URL for development
             if (inviteError.message.includes("not authorized") || inviteError.status === 403) {
-                console.warn(
-                    `[send-email] No email provider configured. Invitation URL for ${to}: ${inviteUrl}`
-                );
+                logger.warn("No email provider configured — invite URL logged", { to, inviteUrl });
                 return NextResponse.json({
                     sent: false,
                     fallback: "logged",
                     message: "No email provider configured. Invite URL logged to server console.",
                 });
             }
-            console.error("[send-email] Supabase invite error:", inviteError.message);
-            return NextResponse.json({ error: "Email delivery failed" }, { status: 502 });
+            logger.error("Supabase invite error", { message: inviteError.message });
+            return ApiErrors.badGateway("Email delivery failed");
         }
 
         return NextResponse.json({ sent: true });
     } catch {
         // Final fallback: log the invite URL
-        console.warn(
-            `[send-email] Email delivery unavailable. Invitation URL for ${to}: ${inviteUrl}`
-        );
+        logger.warn("Email delivery unavailable — invite URL logged", { to, inviteUrl });
         return NextResponse.json({
             sent: false,
             fallback: "logged",

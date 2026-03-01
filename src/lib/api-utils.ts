@@ -59,6 +59,12 @@ export const ApiErrors = {
     validationError: (details: Record<string, string[]>) =>
         apiError("VALIDATION_ERROR", "Request validation failed", 422, details),
 
+    badRequest: (message: string) =>
+        apiError("BAD_REQUEST", message, 400),
+
+    badGateway: (message = "Upstream service failed") =>
+        apiError("BAD_GATEWAY", message, 502),
+
     serviceUnavailable: (message = "Service unavailable") =>
         apiError("SERVICE_UNAVAILABLE", message, 503),
 

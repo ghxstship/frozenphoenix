@@ -7,6 +7,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 const usageEventSchema = z.object({
@@ -19,12 +21,12 @@ const usageEventSchema = z.object({
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const { data: membership } = await supabase
@@ -35,19 +37,25 @@ export async function POST(request: NextRequest) {
         .single();
 
     if (!membership) {
-        return NextResponse.json({ error: "No org membership found" }, { status: 403 });
+        return ApiErrors.forbidden("No org membership found");
     }
 
     let body: unknown;
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+        return ApiErrors.badRequest("Invalid JSON body");
     }
 
     const parsed = usageEventSchema.safeParse(body);
     if (!parsed.success) {
-        return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+        const details: Record<string, string[]> = {};
+        for (const issue of parsed.error.issues) {
+            const path = issue.path.join(".") || "_root";
+            if (!details[path]) details[path] = [];
+            details[path]!.push(issue.message);
+        }
+        return ApiErrors.validationError(details);
     }
 
     const { field_type_id, action, resource, count } = parsed.data;
@@ -66,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
         // Log but don't fail the request — usage metering is non-critical
-        console.error("[field-usage] Insert error:", error.message);
+        logger.error("Field usage insert error", { message: error.message });
     }
 
     return NextResponse.json({ ok: true }, { status: 202 });
@@ -75,12 +83,12 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const { data: membership } = await supabase
@@ -91,7 +99,7 @@ export async function GET(request: NextRequest) {
         .single();
 
     if (!membership) {
-        return NextResponse.json({ error: "No org membership found" }, { status: 403 });
+        return ApiErrors.forbidden("No org membership found");
     }
 
     const orgId = membership.organization_id;
@@ -108,7 +116,7 @@ export async function GET(request: NextRequest) {
         .limit(500);
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return ApiErrors.internalError(error.message);
     }
 
     return NextResponse.json({

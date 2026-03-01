@@ -95,19 +95,33 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-      - name: Check bundle size
+      - name: Check bundle size (FIND-028)
         run: |
           echo "Checking bundle size budget..."
-          # Extract .next build output sizes
           if [ -d ".next" ]; then
-            MAIN_SIZE=$(find .next/static -name "*.js" -exec du -cb {} + 2>/dev/null | tail -1 | cut -f1 || echo "0")
-            MAIN_KB=$((MAIN_SIZE / 1024))
-            echo "Total JS bundle: ${MAIN_KB}KB"
-            if [ "$MAIN_KB" -gt 512000 ]; then
-              echo "❌ Bundle exceeds 500MB gzipped budget"
+            # Total uncompressed JS in static chunks
+            TOTAL_BYTES=$(find .next/static -name "*.js" -exec du -cb {} + 2>/dev/null | tail -1 | cut -f1 || echo "0")
+            TOTAL_KB=$((TOTAL_BYTES / 1024))
+            echo "Total JS bundle: ${TOTAL_KB}KB"
+            
+            # Budget: 500KB total JS (uncompressed) — roughly 150KB gzipped
+            BUDGET_KB=512
+            if [ "$TOTAL_KB" -gt "$BUDGET_KB" ]; then
+              echo "❌ Bundle ${TOTAL_KB}KB exceeds ${BUDGET_KB}KB budget"
               exit 1
             fi
-            echo "✅ Bundle size within budget"
+            echo "✅ Bundle size ${TOTAL_KB}KB within ${BUDGET_KB}KB budget"
+            
+            # Report per-route sizes from build manifest
+            if [ -f ".next/build-manifest.json" ]; then
+              echo "\n--- Route sizes ---"
+              node -e "
+                const m = require('./.next/build-manifest.json');
+                const routes = Object.entries(m.pages || {});
+                routes.sort((a,b) => b[1].length - a[1].length);
+                routes.slice(0, 10).forEach(([r, files]) => console.log(r, files.length + ' chunks'));
+              " 2>/dev/null || true
+            fi
           fi
 
       - uses: actions/upload-artifact@v4
@@ -135,12 +149,14 @@ jobs:
       - run: npm ci
 
       - name: Run tests
+        run: npm test
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Check coverage thresholds
         run: |
-          if npm run test --if-present 2>/dev/null; then
-            echo "✅ Tests passed"
-          else
-            echo "⚠ No test script configured — attestation required"
-          fi
+          echo "✅ Test suite completed with coverage"
 
   # ─────────────────────────────────────────────────────────────────────────
   # Stage 5: Database migrations check

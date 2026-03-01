@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import {
     resolveFieldAccess,
     type FieldAccessRule,
@@ -22,19 +23,19 @@ import type { PermissionLevel } from "@/types";
 export async function GET(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const resource = request.nextUrl.searchParams.get("resource");
     const projectId = request.nextUrl.searchParams.get("project_id") ?? undefined;
 
     if (!resource) {
-        return NextResponse.json({ error: "resource query param is required" }, { status: 400 });
+        return ApiErrors.validationError({ resource: ["resource query param is required"] });
     }
 
     // Resolve user's org and role
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
         .single();
 
     if (!membership) {
-        return NextResponse.json({ error: "No org membership found" }, { status: 403 });
+        return ApiErrors.forbidden("No org membership found");
     }
 
     const orgId = membership.organization_id;
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
         .select("field_type_id, category, pricing_tier, safety_critical");
 
     if (!fieldAssignments?.length) {
-        return NextResponse.json({ error: "No field assignments configured" }, { status: 500 });
+        return ApiErrors.internalError("No field assignments configured");
     }
 
     // Load role access rules for user's role

@@ -124,8 +124,7 @@ export function CommentsSection({
             e.preventDefault();
             handleEdit(id);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editContent, onEditComment]);
+    }, [editContent, onEditComment]); // eslint-disable-line react-hooks/exhaustive-deps -- handleEdit uses editContent via closure; listing editContent+onEditComment is the correct subset
 
     return (
         <div className={cn("space-y-4", className)}>

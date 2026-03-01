@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import type { Database } from "@/lib/supabase/database.types";
 
 export async function POST(
@@ -9,19 +10,19 @@ export async function POST(
     const { id: requestId } = await params;
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const body = await request.json();
     const { action, comment } = body;
 
     if (!action || !["approved", "rejected"].includes(action)) {
-        return NextResponse.json({ error: "action must be 'approved' or 'rejected'" }, { status: 400 });
+        return ApiErrors.validationError({ action: ["action must be 'approved' or 'rejected'"] });
     }
 
     // Fetch the change request
@@ -31,11 +32,11 @@ export async function POST(
         .single();
 
     if (fetchErr || !changeRequest) {
-        return NextResponse.json({ error: "Change request not found" }, { status: 404 });
+        return ApiErrors.notFound("Change request");
     }
 
     if (changeRequest.status !== "pending") {
-        return NextResponse.json({ error: "This request has already been reviewed" }, { status: 409 });
+        return ApiErrors.conflict("This request has already been reviewed");
     }
 
     // Verify reviewer is exec in the org
@@ -47,12 +48,12 @@ export async function POST(
         .single();
 
     if (!membership || membership.role !== "exec") {
-        return NextResponse.json({ error: "Only executives can review change requests" }, { status: 403 });
+        return ApiErrors.forbidden("Only executives can review change requests");
     }
 
     // Prevent self-approval
     if (changeRequest.requested_by === user.id) {
-        return NextResponse.json({ error: "You cannot approve your own change request" }, { status: 403 });
+        return ApiErrors.forbidden("You cannot approve your own change request");
     }
 
     // Update the change request
@@ -68,7 +69,7 @@ export async function POST(
         .single();
 
     if (updateErr) {
-        return NextResponse.json({ error: "Failed to update change request" }, { status: 500 });
+        return ApiErrors.internalError("Failed to update change request");
     }
 
     // If approved, apply the setting change

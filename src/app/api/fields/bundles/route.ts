@@ -7,16 +7,17 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 
 export async function GET() {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const { data: membership } = await supabase
@@ -27,7 +28,7 @@ export async function GET() {
         .single();
 
     if (!membership) {
-        return NextResponse.json({ error: "No org membership found" }, { status: 403 });
+        return ApiErrors.forbidden("No org membership found");
     }
 
     const orgId = membership.organization_id;
@@ -50,7 +51,7 @@ export async function GET() {
         .order("monthly_price_cents", { ascending: true });
 
     if (bundlesError) {
-        return NextResponse.json({ error: bundlesError.message }, { status: 500 });
+        return ApiErrors.internalError(bundlesError.message);
     }
 
     // Load org's active bundle subscriptions

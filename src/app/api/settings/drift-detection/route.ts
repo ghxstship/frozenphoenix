@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 
 interface DriftItem {
     setting_key: string;
@@ -14,17 +15,17 @@ interface DriftItem {
 export async function GET(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     const orgId = request.nextUrl.searchParams.get("organization_id");
     if (!orgId) {
-        return NextResponse.json({ error: "organization_id is required" }, { status: 400 });
+        return ApiErrors.validationError({ organization_id: ["organization_id is required"] });
     }
 
     // Verify exec access
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
         .single();
 
     if (!membership || !["exec", "pm"].includes(membership.role)) {
-        return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+        return ApiErrors.forbidden();
     }
 
     const driftItems: DriftItem[] = [];

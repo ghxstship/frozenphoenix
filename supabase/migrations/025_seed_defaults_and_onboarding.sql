@@ -1,6 +1,11 @@
 -- Migration 025: Seed default organization and onboarding step definitions
 -- Ensures the handle_new_user trigger always has a default org to assign,
 -- and provides onboarding step templates for all roles.
+--
+-- IDEMPOTENCY: All INSERTs use ON CONFLICT DO NOTHING.
+-- PRODUCTION NOTE: This seed is safe for all environments.
+-- For production, override the default org via the org-setup onboarding flow.
+-- The default org acts as a placeholder until the exec creates their real org.
 
 -- ─── Guarantee default organization exists ─────────────────────
 INSERT INTO organizations (name, slug)

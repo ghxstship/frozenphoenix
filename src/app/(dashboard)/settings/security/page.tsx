@@ -94,7 +94,7 @@ export default function SecuritySettingsPage() {
                     .from("login_audit_log")
                     .select("id, user_agent, ip_address, created_at")
                     .eq("user_id", user.id)
-                    .eq("event_type", "login")
+                    .eq("event_type", "login_success")
                     .order("created_at", { ascending: false })
                     .limit(10);
 

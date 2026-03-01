@@ -1,39 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import { logEventSchema } from "@/lib/validation/api-schemas";
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
-    const body = await request.json();
-    const { event_type, metadata } = body;
+    const validated = await parseAndValidate(request, logEventSchema);
+    if (!validated.success) return validated.response;
 
-    const validEvents = [
-        "login",
-        "logout",
-        "signup",
-        "password_reset",
-        "password_change",
-        "mfa_enroll",
-        "mfa_verify",
-        "mfa_unenroll",
-        "invite_accepted",
-        "org_created",
-        "org_switched",
-        "profile_updated",
-        "failed_login",
-    ];
-
-    if (!event_type || !validEvents.includes(event_type)) {
-        return NextResponse.json({ error: "Invalid event_type" }, { status: 400 });
-    }
+    const { event_type, metadata } = validated.data;
 
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
         || request.headers.get("x-real-ip")
@@ -48,7 +32,7 @@ export async function POST(request: NextRequest) {
             event_type,
             ip_address: ip,
             user_agent: userAgent,
-            metadata: metadata || {},
+            metadata: (metadata || {}) as Record<string, string | number | boolean | null>,
         });
 
     if (error) {

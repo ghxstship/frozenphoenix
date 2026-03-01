@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import type { Json } from "@/lib/supabase/database.types";
 
 export async function GET(
@@ -9,12 +10,12 @@ export async function GET(
     const { id: orgId } = await params;
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     // Verify the user is exec in this org
@@ -26,7 +27,7 @@ export async function GET(
         .single();
 
     if (!membership || membership.role !== "exec") {
-        return NextResponse.json({ error: "Only executives can view security settings" }, { status: 403 });
+        return ApiErrors.forbidden("Only executives can view security settings");
     }
 
     const { data: org, error } = await supabase.from("organizations")
@@ -37,7 +38,7 @@ export async function GET(
         .single();
 
     if (error || !org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+        return ApiErrors.notFound("Organization");
     }
 
     return NextResponse.json({ organization: org });
@@ -50,12 +51,12 @@ export async function PATCH(
     const { id: orgId } = await params;
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     // Verify the user is exec in this org
@@ -67,7 +68,7 @@ export async function PATCH(
         .single();
 
     if (!membership || membership.role !== "exec") {
-        return NextResponse.json({ error: "Only executives can modify security settings" }, { status: 403 });
+        return ApiErrors.forbidden("Only executives can modify security settings");
     }
 
     const body = await request.json();
@@ -92,7 +93,7 @@ export async function PATCH(
     }
 
     if (Object.keys(allowedFields).length === 0) {
-        return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+        return ApiErrors.badRequest("No valid fields to update");
     }
 
     const { data: org, error } = await supabase.from("organizations")
@@ -104,7 +105,7 @@ export async function PATCH(
         .single();
 
     if (error) {
-        return NextResponse.json({ error: "Failed to update security settings" }, { status: 500 });
+        return ApiErrors.internalError("Failed to update security settings");
     }
 
     // Audit log the change

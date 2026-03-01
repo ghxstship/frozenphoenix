@@ -90,7 +90,9 @@ export async function POST(request: Request) {
     }
 
     // Strip tokens from the response — they are delivered via email only
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const safeData = (data || []).map(({ token: _t, ...rest }: { token: string; [key: string]: unknown }) => rest);
+    const safeData = (data || []).map(({ token: _stripToken, ...rest }: { token: string; [key: string]: unknown }) => {
+        void _stripToken;
+        return rest;
+    });
     return NextResponse.json({ invitations: safeData }, { status: 201 });
 }

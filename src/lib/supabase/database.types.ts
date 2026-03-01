@@ -1,4 +1,3 @@
-Connecting to db 5432
 export type Json =
   | string
   | number
@@ -30581,6 +30580,7 @@ export type Database = {
         | "api_token_auth"
         | "session_revoked"
         | "account_locked"
+        | "org_security_updated"
       logistics_event_type:
         | "booked"
         | "picked_up"
@@ -32602,6 +32602,7 @@ export const Constants = {
         "api_token_auth",
         "session_revoked",
         "account_locked",
+        "org_security_updated",
       ],
       logistics_event_type: [
         "booked",

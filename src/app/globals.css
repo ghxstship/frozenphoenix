@@ -539,8 +539,8 @@ body:not(.keyboard-navigation) *:focus {
 }
 
 [dir="rtl"] .rtl\:space-reverse > * + * {
-  margin-right: var(--spacing);
-  margin-left: 0;
+  margin-inline-end: var(--spacing);
+  margin-inline-start: 0;
 }
 
 /* Logical properties for RTL */

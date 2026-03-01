@@ -258,8 +258,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
 
         return () => clearTimeout(transitionTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [colorMode, brandId, orgTokens, projectTokens, userTokens]);
+    }, [colorMode, brandId, orgTokens, projectTokens, userTokens]); // eslint-disable-line react-hooks/exhaustive-deps -- mergeTokens/applyTokensToDOM are stable module-level functions; token objects use identity comparison intentionally
 
     // Listen for system color scheme changes
     useEffect(() => {
@@ -293,8 +292,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         };
         mq.addEventListener("change", handler);
         return () => mq.removeEventListener("change", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [colorMode]);
+    }, [colorMode]); // eslint-disable-line react-hooks/exhaustive-deps -- handler reads Zustand store directly; only colorMode determines if this effect is active
 
     // Cross-tab synchronization via storage event
     useEffect(() => {

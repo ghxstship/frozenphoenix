@@ -47,9 +47,32 @@ export function getBrand(id: BrandId): BrandConfig {
 }
 
 /**
- * Get current active brand from environment or default
+ * Get current active brand from environment or default.
+ *
+ * FIND-008: Resolution order for multi-tenant brand config:
+ *   1. Runtime override via `organizations.settings.brand_id` (DB-backed)
+ *      — When org-level brand resolution is wired, pass the org's brand_id
+ *        to `getBrand()` directly instead of calling `getActiveBrand()`.
+ *   2. Build-time env var NEXT_PUBLIC_BRAND_ID (current implementation)
+ *   3. Fallback to "playbook"
+ *
+ * To enable DB-backed brand resolution per-org:
+ *   const org = await supabase.from("organizations").select("settings").eq("id", orgId).single();
+ *   const brand = getBrand(org.data?.settings?.brand_id || getActiveBrand().id);
  */
 export function getActiveBrand(): BrandConfig {
     const brandId = (process.env.NEXT_PUBLIC_BRAND_ID as BrandId) || "playbook";
     return BRAND_REGISTRY[brandId] || PLAYBOOK_BRAND;
+}
+
+/**
+ * Resolve brand for a specific organization.
+ * Accepts an optional brand_id from the org's settings JSONB.
+ * Falls back to the environment-level active brand.
+ */
+export function resolveBrandForOrg(orgBrandId?: string | null): BrandConfig {
+    if (orgBrandId && orgBrandId in BRAND_REGISTRY) {
+        return BRAND_REGISTRY[orgBrandId as BrandId];
+    }
+    return getActiveBrand();
 }

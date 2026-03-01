@@ -86,10 +86,11 @@ export default function ComplianceDashboardPage() {
         }
     };
 
+    // FIND-020: fetchDrift depends on orgId but is not stable (re-created each render).
+    // Intentionally listing only orgId — fetchDrift reads orgId via closure.
     useEffect(() => {
         fetchDrift();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgId]);
+    }, [orgId]); // eslint-disable-line react-hooks/exhaustive-deps -- fetchDrift is intentionally unstable; orgId is the true trigger
 
     // Build compliance checks from available data
     const complianceChecks: ComplianceCheck[] = [

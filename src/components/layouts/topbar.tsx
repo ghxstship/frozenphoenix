@@ -585,8 +585,7 @@ export function Topbar() {
             path: "/" + segments.slice(0, i + 1).join("/"),
             isLast: i === segments.length - 1,
         })),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [pathname]
+        [pathname] // eslint-disable-line react-hooks/exhaustive-deps -- segments is derived from pathname; listing pathname is sufficient and avoids object identity churn
     );
 
     // Breadcrumb overflow: collapse middle segments if > 3 levels deep

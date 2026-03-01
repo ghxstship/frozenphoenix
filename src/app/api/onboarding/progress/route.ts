@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import { onboardingProgressSchema } from "@/lib/validation/api-schemas";
 
 export async function GET() {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
     // Get the user's profile to determine role and name
@@ -107,23 +109,18 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return ApiErrors.unauthorized();
     }
 
-    const body = await request.json();
-    const { step_definition_id, status } = body;
+    const validated = await parseAndValidate(request, onboardingProgressSchema);
+    if (!validated.success) return validated.response;
 
-    if (!step_definition_id) {
-        return NextResponse.json({ error: "step_definition_id is required" }, { status: 400 });
-    }
-
-    const validStatuses = ["not_started", "in_progress", "completed", "skipped"];
-    const stepStatus = validStatuses.includes(status) ? status : "completed";
+    const { step_definition_id, status: stepStatus } = validated.data;
 
     const { data, error } = await supabase.from("user_onboarding_progress")
         .upsert(
@@ -139,7 +136,7 @@ export async function POST(request: NextRequest) {
         .single();
 
     if (error) {
-        return NextResponse.json({ error: "Failed to update progress" }, { status: 500 });
+        return ApiErrors.internalError("Failed to update progress");
     }
 
     return NextResponse.json({ progress: data });

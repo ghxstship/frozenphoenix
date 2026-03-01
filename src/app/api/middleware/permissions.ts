@@ -68,7 +68,7 @@ export async function checkPermission(
             .select("organization_id, role")
             .eq("user_id", user.id)
             .eq("status", "active")
-            .eq("is_default", true)
+            .eq("is_default_org", true)
             .single();
 
         if (!membership) {

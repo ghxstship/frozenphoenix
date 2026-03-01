@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ApiErrors } from "@/lib/api-utils";
 
 interface PasswordValidationResult {
     valid: boolean;
@@ -67,9 +68,6 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(result);
     } catch {
-        return NextResponse.json(
-            { valid: false, errors: ["Invalid request."], strength: 0 },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("Invalid request");
     }
 }

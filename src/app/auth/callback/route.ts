@@ -30,6 +30,31 @@ export async function GET(request: Request) {
         if (supabase) {
             const { error } = await supabase.auth.exchangeCodeForSession(code);
             if (!error) {
+                // Auto-accept invitation if the user signed up with an invite token
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const inviteToken = user?.user_metadata?.invite_token;
+
+                    if (inviteToken && typeof inviteToken === "string") {
+                        // Accept the invitation server-side
+                        const acceptUrl = `${origin}/api/invitations/${inviteToken}/accept`;
+                        await fetch(acceptUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                        });
+
+                        // Clear the invite_token from user metadata so it's not re-processed
+                        await supabase.auth.updateUser({
+                            data: { invite_token: null },
+                        });
+
+                        // Redirect to dashboard instead of the default next URL
+                        return NextResponse.redirect(`${origin}/dashboard`);
+                    }
+                } catch {
+                    // Auto-accept failed — continue with normal redirect
+                }
+
                 return NextResponse.redirect(`${origin}${next}`);
             }
         }

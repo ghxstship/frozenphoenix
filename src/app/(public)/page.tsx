@@ -10,7 +10,7 @@ import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supa
 import { brandConfig } from "@/config/brand";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
-    Flame,
+    Play,
     CheckCircle2,
     Star,
     Send,
@@ -64,7 +64,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                            <Flame className="h-4.5 w-4.5 text-primary-foreground" />
+                            <Play className="h-4.5 w-4.5 text-primary-foreground fill-primary-foreground" />
                         </div>
                         <span className="text-base font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             {brandConfig.name}
@@ -283,7 +283,7 @@ export default function LandingPage() {
             <footer className="py-10 px-6 border-t border-border">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                        <Flame className="h-4 w-4 text-primary" />
+                        <Play className="h-4 w-4 text-primary fill-primary" />
                         <span className="text-sm font-semibold">{brandConfig.name}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} {brandConfig.name}. All rights reserved.</p>

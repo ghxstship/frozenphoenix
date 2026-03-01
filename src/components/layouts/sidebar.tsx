@@ -17,7 +17,7 @@ import {
     ChevronRight,
     PanelLeftClose,
     PanelLeft,
-    Flame,
+    Play,
     X,
     LogOut,
     Loader2,
@@ -352,7 +352,7 @@ export function Sidebar() {
                 <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-border shrink-0">
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-                            <Flame className="h-4.5 w-4.5 text-primary-foreground" />
+                            <Play className="h-4.5 w-4.5 text-primary-foreground fill-primary-foreground" />
                         </div>
                         {(!collapsed || isMobile) && (
                             <span className="text-base font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

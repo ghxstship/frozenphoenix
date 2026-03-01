@@ -1,0 +1,141 @@
+{
+  "title": "Frozen Phoenix — Field Bundle Definitions",
+  "version": "1.0.0",
+  "description": "Add-on bundles that unlock specific field type groups without requiring a full tier upgrade. Each bundle is use-case justified and scoped to an organization.",
+  "bundle_model": {
+    "scope": "organization",
+    "stacking": "bundles stack on top of base tier",
+    "billing": "monthly, pro-rated on activation",
+    "cancellation": "immediate field access revocation on cancellation"
+  },
+  "bundles": [
+    {
+      "bundle_id": "BUNDLE-FIN-ANALYTICS",
+      "name": "Financial Analytics",
+      "description": "Unlock detailed financial fields: budget line items with GL coding, 3-way PO matching, multi-currency support, and cost center allocation.",
+      "base_tier_required": "core",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 79,
+      "field_types_included": [
+        "FT-FIN-001", "FT-FIN-002", "FT-FIN-003",
+        "FT-FIN-004", "FT-FIN-005", "FT-FIN-006"
+      ],
+      "use_case": "Production companies needing budget detail and vendor payment tracking without full Pro subscription.",
+      "upsell_trigger": "User navigates to budget detail view or attempts GL account assignment",
+      "modules_unlocked": ["finance_detail", "gl_accounts", "3way_matching"]
+    },
+    {
+      "bundle_id": "BUNDLE-SPATIAL-IOT",
+      "name": "Spatial & IoT",
+      "description": "Unlock geospatial fields (GPS, GeoJSON), media metadata extraction, and IoT sensor reading storage for environmental monitoring.",
+      "base_tier_required": "core",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 59,
+      "field_types_included": [
+        "FT-GEO-001", "FT-GEO-002", "FT-GEO-003",
+        "FT-MEDIA-001", "FT-MEDIA-002",
+        "FT-IOT-001", "FT-IOT-002"
+      ],
+      "use_case": "Outdoor event producers needing GPS tracking, venue mapping, and weather/environmental monitoring.",
+      "upsell_trigger": "User opens map view, attempts GPS coordinate entry, or views environmental readings dashboard",
+      "modules_unlocked": ["spatial_views", "environmental_monitoring", "media_metadata"]
+    },
+    {
+      "bundle_id": "BUNDLE-WORKFLOW-AUTO",
+      "name": "Workflow Automation",
+      "description": "Unlock workflow state fields, approval chains, transition history, and automated escalation rules.",
+      "base_tier_required": "core",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 49,
+      "field_types_included": [
+        "FT-WF-001", "FT-WF-002", "FT-WF-003",
+        "FT-WF-004", "FT-WF-005"
+      ],
+      "use_case": "Teams needing multi-step approval workflows and automated task routing without full Pro features.",
+      "upsell_trigger": "User attempts to create multi-step approval or configure automated task assignment",
+      "modules_unlocked": ["workflow_builder", "approval_chains", "escalation_rules"]
+    },
+    {
+      "bundle_id": "BUNDLE-ADV-COMPLIANCE",
+      "name": "Advanced Compliance",
+      "description": "Unlock compliance dashboard fields: audit findings, remediation tracking, control assessments, evidence artifacts, and compliance scoring.",
+      "base_tier_required": "pro",
+      "target_tier_equivalent": "enterprise",
+      "monthly_price_usd": 99,
+      "field_types_included": [
+        "FT-COMP-001", "FT-COMP-002", "FT-COMP-003",
+        "FT-COMP-004", "FT-COMP-005", "FT-COMP-006",
+        "FT-COMP-007", "FT-COMP-008"
+      ],
+      "use_case": "Agencies preparing for SOC2 audit or managing complex regulatory requirements across jurisdictions.",
+      "upsell_trigger": "User opens compliance dashboard or attempts to create audit finding",
+      "modules_unlocked": ["compliance_dashboard", "audit_management", "evidence_tracking"],
+      "note": "Basic compliance fields (certs, permits, insurance) remain CORE and are never paywalled. This bundle adds the audit/remediation management layer."
+    },
+    {
+      "bundle_id": "BUNDLE-ADV-CONFIG",
+      "name": "Advanced Configuration",
+      "description": "Unlock JSONB configuration fields, array/tag fields, and settings management for customizable workflows and data structures.",
+      "base_tier_required": "core",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 39,
+      "field_types_included": [
+        "FT-JSON-001", "FT-JSON-002", "FT-JSON-003", "FT-JSON-004",
+        "FT-ARR-001", "FT-ARR-002", "FT-ARR-003",
+        "FT-SET-001", "FT-SET-002", "FT-SET-003"
+      ],
+      "use_case": "Teams needing custom metadata, tagging systems, and configurable entity properties.",
+      "upsell_trigger": "User attempts to add custom tags, configure JSONB settings, or use array filters",
+      "modules_unlocked": ["custom_metadata", "tagging", "settings_management"]
+    },
+    {
+      "bundle_id": "BUNDLE-CUSTOM-RBAC",
+      "name": "Custom RBAC",
+      "description": "Unlock role definition management, permission grant configuration, and custom access policies beyond the standard 4-tier model.",
+      "base_tier_required": "pro",
+      "target_tier_equivalent": "enterprise",
+      "monthly_price_usd": 129,
+      "field_types_included": [
+        "FT-RBAC-001", "FT-RBAC-002", "FT-RBAC-003",
+        "FT-RBAC-004", "FT-RBAC-005"
+      ],
+      "use_case": "Agencies with complex organizational structures needing department-scoped roles, project-specific permissions, or custom approval hierarchies.",
+      "upsell_trigger": "User attempts to create custom role or modify permission grants in settings",
+      "modules_unlocked": ["role_editor", "permission_manager", "access_policies"]
+    },
+    {
+      "bundle_id": "BUNDLE-FEATURE-FLAGS",
+      "name": "Feature Flag Management",
+      "description": "Unlock feature flag definitions, targeting rules, and per-scope overrides for controlled feature rollouts.",
+      "base_tier_required": "pro",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 29,
+      "field_types_included": [
+        "FT-FF-001", "FT-FF-002"
+      ],
+      "use_case": "Teams needing gradual feature rollouts, A/B testing, or tenant-specific feature toggling.",
+      "upsell_trigger": "User attempts to toggle feature availability or configure rollout percentage",
+      "modules_unlocked": ["feature_flag_dashboard", "rollout_management"]
+    },
+    {
+      "bundle_id": "BUNDLE-BARCODE-INVENTORY",
+      "name": "Barcode & Inventory",
+      "description": "Unlock barcode/QR identifiers, scan event tracking, kit assembly, and warehouse location management.",
+      "base_tier_required": "core",
+      "target_tier_equivalent": "pro",
+      "monthly_price_usd": 69,
+      "field_types_included": [
+        "FT-ID-007"
+      ],
+      "use_case": "Production companies managing physical inventory with barcode/RFID scanning workflows.",
+      "upsell_trigger": "User attempts to scan barcode, create kit, or assign warehouse location",
+      "modules_unlocked": ["barcode_scanning", "kit_management", "warehouse_zones"]
+    }
+  ],
+  "validation_rules": {
+    "no_bundle_contains_safety_critical": true,
+    "bundle_fields_must_be_above_base_tier": true,
+    "bundle_pricing_must_be_less_than_tier_upgrade": true,
+    "max_bundles_per_org": 10
+  }
+}

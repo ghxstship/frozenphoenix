@@ -181,10 +181,14 @@ export const commentCreateSchema = z.object({
 });
 
 // ─── Invitations ───
-export const invitationCreateSchema = z.object({
-    emails: z.array(emailField).min(1, "At least one email is required").max(50, "Maximum 50 invitations at once"),
-    organization_id: uuidField,
+const inviteeSchema = z.object({
+    email: emailField,
     role: z.enum(["exec", "pm", "client", "vendor"]).default("pm"),
+});
+
+export const invitationCreateSchema = z.object({
+    invitees: z.array(inviteeSchema).min(1, "At least one invitee is required").max(50, "Maximum 50 invitations at once"),
+    organization_id: uuidField,
     message: z.string().max(1000).optional(),
 });
 

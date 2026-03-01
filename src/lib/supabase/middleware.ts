@@ -132,6 +132,113 @@ export async function updateSession(request: NextRequest) {
         }
     }
 
+    // ─── Onboarding redirect guard ──────────────────────────────────
+    // New users without an organization are redirected to org-setup on first login.
+    // Users with incomplete gate_access steps are redirected to the relevant step.
+    // Skip for onboarding pages, API, settings, and auth routes to avoid loops.
+    const isOnboardingPath = request.nextUrl.pathname.startsWith("/onboarding");
+    const isSettingsPath = request.nextUrl.pathname.startsWith("/settings");
+    const shouldCheckOnboarding =
+        user &&
+        isProtectedPath &&
+        !isOnboardingPath &&
+        !isSettingsPath &&
+        !request.nextUrl.pathname.startsWith("/auth/") &&
+        !request.nextUrl.pathname.startsWith("/api/");
+
+    if (shouldCheckOnboarding) {
+        try {
+            // Check if user has any org membership
+            const { data: memberships } = await supabase
+                .from("org_memberships")
+                .select("id")
+                .eq("user_id", user.id)
+                .eq("status", "active")
+                .limit(1);
+
+            const hasNoOrg = !memberships || memberships.length === 0;
+
+            // Check for the default org — if that's the only membership, they still
+            // need to set up their own org (exec/pm users)
+            if (!hasNoOrg && memberships && memberships.length > 0) {
+                const { data: defaultOrgMembership } = await supabase
+                    .from("org_memberships")
+                    .select("id, organizations!inner(slug)")
+                    .eq("user_id", user.id)
+                    .eq("status", "active");
+
+                const onlyDefault = defaultOrgMembership &&
+                    defaultOrgMembership.length === 1 &&
+                    (defaultOrgMembership[0] as unknown as { organizations: { slug: string } })
+                        .organizations?.slug === "default";
+
+                if (onlyDefault) {
+                    // Check the user's role — only exec users need to set up an org
+                    const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("role")
+                        .eq("id", user.id)
+                        .single();
+
+                    if (profile?.role === "exec") {
+                        const url = request.nextUrl.clone();
+                        url.pathname = "/onboarding/org-setup";
+                        return NextResponse.redirect(url);
+                    }
+                }
+            } else if (hasNoOrg) {
+                const url = request.nextUrl.clone();
+                url.pathname = "/onboarding/org-setup";
+                return NextResponse.redirect(url);
+            }
+
+            // Gate access enforcement — check for incomplete gated steps
+            const { data: gatedSteps } = await supabase
+                .from("onboarding_step_definitions")
+                .select("id, step_key")
+                .eq("gate_access", true);
+
+            if (gatedSteps && gatedSteps.length > 0) {
+                const { data: completedProgress } = await supabase
+                    .from("user_onboarding_progress")
+                    .select("step_definition_id")
+                    .eq("user_id", user.id)
+                    .eq("status", "completed")
+                    .in("step_definition_id", gatedSteps.map((s) => s.id));
+
+                const completedIds = new Set(
+                    (completedProgress || []).map((p: { step_definition_id: string }) => p.step_definition_id)
+                );
+
+                // Auto-resolve verify_email if the email is confirmed
+                const emailVerified = !!user.email_confirmed_at;
+
+                for (const step of gatedSteps) {
+                    if (completedIds.has(step.id)) continue;
+
+                    // Skip verify_email gate if email is already confirmed
+                    if (step.step_key === "verify_email" && emailVerified) continue;
+
+                    // Redirect to the appropriate step page
+                    const gateRoutes: Record<string, string> = {
+                        verify_email: "/settings/security",
+                        complete_compliance: "/settings/security",
+                    };
+
+                    const redirectPath = gateRoutes[step.step_key];
+                    if (redirectPath) {
+                        const url = request.nextUrl.clone();
+                        url.pathname = redirectPath;
+                        url.searchParams.set("gate", step.step_key);
+                        return NextResponse.redirect(url);
+                    }
+                }
+            }
+        } catch {
+            // Onboarding check failed — allow through rather than blocking
+        }
+    }
+
     // Security headers (OWASP)
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("X-Frame-Options", "DENY");

@@ -118,3 +118,15 @@ export function DropdownMenuItem({ children, className, onClick }: DropdownMenuI
 export function DropdownMenuSeparator() {
     return <div className="-mx-1 my-1 h-px bg-muted" />;
 }
+
+export function DropdownMenuLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+    return (
+        <div className={cn("px-2 py-1.5 text-xs font-semibold text-muted-foreground", className)}>
+            {children}
+        </div>
+    );
+}
+
+export function DropdownMenuGroup({ children }: { children: React.ReactNode }) {
+    return <div role="group">{children}</div>;
+}

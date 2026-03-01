@@ -14,7 +14,7 @@ RETURNS TEXT AS $$
     SELECT role FROM org_memberships
     WHERE user_id = auth.uid()
       AND status = 'active'
-      AND is_default = true
+      AND is_default_org = true
     LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
@@ -24,7 +24,7 @@ RETURNS BOOLEAN AS $$
         SELECT 1 FROM org_memberships
         WHERE user_id = auth.uid()
           AND status = 'active'
-          AND is_default = true
+          AND is_default_org = true
           AND role IN ('exec', 'pm')
     );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
@@ -35,7 +35,7 @@ RETURNS BOOLEAN AS $$
         SELECT 1 FROM org_memberships
         WHERE user_id = auth.uid()
           AND status = 'active'
-          AND is_default = true
+          AND is_default_org = true
           AND role = 'exec'
     );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
@@ -57,17 +57,13 @@ DO $$ BEGIN
                 auth.uid() IS NOT NULL
                 AND (
                     is_exec_or_pm()
-                    OR (get_user_role() = 'client' AND EXISTS (
-                        SELECT 1 FROM projects p
-                        WHERE p.id = invoices.project_id
-                        AND p.organization_id IN (
-                            SELECT organization_id FROM org_memberships
-                            WHERE user_id = auth.uid() AND status = 'active'
-                        )
+                    OR (get_user_role() = 'client' AND invoices.organization_id IN (
+                        SELECT organization_id FROM org_memberships
+                        WHERE user_id = auth.uid() AND status = 'active'
                     ))
                     OR (get_user_role() = 'vendor' AND invoices.vendor_id IN (
                         SELECT id FROM vendors
-                        WHERE contact_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+                        WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid())
                     ))
                 )
             );

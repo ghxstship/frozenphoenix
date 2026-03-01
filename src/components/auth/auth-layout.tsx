@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Flame, Shield, Lock, Globe } from "lucide-react";
+import { Play, Shield, Lock, Globe } from "lucide-react";
 import { brandConfig } from "@/config/brand";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                 <div>
                     <div className="flex items-center gap-2.5 mb-16">
                         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                            <Flame className="h-5 w-5 text-primary-foreground" />
+                            <Play className="h-5 w-5 text-primary-foreground fill-primary-foreground" />
                         </div>
                         <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             {brandConfig.name}
@@ -60,7 +60,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                     {/* Mobile-only brand header */}
                     <div className="text-center lg:hidden">
                         <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-4">
-                            <Flame className="h-7 w-7 text-primary-foreground" />
+                            <Play className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
                         </div>
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             {brandConfig.name}

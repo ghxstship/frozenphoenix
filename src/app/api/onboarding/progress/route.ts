@@ -12,14 +12,20 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the user's profile to determine role
-    const { data: profile } = await supabase
+    // Get the user's profile to determine role and name
+    let userRole = "pm";
+    let profileName: string | null = null;
+
+    const { data: profileData } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, name")
         .eq("id", user.id)
         .single();
 
-    const userRole = profile?.role || "pm";
+    if (profileData) {
+        userRole = profileData.role || "pm";
+        profileName = profileData.name;
+    }
 
     // Get step definitions relevant to this user's role
     const { data: steps } = await supabase.from("onboarding_step_definitions")
@@ -36,12 +42,50 @@ export async function GET() {
         (progress || []).map((p: Record<string, unknown>) => [p.step_definition_id, p])
     );
 
-    const enrichedSteps = (steps || []).map((step: Record<string, unknown>) => ({
-        ...step,
-        progress: progressMap.get(step.id) || null,
-        completed: progressMap.has(step.id) &&
-            (progressMap.get(step.id) as Record<string, unknown>)?.status === "completed",
-    }));
+    // Auto-detect completion for built-in steps
+    const emailVerified = !!user.email_confirmed_at;
+    const profileComplete = !!(profileName && profileName.trim().length > 0);
+
+    const autoCompleteMap: Record<string, boolean> = {
+        verify_email: emailVerified,
+        complete_profile: profileComplete,
+    };
+
+    const enrichedSteps = (steps || []).map((step: Record<string, unknown>) => {
+        const manuallyCompleted = progressMap.has(step.id) &&
+            (progressMap.get(step.id) as Record<string, unknown>)?.status === "completed";
+        const autoCompleted = autoCompleteMap[step.step_key as string] ?? false;
+        const completed = manuallyCompleted || autoCompleted;
+
+        return {
+            ...step,
+            progress: progressMap.get(step.id) || null,
+            completed,
+        };
+    });
+
+    // Persist auto-completed steps so they stay completed
+    const autoCompletePersistPromises = enrichedSteps
+        .filter((s: Record<string, unknown>) => {
+            const key = s.step_key as string;
+            return autoCompleteMap[key] && !progressMap.has(s.id as string);
+        })
+        .map((s: Record<string, unknown>) =>
+            supabase.from("user_onboarding_progress").upsert(
+                {
+                    user_id: user.id,
+                    step_definition_id: s.id as string,
+                    status: "completed" as const,
+                    completed_at: new Date().toISOString(),
+                },
+                { onConflict: "user_id,step_definition_id" }
+            )
+        );
+
+    // Fire-and-forget — don't block the response
+    if (autoCompletePersistPromises.length > 0) {
+        Promise.allSettled(autoCompletePersistPromises);
+    }
 
     const totalRequired = enrichedSteps.filter((s: Record<string, unknown>) => s.is_required).length;
     const completedRequired = enrichedSteps.filter(

@@ -74,9 +74,8 @@ export default function InviteTeamPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    emails: validRows.map((r) => r.email.trim()),
+                    invitees: validRows.map((r) => ({ email: r.email.trim(), role: r.role })),
                     organization_id: activeOrg.organization_id,
-                    role: validRows[0]?.role || "pm",
                     message: message.trim() || undefined,
                 }),
             });

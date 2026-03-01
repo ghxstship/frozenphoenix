@@ -28,26 +28,25 @@ describe("validate helper", () => {
 });
 
 describe("invitationCreateSchema", () => {
-    it("validates valid invitation", () => {
+    it("validates valid invitation with per-invitee roles", () => {
         const result = invitationCreateSchema.safeParse({
-            emails: ["test@example.com"],
+            invitees: [{ email: "test@example.com", role: "pm" }],
             organization_id: "550e8400-e29b-41d4-a716-446655440000",
-            role: "pm",
         });
         expect(result.success).toBe(true);
     });
 
-    it("rejects empty emails array", () => {
+    it("rejects empty invitees array", () => {
         const result = invitationCreateSchema.safeParse({
-            emails: [],
+            invitees: [],
             organization_id: "550e8400-e29b-41d4-a716-446655440000",
         });
         expect(result.success).toBe(false);
     });
 
-    it("rejects invalid email", () => {
+    it("rejects invalid email in invitees", () => {
         const result = invitationCreateSchema.safeParse({
-            emails: ["not-an-email"],
+            invitees: [{ email: "not-an-email", role: "pm" }],
             organization_id: "550e8400-e29b-41d4-a716-446655440000",
         });
         expect(result.success).toBe(false);
@@ -55,20 +54,36 @@ describe("invitationCreateSchema", () => {
 
     it("rejects invalid organization_id", () => {
         const result = invitationCreateSchema.safeParse({
-            emails: ["test@example.com"],
+            invitees: [{ email: "test@example.com", role: "pm" }],
             organization_id: "not-a-uuid",
         });
         expect(result.success).toBe(false);
     });
 
-    it("defaults role to pm", () => {
+    it("defaults invitee role to pm", () => {
         const result = invitationCreateSchema.safeParse({
-            emails: ["test@example.com"],
+            invitees: [{ email: "test@example.com" }],
             organization_id: "550e8400-e29b-41d4-a716-446655440000",
         });
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data.role).toBe("pm");
+            expect(result.data.invitees[0]!.role).toBe("pm");
+        }
+    });
+
+    it("supports multiple invitees with different roles", () => {
+        const result = invitationCreateSchema.safeParse({
+            invitees: [
+                { email: "pm@example.com", role: "pm" },
+                { email: "client@example.com", role: "client" },
+                { email: "vendor@example.com", role: "vendor" },
+            ],
+            organization_id: "550e8400-e29b-41d4-a716-446655440000",
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.invitees).toHaveLength(3);
+            expect(result.data.invitees[1]!.role).toBe("client");
         }
     });
 });

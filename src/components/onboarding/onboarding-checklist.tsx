@@ -16,6 +16,7 @@ import {
     User,
     Shield,
     FileCheck,
+    CreditCard,
     ChevronRight,
     Loader2,
     X,
@@ -47,7 +48,7 @@ const STEP_ICONS: Record<string, LucideIcon> = {
     complete_profile: User,
     setup_organization: Building2,
     invite_team: UserPlus,
-    configure_billing: FileCheck,
+    configure_billing: CreditCard,
     create_first_project: FolderPlus,
     assign_team: UserPlus,
     review_deliverables: FileCheck,
@@ -62,11 +63,14 @@ const STEP_ROUTES: Record<string, string> = {
     complete_profile: "/settings/security",
     setup_organization: "/onboarding/org-setup",
     invite_team: "/onboarding/invite-team",
+    configure_billing: "/onboarding/billing",
     create_first_project: "/projects",
     review_deliverables: "/dashboard",
     complete_compliance: "/settings/security",
     explore_dashboard: "/dashboard",
 };
+
+const DISMISSED_KEY = "fp-onboarding-dismissed";
 
 export function OnboardingChecklist() {
     const router = useRouter();
@@ -74,7 +78,12 @@ export function OnboardingChecklist() {
     const [steps, setSteps] = useState<OnboardingStep[]>([]);
     const [summary, setSummary] = useState<OnboardingSummary | null>(null);
     const [loading, setLoading] = useState(true);
-    const [dismissed, setDismissed] = useState(false);
+    const [dismissed, setDismissed] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem(DISMISSED_KEY) === "true";
+        }
+        return false;
+    });
     const [completing, setCompleting] = useState<string | null>(null);
 
     useEffect(() => {
@@ -146,7 +155,10 @@ export function OnboardingChecklist() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setDismissed(true)}
+                        onClick={() => {
+                            setDismissed(true);
+                            localStorage.setItem(DISMISSED_KEY, "true");
+                        }}
                         aria-label="Dismiss onboarding checklist"
                         className="shrink-0 -mt-1 -mr-1"
                     >

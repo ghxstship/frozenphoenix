@@ -42,6 +42,14 @@ function makeQueryClient() {
             queries: {
                 staleTime: 60 * 1000,
                 refetchOnWindowFocus: false,
+                // M-006: Exponential backoff with jitter for failed queries
+                retry: 3,
+                retryDelay: (attemptIndex) =>
+                    Math.min(1000 * 2 ** attemptIndex, 30_000) + Math.random() * 500,
+            },
+            mutations: {
+                retry: 1,
+                retryDelay: 1000,
             },
         },
     });
@@ -54,21 +62,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ErrorBoundary level="app">
             <QueryClientProvider client={queryClient}>
                 <AuthProvider>
-                  <SettingsProvider>
-                    <ThemeProvider>
-                        <AccessibilityProvider>
-                            <NetworkStatusProvider>
-                                <ToastProvider>
-                                    <ConfirmDialogProvider>
-                                        {children}
-                                        <CommandBar />
-                                        <CookieConsent />
-                                    </ConfirmDialogProvider>
-                                </ToastProvider>
-                            </NetworkStatusProvider>
-                        </AccessibilityProvider>
-                    </ThemeProvider>
-                  </SettingsProvider>
+                    <SettingsProvider>
+                        <ThemeProvider>
+                            <AccessibilityProvider>
+                                <NetworkStatusProvider>
+                                    <ToastProvider>
+                                        <ConfirmDialogProvider>
+                                            {children}
+                                            <CommandBar />
+                                            <CookieConsent />
+                                        </ConfirmDialogProvider>
+                                    </ToastProvider>
+                                </NetworkStatusProvider>
+                            </AccessibilityProvider>
+                        </ThemeProvider>
+                    </SettingsProvider>
                 </AuthProvider>
             </QueryClientProvider>
         </ErrorBoundary>

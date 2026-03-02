@@ -6,11 +6,11 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { FieldRenderer, type FieldConfig, type FieldType } from "./field-renderers";
+import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import {
-    ArrowUpDown,
-    ArrowUp,
     ArrowDown,
+    ArrowUp,
+    ArrowUpDown,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
@@ -88,6 +88,8 @@ interface DataTableProps<T> {
     emptyState?: React.ReactNode;
     // Loading
     loading?: boolean;
+    // Accessibility
+    caption?: string;
 }
 
 export function DataTable<T extends object>({
@@ -114,6 +116,7 @@ export function DataTable<T extends object>({
     className,
     emptyState,
     loading = false,
+    caption,
 }: DataTableProps<T>) {
     // ─── State ───
     const [sort, setSort] = React.useState<SortState | null>(defaultSort ?? null);
@@ -233,7 +236,9 @@ export function DataTable<T extends object>({
                 )}
                 style={{ width: column.width, minWidth: column.minWidth }}
                 onClick={canSort ? () => handleSort(column.id) : undefined}
-                aria-sort={isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
+                aria-sort={
+                    isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : undefined
+                }
             >
                 <div className="flex items-center gap-1.5">
                     <span>{column.header}</span>
@@ -326,14 +331,23 @@ export function DataTable<T extends object>({
             {/* Table */}
             <div className="rounded-lg border border-border overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full" role="table" aria-label="Data table">
-                        <thead className={cn("bg-muted/50 border-b border-border", stickyHeader && "sticky top-0 z-10 backdrop-blur-sm bg-muted/80")}>
+                    <table className="w-full" role="table" aria-label={caption ?? "Data table"}>
+                        {caption && <caption className="sr-only">{caption}</caption>}
+                        <thead
+                            className={cn(
+                                "bg-muted/50 border-b border-border",
+                                stickyHeader && "sticky top-0 z-10 backdrop-blur-sm bg-muted/80"
+                            )}
+                        >
                             <tr>
                                 {selectable && (
                                     <th className="w-12 px-4 py-3">
                                         <input
                                             type="checkbox"
-                                            checked={selected.size === paginatedData.length && paginatedData.length > 0}
+                                            checked={
+                                                selected.size === paginatedData.length &&
+                                                paginatedData.length > 0
+                                            }
                                             onChange={handleSelectAll}
                                             className="rounded border-input"
                                         />
@@ -347,7 +361,11 @@ export function DataTable<T extends object>({
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan={visibleColumns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0)}
+                                        colSpan={
+                                            visibleColumns.length +
+                                            (selectable ? 1 : 0) +
+                                            (rowActions ? 1 : 0)
+                                        }
                                         className="px-4 py-12 text-center"
                                     >
                                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
@@ -359,7 +377,11 @@ export function DataTable<T extends object>({
                             ) : paginatedData.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={visibleColumns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0)}
+                                        colSpan={
+                                            visibleColumns.length +
+                                            (selectable ? 1 : 0) +
+                                            (rowActions ? 1 : 0)
+                                        }
                                         className="px-4 py-12 text-center"
                                     >
                                         {emptyState ?? (
@@ -382,11 +404,15 @@ export function DataTable<T extends object>({
                                                 striped && rowIndex % 2 === 1 && "bg-muted/30",
                                                 hoverable && "hover:bg-muted/50",
                                                 isSelected && "bg-primary/5",
-                                                onRowClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                                                onRowClick &&
+                                                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                                             )}
                                             onClick={() => onRowClick?.(row)}
                                             onKeyDown={(e) => {
-                                                if ((e.key === "Enter" || e.key === " ") && onRowClick) {
+                                                if (
+                                                    (e.key === "Enter" || e.key === " ") &&
+                                                    onRowClick
+                                                ) {
                                                     e.preventDefault();
                                                     onRowClick(row);
                                                 }
@@ -395,7 +421,10 @@ export function DataTable<T extends object>({
                                             role={onRowClick ? "button" : undefined}
                                         >
                                             {selectable && (
-                                                <td className="w-12 px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                                <td
+                                                    className="w-12 px-4 py-3"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}
@@ -409,17 +438,24 @@ export function DataTable<T extends object>({
                                                     key={column.id}
                                                     className={cn(
                                                         compact ? "px-4 py-2" : "px-4 py-3",
-                                                        column.sticky && "sticky left-0 bg-background",
+                                                        column.sticky &&
+                                                            "sticky left-0 bg-background",
                                                         column.align === "center" && "text-center",
                                                         column.align === "right" && "text-right"
                                                     )}
-                                                    style={{ width: column.width, minWidth: column.minWidth }}
+                                                    style={{
+                                                        width: column.width,
+                                                        minWidth: column.minWidth,
+                                                    }}
                                                 >
                                                     {renderCell(row, column)}
                                                 </td>
                                             ))}
                                             {rowActions && (
-                                                <td className="w-12 px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                                <td
+                                                    className="w-12 px-4 py-3"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     {rowActions(row)}
                                                 </td>
                                             )}
@@ -504,3 +540,5 @@ export function DataTable<T extends object>({
         </div>
     );
 }
+
+DataTable.displayName = "DataTable";

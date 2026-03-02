@@ -1,0 +1,20 @@
+{
+  "name": "Playbook — Production Management",
+  "short_name": "Playbook",
+  "description": "Enterprise creative & experiential production management platform",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

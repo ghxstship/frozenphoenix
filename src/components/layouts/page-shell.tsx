@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
+import { TabBar } from "@/components/ui/tab-bar";
+import type { TabBarItem } from "@/components/ui/tab-bar";
 
-export interface TabConfig {
-    id: string;
-    label: string;
-    href?: string;
-    count?: number;
-}
+/** @deprecated Use TabBarItem from '@/components/ui/tab-bar' directly */
+export type TabConfig = TabBarItem;
 
 export interface BreadcrumbItem {
     label: string;
@@ -20,7 +18,7 @@ export interface PageShellProps {
     title: string;
     description?: string;
     actions?: React.ReactNode;
-    tabs?: TabConfig[];
+    tabs?: TabBarItem[];
     activeTab?: string;
     onTabChange?: (tabId: string) => void;
     breadcrumbs?: BreadcrumbItem[];
@@ -38,23 +36,9 @@ export function PageShell({
     className,
     children,
 }: PageShellProps) {
-    const tabsRef = useRef<HTMLDivElement>(null);
-
-    const handleTabKeyDown = useCallback((e: React.KeyboardEvent, index: number) => {
-        if (!tabs || !tabsRef.current) return;
-        const buttons = tabsRef.current.querySelectorAll<HTMLButtonElement>("[role='tab']");
-        let next = index;
-
-        if (e.key === "ArrowRight") { e.preventDefault(); next = (index + 1) % tabs.length; }
-        else if (e.key === "ArrowLeft") { e.preventDefault(); next = (index - 1 + tabs.length) % tabs.length; }
-        else if (e.key === "Home") { e.preventDefault(); next = 0; }
-        else if (e.key === "End") { e.preventDefault(); next = tabs.length - 1; }
-        else return;
-
-        buttons[next]?.focus();
-        const nextTab = tabs[next];
-        if (nextTab) onTabChange?.(nextTab.id);
-    }, [tabs, onTabChange]);
+    const hasTabs = Boolean(tabs && tabs.length > 0);
+    const tabIdPrefix = `page-shell-${React.useId().replace(/:/g, "")}`;
+    const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
 
     return (
         <div className={cn("space-y-6 animate-fade-in", className)}>
@@ -62,48 +46,40 @@ export function PageShell({
                 {actions}
             </PageHeader>
 
-            {tabs && tabs.length > 0 && (
-                <div
-                    ref={tabsRef}
-                    className="flex gap-1 border-b border-border overflow-x-auto scrollbar-hide"
-                    role="tablist"
-                    aria-label="Page tabs"
-                >
-                    {tabs.map((tab, index) => (
-                        <button
-                            key={tab.id}
-                            role="tab"
-                            aria-selected={activeTab === tab.id}
-                            aria-controls={`tabpanel-${tab.id}`}
-                            tabIndex={activeTab === tab.id ? 0 : -1}
-                            onClick={() => onTabChange?.(tab.id)}
-                            onKeyDown={(e) => handleTabKeyDown(e, index)}
-                            className={cn(
-                                "px-4 py-2.5 text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                                activeTab === tab.id
-                                    ? "border-primary text-primary"
-                                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                            )}
-                        >
-                            {tab.label}
-                            {tab.count !== undefined && (
-                                <span className={cn(
-                                    "ml-2 text-xs px-1.5 py-0.5 rounded-full tabular-nums",
-                                    activeTab === tab.id
-                                        ? "bg-primary/15 text-primary"
-                                        : "bg-muted text-muted-foreground"
-                                )}>
-                                    {tab.count}
-                                </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
+            {hasTabs && resolvedActiveTab && tabs && (
+                <TabBar
+                    items={tabs}
+                    value={resolvedActiveTab}
+                    onValueChange={(tabId) => onTabChange?.(tabId)}
+                    idPrefix={tabIdPrefix}
+                    ariaLabel="Page tabs"
+                    className="overflow-x-auto scrollbar-hide"
+                />
             )}
 
-            <div role="tabpanel" id={activeTab ? `tabpanel-${activeTab}` : undefined}>
+            <div
+                className={
+                    hasTabs && resolvedActiveTab
+                        ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        : undefined
+                }
+                role={hasTabs && resolvedActiveTab ? "tabpanel" : undefined}
+                id={
+                    hasTabs && resolvedActiveTab
+                        ? `${tabIdPrefix}-tabpanel-${resolvedActiveTab}`
+                        : undefined
+                }
+                aria-labelledby={
+                    hasTabs && resolvedActiveTab
+                        ? `${tabIdPrefix}-tab-${resolvedActiveTab}`
+                        : undefined
+                }
+                tabIndex={hasTabs && resolvedActiveTab ? 0 : undefined}
+            >
                 {children}
             </div>
         </div>
     );
 }
+
+PageShell.displayName = "PageShell";

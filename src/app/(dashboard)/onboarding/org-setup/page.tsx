@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthFormField } from "@/components/auth";
-import { Building2, Globe, Clock, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Clock, Globe, Loader2 } from "lucide-react";
 
 const TIMEZONES = [
     "America/New_York",
@@ -41,9 +41,7 @@ export default function OrgSetupPage() {
     const router = useRouter();
     const { user, profile, refreshProfile } = useAuth();
 
-    const [orgName, setOrgName] = useState(
-        user?.user_metadata?.org_name || ""
-    );
+    const [orgName, setOrgName] = useState(user?.user_metadata?.org_name || "");
     const [industry, setIndustry] = useState("");
     const [timezone, setTimezone] = useState(
         Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"
@@ -52,47 +50,50 @@ export default function OrgSetupPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!orgName.trim()) {
-            setError("Organization name is required.");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const res = await fetch("/api/organizations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: orgName.trim(),
-                    industry: industry || undefined,
-                    timezone,
-                }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to create organization.");
+            if (!orgName.trim()) {
+                setError("Organization name is required.");
                 return;
             }
 
-            await refreshProfile();
-            setSuccess(true);
+            setLoading(true);
 
-            // Auto-advance after a short delay
-            setTimeout(() => {
-                router.push("/onboarding/invite-team");
-            }, 1500);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [orgName, industry, timezone, refreshProfile, router]);
+            try {
+                const res = await fetch("/api/organizations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: orgName.trim(),
+                        industry: industry || undefined,
+                        timezone,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    setError(data.error || "Failed to create organization.");
+                    return;
+                }
+
+                await refreshProfile();
+                setSuccess(true);
+
+                // Auto-advance after a short delay
+                setTimeout(() => {
+                    router.push("/onboarding/invite-team");
+                }, 1500);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [orgName, industry, timezone, refreshProfile, router]
+    );
 
     const handleSkip = useCallback(() => {
         router.push("/dashboard");
@@ -101,14 +102,16 @@ export default function OrgSetupPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-lg text-center space-y-4" role="status" aria-live="polite">
+                <div
+                    className="w-full max-w-lg text-center space-y-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
                     <h2 className="text-xl font-bold">Organization created!</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Taking you to invite your team…
-                    </p>
+                    <p className="text-sm text-muted-foreground">Taking you to invite your team…</p>
                     <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto" />
                 </div>
             </div>
@@ -129,11 +132,10 @@ export default function OrgSetupPage() {
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-2">
                         <Building2 className="h-7 w-7 text-primary" aria-hidden="true" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        Set up your organization
-                    </h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Set up your organization</h1>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Welcome{profile?.name ? `, ${profile.name}` : ""}! Let&apos;s get your workspace configured.
+                        Welcome{profile?.name ? `, ${profile.name}` : ""}! Let&apos;s get your
+                        workspace configured.
                     </p>
                 </div>
 
@@ -178,7 +180,9 @@ export default function OrgSetupPage() {
                             >
                                 <option value="">Select your industry…</option>
                                 {INDUSTRIES.map((ind) => (
-                                    <option key={ind} value={ind}>{ind}</option>
+                                    <option key={ind} value={ind}>
+                                        {ind}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -201,7 +205,9 @@ export default function OrgSetupPage() {
                                 disabled={loading}
                             >
                                 {TIMEZONES.map((tz) => (
-                                    <option key={tz} value={tz}>{tz.replace(/_/g, " ")}</option>
+                                    <option key={tz} value={tz}>
+                                        {tz.replace(/_/g, " ")}
+                                    </option>
                                 ))}
                             </select>
                         </div>

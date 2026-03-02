@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -12,22 +12,34 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { OverlineText } from "@/components/ui/overline-text";
 import { SearchInput } from "@/components/ui/search-input";
 import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
-import { useAccounts, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { isSupabaseConfigured, useAccounts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { AccountHealthScore } from "@/types";
 import {
-    Building2, DollarSign, AlertTriangle,
-    HeartPulse, ChevronRight, Target, FolderKanban, FileWarning,
-    Shield, Loader2,
+    AlertTriangle,
+    Building2,
+    ChevronRight,
+    DollarSign,
+    FileWarning,
+    FolderKanban,
+    HeartPulse,
+    Loader2,
+    Shield,
+    Target,
 } from "lucide-react";
 
 function getRiskColor(risk: string): string {
     switch (risk) {
-        case "low": return "text-success";
-        case "medium": return "text-warning";
-        case "high": return "text-destructive";
-        case "critical": return "text-destructive";
-        default: return "text-muted-foreground";
+        case "low":
+            return "text-success";
+        case "medium":
+            return "text-warning";
+        case "high":
+            return "text-destructive";
+        case "critical":
+            return "text-destructive";
+        default:
+            return "text-muted-foreground";
     }
 }
 
@@ -55,7 +67,10 @@ export default function AccountsPage() {
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbAccounts, isLoading } = useAccounts();
 
-    const accounts = isSupabaseConfigured && sbAccounts ? (sbAccounts as unknown as typeof MOCK_ACCOUNT_HEALTH_SCORES) : MOCK_ACCOUNT_HEALTH_SCORES;
+    const accounts =
+        isSupabaseConfigured && sbAccounts
+            ? (sbAccounts as unknown as typeof MOCK_ACCOUNT_HEALTH_SCORES)
+            : MOCK_ACCOUNT_HEALTH_SCORES;
 
     const filtered = useMemo(() => {
         let result = accounts;
@@ -69,10 +84,13 @@ export default function AccountsPage() {
 
     const stats = useMemo(() => {
         const totalRevenue = accounts.reduce((s, a) => s + a.lifetimeRevenue, 0);
-        const avgHealth = accounts.length > 0
-            ? Math.round(accounts.reduce((s, a) => s + a.overallScore, 0) / accounts.length)
-            : 0;
-        const atRisk = accounts.filter((a) => a.riskLevel === "high" || a.riskLevel === "critical").length;
+        const avgHealth =
+            accounts.length > 0
+                ? Math.round(accounts.reduce((s, a) => s + a.overallScore, 0) / accounts.length)
+                : 0;
+        const atRisk = accounts.filter(
+            (a) => a.riskLevel === "high" || a.riskLevel === "critical"
+        ).length;
         const totalOpps = accounts.reduce((s, a) => s + a.openOpportunityCount, 0);
         return { totalRevenue, avgHealth, atRisk, totalOpps };
     }, [accounts]);
@@ -87,52 +105,68 @@ export default function AccountsPage() {
 
     return (
         <PermissionGate resource="accounts" action="read">
-        <div className="space-y-6">
-            <PageHeader title="Accounts" description="Client relationship health and revenue overview">
-                <Link href="/accounts/new">
-                    <Button size="sm">
-                        <Building2 className="mr-2 h-4 w-4" /> New Account
-                    </Button>
-                </Link>
-            </PageHeader>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Lifetime Revenue" value={formatCurrency(stats.totalRevenue)} icon={DollarSign} />
-                <StatCard title="Avg. Health Score" value={stats.avgHealth} icon={HeartPulse} />
-                <StatCard title="At-Risk Accounts" value={stats.atRisk} icon={AlertTriangle} />
-                <StatCard title="Open Opportunities" value={stats.totalOpps} icon={Target} />
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <SearchInput value={search} onValueChange={setSearch} placeholder="Search accounts..." className="w-64" />
-                <select
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={riskFilter}
-                    onChange={(e) => setRiskFilter(e.target.value)}
+            <div className="space-y-6">
+                <PageHeader
+                    title="Accounts"
+                    description="Client relationship health and revenue overview"
                 >
-                    <option value="all">All Risk Levels</option>
-                    <option value="low">Low Risk</option>
-                    <option value="medium">Medium Risk</option>
-                    <option value="high">High Risk</option>
-                    <option value="critical">Critical</option>
-                </select>
-            </div>
+                    <Link href="/accounts/new">
+                        <Button size="sm">
+                            <Building2 className="mr-2 h-4 w-4" /> New Account
+                        </Button>
+                    </Link>
+                </PageHeader>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filtered.map((account) => (
-                    <AccountCard key={account.id} account={account} />
-                ))}
-                {filtered.length === 0 && (
-                    <div className="col-span-2 text-center py-12 text-muted-foreground">No accounts match your filters</div>
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        title="Lifetime Revenue"
+                        value={formatCurrency(stats.totalRevenue)}
+                        icon={DollarSign}
+                    />
+                    <StatCard title="Avg. Health Score" value={stats.avgHealth} icon={HeartPulse} />
+                    <StatCard title="At-Risk Accounts" value={stats.atRisk} icon={AlertTriangle} />
+                    <StatCard title="Open Opportunities" value={stats.totalOpps} icon={Target} />
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search accounts..."
+                        className="w-64"
+                    />
+                    <select
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={riskFilter}
+                        onChange={(e) => setRiskFilter(e.target.value)}
+                    >
+                        <option value="all">All Risk Levels</option>
+                        <option value="low">Low Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="high">High Risk</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {filtered.map((account) => (
+                        <AccountCard key={account.id} account={account} />
+                    ))}
+                    {filtered.length === 0 && (
+                        <div className="col-span-2 text-center py-12 text-muted-foreground">
+                            No accounts match your filters
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
         </PermissionGate>
     );
 }
 
 function AccountCard({ account }: { account: AccountHealthScore }) {
-    const opps = MOCK_OPPORTUNITIES.filter((o) => o.companyId === account.companyId && o.stage !== "won" && o.stage !== "lost");
+    const opps = MOCK_OPPORTUNITIES.filter(
+        (o) => o.companyId === account.companyId && o.stage !== "won" && o.stage !== "lost"
+    );
 
     return (
         <Card className="hover:shadow-sm transition-shadow">
@@ -147,12 +181,20 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
                             <div className="flex items-center gap-2 mt-0.5">
                                 <StatusBadge status={account.riskLevel} />
                                 <span className="text-xs text-muted-foreground">
-                                    Score: <span className={`font-semibold ${getRiskColor(account.riskLevel)}`}>{account.overallScore}</span>/100
+                                    Score:{" "}
+                                    <span
+                                        className={`font-semibold ${getRiskColor(account.riskLevel)}`}
+                                    >
+                                        {account.overallScore}
+                                    </span>
+                                    /100
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div className={`text-xl font-bold rounded-lg px-3 py-1 ${getScoreColor(account.overallScore)}`}>
+                    <div
+                        className={`text-xl font-bold rounded-lg px-3 py-1 ${getScoreColor(account.overallScore)}`}
+                    >
                         {account.overallScore}
                     </div>
                 </div>
@@ -160,7 +202,11 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                     <div>
-                        <div className="text-lg font-semibold">{account.lifetimeRevenue > 0 ? formatCurrency(account.lifetimeRevenue) : "$0"}</div>
+                        <div className="text-lg font-semibold">
+                            {account.lifetimeRevenue > 0
+                                ? formatCurrency(account.lifetimeRevenue)
+                                : "$0"}
+                        </div>
                         <OverlineText>Revenue</OverlineText>
                     </div>
                     <div>
@@ -200,11 +246,18 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
 
                 {account.riskFactors.length > 0 && (
                     <div className="space-y-1.5">
-                        <div className="text-xs font-medium text-muted-foreground">Risk Factors</div>
+                        <div className="text-xs font-medium text-muted-foreground">
+                            Risk Factors
+                        </div>
                         {account.riskFactors.map((rf, i) => (
                             <div key={i} className="flex items-start gap-2 text-xs">
-                                <AlertTriangle className={`h-3 w-3 mt-0.5 flex-shrink-0 ${getRiskColor(rf.severity)}`} />
-                                <span>{rf.factor}{rf.detail ? ` — ${rf.detail}` : ""}</span>
+                                <AlertTriangle
+                                    className={`h-3 w-3 mt-0.5 flex-shrink-0 ${getRiskColor(rf.severity)}`}
+                                />
+                                <span>
+                                    {rf.factor}
+                                    {rf.detail ? ` — ${rf.detail}` : ""}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -212,11 +265,16 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
 
                 {account.recommendations.length > 0 && (
                     <div className="space-y-1.5">
-                        <div className="text-xs font-medium text-muted-foreground">Recommendations</div>
+                        <div className="text-xs font-medium text-muted-foreground">
+                            Recommendations
+                        </div>
                         {account.recommendations.map((rec, i) => (
                             <div key={i} className="flex items-start gap-2 text-xs">
                                 <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0 text-primary" />
-                                <span>{rec.action}{rec.detail ? ` — ${rec.detail}` : ""}</span>
+                                <span>
+                                    {rec.action}
+                                    {rec.detail ? ` — ${rec.detail}` : ""}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -224,7 +282,9 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
 
                 {opps.length > 0 && (
                     <div className="space-y-1.5 border-t pt-3">
-                        <div className="text-xs font-medium text-muted-foreground">Open Opportunities</div>
+                        <div className="text-xs font-medium text-muted-foreground">
+                            Open Opportunities
+                        </div>
                         {opps.map((opp) => (
                             <div key={opp.id} className="flex items-center justify-between text-xs">
                                 <span className="truncate">{opp.name}</span>

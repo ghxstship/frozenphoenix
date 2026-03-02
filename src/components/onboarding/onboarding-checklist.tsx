@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
-    CheckCircle2,
-    Circle,
     Building2,
-    UserPlus,
-    FolderPlus,
-    Compass,
-    Mail,
-    User,
-    Shield,
-    FileCheck,
-    CreditCard,
+    CheckCircle2,
     ChevronRight,
+    Circle,
+    Compass,
+    CreditCard,
+    FileCheck,
+    FolderPlus,
     Loader2,
+    Mail,
+    Shield,
+    User,
+    UserPlus,
     X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -105,35 +105,40 @@ export function OnboardingChecklist() {
         fetchProgress();
     }, []);
 
-    const markComplete = useCallback(async (stepId: string) => {
-        setCompleting(stepId);
-        try {
-            const res = await fetch("/api/onboarding/progress", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ step_definition_id: stepId, status: "completed" }),
-            });
+    const markComplete = useCallback(
+        async (stepId: string) => {
+            setCompleting(stepId);
+            try {
+                const res = await fetch("/api/onboarding/progress", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ step_definition_id: stepId, status: "completed" }),
+                });
 
-            if (res.ok) {
-                setSteps((prev) =>
-                    prev.map((s) => (s.id === stepId ? { ...s, completed: true } : s))
-                );
-                setSummary((prev) =>
-                    prev
-                        ? {
-                            ...prev,
-                            completed: prev.completed + 1,
-                            completedRequired: prev.completedRequired + (steps.find((s) => s.id === stepId)?.is_required ? 1 : 0),
-                        }
-                        : prev
-                );
+                if (res.ok) {
+                    setSteps((prev) =>
+                        prev.map((s) => (s.id === stepId ? { ...s, completed: true } : s))
+                    );
+                    setSummary((prev) =>
+                        prev
+                            ? {
+                                  ...prev,
+                                  completed: prev.completed + 1,
+                                  completedRequired:
+                                      prev.completedRequired +
+                                      (steps.find((s) => s.id === stepId)?.is_required ? 1 : 0),
+                              }
+                            : prev
+                    );
+                }
+            } catch {
+                // Silently fail
+            } finally {
+                setCompleting(null);
             }
-        } catch {
-            // Silently fail
-        } finally {
-            setCompleting(null);
-        }
-    }, [steps]);
+        },
+        [steps]
+    );
 
     if (loading) return null;
     if (dismissed) return null;
@@ -206,17 +211,28 @@ export function OnboardingChecklist() {
                                     )}
                                 >
                                     {step.completed ? (
-                                        <CheckCircle2 className="h-5 w-5 text-success shrink-0" aria-hidden="true" />
+                                        <CheckCircle2
+                                            className="h-5 w-5 text-success shrink-0"
+                                            aria-hidden="true"
+                                        />
                                     ) : isCompleting ? (
-                                        <Loader2 className="h-5 w-5 text-primary animate-spin shrink-0" aria-hidden="true" />
+                                        <Loader2
+                                            className="h-5 w-5 text-primary animate-spin shrink-0"
+                                            aria-hidden="true"
+                                        />
                                     ) : (
-                                        <Icon className="h-5 w-5 text-muted-foreground shrink-0" aria-hidden="true" />
+                                        <Icon
+                                            className="h-5 w-5 text-muted-foreground shrink-0"
+                                            aria-hidden="true"
+                                        />
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <span className={cn(
-                                            "text-sm font-medium block",
-                                            step.completed && "line-through"
-                                        )}>
+                                        <span
+                                            className={cn(
+                                                "text-sm font-medium block",
+                                                step.completed && "line-through"
+                                            )}
+                                        >
                                             {step.title}
                                         </span>
                                         <span className="text-xs text-muted-foreground block truncate">
@@ -224,7 +240,10 @@ export function OnboardingChecklist() {
                                         </span>
                                     </div>
                                     {!step.completed && route && (
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+                                        <ChevronRight
+                                            className="h-4 w-4 text-muted-foreground shrink-0"
+                                            aria-hidden="true"
+                                        />
                                     )}
                                 </button>
                             </li>

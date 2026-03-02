@@ -1,23 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-    Users,
-    Clock,
     AlertTriangle,
     CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    Plus,
+    Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
 import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
@@ -56,12 +50,48 @@ interface CrewMember {
 }
 
 const mockCrewMembers: CrewMember[] = [
-    { id: "1", name: "Alex Rivera", role: "Production Manager", department: "Production", utilizationPercent: 85 },
-    { id: "2", name: "Jordan Kim", role: "Technical Director", department: "Technical", utilizationPercent: 92 },
-    { id: "3", name: "Sam Chen", role: "Fabrication Lead", department: "Fabrication", utilizationPercent: 78 },
-    { id: "4", name: "Taylor Morgan", role: "Logistics Coordinator", department: "Logistics", utilizationPercent: 65 },
-    { id: "5", name: "Casey Johnson", role: "AV Technician", department: "Technical", utilizationPercent: 45 },
-    { id: "6", name: "Morgan Lee", role: "Scenic Artist", department: "Scenic", utilizationPercent: 100 },
+    {
+        id: "1",
+        name: "Alex Rivera",
+        role: "Production Manager",
+        department: "Production",
+        utilizationPercent: 85,
+    },
+    {
+        id: "2",
+        name: "Jordan Kim",
+        role: "Technical Director",
+        department: "Technical",
+        utilizationPercent: 92,
+    },
+    {
+        id: "3",
+        name: "Sam Chen",
+        role: "Fabrication Lead",
+        department: "Fabrication",
+        utilizationPercent: 78,
+    },
+    {
+        id: "4",
+        name: "Taylor Morgan",
+        role: "Logistics Coordinator",
+        department: "Logistics",
+        utilizationPercent: 65,
+    },
+    {
+        id: "5",
+        name: "Casey Johnson",
+        role: "AV Technician",
+        department: "Technical",
+        utilizationPercent: 45,
+    },
+    {
+        id: "6",
+        name: "Morgan Lee",
+        role: "Scenic Artist",
+        department: "Scenic",
+        utilizationPercent: 100,
+    },
 ];
 
 const mockBookings: ResourceBooking[] = [
@@ -166,7 +196,7 @@ function getWeekDates(startDate: Date): Date[] {
     const dates: Date[] = [];
     const start = new Date(startDate);
     start.setDate(start.getDate() - start.getDay() + 1); // Start from Monday
-    
+
     for (let i = 0; i < 7; i++) {
         const date = new Date(start);
         date.setDate(start.getDate() + i);
@@ -224,7 +254,8 @@ export default function ResourcePlannerPage() {
     const stats = {
         totalCrew: mockCrewMembers.length,
         avgUtilization: Math.round(
-            mockCrewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) / mockCrewMembers.length
+            mockCrewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) /
+                mockCrewMembers.length
         ),
         overbooked: mockCrewMembers.filter((c) => c.utilizationPercent >= 100).length,
         available: mockCrewMembers.filter((c) => c.utilizationPercent < 50).length,
@@ -232,227 +263,281 @@ export default function ResourcePlannerPage() {
 
     return (
         <PermissionGate resource="resource_planner" action="read">
-        <div className="flex flex-col gap-6 p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Resource Planner</h1>
-                    <p className="text-muted-foreground">
-                        Schedule and manage team capacity across projects
-                    </p>
-                </div>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Booking
-                </Button>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalCrew}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Avg Utilization</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={cn("text-2xl font-bold", getUtilizationColor(stats.avgUtilization))}>
-                            {stats.avgUtilization}%
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Overbooked</CardTitle>
-                        <AlertTriangle className="h-4 w-4 text-destructive" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-destructive">{stats.overbooked}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Available</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-success" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-success">{stats.available}</div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Calendar Navigation */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => navigateWeek("prev")} aria-label="Previous week">
-                        <ChevronLeft className="h-4 w-4" />
+            <div className="flex flex-col gap-6 p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Resource Planner</h1>
+                        <p className="text-muted-foreground">
+                            Schedule and manage team capacity across projects
+                        </p>
+                    </div>
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        New Booking
                     </Button>
-                    <Button variant="outline" onClick={goToToday}>
-                        Today
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => navigateWeek("next")} aria-label="Next week">
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <span className="ml-4 text-lg font-semibold">
-                        {weekDates[0] ? formatDisplayDate(weekDates[0], "long") : ""}
-                    </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-sm">
-                        <div className="h-3 w-3 rounded bg-info" />
-                        <span>Project</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                        <div className="h-3 w-3 rounded bg-muted-foreground" />
-                        <span>Time Off</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                        <div className="h-3 w-3 rounded bg-success" />
-                        <span>Training</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                        <div className="h-3 w-3 rounded border-2 border-dashed border-info opacity-60" />
-                        <span>Tentative</span>
-                    </div>
-                </div>
-            </div>
 
-            {/* Resource Grid */}
-            <Card>
-                <div className="overflow-x-auto">
-                    <div className="min-w-[900px]">
-                        {/* Header Row */}
-                        <div className="grid grid-cols-8 border-b">
-                            <div className="p-3 font-medium text-sm border-r bg-muted/50">
-                                Team Member
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.totalCrew}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Avg Utilization</CardTitle>
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div
+                                className={cn(
+                                    "text-2xl font-bold",
+                                    getUtilizationColor(stats.avgUtilization)
+                                )}
+                            >
+                                {stats.avgUtilization}%
                             </div>
-                            {weekDates.map((date) => (
-                                <div
-                                    key={date.toISOString()}
-                                    className={cn(
-                                        "p-3 text-center border-r last:border-r-0",
-                                        date.getDay() === 0 || date.getDay() === 6
-                                            ? "bg-muted/30"
-                                            : "bg-muted/50"
-                                    )}
-                                >
-                                    <div className="text-xs text-muted-foreground">
-                                        {new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date)}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Overbooked</CardTitle>
+                            <AlertTriangle className="h-4 w-4 text-destructive" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-destructive">
+                                {stats.overbooked}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Available</CardTitle>
+                            <CheckCircle className="h-4 w-4 text-success" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-success">{stats.available}</div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Calendar Navigation */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => navigateWeek("prev")}
+                            aria-label="Previous week"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" onClick={goToToday}>
+                            Today
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => navigateWeek("next")}
+                            aria-label="Next week"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <span className="ml-4 text-lg font-semibold">
+                            {weekDates[0] ? formatDisplayDate(weekDates[0], "long") : ""}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded bg-info" />
+                            <span>Project</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded bg-muted-foreground" />
+                            <span>Time Off</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded bg-success" />
+                            <span>Training</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded border-2 border-dashed border-info opacity-60" />
+                            <span>Tentative</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Resource Grid */}
+                <Card>
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[900px]">
+                            {/* Header Row */}
+                            <div className="grid grid-cols-8 border-b">
+                                <div className="p-3 font-medium text-sm border-r bg-muted/50">
+                                    Team Member
+                                </div>
+                                {weekDates.map((date) => (
+                                    <div
+                                        key={date.toISOString()}
+                                        className={cn(
+                                            "p-3 text-center border-r last:border-r-0",
+                                            date.getDay() === 0 || date.getDay() === 6
+                                                ? "bg-muted/30"
+                                                : "bg-muted/50"
+                                        )}
+                                    >
+                                        <div className="text-xs text-muted-foreground">
+                                            {new Intl.DateTimeFormat(undefined, {
+                                                weekday: "short",
+                                            }).format(date)}
+                                        </div>
+                                        <div className="font-medium">{date.getDate()}</div>
                                     </div>
-                                    <div className="font-medium">{date.getDate()}</div>
+                                ))}
+                            </div>
+
+                            {/* Crew Rows */}
+                            {mockCrewMembers.map((crew) => (
+                                <div
+                                    key={crew.id}
+                                    className="grid grid-cols-8 border-b last:border-b-0 hover:bg-muted/20"
+                                >
+                                    {/* Crew Info */}
+                                    <div className="p-3 border-r flex items-center gap-3">
+                                        <div
+                                            className={cn(
+                                                "h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium",
+                                                crew.utilizationPercent >= 100
+                                                    ? "bg-destructive"
+                                                    : crew.utilizationPercent >= 80
+                                                      ? "bg-warning"
+                                                      : "bg-success"
+                                            )}
+                                        >
+                                            {crew.name
+                                                .split(" ")
+                                                .map((n) => n[0])
+                                                .join("")}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-medium text-sm truncate">
+                                                {crew.name}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground truncate">
+                                                {crew.role}
+                                            </div>
+                                        </div>
+                                        <div
+                                            className={cn(
+                                                "text-xs font-medium",
+                                                getUtilizationColor(crew.utilizationPercent)
+                                            )}
+                                        >
+                                            {crew.utilizationPercent}%
+                                        </div>
+                                    </div>
+
+                                    {/* Day Cells */}
+                                    {weekDates.map((date) => {
+                                        const dateStr = formatDate(date);
+                                        const bookings = getBookingsForCrewOnDate(crew.id, dateStr);
+                                        const isWeekend =
+                                            date.getDay() === 0 || date.getDay() === 6;
+
+                                        return (
+                                            <div
+                                                key={dateStr}
+                                                className={cn(
+                                                    "p-1 border-r last:border-r-0 min-h-[60px] relative",
+                                                    isWeekend && "bg-muted/20"
+                                                )}
+                                            >
+                                                {bookings.map((booking) => (
+                                                    <div
+                                                        key={booking.id}
+                                                        className={cn(
+                                                            "rounded px-1 py-0.5 text-xs text-primary-foreground mb-1 cursor-pointer hover:opacity-80 truncate",
+                                                            bookingColors[booking.bookingType],
+                                                            statusOpacity[booking.status],
+                                                            booking.hasConflict &&
+                                                                "ring-2 ring-destructive"
+                                                        )}
+                                                        title={
+                                                            booking.projectName ||
+                                                            booking.bookingType
+                                                        }
+                                                    >
+                                                        {booking.hoursPerDay < 8 && (
+                                                            <span className="mr-1">
+                                                                {booking.hoursPerDay}h
+                                                            </span>
+                                                        )}
+                                                        {booking.projectName ||
+                                                            booking.bookingType.replace("_", " ")}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </Card>
 
-                        {/* Crew Rows */}
-                        {mockCrewMembers.map((crew) => (
-                            <div key={crew.id} className="grid grid-cols-8 border-b last:border-b-0 hover:bg-muted/20">
-                                {/* Crew Info */}
-                                <div className="p-3 border-r flex items-center gap-3">
-                                    <div
-                                        className={cn(
-                                            "h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium",
-                                            crew.utilizationPercent >= 100
-                                                ? "bg-destructive"
-                                                : crew.utilizationPercent >= 80
-                                                ? "bg-warning"
-                                                : "bg-success"
-                                        )}
-                                    >
-                                        {crew.name.split(" ").map((n) => n[0]).join("")}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="font-medium text-sm truncate">{crew.name}</div>
-                                        <div className="text-xs text-muted-foreground truncate">{crew.role}</div>
-                                    </div>
-                                    <div className={cn("text-xs font-medium", getUtilizationColor(crew.utilizationPercent))}>
-                                        {crew.utilizationPercent}%
+                {/* Placeholder Bookings */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Placeholder Bookings</CardTitle>
+                        <CardDescription>
+                            Unassigned resource needs for upcoming projects
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                                <div>
+                                    <div className="font-medium">Senior AV Tech</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Nike Launch • Mar 1-5
                                     </div>
                                 </div>
-
-                                {/* Day Cells */}
-                                {weekDates.map((date) => {
-                                    const dateStr = formatDate(date);
-                                    const bookings = getBookingsForCrewOnDate(crew.id, dateStr);
-                                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-
-                                    return (
-                                        <div
-                                            key={dateStr}
-                                            className={cn(
-                                                "p-1 border-r last:border-r-0 min-h-[60px] relative",
-                                                isWeekend && "bg-muted/20"
-                                            )}
-                                        >
-                                            {bookings.map((booking) => (
-                                                <div
-                                                    key={booking.id}
-                                                    className={cn(
-                                                        "rounded px-1 py-0.5 text-xs text-primary-foreground mb-1 cursor-pointer hover:opacity-80 truncate",
-                                                        bookingColors[booking.bookingType],
-                                                        statusOpacity[booking.status],
-                                                        booking.hasConflict && "ring-2 ring-destructive"
-                                                    )}
-                                                    title={booking.projectName || booking.bookingType}
-                                                >
-                                                    {booking.hoursPerDay < 8 && (
-                                                        <span className="mr-1">{booking.hoursPerDay}h</span>
-                                                    )}
-                                                    {booking.projectName || booking.bookingType.replace("_", " ")}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    );
-                                })}
+                                <Button size="sm" variant="outline">
+                                    Assign
+                                </Button>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </Card>
-
-            {/* Placeholder Bookings */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">Placeholder Bookings</CardTitle>
-                    <CardDescription>
-                        Unassigned resource needs for upcoming projects
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                                <div className="font-medium">Senior AV Tech</div>
-                                <div className="text-sm text-muted-foreground">Nike Launch • Mar 1-5</div>
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                                <div>
+                                    <div className="font-medium">Rigger (2)</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Red Bull Festival • Mar 10-15
+                                    </div>
+                                </div>
+                                <Button size="sm" variant="outline">
+                                    Assign
+                                </Button>
                             </div>
-                            <Button size="sm" variant="outline">Assign</Button>
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                                <div>
+                                    <div className="font-medium">Scenic Painter</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Coachella • Mar 20-25
+                                    </div>
+                                </div>
+                                <Button size="sm" variant="outline">
+                                    Assign
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                                <div className="font-medium">Rigger (2)</div>
-                                <div className="text-sm text-muted-foreground">Red Bull Festival • Mar 10-15</div>
-                            </div>
-                            <Button size="sm" variant="outline">Assign</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                                <div className="font-medium">Scenic Painter</div>
-                                <div className="text-sm text-muted-foreground">Coachella • Mar 20-25</div>
-                            </div>
-                            <Button size="sm" variant="outline">Assign</Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </PermissionGate>
     );
 }

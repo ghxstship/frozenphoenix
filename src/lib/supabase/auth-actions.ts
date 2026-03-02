@@ -1,20 +1,10 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
-import type { Provider, AuthError, AuthResponse, UserResponse } from "@supabase/supabase-js";
+import { getSupabase, isSupabaseConfigured } from "./client";
+import type { AuthError, AuthResponse, Provider, UserResponse } from "@supabase/supabase-js";
 
 // ─── Helpers ───
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error(
-            "Supabase client not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
-        );
-    }
-    return client;
-}
 
 function getRedirectUrl(path: string): string {
     if (typeof window !== "undefined") {
@@ -75,10 +65,7 @@ export interface MFAChallengeResponse {
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Email/Password Sign In ───
-export async function signInWithPassword(
-    email: string,
-    password: string
-): Promise<AuthResponse> {
+export async function signInWithPassword(email: string, password: string): Promise<AuthResponse> {
     const supabase = getSupabase();
     return supabase.auth.signInWithPassword({ email, password });
 }
@@ -153,9 +140,7 @@ export async function resetPassword(
 }
 
 // ─── Update Password (authenticated user) ───
-export async function updatePassword(
-    password: string
-): Promise<UserResponse> {
+export async function updatePassword(password: string): Promise<UserResponse> {
     const supabase = getSupabase();
     return supabase.auth.updateUser({ password });
 }
@@ -165,17 +150,13 @@ export async function updatePassword(
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Update Email ───
-export async function updateEmail(
-    email: string
-): Promise<UserResponse> {
+export async function updateEmail(email: string): Promise<UserResponse> {
     const supabase = getSupabase();
     return supabase.auth.updateUser({ email });
 }
 
 // ─── Update User Metadata (name, avatar, etc.) ───
-export async function updateUserMetadata(
-    metadata: ProfileUpdateRequest
-): Promise<UserResponse> {
+export async function updateUserMetadata(metadata: ProfileUpdateRequest): Promise<UserResponse> {
     const supabase = getSupabase();
     return supabase.auth.updateUser({ data: metadata });
 }
@@ -186,10 +167,7 @@ export async function updateProfile(
     updates: Record<string, unknown>
 ): Promise<void> {
     const supabase = getSupabase();
-    const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", userId);
+    const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
     if (error) throw error;
 }
 
@@ -232,9 +210,7 @@ export async function enrollMFA(): Promise<MFAEnrollResponse> {
 }
 
 // ─── Create MFA Challenge ───
-export async function challengeMFA(
-    factorId: string
-): Promise<MFAChallengeResponse> {
+export async function challengeMFA(factorId: string): Promise<MFAChallengeResponse> {
     const supabase = getSupabase();
     const { data, error } = await supabase.auth.mfa.challenge({
         factorId,
@@ -244,14 +220,13 @@ export async function challengeMFA(
 }
 
 // ─── Verify MFA Challenge ───
-export async function verifyMFA(
-    options: MFAVerifyRequest
-): Promise<void> {
+export async function verifyMFA(options: MFAVerifyRequest): Promise<void> {
     const supabase = getSupabase();
 
     // Create a challenge first
-    const { data: challenge, error: challengeError } =
-        await supabase.auth.mfa.challenge({ factorId: options.factorId });
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: options.factorId,
+    });
     if (challengeError) throw challengeError;
 
     // Verify the challenge with the TOTP code
@@ -281,8 +256,7 @@ export async function listMFAFactors() {
 // ─── Get MFA Authenticator Assurance Level ───
 export async function getMFAAssuranceLevel() {
     const supabase = getSupabase();
-    const { data, error } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (error) throw error;
     return data;
 }
@@ -293,13 +267,7 @@ export async function getMFAAssuranceLevel() {
 
 export function useSignInWithPassword() {
     return useMutation({
-        mutationFn: async ({
-            email,
-            password,
-        }: {
-            email: string;
-            password: string;
-        }) => {
+        mutationFn: async ({ email, password }: { email: string; password: string }) => {
             const result = await signInWithPassword(email, password);
             if (result.error) throw result.error;
             return result.data;
@@ -341,13 +309,7 @@ export function useSignInWithOAuth() {
 
 export function useSignInWithMagicLink() {
     return useMutation({
-        mutationFn: async ({
-            email,
-            redirectTo,
-        }: {
-            email: string;
-            redirectTo?: string;
-        }) => {
+        mutationFn: async ({ email, redirectTo }: { email: string; redirectTo?: string }) => {
             const { error } = await signInWithMagicLink(email, redirectTo);
             if (error) throw error;
         },

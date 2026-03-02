@@ -2,7 +2,7 @@
 
 import { formatDateTime } from "@/lib/locale";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,21 @@ import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
 import { MOCK_LOGIN_AUDIT, MOCK_ROLE_CHANGES } from "@/lib/demo-data-user-lifecycle";
 import {
-    KeyRound, ShieldCheck, ShieldAlert, LogIn, LogOut, AlertTriangle,
-    Clock, Globe, Monitor, Smartphone, Download,
+    AlertTriangle,
+    Clock,
+    Download,
+    Globe,
+    KeyRound,
+    LogIn,
+    LogOut,
+    Monitor,
+    ShieldAlert,
+    ShieldCheck,
+    Smartphone,
 } from "lucide-react";
 import type { LoginEventType, RoleChangeType } from "@/types";
+import { TabBar, TabPanel } from "@/components/ui/tab-bar";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 
 type AuditTab = "login" | "role_changes";
 
@@ -66,7 +77,8 @@ const CHANGE_TYPE_LABELS: Partial<Record<RoleChangeType, string>> = {
 
 function getDeviceIcon(userAgent?: string) {
     if (!userAgent) return Monitor;
-    if (userAgent.toLowerCase().includes("iphone") || userAgent.toLowerCase().includes("android")) return Smartphone;
+    if (userAgent.toLowerCase().includes("iphone") || userAgent.toLowerCase().includes("android"))
+        return Smartphone;
     return Monitor;
 }
 
@@ -75,8 +87,14 @@ function formatTime(dateStr: string): string {
     return formatDateTime(d);
 }
 
+const AUDIT_TAB_VALUES = ["login", "role_changes"] as const;
+
 export default function AuditLogPage() {
-    const [activeTab, setActiveTab] = useState<AuditTab>("login");
+    const [activeTab, setActiveTab] = useQueryTabState<AuditTab>({
+        key: "tab",
+        defaultValue: "login",
+        validValues: AUDIT_TAB_VALUES,
+    });
     const [search, setSearch] = useState("");
     const [eventFilter, setEventFilter] = useState<"all" | "success" | "failure">("all");
 
@@ -111,7 +129,10 @@ export default function AuditLogPage() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Audit Log" description="Immutable log of authentication events, role changes, and access modifications">
+            <PageHeader
+                title="Audit Log"
+                description="Immutable log of authentication events, role changes, and access modifications"
+            >
                 <Button variant="outline">
                     <Download className="mr-2 h-4 w-4" />
                     Export
@@ -125,25 +146,22 @@ export default function AuditLogPage() {
                 <StatCard title="Unique IPs" value={uniqueIps} icon={Globe} />
             </div>
 
-            {/* Tab Switcher */}
-            <div className="flex gap-2">
-                <Button
-                    variant={activeTab === "login" ? "default" : "outline"}
-                    onClick={() => setActiveTab("login")}
-                >
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Login Events
-                </Button>
-                <Button
-                    variant={activeTab === "role_changes" ? "default" : "outline"}
-                    onClick={() => setActiveTab("role_changes")}
-                >
-                    <KeyRound className="mr-2 h-4 w-4" />
-                    Role Changes
-                </Button>
-            </div>
+            <TabBar
+                idPrefix="audit-tabs"
+                ariaLabel="Audit sections"
+                items={[
+                    { id: "login", label: "Login Events", icon: <LogIn className="h-4 w-4" /> },
+                    {
+                        id: "role_changes",
+                        label: "Role Changes",
+                        icon: <KeyRound className="h-4 w-4" />,
+                    },
+                ]}
+                value={activeTab}
+                onValueChange={(tabId) => setActiveTab(tabId as AuditTab)}
+            />
 
-            {activeTab === "login" && (
+            <TabPanel value="login" activeValue={activeTab} idPrefix="audit-tabs" className="mt-0">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
@@ -153,7 +171,12 @@ export default function AuditLogPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                            <SearchInput value={search} onValueChange={setSearch} placeholder="Search by email, user, or IP..." className="flex-1" />
+                            <SearchInput
+                                value={search}
+                                onValueChange={setSearch}
+                                placeholder="Search by email, user, or IP..."
+                                className="flex-1"
+                            />
                             <div className="flex gap-2">
                                 {(["all", "success", "failure"] as const).map((f) => (
                                     <Button
@@ -162,7 +185,11 @@ export default function AuditLogPage() {
                                         size="sm"
                                         onClick={() => setEventFilter(f)}
                                     >
-                                        {f === "all" ? "All" : f === "success" ? "Success" : "Failure"}
+                                        {f === "all"
+                                            ? "All"
+                                            : f === "success"
+                                              ? "Success"
+                                              : "Failure"}
                                     </Button>
                                 ))}
                             </div>
@@ -178,13 +205,21 @@ export default function AuditLogPage() {
                                     <div
                                         key={event.id}
                                         className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                            event.success ? "bg-secondary/30 hover:bg-secondary/50" : "bg-destructive/5 hover:bg-destructive/10"
+                                            event.success
+                                                ? "bg-secondary/30 hover:bg-secondary/50"
+                                                : "bg-destructive/5 hover:bg-destructive/10"
                                         }`}
                                     >
-                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                                            event.success ? "bg-success/10" : "bg-destructive/10"
-                                        }`}>
-                                            <Icon className={`h-4 w-4 ${event.success ? "text-success" : "text-destructive"}`} />
+                                        <div
+                                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                event.success
+                                                    ? "bg-success/10"
+                                                    : "bg-destructive/10"
+                                            }`}
+                                        >
+                                            <Icon
+                                                className={`h-4 w-4 ${event.success ? "text-success" : "text-destructive"}`}
+                                            />
                                         </div>
 
                                         <div className="flex-1 min-w-0">
@@ -192,7 +227,12 @@ export default function AuditLogPage() {
                                                 <span className="text-sm font-medium">
                                                     {event.userName ?? event.email ?? "Unknown"}
                                                 </span>
-                                                <Badge variant={event.success ? "success" : "destructive"} className="text-[10px]">
+                                                <Badge
+                                                    variant={
+                                                        event.success ? "success" : "destructive"
+                                                    }
+                                                    className="text-[10px]"
+                                                >
                                                     {label}
                                                 </Badge>
                                             </div>
@@ -207,10 +247,14 @@ export default function AuditLogPage() {
                                                     </span>
                                                 )}
                                                 {event.city && event.countryCode && (
-                                                    <span>{event.city}, {event.countryCode}</span>
+                                                    <span>
+                                                        {event.city}, {event.countryCode}
+                                                    </span>
                                                 )}
                                                 {event.failureReason && (
-                                                    <span className="text-destructive">{event.failureReason}</span>
+                                                    <span className="text-destructive">
+                                                        {event.failureReason}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
@@ -225,9 +269,14 @@ export default function AuditLogPage() {
                         </div>
                     </CardContent>
                 </Card>
-            )}
+            </TabPanel>
 
-            {activeTab === "role_changes" && (
+            <TabPanel
+                value="role_changes"
+                activeValue={activeTab}
+                idPrefix="audit-tabs"
+                className="mt-0"
+            >
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
@@ -236,46 +285,79 @@ export default function AuditLogPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <SearchInput value={search} onValueChange={setSearch} placeholder="Search by user or changed by..." className="mb-4" />
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search by user or changed by..."
+                            className="mb-4"
+                        />
 
                         <div className="space-y-2">
                             {filteredRoleChanges.map((change) => {
-                                const label = CHANGE_TYPE_LABELS[change.changeType] ?? change.changeType;
-                                const isNegative = ["account_suspended", "account_deactivated", "account_deletion_requested", "account_anonymized", "membership_suspended", "membership_revoked", "role_revoked"].includes(change.changeType);
+                                const label =
+                                    CHANGE_TYPE_LABELS[change.changeType] ?? change.changeType;
+                                const isNegative = [
+                                    "account_suspended",
+                                    "account_deactivated",
+                                    "account_deletion_requested",
+                                    "account_anonymized",
+                                    "membership_suspended",
+                                    "membership_revoked",
+                                    "role_revoked",
+                                ].includes(change.changeType);
 
                                 return (
-                                    <div key={change.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                                            isNegative ? "bg-destructive/10" : "bg-info/10"
-                                        }`}>
-                                            <KeyRound className={`h-4 w-4 ${isNegative ? "text-destructive" : "text-info"}`} />
+                                    <div
+                                        key={change.id}
+                                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                                    >
+                                        <div
+                                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                isNegative ? "bg-destructive/10" : "bg-info/10"
+                                            }`}
+                                        >
+                                            <KeyRound
+                                                className={`h-4 w-4 ${isNegative ? "text-destructive" : "text-info"}`}
+                                            />
                                         </div>
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-sm font-medium">{change.userName}</span>
-                                                <Badge variant={isNegative ? "destructive" : "info"} className="text-[10px]">
+                                                <span className="text-sm font-medium">
+                                                    {change.userName}
+                                                </span>
+                                                <Badge
+                                                    variant={isNegative ? "destructive" : "info"}
+                                                    className="text-[10px]"
+                                                >
                                                     {label}
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
                                                 {change.oldValue && change.newValue && (
                                                     <span>
-                                                        {getStatusLabel(change.oldValue)} → {getStatusLabel(change.newValue)}
+                                                        {getStatusLabel(change.oldValue)} →{" "}
+                                                        {getStatusLabel(change.newValue)}
                                                     </span>
                                                 )}
                                                 {!change.oldValue && change.newValue && (
                                                     <span>→ {getStatusLabel(change.newValue)}</span>
                                                 )}
                                                 {change.reason && (
-                                                    <span className="italic">&ldquo;{change.reason}&rdquo;</span>
+                                                    <span className="italic">
+                                                        &ldquo;{change.reason}&rdquo;
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
 
                                         <div className="text-right shrink-0">
-                                            <p className="text-xs text-muted-foreground">by {change.changedByName}</p>
-                                            <p className="text-[10px] text-muted-foreground">{formatTime(change.createdAt)}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                by {change.changedByName}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {formatTime(change.createdAt)}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -283,7 +365,7 @@ export default function AuditLogPage() {
                         </div>
                     </CardContent>
                 </Card>
-            )}
+            </TabPanel>
         </div>
     );
 }

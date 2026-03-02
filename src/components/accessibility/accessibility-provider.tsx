@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect } from "react";
-import { useReducedMotion, useHighContrast } from "@/hooks/use-media-query";
+import { useHighContrast, useReducedMotion } from "@/hooks/use-media-query";
 import { useKeyboardNavigation } from "@/hooks/use-accessibility";
 
 interface AccessibilityContextType {
@@ -24,7 +24,7 @@ interface AccessibilityProviderProps {
 
 /**
  * Accessibility Provider
- * 
+ *
  * Provides accessibility context and sets up:
  * - Screen reader announcer regions (WCAG 4.1.3)
  * - Keyboard navigation detection
@@ -56,7 +56,7 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     return (
         <AccessibilityContext.Provider value={{ reducedMotion, highContrast }}>
             {children}
-            
+
             {/* Screen Reader Announcer Regions (WCAG 4.1.3) */}
             <div
                 id="sr-announcer-polite"

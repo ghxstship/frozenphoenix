@@ -6,19 +6,19 @@
    Resolves inheritance chain: User > Team > Project > Org > Platform
    ═══════════════════════════════════════════════════════════════ */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { fromTable, isSupabaseConfigured } from "@/lib/supabase/client";
 import { evaluateAllFlags } from "./feature-flags";
 import type {
-    SettingCategory,
-    SettingDefinition,
-    SettingValue,
-    ResolvedSetting,
     FeatureFlag,
     FeatureFlagOverride,
+    ResolvedSetting,
+    SettingCategory,
+    SettingDefinition,
     SettingsContextValue,
     SettingScope,
+    SettingValue,
 } from "@/types/settings";
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -36,7 +36,10 @@ const SCOPE_PRIORITY: SettingScope[] = [
     "platform",
 ];
 
-function buildScopeChain(userId: string | null, orgId: string | null): Array<{ scope_type: SettingScope; scope_id: string | null }> {
+function buildScopeChain(
+    userId: string | null,
+    orgId: string | null
+): Array<{ scope_type: SettingScope; scope_id: string | null }> {
     const chain: Array<{ scope_type: SettingScope; scope_id: string | null }> = [];
     if (userId) chain.push({ scope_type: "user", scope_id: userId });
     if (orgId) chain.push({ scope_type: "organization", scope_id: orgId });
@@ -82,7 +85,8 @@ function resolveSettings(
                     (sv) =>
                         sv.definition_id === def.id &&
                         sv.scope_type === scope.scope_type &&
-                        (sv.scope_id === scope.scope_id || (sv.scope_id === null && scope.scope_id === null))
+                        (sv.scope_id === scope.scope_id ||
+                            (sv.scope_id === null && scope.scope_id === null))
                 );
                 if (match) {
                     foundValue = match;
@@ -100,10 +104,9 @@ function resolveSettings(
         // Determine edit capability
         const scopePriority = SCOPE_PRIORITY.indexOf(sourceScope);
         const userScopePriority = SCOPE_PRIORITY.indexOf("user");
-        const canEdit = !isLocked && (
-            userRole === "exec" ||
-            (sourceScope === "user" && scopePriority >= userScopePriority)
-        );
+        const canEdit =
+            !isLocked &&
+            (userRole === "exec" || (sourceScope === "user" && scopePriority >= userScopePriority));
 
         resolved.set(compositeKey, {
             definition: def,
@@ -128,17 +131,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [flagOverrides, setFlagOverrides] = useState<FeatureFlagOverride[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const supabase = useMemo(() => createClient(), []);
-    /* Dynamic table accessor — scoped any cast (see settings/hooks.ts for rationale) */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fromTable = useCallback((table: string) => (supabase as any)?.from(table), [supabase]);
-
     const userId = user?.id ?? null;
     const orgId = activeOrg?.organization_id ?? null;
     const userRole = activeOrg?.role ?? null;
 
     const fetchSettings = useCallback(async () => {
-        if (!supabase || !isSupabaseConfigured) {
+        if (!isSupabaseConfigured) {
             setLoading(false);
             return;
         }
@@ -159,8 +157,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (orgId) scopeFilters.push({ type: "organization", id: orgId });
             scopeFilters.push({ type: "platform", id: null });
 
-            const { data: values } = await fromTable("settings")
-                .select("*");
+            const { data: values } = await fromTable("settings").select("*");
 
             if (values) setSettingValues(values as SettingValue[]);
 
@@ -172,8 +169,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (flagData) setFlags(flagData as FeatureFlag[]);
 
             // Fetch flag overrides
-            const { data: overrideData } = await fromTable("feature_flag_overrides")
-                .select("*");
+            const { data: overrideData } = await fromTable("feature_flag_overrides").select("*");
 
             if (overrideData) setFlagOverrides(overrideData as FeatureFlagOverride[]);
         } catch {
@@ -181,17 +177,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setLoading(false);
         }
-    }, [fromTable, supabase, userId, orgId]);
+    }, [userId, orgId]);
 
     useEffect(() => {
         fetchSettings();
     }, [fetchSettings]);
 
     // Build scope chain
-    const scopeChain = useMemo(
-        () => buildScopeChain(userId, orgId),
-        [userId, orgId]
-    );
+    const scopeChain = useMemo(() => buildScopeChain(userId, orgId), [userId, orgId]);
 
     // Resolve settings through inheritance
     const settings = useMemo(
@@ -212,7 +205,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     );
 
     const getSetting = useCallback(
-        <T = unknown>(category: SettingCategory, key: string): T | undefined => {
+        <T = unknown,>(category: SettingCategory, key: string): T | undefined => {
             const resolved = settings.get(`${category}:${key}`);
             return resolved ? (resolved.value as T) : undefined;
         },
@@ -236,7 +229,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const updateSetting = useCallback(
         async (category: SettingCategory, key: string, value: unknown): Promise<void> => {
-            if (!supabase || !userId) return;
+            if (!isSupabaseConfigured || !userId) return;
 
             const resolved = settings.get(`${category}:${key}`);
             if (!resolved || !resolved.can_edit) return;
@@ -262,7 +255,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 await fetchSettings();
             }
         },
-        [fromTable, supabase, userId, orgId, settings, fetchSettings]
+        [userId, orgId, settings, fetchSettings]
     );
 
     const getFlag = useCallback(
@@ -289,14 +282,20 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             canEditSetting,
             refreshSettings,
         }),
-        [settings, featureFlags, loading, getSetting, getSettingMeta, updateSetting, getFlag, canEditSetting, refreshSettings]
+        [
+            settings,
+            featureFlags,
+            loading,
+            getSetting,
+            getSettingMeta,
+            updateSetting,
+            getFlag,
+            canEditSetting,
+            refreshSettings,
+        ]
     );
 
-    return (
-        <SettingsContext.Provider value={contextValue}>
-            {children}
-        </SettingsContext.Provider>
-    );
+    return <SettingsContext.Provider value={contextValue}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings(): SettingsContextValue {
@@ -312,7 +311,10 @@ export function useSetting<T = unknown>(category: SettingCategory, key: string):
     return getSetting<T>(category, key);
 }
 
-export function useSettingMeta(category: SettingCategory, key: string): ResolvedSetting | undefined {
+export function useSettingMeta(
+    category: SettingCategory,
+    key: string
+): ResolvedSetting | undefined {
     const { getSettingMeta } = useSettings();
     return getSettingMeta(category, key);
 }

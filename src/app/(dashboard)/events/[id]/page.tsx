@@ -1,0 +1,437 @@
+"use client";
+
+import React, { useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useParams, useRouter } from "next/navigation";
+import { DetailLayout } from "@/components/layouts/detail-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { RecordChatter } from "@/components/activity";
+import type { ActivityItem, CommentItem } from "@/components/activity";
+import { EntityLink } from "@/components/linked-records/entity-link";
+import {
+    MOCK_ACTIVATIONS,
+    MOCK_CREW_SHIFTS,
+    MOCK_EVENTS,
+    MOCK_LOCATIONS,
+} from "@/lib/demo-data-production";
+import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { EVENT_TYPE_CONFIG } from "@/config/production-config";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { Calendar, Clock, DollarSign, Edit, MapPin, Play, Users } from "lucide-react";
+
+type TabId = "overview" | "run-of-show" | "crew" | "logistics" | "chatter";
+const TAB_VALUES = ["overview", "run-of-show", "crew", "logistics", "chatter"] as const;
+
+const MOCK_ACTIVITY: ActivityItem[] = [
+    {
+        id: "a1",
+        action: "created",
+        actorName: "Sarah Chen",
+        entityType: "event",
+        entityName: "this event",
+        createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
+    },
+    {
+        id: "a2",
+        action: "status_changed",
+        actorName: "Mike Johnson",
+        entityType: "event",
+        description: "Status changed to Confirmed",
+        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    },
+];
+
+const MOCK_COMMENTS: CommentItem[] = [
+    {
+        id: "c1",
+        authorId: "u1",
+        authorName: "Marcus Johnson",
+        content: "Run of show is locked. All cues tested and working.",
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    },
+];
+
+export default function EventDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const eventId = params.id as string;
+    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
+        key: "tab",
+        defaultValue: "overview",
+        validValues: TAB_VALUES,
+    });
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+
+    const event = MOCK_EVENTS.find((e) => e.id === eventId);
+    const location = event ? MOCK_LOCATIONS.find((l) => l.id === event.locationId) : null;
+    const project = event ? MOCK_PROJECTS.find((p) => p.id === event.projectId) : null;
+    const activation = event?.activationId
+        ? MOCK_ACTIVATIONS.find((a) => a.id === event.activationId)
+        : null;
+    const eventShifts = event ? MOCK_CREW_SHIFTS.filter((s) => s.eventId === eventId) : [];
+
+    if (!event) {
+        return (
+            <EmptyState
+                icon={Calendar}
+                title="Event not found"
+                description="The event you're looking for doesn't exist or has been deleted."
+                action={{ label: "Back to Events", onClick: () => router.push("/events") }}
+            />
+        );
+    }
+
+    const typeConfig = EVENT_TYPE_CONFIG[event.type as keyof typeof EVENT_TYPE_CONFIG];
+    const TypeIcon = typeConfig?.icon ?? Calendar;
+
+    const handleAddComment = async (content: string) => {
+        setChatterComments((prev) => [
+            ...prev,
+            {
+                id: `c-${Date.now()}`,
+                authorId: "u1",
+                authorName: "Sarah Chen",
+                content,
+                createdAt: new Date().toISOString(),
+            },
+        ]);
+    };
+
+    const tabs = [
+        { id: "overview" as const, label: "Overview" },
+        { id: "run-of-show" as const, label: "Run of Show", count: event.runOfShow?.length ?? 0 },
+        { id: "crew" as const, label: "Crew", count: eventShifts.length },
+        { id: "logistics" as const, label: "Logistics" },
+        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
+    ];
+
+    const sidebar = (
+        <div className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm">Event Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Type</span>
+                        <Badge variant={(typeConfig?.variant as "default") ?? "secondary"}>
+                            {typeConfig?.label ?? event.type}
+                        </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date</span>
+                        <span className="font-medium">{formatDate(event.date)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Time</span>
+                        <span>
+                            {event.startTime}–{event.endTime}
+                        </span>
+                    </div>
+                    {event.doorsTime && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Doors</span>
+                            <span>{event.doorsTime}</span>
+                        </div>
+                    )}
+                    {event.attendeeCount && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Attendees</span>
+                            <span className="font-medium">{event.attendeeCount}</span>
+                        </div>
+                    )}
+                    {event.vipCount && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">VIPs</span>
+                            <span className="font-medium">{event.vipCount}</span>
+                        </div>
+                    )}
+                    {event.specificLocation && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Specific Location</span>
+                            <span>{event.specificLocation}</span>
+                        </div>
+                    )}
+                    {event.budget && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Budget</span>
+                            <span className="font-medium">{formatCurrency(event.budget)}</span>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm">Related Records</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    {project && (
+                        <EntityLink
+                            entityType="project"
+                            entityId={project.id}
+                            entityName={project.name}
+                            status={project.status}
+                        />
+                    )}
+                    {location && (
+                        <EntityLink
+                            entityType="location"
+                            entityId={location.id}
+                            entityName={location.name}
+                        />
+                    )}
+                    {activation && (
+                        <EntityLink
+                            entityType="activation"
+                            entityId={activation.id}
+                            entityName={activation.name}
+                            status={activation.status}
+                        />
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
+
+    return (
+        <DetailLayout
+            backHref="/events"
+            backLabel="Events"
+            title={event.name}
+            subtitle={`${formatDate(event.date)} · ${event.startTime}–${event.endTime}`}
+            status={event.status}
+            avatar={
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                    <TypeIcon className="h-6 w-6" />
+                </div>
+            }
+            actions={
+                <Button onClick={() => router.push(`/events/${eventId}/edit`)}>
+                    <Edit className="h-4 w-4" />
+                    Edit
+                </Button>
+            }
+            menuItems={[
+                { label: "Duplicate", onClick: () => {} },
+                { label: "Cancel Event", onClick: () => {}, variant: "destructive" },
+            ]}
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={(id) => setActiveTab(id as TabId)}
+            sidebar={sidebar}
+        >
+            {activeTab === "overview" && (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Users className="h-4 w-4" />
+                                    <span className="text-xs">Attendees</span>
+                                </div>
+                                <p className="text-xl font-bold">{event.attendeeCount ?? 0}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Clock className="h-4 w-4" />
+                                    <span className="text-xs">Duration</span>
+                                </div>
+                                <p className="text-xl font-bold">
+                                    {event.startTime}–{event.endTime}
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Play className="h-4 w-4" />
+                                    <span className="text-xs">Cues</span>
+                                </div>
+                                <p className="text-xl font-bold">{event.runOfShow?.length ?? 0}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <DollarSign className="h-4 w-4" />
+                                    <span className="text-xs">Budget</span>
+                                </div>
+                                <p className="text-xl font-bold">
+                                    {formatCurrency(event.budget ?? 0)}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    {event.description && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Description</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{event.description}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {event.purpose && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Purpose</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{event.purpose}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "run-of-show" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Run of Show</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {!event.runOfShow || event.runOfShow.length === 0 ? (
+                            <EmptyState
+                                icon={Play}
+                                title="No cues"
+                                description="Run of show hasn't been defined yet"
+                            />
+                        ) : (
+                            <div className="space-y-1">
+                                {event.runOfShow.map(
+                                    (cue: {
+                                        id: string;
+                                        time: string;
+                                        duration: number;
+                                        description: string;
+                                        responsibleParty: string;
+                                        cueNumber: string;
+                                    }) => (
+                                        <div
+                                            key={cue.id}
+                                            className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors"
+                                        >
+                                            <Badge
+                                                variant="outline"
+                                                className="font-mono text-xs shrink-0"
+                                            >
+                                                {cue.cueNumber}
+                                            </Badge>
+                                            <span className="text-sm font-mono font-medium shrink-0 w-12">
+                                                {cue.time}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium">
+                                                    {cue.description}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {cue.responsibleParty} · {cue.duration} min
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {activeTab === "crew" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Crew Assignments</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {eventShifts.length === 0 ? (
+                            <EmptyState
+                                icon={Users}
+                                title="No crew assigned"
+                                description="Assign crew members to this event"
+                            />
+                        ) : (
+                            <div className="space-y-2">
+                                {eventShifts.map((shift) => (
+                                    <div
+                                        key={shift.id}
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
+                                                {shift.crewMemberName
+                                                    .split(" ")
+                                                    .map((n) => n[0])
+                                                    .join("")}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">
+                                                    {shift.crewMemberName}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {shift.role} · {shift.callTime}–{shift.endTime}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <StatusBadge status={shift.status} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {activeTab === "logistics" && (
+                <div className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Venue Information</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            {location && (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                        <span className="font-medium">{location.name}</span>
+                                    </div>
+                                    {location.address && (
+                                        <p className="text-muted-foreground ml-6">
+                                            {location.address.street1}, {location.address.city},{" "}
+                                            {location.address.state} {location.address.postalCode}
+                                        </p>
+                                    )}
+                                </>
+                            )}
+                            {event.cancellationPolicy && (
+                                <div>
+                                    <span className="text-muted-foreground">
+                                        Cancellation Policy:
+                                    </span>{" "}
+                                    <span>{event.cancellationPolicy}</span>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {activeTab === "chatter" && (
+                <RecordChatter
+                    recordType="event"
+                    recordId={eventId}
+                    activityItems={MOCK_ACTIVITY}
+                    comments={chatterComments}
+                    currentUserId="u1"
+                    onAddComment={handleAddComment}
+                />
+            )}
+        </DetailLayout>
+    );
+}

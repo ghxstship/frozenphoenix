@@ -17,6 +17,9 @@ export interface TabBarProps {
     onValueChange: (value: string) => void;
     size?: "sm" | "md";
     variant?: "underline" | "pill";
+    orientation?: "horizontal" | "vertical";
+    ariaLabel?: string;
+    idPrefix?: string;
     className?: string;
 }
 
@@ -26,24 +29,48 @@ export function TabBar({
     onValueChange,
     size = "md",
     variant = "underline",
+    orientation = "horizontal",
+    ariaLabel,
+    idPrefix,
     className,
 }: TabBarProps) {
     const tabListRef = React.useRef<HTMLDivElement>(null);
+    const prefix = idPrefix ? `${idPrefix}-` : "";
 
     const handleKeyDown = React.useCallback(
         (e: React.KeyboardEvent) => {
             const enabledItems = items.filter((item) => !item.disabled);
+            if (enabledItems.length === 0) return;
+
             const currentIndex = enabledItems.findIndex((item) => item.id === value);
             let nextIndex = currentIndex;
 
             switch (e.key) {
                 case "ArrowRight":
+                    if (orientation !== "horizontal") return;
                     e.preventDefault();
-                    nextIndex = (currentIndex + 1) % enabledItems.length;
+                    nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % enabledItems.length;
                     break;
                 case "ArrowLeft":
+                    if (orientation !== "horizontal") return;
                     e.preventDefault();
-                    nextIndex = (currentIndex - 1 + enabledItems.length) % enabledItems.length;
+                    nextIndex =
+                        currentIndex < 0
+                            ? 0
+                            : (currentIndex - 1 + enabledItems.length) % enabledItems.length;
+                    break;
+                case "ArrowDown":
+                    if (orientation !== "vertical") return;
+                    e.preventDefault();
+                    nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % enabledItems.length;
+                    break;
+                case "ArrowUp":
+                    if (orientation !== "vertical") return;
+                    e.preventDefault();
+                    nextIndex =
+                        currentIndex < 0
+                            ? 0
+                            : (currentIndex - 1 + enabledItems.length) % enabledItems.length;
                     break;
                 case "Home":
                     e.preventDefault();
@@ -60,22 +87,31 @@ export function TabBar({
             const nextItem = enabledItems[nextIndex];
             if (nextItem) {
                 onValueChange(nextItem.id);
-                const btn = tabListRef.current?.querySelector<HTMLButtonElement>(`#tab-${nextItem.id}`);
+                const btn = Array.from(
+                    tabListRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']") ?? []
+                ).find((tabButton) => tabButton.dataset.tabValue === nextItem.id);
                 btn?.focus();
             }
         },
-        [items, value, onValueChange]
+        [items, value, onValueChange, orientation]
     );
 
     return (
         <div
             ref={tabListRef}
             role="tablist"
-            aria-orientation="horizontal"
+            aria-orientation={orientation}
+            aria-label={ariaLabel ?? "Tabs"}
             onKeyDown={handleKeyDown}
             className={cn(
                 "flex",
-                variant === "underline" && "gap-1 border-b border-border",
+                orientation === "vertical" && "flex-col",
+                variant === "underline" &&
+                    orientation === "horizontal" &&
+                    "gap-1 border-b border-border",
+                variant === "underline" &&
+                    orientation === "vertical" &&
+                    "gap-1 border-r border-border",
                 variant === "pill" && "gap-1 bg-muted p-1 rounded-lg",
                 className
             )}
@@ -86,8 +122,9 @@ export function TabBar({
                     type="button"
                     role="tab"
                     aria-selected={value === item.id}
-                    aria-controls={`tabpanel-${item.id}`}
-                    id={`tab-${item.id}`}
+                    aria-controls={`${prefix}tabpanel-${item.id}`}
+                    id={`${prefix}tab-${item.id}`}
+                    data-tab-value={item.id}
                     disabled={item.disabled}
                     tabIndex={value === item.id ? 0 : -1}
                     onClick={() => onValueChange(item.id)}
@@ -96,12 +133,20 @@ export function TabBar({
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         "disabled:pointer-events-none disabled:opacity-50",
                         size === "sm" ? "px-3 py-2 text-xs" : "px-4 py-2.5 text-sm",
-                        variant === "underline" && [
-                            "border-b-2 -mb-px",
-                            value === item.id
-                                ? "border-primary text-primary"
-                                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
-                        ],
+                        variant === "underline" &&
+                            orientation === "horizontal" && [
+                                "border-b-2 -mb-px",
+                                value === item.id
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
+                            ],
+                        variant === "underline" &&
+                            orientation === "vertical" && [
+                                "justify-start border-r-2 -mr-px",
+                                value === item.id
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
+                            ],
                         variant === "pill" && [
                             "rounded-md",
                             value === item.id
@@ -112,13 +157,15 @@ export function TabBar({
                 >
                     {item.icon && <span className="mr-1.5">{item.icon}</span>}
                     {item.label}
-                    {item.count !== undefined && (
-                        <span className={cn(
-                            "ml-2 text-xs px-1.5 py-0.5 rounded-full",
-                            value === item.id
-                                ? "bg-primary/10 text-primary"
-                                : "bg-muted text-muted-foreground"
-                        )}>
+                    {item.count !== undefined && item.count > 0 && (
+                        <span
+                            className={cn(
+                                "ml-2 text-xs px-1.5 py-0.5 rounded-full tabular-nums",
+                                value === item.id
+                                    ? "bg-primary/10 text-primary"
+                                    : "bg-muted text-muted-foreground"
+                            )}
+                        >
                             {item.count}
                         </span>
                     )}
@@ -132,25 +179,32 @@ export interface TabPanelProps extends React.HTMLAttributes<HTMLDivElement> {
     value: string;
     activeValue: string;
     tabId?: string;
+    idPrefix?: string;
 }
 
 export function TabPanel({
     value,
     activeValue,
     tabId,
+    idPrefix,
     className,
     children,
     ...props
 }: TabPanelProps) {
     if (value !== activeValue) return null;
 
+    const prefix = idPrefix ? `${idPrefix}-` : "";
+
     return (
         <div
             role="tabpanel"
-            id={`tabpanel-${value}`}
-            aria-labelledby={tabId ?? `tab-${value}`}
+            id={`${prefix}tabpanel-${value}`}
+            aria-labelledby={tabId ?? `${prefix}tab-${value}`}
             tabIndex={0}
-            className={cn("mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className)}
+            className={cn(
+                "mt-2 motion-safe:animate-fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                className
+            )}
             {...props}
         >
             {children}

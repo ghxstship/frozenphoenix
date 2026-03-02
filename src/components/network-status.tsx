@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, createContext, useContext, useCallback } from "react";
-import { WifiOff, Wifi } from "lucide-react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { Wifi, WifiOff } from "lucide-react";
 
 interface NetworkContextValue {
     isOnline: boolean;

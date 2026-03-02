@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import { logger } from "@/lib/logger";
+import { AlertCircle, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -28,7 +29,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error(`[ErrorBoundary:${this.props.level ?? "section"}]`, error, errorInfo);
+        logger.error(`ErrorBoundary:${this.props.level ?? "section"}`, {
+            error: error.message,
+            stack: error.stack,
+            componentStack: errorInfo.componentStack,
+        });
         this.props.onError?.(error, errorInfo);
     }
 
@@ -51,9 +56,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                             <div className="flex flex-col items-center justify-center text-center gap-3">
                                 <AlertCircle className="h-8 w-8 text-destructive" />
                                 <div>
-                                    <p className="text-sm font-semibold text-destructive">Something went wrong</p>
+                                    <p className="text-sm font-semibold text-destructive">
+                                        Something went wrong
+                                    </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        {this.state.error?.message || "An unexpected error occurred"}
+                                        {this.state.error?.message ||
+                                            "An unexpected error occurred"}
                                     </p>
                                 </div>
                                 <Button size="sm" variant="outline" onClick={this.handleReset}>
@@ -77,7 +85,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                                 {level === "app" ? "Application Error" : "Page Error"}
                             </h2>
                             <p className="text-sm text-muted-foreground mt-1">
-                                {this.state.error?.message || "An unexpected error occurred. Please try again."}
+                                {this.state.error?.message ||
+                                    "An unexpected error occurred. Please try again."}
                             </p>
                         </div>
                         <div className="flex gap-2">
@@ -86,7 +95,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                                 Try Again
                             </Button>
                             {level === "page" && (
-                                <Button variant="default" onClick={() => window.location.assign("/dashboard")}>
+                                <Button
+                                    variant="default"
+                                    onClick={() => window.location.assign("/dashboard")}
+                                >
                                     <Home className="h-4 w-4 mr-1" />
                                     Go to Dashboard
                                 </Button>

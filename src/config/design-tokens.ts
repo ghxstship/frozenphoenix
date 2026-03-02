@@ -70,13 +70,13 @@ export type SemanticColor = keyof typeof SEMANTIC_COLORS;
 // Consistent spacing tokens (in Tailwind units)
 export const SPACING = {
     none: "0",
-    xs: "1",      // 4px
-    sm: "2",      // 8px
-    md: "4",      // 16px
-    lg: "6",      // 24px
-    xl: "8",      // 32px
-    "2xl": "12",  // 48px
-    "3xl": "16",  // 64px
+    xs: "1", // 4px
+    sm: "2", // 8px
+    md: "4", // 16px
+    lg: "6", // 24px
+    xl: "8", // 32px
+    "2xl": "12", // 48px
+    "3xl": "16", // 64px
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;
@@ -219,6 +219,7 @@ export const LAYOUT = {
     sidebar: {
         expanded: 260,
         collapsed: 68,
+        mobile: 280,
     },
     topbar: {
         height: 64,
@@ -261,7 +262,8 @@ export const TOUCH_TARGETS = {
 } as const;
 
 // ─── Focus Ring ───
-export const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" as const;
+export const FOCUS_RING =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" as const;
 
 // ─── Transition Presets ───
 export const TRANSITIONS = {

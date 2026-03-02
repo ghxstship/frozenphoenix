@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, UserPlus, Trash2, Loader2, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+    AlertCircle,
+    ArrowRight,
+    CheckCircle2,
+    Loader2,
+    Mail,
+    Trash2,
+    UserPlus,
+} from "lucide-react";
 
 const ROLE_OPTIONS = [
     { value: "pm", label: "Project Manager" },
@@ -51,50 +59,55 @@ export default function InviteTeamPage() {
         setRows((prev) => [...prev, createRow()]);
     }, []);
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        const validRows = rows.filter((r) => r.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email.trim()));
+            const validRows = rows.filter(
+                (r) => r.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email.trim())
+            );
 
-        if (validRows.length === 0) {
-            setError("Please enter at least one valid email address.");
-            return;
-        }
-
-        if (!activeOrg) {
-            setError("No organization found. Please set up your organization first.");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const res = await fetch("/api/invitations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    invitees: validRows.map((r) => ({ email: r.email.trim(), role: r.role })),
-                    organization_id: activeOrg.organization_id,
-                    message: message.trim() || undefined,
-                }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to send invitations.");
+            if (validRows.length === 0) {
+                setError("Please enter at least one valid email address.");
                 return;
             }
 
-            const data = await res.json();
-            setSentCount(data.invitations?.length || validRows.length);
-            setSuccess(true);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [rows, message, activeOrg]);
+            if (!activeOrg) {
+                setError("No organization found. Please set up your organization first.");
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const res = await fetch("/api/invitations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        invitees: validRows.map((r) => ({ email: r.email.trim(), role: r.role })),
+                        organization_id: activeOrg.organization_id,
+                        message: message.trim() || undefined,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    setError(data.error || "Failed to send invitations.");
+                    return;
+                }
+
+                const data = await res.json();
+                setSentCount(data.invitations?.length || validRows.length);
+                setSuccess(true);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [rows, message, activeOrg]
+    );
 
     const handleSkip = useCallback(() => {
         router.push("/dashboard");
@@ -103,7 +116,11 @@ export default function InviteTeamPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-lg text-center space-y-4" role="status" aria-live="polite">
+                <div
+                    className="w-full max-w-lg text-center space-y-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
@@ -136,9 +153,7 @@ export default function InviteTeamPage() {
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-2">
                         <UserPlus className="h-7 w-7 text-primary" aria-hidden="true" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        Invite your team
-                    </h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Invite your team</h1>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
                         Add team members to {activeOrg?.organizations?.name || "your organization"}.
                         You can always invite more people later.
@@ -183,7 +198,9 @@ export default function InviteTeamPage() {
                                     disabled={loading}
                                 >
                                     {ROLE_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
                                     ))}
                                 </select>
                                 <Button
@@ -214,8 +231,12 @@ export default function InviteTeamPage() {
                     </Button>
 
                     <div className="space-y-2">
-                        <label htmlFor="invite-message" className="text-sm font-medium leading-none">
-                            Personal message <span className="text-muted-foreground font-normal">(optional)</span>
+                        <label
+                            htmlFor="invite-message"
+                            className="text-sm font-medium leading-none"
+                        >
+                            Personal message{" "}
+                            <span className="text-muted-foreground font-normal">(optional)</span>
                         </label>
                         <textarea
                             id="invite-message"

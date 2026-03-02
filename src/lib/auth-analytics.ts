@@ -4,6 +4,8 @@
    analytics provider (e.g. PostHog, Segment, Amplitude).
    ═══════════════════════════════════════════════════════════════ */
 
+import { logger } from "@/lib/logger";
+
 export type AuthEvent =
     | "login"
     | "logout"
@@ -31,10 +33,7 @@ interface AuthEventMetadata {
  * Log an auth event to the server-side audit log.
  * Fire-and-forget — never blocks the UI or throws.
  */
-export async function logAuthEvent(
-    event: AuthEvent,
-    metadata?: AuthEventMetadata
-): Promise<void> {
+export async function logAuthEvent(event: AuthEvent, metadata?: AuthEventMetadata): Promise<void> {
     try {
         await fetch("/api/auth/log-event", {
             method: "POST",
@@ -56,28 +55,20 @@ export async function logAuthEvent(
  * Example for Segment:
  *   analytics.track(event, { ...metadata, category: "auth" });
  */
-export function trackAuthEvent(
-    event: AuthEvent,
-    metadata?: AuthEventMetadata
-): void {
+export function trackAuthEvent(event: AuthEvent, metadata?: AuthEventMetadata): void {
     if (typeof window === "undefined") return;
 
     // ─── External provider hook (replace with your SDK) ────────
     // posthog?.capture?.(event, { ...metadata, category: "auth" });
 
-    // ─── Console in development for debugging ──────────────────
-    if (process.env.NODE_ENV === "development") {
-        console.debug(`[auth-analytics] ${event}`, metadata);
-    }
+    // ─── Structured log in development for debugging ───────────
+    logger.debug(`auth-analytics: ${event}`, metadata as Record<string, unknown>);
 }
 
 /**
  * Convenience: log to both the server audit log and external analytics.
  */
-export function emitAuthEvent(
-    event: AuthEvent,
-    metadata?: AuthEventMetadata
-): void {
+export function emitAuthEvent(event: AuthEvent, metadata?: AuthEventMetadata): void {
     logAuthEvent(event, metadata);
     trackAuthEvent(event, metadata);
 }

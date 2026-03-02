@@ -1,13 +1,8 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
-
-// ─── Filter value helper ───
-function filterValue<T>(value: string): T {
-    return value as unknown as T;
-}
 
 // ─── Join-aware return types ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
@@ -20,26 +15,33 @@ type PipelineName = { pipelines: { name: string } | null };
 
 export type CompanyWithManager = WithJoin<Tables<"companies">, ProfileName>;
 export type ContactWithCompany = WithJoin<Tables<"contacts">, CompanyName>;
-export type ProposalWithJoins = WithJoin<Tables<"proposals">, CompanyName & ContactName & { deals: { title: string } | null }>;
-export type ResourceBookingWithJoins = WithJoin<Tables<"resource_bookings">, ProjectName & { crew_members: { name: string } | null }>;
-export type TimeOffRequestWithJoins = WithJoin<Tables<"time_off_requests">, { crew_members: { name: string } | null } & ProfileName>;
+export type ProposalWithJoins = WithJoin<
+    Tables<"proposals">,
+    CompanyName & ContactName & { deals: { title: string } | null }
+>;
+export type ResourceBookingWithJoins = WithJoin<
+    Tables<"resource_bookings">,
+    ProjectName & { crew_members: { name: string } | null }
+>;
+export type TimeOffRequestWithJoins = WithJoin<
+    Tables<"time_off_requests">,
+    { crew_members: { name: string } | null } & ProfileName
+>;
 export type DashboardWithOwner = WithJoin<Tables<"dashboards">, ProfileName>;
 export type DocumentWithOwner = WithJoin<Tables<"documents">, ProfileName & ProjectName>;
 export type RateCardWithCompany = WithJoin<Tables<"rate_cards">, CompanyName>;
 export type AutomationWithProject = WithJoin<Tables<"automations">, ProjectName>;
 export type SavedViewWithOwner = WithJoin<Tables<"saved_views">, ProfileName>;
 export type CustomField = Tables<"custom_fields">;
-export type RecurringInvoiceWithCompany = WithJoin<Tables<"recurring_invoices">, CompanyName & ProjectName>;
-export type PaymentWithInvoice = WithJoin<Tables<"payments">, { invoices: { amount: number; status: string } | null }>;
+export type RecurringInvoiceWithCompany = WithJoin<
+    Tables<"recurring_invoices">,
+    CompanyName & ProjectName
+>;
+export type PaymentWithInvoice = WithJoin<
+    Tables<"payments">,
+    { invoices: { amount: number; status: string } | null }
+>;
 export type DealWithPipeline = WithJoin<Tables<"deals">, PipelineName & CompanyName & ContactName>;
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error("Supabase client not configured");
-    }
-    return client;
-}
 
 export { isSupabaseConfigured };
 
@@ -81,7 +83,11 @@ export function useCreateCompany() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (company: TablesInsert<"companies">) => {
-            const { data, error } = await getSupabase().from("companies").insert(company).select().single();
+            const { data, error } = await getSupabase()
+                .from("companies")
+                .insert(company)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"companies">;
         },
@@ -93,7 +99,12 @@ export function useUpdateCompany() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"companies"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("companies").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("companies")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"companies">;
         },
@@ -127,11 +138,11 @@ export function useContacts(companyId?: string) {
                 .from("contacts")
                 .select("*, companies(name)")
                 .order("full_name", { ascending: true });
-            
+
             if (companyId) {
                 query = query.eq("company_id", companyId);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as ContactWithCompany[];
@@ -159,7 +170,11 @@ export function useCreateContact() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (contact: TablesInsert<"contacts">) => {
-            const { data, error } = await getSupabase().from("contacts").insert(contact).select().single();
+            const { data, error } = await getSupabase()
+                .from("contacts")
+                .insert(contact)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"contacts">;
         },
@@ -171,7 +186,12 @@ export function useUpdateContact() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"contacts"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("contacts").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("contacts")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"contacts">;
         },
@@ -204,7 +224,11 @@ export function useCreatePipeline() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (pipeline: TablesInsert<"pipelines">) => {
-            const { data, error } = await getSupabase().from("pipelines").insert(pipeline).select().single();
+            const { data, error } = await getSupabase()
+                .from("pipelines")
+                .insert(pipeline)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"pipelines">;
         },
@@ -216,7 +240,12 @@ export function useUpdatePipeline() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"pipelines"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("pipelines").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("pipelines")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"pipelines">;
         },
@@ -236,11 +265,11 @@ export function useCustomFields(entityType?: string) {
                 .from("custom_fields")
                 .select("*")
                 .order("display_order", { ascending: true });
-            
+
             if (entityType) {
                 query = query.eq("entity_type", entityType as never);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as Tables<"custom_fields">[];
@@ -257,7 +286,9 @@ export function useCustomFieldValues(entityId: string) {
                 .select("*, custom_fields(*)")
                 .eq("entity_id", entityId);
             if (error) throw error;
-            return data as unknown as (Tables<"custom_field_values"> & { custom_fields: Tables<"custom_fields"> })[];
+            return data as unknown as (Tables<"custom_field_values"> & {
+                custom_fields: Tables<"custom_fields">;
+            })[];
         },
         enabled: !!entityId,
     });
@@ -267,7 +298,11 @@ export function useCreateCustomField() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (field: TablesInsert<"custom_fields">) => {
-            const { data, error } = await getSupabase().from("custom_fields").insert(field).select().single();
+            const { data, error } = await getSupabase()
+                .from("custom_fields")
+                .insert(field)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"custom_fields">;
         },
@@ -305,14 +340,14 @@ export function useSavedViews(entityType?: string, projectId?: string) {
                 .from("saved_views")
                 .select("*, profiles:owner_id(name)")
                 .order("name", { ascending: true });
-            
+
             if (entityType) {
                 query = query.eq("entity_type", filterValue(entityType));
             }
             if (projectId) {
                 query = query.eq("project_id", projectId);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as SavedViewWithOwner[];
@@ -324,7 +359,11 @@ export function useCreateSavedView() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (view: TablesInsert<"saved_views">) => {
-            const { data, error } = await getSupabase().from("saved_views").insert(view).select().single();
+            const { data, error } = await getSupabase()
+                .from("saved_views")
+                .insert(view)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"saved_views">;
         },
@@ -336,7 +375,12 @@ export function useUpdateSavedView() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"saved_views"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("saved_views").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("saved_views")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"saved_views">;
         },
@@ -367,11 +411,11 @@ export function useAutomations(entityType?: string) {
                 .from("automations")
                 .select("*, projects(name)")
                 .order("name", { ascending: true });
-            
+
             if (entityType) {
                 query = query.eq("entity_type", filterValue(entityType));
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as AutomationWithProject[];
@@ -389,7 +433,9 @@ export function useAutomationWithRules(id: string) {
                 .eq("id", id)
                 .single();
             if (error) throw error;
-            return data as unknown as Tables<"automations"> & { automation_rules: Tables<"automation_rules">[] };
+            return data as unknown as Tables<"automations"> & {
+                automation_rules: Tables<"automation_rules">[];
+            };
         },
         enabled: !!id,
     });
@@ -399,7 +445,11 @@ export function useCreateAutomation() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (automation: TablesInsert<"automations">) => {
-            const { data, error } = await getSupabase().from("automations").insert(automation).select().single();
+            const { data, error } = await getSupabase()
+                .from("automations")
+                .insert(automation)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"automations">;
         },
@@ -411,7 +461,11 @@ export function useCreateAutomationRule() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (rule: TablesInsert<"automation_rules">) => {
-            const { data, error } = await getSupabase().from("automation_rules").insert(rule).select().single();
+            const { data, error } = await getSupabase()
+                .from("automation_rules")
+                .insert(rule)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"automation_rules">;
         },
@@ -449,7 +503,9 @@ export function useRateCardWithItems(id: string) {
                 .eq("id", id)
                 .single();
             if (error) throw error;
-            return data as unknown as Tables<"rate_cards"> & { rate_card_items: Tables<"rate_card_items">[] };
+            return data as unknown as Tables<"rate_cards"> & {
+                rate_card_items: Tables<"rate_card_items">[];
+            };
         },
         enabled: !!id,
     });
@@ -459,7 +515,11 @@ export function useCreateRateCard() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (rateCard: TablesInsert<"rate_cards">) => {
-            const { data, error } = await getSupabase().from("rate_cards").insert(rateCard).select().single();
+            const { data, error } = await getSupabase()
+                .from("rate_cards")
+                .insert(rateCard)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"rate_cards">;
         },
@@ -471,7 +531,11 @@ export function useCreateRateCardItem() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: TablesInsert<"rate_card_items">) => {
-            const { data, error } = await getSupabase().from("rate_card_items").insert(item).select().single();
+            const { data, error } = await getSupabase()
+                .from("rate_card_items")
+                .insert(item)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"rate_card_items">;
         },
@@ -485,7 +549,12 @@ export function useCreateRateCardItem() {
 // SECTION 8: RESOURCE BOOKINGS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function useResourceBookings(filters?: { projectId?: string; crewMemberId?: string; startDate?: string; endDate?: string }) {
+export function useResourceBookings(filters?: {
+    projectId?: string;
+    crewMemberId?: string;
+    startDate?: string;
+    endDate?: string;
+}) {
     return useQuery({
         queryKey: ["resource_bookings", filters],
         queryFn: async () => {
@@ -493,7 +562,7 @@ export function useResourceBookings(filters?: { projectId?: string; crewMemberId
                 .from("resource_bookings")
                 .select("*, projects(name), crew_members(name)")
                 .order("start_date", { ascending: true });
-            
+
             if (filters?.projectId) {
                 query = query.eq("project_id", filters.projectId);
             }
@@ -506,7 +575,7 @@ export function useResourceBookings(filters?: { projectId?: string; crewMemberId
             if (filters?.endDate) {
                 query = query.lte("start_date", filters.endDate);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as ResourceBookingWithJoins[];
@@ -518,7 +587,11 @@ export function useCreateResourceBooking() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (booking: TablesInsert<"resource_bookings">) => {
-            const { data, error } = await getSupabase().from("resource_bookings").insert(booking).select().single();
+            const { data, error } = await getSupabase()
+                .from("resource_bookings")
+                .insert(booking)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"resource_bookings">;
         },
@@ -529,8 +602,16 @@ export function useCreateResourceBooking() {
 export function useUpdateResourceBooking() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"resource_bookings"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("resource_bookings").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"resource_bookings"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("resource_bookings")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"resource_bookings">;
         },
@@ -561,11 +642,11 @@ export function useTimeOffRequests(status?: string) {
                 .from("time_off_requests")
                 .select("*, crew_members(name), profiles:approver_id(name)")
                 .order("start_date", { ascending: false });
-            
+
             if (status) {
                 query = query.eq("status", filterValue(status));
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as TimeOffRequestWithJoins[];
@@ -577,7 +658,11 @@ export function useCreateTimeOffRequest() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (request: TablesInsert<"time_off_requests">) => {
-            const { data, error } = await getSupabase().from("time_off_requests").insert(request).select().single();
+            const { data, error } = await getSupabase()
+                .from("time_off_requests")
+                .insert(request)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"time_off_requests">;
         },
@@ -591,7 +676,11 @@ export function useApproveTimeOffRequest() {
         mutationFn: async ({ id, approverId }: { id: string; approverId: string }) => {
             const { data, error } = await getSupabase()
                 .from("time_off_requests")
-                .update({ status: "approved", approver_id: approverId, approved_at: new Date().toISOString() })
+                .update({
+                    status: "approved",
+                    approver_id: approverId,
+                    approved_at: new Date().toISOString(),
+                })
                 .eq("id", id)
                 .select()
                 .single();
@@ -605,7 +694,15 @@ export function useApproveTimeOffRequest() {
 export function useRejectTimeOffRequest() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, approverId, reason }: { id: string; approverId: string; reason: string }) => {
+        mutationFn: async ({
+            id,
+            approverId,
+            reason,
+        }: {
+            id: string;
+            approverId: string;
+            reason: string;
+        }) => {
             const { data, error } = await getSupabase()
                 .from("time_off_requests")
                 .update({ status: "rejected", approver_id: approverId, rejection_reason: reason })
@@ -633,7 +730,12 @@ export function useActiveTimer(userId: string) {
                 .eq("user_id", userId)
                 .maybeSingle();
             if (error) throw error;
-            return data as unknown as (Tables<"active_timers"> & { projects: { name: string } | null; production_tasks: { title: string } | null }) | null;
+            return data as unknown as
+                | (Tables<"active_timers"> & {
+                      projects: { name: string } | null;
+                      production_tasks: { title: string } | null;
+                  })
+                | null;
         },
         enabled: !!userId,
     });
@@ -643,11 +745,16 @@ export function useStartTimer() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (timer: TablesInsert<"active_timers">) => {
-            const { data, error } = await getSupabase().from("active_timers").insert(timer).select().single();
+            const { data, error } = await getSupabase()
+                .from("active_timers")
+                .insert(timer)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"active_timers">;
         },
-        onSuccess: (_, { user_id }) => queryClient.invalidateQueries({ queryKey: ["active_timers", user_id] }),
+        onSuccess: (_, { user_id }) =>
+            queryClient.invalidateQueries({ queryKey: ["active_timers", user_id] }),
     });
 }
 
@@ -660,15 +767,19 @@ export function useStopTimer() {
                 .select("*")
                 .eq("user_id", userId)
                 .single();
-            
+
             if (timer) {
-                const { error } = await getSupabase().from("active_timers").delete().eq("user_id", userId);
+                const { error } = await getSupabase()
+                    .from("active_timers")
+                    .delete()
+                    .eq("user_id", userId);
                 if (error) throw error;
             }
-            
+
             return timer as unknown as Tables<"active_timers"> | null;
         },
-        onSuccess: (_, userId) => queryClient.invalidateQueries({ queryKey: ["active_timers", userId] }),
+        onSuccess: (_, userId) =>
+            queryClient.invalidateQueries({ queryKey: ["active_timers", userId] }),
     });
 }
 
@@ -684,11 +795,11 @@ export function useProposals(status?: string) {
                 .from("proposals")
                 .select("*, companies(name), contacts(full_name), deals(title)")
                 .order("created_at", { ascending: false });
-            
+
             if (status) {
                 query = query.eq("status", filterValue(status));
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as ProposalWithJoins[];
@@ -706,7 +817,11 @@ export function useProposalWithItems(id: string) {
                 .eq("id", id)
                 .single();
             if (error) throw error;
-            return data as unknown as Tables<"proposals"> & { proposal_items: Tables<"proposal_items">[]; companies: { name: string } | null; contacts: { full_name: string } | null };
+            return data as unknown as Tables<"proposals"> & {
+                proposal_items: Tables<"proposal_items">[];
+                companies: { name: string } | null;
+                contacts: { full_name: string } | null;
+            };
         },
         enabled: !!id,
     });
@@ -716,7 +831,11 @@ export function useCreateProposal() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (proposal: TablesInsert<"proposals">) => {
-            const { data, error } = await getSupabase().from("proposals").insert(proposal).select().single();
+            const { data, error } = await getSupabase()
+                .from("proposals")
+                .insert(proposal)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"proposals">;
         },
@@ -728,7 +847,12 @@ export function useUpdateProposal() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"proposals"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("proposals").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("proposals")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"proposals">;
         },
@@ -743,7 +867,11 @@ export function useCreateProposalItem() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: TablesInsert<"proposal_items">) => {
-            const { data, error } = await getSupabase().from("proposal_items").insert(item).select().single();
+            const { data, error } = await getSupabase()
+                .from("proposal_items")
+                .insert(item)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"proposal_items">;
         },
@@ -781,7 +909,9 @@ export function useDashboardWithWidgets(id: string) {
                 .eq("id", id)
                 .single();
             if (error) throw error;
-            return data as unknown as Tables<"dashboards"> & { dashboard_widgets: Tables<"dashboard_widgets">[] };
+            return data as unknown as Tables<"dashboards"> & {
+                dashboard_widgets: Tables<"dashboard_widgets">[];
+            };
         },
         enabled: !!id,
     });
@@ -791,7 +921,11 @@ export function useCreateDashboard() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (dashboard: TablesInsert<"dashboards">) => {
-            const { data, error } = await getSupabase().from("dashboards").insert(dashboard).select().single();
+            const { data, error } = await getSupabase()
+                .from("dashboards")
+                .insert(dashboard)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"dashboards">;
         },
@@ -803,7 +937,11 @@ export function useCreateDashboardWidget() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (widget: TablesInsert<"dashboard_widgets">) => {
-            const { data, error } = await getSupabase().from("dashboard_widgets").insert(widget).select().single();
+            const { data, error } = await getSupabase()
+                .from("dashboard_widgets")
+                .insert(widget)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"dashboard_widgets">;
         },
@@ -816,8 +954,16 @@ export function useCreateDashboardWidget() {
 export function useUpdateDashboardWidget() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"dashboard_widgets"> & { id: string; dashboard_id: string }) => {
-            const { data, error } = await getSupabase().from("dashboard_widgets").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"dashboard_widgets"> & { id: string; dashboard_id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("dashboard_widgets")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"dashboard_widgets">;
         },
@@ -839,11 +985,11 @@ export function useDocuments(projectId?: string) {
                 .from("documents")
                 .select("*, profiles:owner_id(name), projects(name)")
                 .order("updated_at", { ascending: false });
-            
+
             if (projectId) {
                 query = query.eq("project_id", projectId);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as DocumentWithOwner[];
@@ -887,7 +1033,11 @@ export function useCreateDocument() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (doc: TablesInsert<"documents">) => {
-            const { data, error } = await getSupabase().from("documents").insert(doc).select().single();
+            const { data, error } = await getSupabase()
+                .from("documents")
+                .insert(doc)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"documents">;
         },
@@ -899,7 +1049,12 @@ export function useUpdateDocument() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"documents"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("documents").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("documents")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"documents">;
         },
@@ -914,7 +1069,11 @@ export function useCreateDocumentVersion() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (version: TablesInsert<"document_versions">) => {
-            const { data, error } = await getSupabase().from("document_versions").insert(version).select().single();
+            const { data, error } = await getSupabase()
+                .from("document_versions")
+                .insert(version)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"document_versions">;
         },
@@ -946,7 +1105,11 @@ export function useCreateRecurringInvoice() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (invoice: TablesInsert<"recurring_invoices">) => {
-            const { data, error } = await getSupabase().from("recurring_invoices").insert(invoice).select().single();
+            const { data, error } = await getSupabase()
+                .from("recurring_invoices")
+                .insert(invoice)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"recurring_invoices">;
         },
@@ -966,11 +1129,11 @@ export function usePayments(invoiceId?: string) {
                 .from("payments")
                 .select("*, invoices(amount, status)")
                 .order("payment_date", { ascending: false });
-            
+
             if (invoiceId) {
                 query = query.eq("invoice_id", invoiceId);
             }
-            
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as PaymentWithInvoice[];
@@ -982,7 +1145,11 @@ export function useCreatePayment() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (payment: TablesInsert<"payments">) => {
-            const { data, error } = await getSupabase().from("payments").insert(payment).select().single();
+            const { data, error } = await getSupabase()
+                .from("payments")
+                .insert(payment)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"payments">;
         },
@@ -1001,9 +1168,7 @@ export function useCrewUtilization() {
     return useQuery({
         queryKey: ["crew_utilization"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("v_crew_utilization")
-                .select("*");
+            const { data, error } = await getSupabase().from("v_crew_utilization").select("*");
             if (error) throw error;
             return data as unknown as {
                 crew_member_id: string;
@@ -1022,9 +1187,7 @@ export function useProjectProfitability() {
     return useQuery({
         queryKey: ["project_profitability"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("v_project_profitability")
-                .select("*");
+            const { data, error } = await getSupabase().from("v_project_profitability").select("*");
             if (error) throw error;
             return data as unknown as {
                 project_id: string;
@@ -1048,9 +1211,7 @@ export function usePipelineSummary() {
     return useQuery({
         queryKey: ["pipeline_summary"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("v_pipeline_summary")
-                .select("*");
+            const { data, error } = await getSupabase().from("v_pipeline_summary").select("*");
             if (error) throw error;
             return data as unknown as {
                 organization_id: string;
@@ -1070,9 +1231,7 @@ export function useInvoiceAging() {
     return useQuery({
         queryKey: ["invoice_aging"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("v_invoice_aging")
-                .select("*");
+            const { data, error } = await getSupabase().from("v_invoice_aging").select("*");
             if (error) throw error;
             return data as unknown as {
                 organization_id: string;

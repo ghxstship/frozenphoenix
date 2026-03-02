@@ -1,6 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./config";
+
+const PUBLIC_EXACT_PATHS = ["/", "/login", "/signup", "/forgot-password"];
+const PUBLIC_PREFIX_PATHS = ["/auth/", "/api/", "/_next/", "/invite/"];
+
+function isPublicRoute(pathname: string): boolean {
+    return (
+        PUBLIC_EXACT_PATHS.includes(pathname) ||
+        PUBLIC_PREFIX_PATHS.some((prefix) => pathname.startsWith(prefix))
+    );
+}
 
 export async function updateSession(request: NextRequest) {
     const supabaseResponse = NextResponse.next({
@@ -11,13 +21,7 @@ export async function updateSession(request: NextRequest) {
     // In production without credentials, protect dashboard routes by redirecting
     // to /login, but always allow public paths through to avoid redirect loops.
     if (!supabaseUrl || !supabaseAnonKey) {
-        const publicPaths = ["/", "/login", "/signup", "/forgot-password"];
-        const isPublic =
-            publicPaths.includes(request.nextUrl.pathname) ||
-            request.nextUrl.pathname.startsWith("/api/") ||
-            request.nextUrl.pathname.startsWith("/_next/") ||
-            request.nextUrl.pathname.startsWith("/auth/") ||
-            request.nextUrl.pathname.startsWith("/invite/");
+        const isPublic = isPublicRoute(request.nextUrl.pathname);
 
         if (process.env.NODE_ENV === "production" && !isPublic) {
             const url = request.nextUrl.clone();
@@ -29,28 +33,22 @@ export async function updateSession(request: NextRequest) {
 
     let response = supabaseResponse;
 
-    const supabase = createServerClient(
-        supabaseUrl,
-        supabaseAnonKey,
-        {
-            cookies: {
-                getAll() {
-                    return request.cookies.getAll();
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value }) =>
-                        request.cookies.set(name, value)
-                    );
-                    response = NextResponse.next({
-                        request,
-                    });
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        response.cookies.set(name, value, options)
-                    );
-                },
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+            getAll() {
+                return request.cookies.getAll();
             },
-        }
-    );
+            setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+                response = NextResponse.next({
+                    request,
+                });
+                cookiesToSet.forEach(({ name, value, options }) =>
+                    response.cookies.set(name, value, options)
+                );
+            },
+        },
+    });
 
     // Refresh session if expired
     const {
@@ -59,13 +57,7 @@ export async function updateSession(request: NextRequest) {
 
     // Protected routes - all dashboard routes require authentication
     // Public routes are explicitly listed; everything else is protected
-    const publicPaths = ["/", "/login", "/signup", "/forgot-password"];
-    const isPublicPath =
-        publicPaths.includes(request.nextUrl.pathname) ||
-        request.nextUrl.pathname.startsWith("/auth/") ||
-        request.nextUrl.pathname.startsWith("/api/") ||
-        request.nextUrl.pathname.startsWith("/_next/") ||
-        request.nextUrl.pathname.startsWith("/invite/");
+    const isPublicPath = isPublicRoute(request.nextUrl.pathname);
     const isProtectedPath = !isPublicPath;
 
     if (isProtectedPath && !user) {
@@ -88,13 +80,10 @@ export async function updateSession(request: NextRequest) {
     // MFA verification check — redirect to MFA verify if user has enrolled TOTP
     // but the session's AAL is only aal1 (not yet verified for this session).
     // Skip this check for auth routes and API routes to avoid loops.
-    if (
-        user &&
-        isProtectedPath &&
-        !request.nextUrl.pathname.startsWith("/auth/mfa")
-    ) {
+    if (user && isProtectedPath && !request.nextUrl.pathname.startsWith("/auth/mfa")) {
         try {
-            const { data: assuranceData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+            const { data: assuranceData } =
+                await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
             if (
                 assuranceData &&
                 assuranceData.nextLevel === "aal2" &&
@@ -163,28 +152,25 @@ export async function updateSession(request: NextRequest) {
             if (!hasNoOrg && memberships && memberships.length > 0) {
                 const { data: defaultOrgMembership } = await supabase
                     .from("org_memberships")
-                    .select("id, organizations!inner(slug)")
+                    .select("id, role, organizations!inner(slug)")
                     .eq("user_id", user.id)
                     .eq("status", "active");
 
-                const onlyDefault = defaultOrgMembership &&
-                    defaultOrgMembership.length === 1 &&
-                    (defaultOrgMembership[0] as unknown as { organizations: { slug: string } })
-                        .organizations?.slug === "default";
+                const firstMembership = defaultOrgMembership?.[0];
+                const orgSlug =
+                    firstMembership &&
+                    typeof firstMembership.organizations === "object" &&
+                    firstMembership.organizations !== null &&
+                    "slug" in firstMembership.organizations
+                        ? (firstMembership.organizations as { slug: string }).slug
+                        : null;
 
-                if (onlyDefault) {
-                    // Check the user's role — only exec users need to set up an org
-                    const { data: profile } = await supabase
-                        .from("profiles")
-                        .select("role")
-                        .eq("id", user.id)
-                        .single();
+                const onlyDefault = defaultOrgMembership?.length === 1 && orgSlug === "default";
 
-                    if (profile?.role === "exec") {
-                        const url = request.nextUrl.clone();
-                        url.pathname = "/onboarding/org-setup";
-                        return NextResponse.redirect(url);
-                    }
+                if (onlyDefault && firstMembership?.role === "exec") {
+                    const url = request.nextUrl.clone();
+                    url.pathname = "/onboarding/org-setup";
+                    return NextResponse.redirect(url);
                 }
             } else if (hasNoOrg) {
                 const url = request.nextUrl.clone();
@@ -204,10 +190,15 @@ export async function updateSession(request: NextRequest) {
                     .select("step_definition_id")
                     .eq("user_id", user.id)
                     .eq("status", "completed")
-                    .in("step_definition_id", gatedSteps.map((s) => s.id));
+                    .in(
+                        "step_definition_id",
+                        gatedSteps.map((s) => s.id)
+                    );
 
                 const completedIds = new Set(
-                    (completedProgress || []).map((p: { step_definition_id: string }) => p.step_definition_id)
+                    (completedProgress || []).map(
+                        (p: { step_definition_id: string }) => p.step_definition_id
+                    )
                 );
 
                 // Auto-resolve verify_email if the email is confirmed
@@ -245,13 +236,18 @@ export async function updateSession(request: NextRequest) {
     response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
     response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     response.headers.set("X-DNS-Prefetch-Control", "on");
-    response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+    response.headers.set(
+        "Strict-Transport-Security",
+        "max-age=63072000; includeSubDomains; preload"
+    );
 
     // Content Security Policy
+    // C-003: unsafe-eval only permitted in development for hot-reload / React DevTools
+    const isDev = process.env.NODE_ENV === "development";
     const supabaseDomain = supabaseUrl ? new URL(supabaseUrl).hostname : "";
     const cspDirectives = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+        `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
         "style-src 'self' 'unsafe-inline'",
         `connect-src 'self' ${supabaseUrl || ""} wss://${supabaseDomain} https://challenges.cloudflare.com https://accounts.google.com`,
         "img-src 'self' data: blob: https://*.googleusercontent.com https://avatars.githubusercontent.com",

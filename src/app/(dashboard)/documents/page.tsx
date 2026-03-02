@@ -3,6 +3,8 @@
 import { formatDate } from "@/lib/locale";
 
 import { useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,16 +14,36 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { getStatusLabel } from "@/config/ui-variants";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-    FileText, Plus, Globe, Lock,
-    Users, Star, FolderOpen,
-    BookOpen, StickyNote, FileCode, Presentation,
-    ScrollText, LayoutTemplate, Clock, Eye,
-    MessageSquare, Pencil, Loader2,
+    BookOpen,
+    Clock,
+    Eye,
+    FileCode,
+    FileText,
+    FolderOpen,
+    Globe,
+    LayoutTemplate,
+    Loader2,
+    Lock,
+    MessageSquare,
+    Pencil,
+    Plus,
+    Presentation,
+    ScrollText,
+    Star,
+    StickyNote,
+    Users,
 } from "lucide-react";
-import { useDocuments, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { isSupabaseConfigured, useDocuments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
-type DocType = "doc" | "wiki" | "meeting_notes" | "specification" | "proposal_doc" | "sow" | "template";
+type DocType =
+    | "doc"
+    | "wiki"
+    | "meeting_notes"
+    | "specification"
+    | "proposal_doc"
+    | "sow"
+    | "template";
 type DocStatus = "draft" | "pending_review" | "published" | "archived";
 interface DocItem {
     id: string;
@@ -65,49 +87,247 @@ const DOC_TYPE_LABELS: Record<DocType, string> = {
     template: "Template",
 };
 
-
 const mockDocs: DocItem[] = [
-    { id: "1", title: "Nike Air Max Launch — Production Bible", icon: "📕", documentType: "doc", status: "published", projectName: "Nike Air Max Launch", ownerName: "Sarah Chen", lastEditedBy: "Mike Johnson", updatedAt: "2026-02-25T14:30:00Z", createdAt: "2026-01-15", isPublic: false, canComment: true, canEdit: true, sharedWith: 8, starred: true, commentCount: 24, wordCount: 4200, coverImageUrl: null, parentTitle: null },
-    { id: "2", title: "Red Bull Festival — Technical Specifications", icon: "⚡", documentType: "specification", status: "published", projectName: "Red Bull Festival", ownerName: "David Kim", lastEditedBy: "David Kim", updatedAt: "2026-02-24T10:15:00Z", createdAt: "2026-02-01", isPublic: false, canComment: true, canEdit: false, sharedWith: 5, starred: true, commentCount: 12, wordCount: 3100, coverImageUrl: null, parentTitle: null },
-    { id: "3", title: "Weekly Standup — Feb 25", icon: "📝", documentType: "meeting_notes", status: "draft", projectName: null, ownerName: "Sarah Chen", lastEditedBy: "Sarah Chen", updatedAt: "2026-02-25T09:00:00Z", createdAt: "2026-02-25", isPublic: false, canComment: true, canEdit: true, sharedWith: 12, starred: false, commentCount: 0, wordCount: 450, coverImageUrl: null, parentTitle: null },
-    { id: "4", title: "Company Wiki — Onboarding Guide", icon: "📖", documentType: "wiki", status: "published", projectName: null, ownerName: "Lisa Wang", lastEditedBy: "Tom Harris", updatedAt: "2026-02-20T16:45:00Z", createdAt: "2025-11-01", isPublic: true, canComment: true, canEdit: false, sharedWith: 0, starred: true, commentCount: 8, wordCount: 6800, coverImageUrl: null, parentTitle: "Company Wiki" },
-    { id: "5", title: "Coachella Experience — SOW Draft", icon: "🎪", documentType: "sow", status: "pending_review", projectName: "Coachella Experience", ownerName: "Mike Johnson", lastEditedBy: "Sarah Chen", updatedAt: "2026-02-23T11:20:00Z", createdAt: "2026-02-15", isPublic: false, canComment: true, canEdit: true, sharedWith: 3, starred: false, commentCount: 6, wordCount: 2800, coverImageUrl: null, parentTitle: null },
-    { id: "6", title: "Project Brief Template", icon: "📋", documentType: "template", status: "published", projectName: null, ownerName: "Sarah Chen", lastEditedBy: "Sarah Chen", updatedAt: "2026-02-10T08:30:00Z", createdAt: "2025-10-15", isPublic: true, canComment: false, canEdit: false, sharedWith: 0, starred: false, commentCount: 0, wordCount: 1200, coverImageUrl: null, parentTitle: null },
-    { id: "7", title: "TechStart Launch — Proposal Document", icon: "🚀", documentType: "proposal_doc", status: "draft", projectName: "TechStart Launch", ownerName: "Lisa Wang", lastEditedBy: "Lisa Wang", updatedAt: "2026-02-24T15:00:00Z", createdAt: "2026-02-20", isPublic: false, canComment: true, canEdit: true, sharedWith: 2, starred: false, commentCount: 3, wordCount: 1800, coverImageUrl: null, parentTitle: null },
-    { id: "8", title: "Safety Protocols & Emergency Procedures", icon: "🛡️", documentType: "wiki", status: "published", projectName: null, ownerName: "Tom Harris", lastEditedBy: "Tom Harris", updatedAt: "2026-02-18T12:00:00Z", createdAt: "2025-12-01", isPublic: true, canComment: true, canEdit: false, sharedWith: 0, starred: false, commentCount: 2, wordCount: 3400, coverImageUrl: null, parentTitle: "Company Wiki" },
-    { id: "9", title: "Glossier Pop-Up — Post-Mortem", icon: "✨", documentType: "meeting_notes", status: "published", projectName: "Glossier Pop-Up", ownerName: "Sarah Chen", lastEditedBy: "Mike Johnson", updatedAt: "2026-02-15T17:30:00Z", createdAt: "2026-02-14", isPublic: false, canComment: true, canEdit: false, sharedWith: 6, starred: false, commentCount: 15, wordCount: 2100, coverImageUrl: null, parentTitle: null },
+    {
+        id: "1",
+        title: "Nike Air Max Launch — Production Bible",
+        icon: "📕",
+        documentType: "doc",
+        status: "published",
+        projectName: "Nike Air Max Launch",
+        ownerName: "Sarah Chen",
+        lastEditedBy: "Mike Johnson",
+        updatedAt: "2026-02-25T14:30:00Z",
+        createdAt: "2026-01-15",
+        isPublic: false,
+        canComment: true,
+        canEdit: true,
+        sharedWith: 8,
+        starred: true,
+        commentCount: 24,
+        wordCount: 4200,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "2",
+        title: "Red Bull Festival — Technical Specifications",
+        icon: "⚡",
+        documentType: "specification",
+        status: "published",
+        projectName: "Red Bull Festival",
+        ownerName: "David Kim",
+        lastEditedBy: "David Kim",
+        updatedAt: "2026-02-24T10:15:00Z",
+        createdAt: "2026-02-01",
+        isPublic: false,
+        canComment: true,
+        canEdit: false,
+        sharedWith: 5,
+        starred: true,
+        commentCount: 12,
+        wordCount: 3100,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "3",
+        title: "Weekly Standup — Feb 25",
+        icon: "📝",
+        documentType: "meeting_notes",
+        status: "draft",
+        projectName: null,
+        ownerName: "Sarah Chen",
+        lastEditedBy: "Sarah Chen",
+        updatedAt: "2026-02-25T09:00:00Z",
+        createdAt: "2026-02-25",
+        isPublic: false,
+        canComment: true,
+        canEdit: true,
+        sharedWith: 12,
+        starred: false,
+        commentCount: 0,
+        wordCount: 450,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "4",
+        title: "Company Wiki — Onboarding Guide",
+        icon: "📖",
+        documentType: "wiki",
+        status: "published",
+        projectName: null,
+        ownerName: "Lisa Wang",
+        lastEditedBy: "Tom Harris",
+        updatedAt: "2026-02-20T16:45:00Z",
+        createdAt: "2025-11-01",
+        isPublic: true,
+        canComment: true,
+        canEdit: false,
+        sharedWith: 0,
+        starred: true,
+        commentCount: 8,
+        wordCount: 6800,
+        coverImageUrl: null,
+        parentTitle: "Company Wiki",
+    },
+    {
+        id: "5",
+        title: "Coachella Experience — SOW Draft",
+        icon: "🎪",
+        documentType: "sow",
+        status: "pending_review",
+        projectName: "Coachella Experience",
+        ownerName: "Mike Johnson",
+        lastEditedBy: "Sarah Chen",
+        updatedAt: "2026-02-23T11:20:00Z",
+        createdAt: "2026-02-15",
+        isPublic: false,
+        canComment: true,
+        canEdit: true,
+        sharedWith: 3,
+        starred: false,
+        commentCount: 6,
+        wordCount: 2800,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "6",
+        title: "Project Brief Template",
+        icon: "📋",
+        documentType: "template",
+        status: "published",
+        projectName: null,
+        ownerName: "Sarah Chen",
+        lastEditedBy: "Sarah Chen",
+        updatedAt: "2026-02-10T08:30:00Z",
+        createdAt: "2025-10-15",
+        isPublic: true,
+        canComment: false,
+        canEdit: false,
+        sharedWith: 0,
+        starred: false,
+        commentCount: 0,
+        wordCount: 1200,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "7",
+        title: "TechStart Launch — Proposal Document",
+        icon: "🚀",
+        documentType: "proposal_doc",
+        status: "draft",
+        projectName: "TechStart Launch",
+        ownerName: "Lisa Wang",
+        lastEditedBy: "Lisa Wang",
+        updatedAt: "2026-02-24T15:00:00Z",
+        createdAt: "2026-02-20",
+        isPublic: false,
+        canComment: true,
+        canEdit: true,
+        sharedWith: 2,
+        starred: false,
+        commentCount: 3,
+        wordCount: 1800,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
+    {
+        id: "8",
+        title: "Safety Protocols & Emergency Procedures",
+        icon: "🛡️",
+        documentType: "wiki",
+        status: "published",
+        projectName: null,
+        ownerName: "Tom Harris",
+        lastEditedBy: "Tom Harris",
+        updatedAt: "2026-02-18T12:00:00Z",
+        createdAt: "2025-12-01",
+        isPublic: true,
+        canComment: true,
+        canEdit: false,
+        sharedWith: 0,
+        starred: false,
+        commentCount: 2,
+        wordCount: 3400,
+        coverImageUrl: null,
+        parentTitle: "Company Wiki",
+    },
+    {
+        id: "9",
+        title: "Glossier Pop-Up — Post-Mortem",
+        icon: "✨",
+        documentType: "meeting_notes",
+        status: "published",
+        projectName: "Glossier Pop-Up",
+        ownerName: "Sarah Chen",
+        lastEditedBy: "Mike Johnson",
+        updatedAt: "2026-02-15T17:30:00Z",
+        createdAt: "2026-02-14",
+        isPublic: false,
+        canComment: true,
+        canEdit: false,
+        sharedWith: 6,
+        starred: false,
+        commentCount: 15,
+        wordCount: 2100,
+        coverImageUrl: null,
+        parentTitle: null,
+    },
 ];
 
 export default function DocumentsPage() {
     const [search, setSearch] = useState("");
-    const [typeFilter, setTypeFilter] = useState<"all" | DocType>("all");
-    const [statusFilter, setStatusFilter] = useState<"all" | DocStatus>("all");
+    const TYPE_FILTERS = [
+        "all",
+        "doc",
+        "wiki",
+        "meeting_notes",
+        "specification",
+        "sow",
+        "template",
+    ] as const;
+    const [typeFilter, setTypeFilter] = useQueryTabState({
+        key: "type",
+        defaultValue: "all",
+        validValues: TYPE_FILTERS,
+    });
+    const STATUS_FILTERS = ["all", "draft", "published", "pending_review"] as const;
+    const [statusFilter, setStatusFilter] = useQueryTabState({
+        key: "status",
+        defaultValue: "all",
+        validValues: STATUS_FILTERS,
+    });
 
     const { data: sbDocs, isLoading } = useDocuments();
 
-    const docs: DocItem[] = isSupabaseConfigured && sbDocs
-        ? sbDocs.map((d: Record<string, unknown>) => ({
-            id: (d.id as string) ?? "",
-            title: (d.title as string) ?? "",
-            icon: (d.icon as string) ?? null,
-            documentType: ((d.document_type as string) ?? "doc") as DocType,
-            status: ((d.status as string) ?? "draft") as DocStatus,
-            projectName: (d.project_name as string) ?? null,
-            ownerName: (d.owner_name as string) ?? "",
-            lastEditedBy: (d.last_edited_by as string) ?? "",
-            updatedAt: (d.updated_at as string) ?? "",
-            createdAt: (d.created_at as string) ?? "",
-            isPublic: (d.is_public as boolean) ?? false,
-            canComment: (d.can_comment as boolean) ?? false,
-            canEdit: (d.can_edit as boolean) ?? false,
-            sharedWith: (d.shared_with as number) ?? 0,
-            starred: (d.starred as boolean) ?? false,
-            commentCount: (d.comment_count as number) ?? 0,
-            wordCount: (d.word_count as number) ?? 0,
-            coverImageUrl: (d.cover_image_url as string) ?? null,
-            parentTitle: (d.parent_title as string) ?? null,
-        }))
-        : mockDocs;
+    const docs: DocItem[] =
+        isSupabaseConfigured && sbDocs
+            ? sbDocs.map((d: Record<string, unknown>) => ({
+                  id: (d.id as string) ?? "",
+                  title: (d.title as string) ?? "",
+                  icon: (d.icon as string) ?? null,
+                  documentType: ((d.document_type as string) ?? "doc") as DocType,
+                  status: ((d.status as string) ?? "draft") as DocStatus,
+                  projectName: (d.project_name as string) ?? null,
+                  ownerName: (d.owner_name as string) ?? "",
+                  lastEditedBy: (d.last_edited_by as string) ?? "",
+                  updatedAt: (d.updated_at as string) ?? "",
+                  createdAt: (d.created_at as string) ?? "",
+                  isPublic: (d.is_public as boolean) ?? false,
+                  canComment: (d.can_comment as boolean) ?? false,
+                  canEdit: (d.can_edit as boolean) ?? false,
+                  sharedWith: (d.shared_with as number) ?? 0,
+                  starred: (d.starred as boolean) ?? false,
+                  commentCount: (d.comment_count as number) ?? 0,
+                  wordCount: (d.word_count as number) ?? 0,
+                  coverImageUrl: (d.cover_image_url as string) ?? null,
+                  parentTitle: (d.parent_title as string) ?? null,
+              }))
+            : mockDocs;
 
     if (isSupabaseConfigured && isLoading) {
         return (
@@ -120,7 +340,12 @@ export default function DocumentsPage() {
     const filtered = docs.filter((d) => {
         if (typeFilter !== "all" && d.documentType !== typeFilter) return false;
         if (statusFilter !== "all" && d.status !== statusFilter) return false;
-        if (search && !d.title.toLowerCase().includes(search.toLowerCase()) && !(d.projectName?.toLowerCase().includes(search.toLowerCase()))) return false;
+        if (
+            search &&
+            !d.title.toLowerCase().includes(search.toLowerCase()) &&
+            !d.projectName?.toLowerCase().includes(search.toLowerCase())
+        )
+            return false;
         return true;
     });
 
@@ -142,7 +367,10 @@ export default function DocumentsPage() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Documents" description="Create, collaborate, and share documents across your team and projects">
+            <PageHeader
+                title="Documents"
+                description="Create, collaborate, and share documents across your team and projects"
+            >
                 <Button>
                     <Plus className="mr-2 h-4 w-4" /> New Document
                 </Button>
@@ -150,21 +378,43 @@ export default function DocumentsPage() {
 
             {/* Filters */}
             <div className="flex items-center gap-4 flex-wrap">
-                <SearchInput value={search} onValueChange={setSearch} placeholder="Search documents..." className="flex-1 max-w-sm" />
-                <div className="flex gap-1 flex-wrap">
-                    {(["all", "doc", "wiki", "meeting_notes", "specification", "sow", "template"] as const).map((t) => (
-                        <Button key={t} variant={typeFilter === t ? "default" : "ghost"} size="sm" onClick={() => setTypeFilter(t)} className="text-xs">
-                            {t === "all" ? "All Types" : DOC_TYPE_LABELS[t]}
-                        </Button>
-                    ))}
-                </div>
-                <div className="flex gap-1">
-                    {(["all", "draft", "published", "pending_review"] as const).map((s) => (
-                        <Button key={s} variant={statusFilter === s ? "default" : "ghost"} size="sm" onClick={() => setStatusFilter(s)} className="text-xs">
-                            {s === "all" ? "All" : getStatusLabel(s)}
-                        </Button>
-                    ))}
-                </div>
+                <SearchInput
+                    value={search}
+                    onValueChange={setSearch}
+                    placeholder="Search documents..."
+                    className="flex-1 max-w-sm"
+                />
+                <SegmentedControl
+                    ariaLabel="Document type filter"
+                    value={typeFilter}
+                    onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
+                    size="sm"
+                    options={[
+                        { value: "all", label: "All Types" },
+                        ...(
+                            [
+                                "doc",
+                                "wiki",
+                                "meeting_notes",
+                                "specification",
+                                "sow",
+                                "template",
+                            ] as const
+                        ).map((t) => ({ value: t, label: DOC_TYPE_LABELS[t] })),
+                    ]}
+                />
+                <SegmentedControl
+                    ariaLabel="Document status filter"
+                    value={statusFilter}
+                    onValueChange={(v) => setStatusFilter(v as (typeof STATUS_FILTERS)[number])}
+                    size="sm"
+                    options={[
+                        { value: "all", label: "All" },
+                        { value: "draft", label: getStatusLabel("draft") },
+                        { value: "published", label: getStatusLabel("published") },
+                        { value: "pending_review", label: getStatusLabel("pending_review") },
+                    ]}
+                />
             </div>
 
             {/* Starred Docs */}
@@ -174,7 +424,9 @@ export default function DocumentsPage() {
                         <Star className="h-3 w-3" /> Starred
                     </OverlineText>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {starred.map((doc) => <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />)}
+                        {starred.map((doc) => (
+                            <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />
+                        ))}
                     </div>
                 </div>
             )}
@@ -187,7 +439,9 @@ export default function DocumentsPage() {
                     </OverlineText>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {recent.map((doc) => <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />)}
+                    {recent.map((doc) => (
+                        <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />
+                    ))}
                 </div>
             </div>
 
@@ -206,63 +460,70 @@ function DocCard({ doc, formatTime }: { doc: DocItem; formatTime: (d: string) =>
 
     return (
         <PermissionGate resource="documents" action="read">
-        <Card className="hover:bg-secondary/30 transition-colors cursor-pointer group">
-            <CardContent className="p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                        {doc.icon ? (
-                            <span className="text-lg shrink-0">{doc.icon}</span>
-                        ) : (
-                            <TypeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                            <p className="text-sm font-semibold truncate">{doc.title}</p>
-                            {doc.parentTitle && (
-                                <p className="text-[10px] text-muted-foreground">in {doc.parentTitle}</p>
+            <Card className="hover:bg-secondary/30 transition-colors cursor-pointer group">
+                <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                            {doc.icon ? (
+                                <span className="text-lg shrink-0">{doc.icon}</span>
+                            ) : (
+                                <TypeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                             )}
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold truncate">{doc.title}</p>
+                                {doc.parentTitle && (
+                                    <p className="text-[10px] text-muted-foreground">
+                                        in {doc.parentTitle}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        {doc.starred && (
+                            <Star className="h-3.5 w-3.5 text-star-rating fill-star-rating shrink-0" />
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <StatusBadge status={doc.status} className="text-[9px]" />
+                        <Badge variant="ghost" className="text-[9px]">
+                            {DOC_TYPE_LABELS[doc.documentType]}
+                        </Badge>
+                        {doc.isPublic ? (
+                            <Globe className="h-3 w-3 text-success" />
+                        ) : doc.sharedWith > 0 ? (
+                            <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
+                                <Users className="h-2.5 w-2.5" /> {doc.sharedWith}
+                            </span>
+                        ) : (
+                            <Lock className="h-3 w-3 text-muted-foreground" />
+                        )}
+                    </div>
+
+                    {doc.projectName && (
+                        <p className="text-[10px] text-muted-foreground truncate">
+                            {doc.projectName}
+                        </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t">
+                        <div className="flex items-center gap-2">
+                            {doc.commentCount > 0 && (
+                                <span className="flex items-center gap-0.5">
+                                    <MessageSquare className="h-2.5 w-2.5" /> {doc.commentCount}
+                                </span>
+                            )}
+                            <span className="flex items-center gap-0.5">
+                                <Eye className="h-2.5 w-2.5" /> {doc.wordCount.toLocaleString()}{" "}
+                                words
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Pencil className="h-2.5 w-2.5" />
+                            <span>{formatTime(doc.updatedAt)}</span>
                         </div>
                     </div>
-                    {doc.starred && <Star className="h-3.5 w-3.5 text-star-rating fill-star-rating shrink-0" />}
-                </div>
-
-                <div className="flex items-center gap-1.5 flex-wrap">
-                    <StatusBadge status={doc.status} className="text-[9px]" />
-                    <Badge variant="ghost" className="text-[9px]">{DOC_TYPE_LABELS[doc.documentType]}</Badge>
-                    {doc.isPublic ? (
-                        <Globe className="h-3 w-3 text-success" />
-                    ) : doc.sharedWith > 0 ? (
-                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
-                            <Users className="h-2.5 w-2.5" /> {doc.sharedWith}
-                        </span>
-                    ) : (
-                        <Lock className="h-3 w-3 text-muted-foreground" />
-                    )}
-                </div>
-
-                {doc.projectName && (
-                    <p className="text-[10px] text-muted-foreground truncate">
-                        {doc.projectName}
-                    </p>
-                )}
-
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t">
-                    <div className="flex items-center gap-2">
-                        {doc.commentCount > 0 && (
-                            <span className="flex items-center gap-0.5">
-                                <MessageSquare className="h-2.5 w-2.5" /> {doc.commentCount}
-                            </span>
-                        )}
-                        <span className="flex items-center gap-0.5">
-                            <Eye className="h-2.5 w-2.5" /> {doc.wordCount.toLocaleString()} words
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <Pencil className="h-2.5 w-2.5" />
-                        <span>{formatTime(doc.updatedAt)}</span>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
         </PermissionGate>
     );
 }

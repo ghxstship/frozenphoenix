@@ -8,7 +8,7 @@ import * as React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FieldRenderer, type FieldConfig, type FieldType } from "./field-renderers";
+import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import { ProgressField } from "./field-renderers";
 
 // ─── Card Field Definition ───
@@ -123,7 +123,11 @@ export function DataCards<T extends Record<string, unknown>>({
     }
 
     return (
-        <div className={cn("grid", gridCols[columns], gapClasses[gap], className)} role="list" aria-label="Data cards">
+        <div
+            className={cn("grid", gridCols[columns], gapClasses[gap], className)}
+            role="list"
+            aria-label="Data cards"
+        >
             {data.map((row) => {
                 const key = String(row[keyField]);
                 const titleValue = getValue(row, title) ?? "";
@@ -137,7 +141,8 @@ export function DataCards<T extends Record<string, unknown>>({
                         key={key}
                         className={cn(
                             "overflow-hidden transition-all duration-200 group",
-                            onCardClick && "cursor-pointer hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                            onCardClick &&
+                                "cursor-pointer hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                             cardClassName
                         )}
                         onClick={() => onCardClick?.(row)}

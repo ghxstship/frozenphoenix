@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient, type UseMutationOptions } from "@tanstack/react-query";
+import { useMutation, type UseMutationOptions, useQueryClient } from "@tanstack/react-query";
 
 // ─── S6: Idempotency Key Generation ───
 // Generates a unique idempotency key for mutation deduplication.
@@ -12,7 +12,11 @@ export function generateIdempotencyKey(entityType: string, action: string): stri
     return key;
 }
 
-export function getOrCreateIdempotencyKey(entityType: string, action: string, dedupeId?: string): string {
+export function getOrCreateIdempotencyKey(
+    entityType: string,
+    action: string,
+    dedupeId?: string
+): string {
     const lookupKey = dedupeId ?? `${entityType}:${action}`;
     if (pendingKeys.has(lookupKey)) {
         return pendingKeys.get(lookupKey)!;

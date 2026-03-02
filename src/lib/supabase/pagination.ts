@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback, useMemo } from "react";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useCallback, useMemo, useState } from "react";
+import { getSupabase, isSupabaseConfigured } from "./client";
 
 export const DEFAULT_PAGE_SIZE = 25;
 export const MAX_PAGE_SIZE = 100;
@@ -30,14 +30,6 @@ export interface UsePaginatedQueryOptions<T> {
     transform?: (row: unknown) => T;
 }
 
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error("Supabase client not configured");
-    }
-    return client;
-}
-
 export function usePaginatedQuery<T>({
     queryKey,
     table,
@@ -59,7 +51,8 @@ export function usePaginatedQuery<T>({
         queryKey: [...queryKey, "paginated", page, effectivePageSize, JSON.stringify(filters)],
         queryFn: async () => {
             const supabase = getSupabase();
-            let query = supabase.from(table as never)
+            let query = supabase
+                .from(table as never)
                 .select(select, { count: "exact" })
                 .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                 .range(from, to);
@@ -74,7 +67,7 @@ export function usePaginatedQuery<T>({
             if (error) throw error;
 
             const totalCount = count ?? 0;
-            const rows = transform ? (data ?? []).map(transform) : (data ?? []) as T[];
+            const rows = transform ? (data ?? []).map(transform) : ((data ?? []) as T[]);
 
             return {
                 data: rows,
@@ -90,10 +83,13 @@ export function usePaginatedQuery<T>({
         placeholderData: (prev) => prev,
     });
 
-    const goToPage = useCallback((newPage: number) => {
-        const maxPage = result.data?.pagination.totalPages ?? 1;
-        setPage(Math.max(1, Math.min(newPage, maxPage)));
-    }, [result.data?.pagination.totalPages]);
+    const goToPage = useCallback(
+        (newPage: number) => {
+            const maxPage = result.data?.pagination.totalPages ?? 1;
+            setPage(Math.max(1, Math.min(newPage, maxPage)));
+        },
+        [result.data?.pagination.totalPages]
+    );
 
     const nextPage = useCallback(() => goToPage(page + 1), [goToPage, page]);
     const prevPage = useCallback(() => goToPage(page - 1), [goToPage, page]);
@@ -104,16 +100,28 @@ export function usePaginatedQuery<T>({
             const nextFrom = page * effectivePageSize;
             const nextTo = nextFrom + effectivePageSize - 1;
             queryClient.prefetchQuery({
-                queryKey: [...queryKey, "paginated", page + 1, effectivePageSize, JSON.stringify(filters)],
+                queryKey: [
+                    ...queryKey,
+                    "paginated",
+                    page + 1,
+                    effectivePageSize,
+                    JSON.stringify(filters),
+                ],
                 queryFn: async () => {
                     const supabase = getSupabase();
-                    let query = supabase.from(table as never)
+                    let query = supabase
+                        .from(table as never)
                         .select(select, { count: "exact" })
                         .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                         .range(nextFrom, nextTo);
 
                     for (const [key, value] of Object.entries(filters)) {
-                        if (value !== undefined && value !== null && value !== "" && value !== "all") {
+                        if (
+                            value !== undefined &&
+                            value !== null &&
+                            value !== "" &&
+                            value !== "all"
+                        ) {
                             query = query.eq(key, value);
                         }
                     }
@@ -122,7 +130,7 @@ export function usePaginatedQuery<T>({
                     if (error) throw error;
 
                     const totalCount = count ?? 0;
-                    const rows = transform ? (data ?? []).map(transform) : (data ?? []) as T[];
+                    const rows = transform ? (data ?? []).map(transform) : ((data ?? []) as T[]);
                     return {
                         data: rows,
                         pagination: {
@@ -135,20 +143,42 @@ export function usePaginatedQuery<T>({
                 },
             });
         }
-    }, [page, effectivePageSize, queryKey, table, select, orderBy, filters, queryClient, result.data?.pagination.totalPages, transform]);
-
-    const paginationControls = useMemo(() => ({
+    }, [
         page,
-        pageSize: effectivePageSize,
-        totalCount: result.data?.pagination.totalCount ?? 0,
-        totalPages: result.data?.pagination.totalPages ?? 1,
-        hasNext: page < (result.data?.pagination.totalPages ?? 1),
-        hasPrev: page > 1,
-        goToPage,
-        nextPage,
-        prevPage,
-        prefetchNextPage,
-    }), [page, effectivePageSize, result.data?.pagination, goToPage, nextPage, prevPage, prefetchNextPage]);
+        effectivePageSize,
+        queryKey,
+        table,
+        select,
+        orderBy,
+        filters,
+        queryClient,
+        result.data?.pagination.totalPages,
+        transform,
+    ]);
+
+    const paginationControls = useMemo(
+        () => ({
+            page,
+            pageSize: effectivePageSize,
+            totalCount: result.data?.pagination.totalCount ?? 0,
+            totalPages: result.data?.pagination.totalPages ?? 1,
+            hasNext: page < (result.data?.pagination.totalPages ?? 1),
+            hasPrev: page > 1,
+            goToPage,
+            nextPage,
+            prevPage,
+            prefetchNextPage,
+        }),
+        [
+            page,
+            effectivePageSize,
+            result.data?.pagination,
+            goToPage,
+            nextPage,
+            prevPage,
+            prefetchNextPage,
+        ]
+    );
 
     return {
         ...result,

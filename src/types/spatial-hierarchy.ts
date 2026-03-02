@@ -8,64 +8,137 @@
 
 export type LocationTypeExtended =
     // Sites & Campuses
-    | 'site' | 'campus' | 'complex' | 'festival_grounds'
+    | "site"
+    | "campus"
+    | "complex"
+    | "festival_grounds"
     // Venues
-    | 'venue' | 'theater' | 'arena' | 'convention_center' | 'club' | 'park' | 'stadium'
+    | "venue"
+    | "theater"
+    | "arena"
+    | "convention_center"
+    | "club"
+    | "park"
+    | "stadium"
     // Operational
-    | 'office' | 'warehouse' | 'fabrication_shop' | 'staging_area'
+    | "office"
+    | "warehouse"
+    | "fabrication_shop"
+    | "staging_area"
     // Hospitality
-    | 'hotel' | 'airport'
+    | "hotel"
+    | "airport"
     // Sub-spaces
-    | 'floor' | 'space' | 'room' | 'exhibit_hall' | 'stage' | 'loading_dock'
-    | 'green_room' | 'control_room' | 'storage_room' | 'breakout_room'
+    | "floor"
+    | "space"
+    | "room"
+    | "exhibit_hall"
+    | "stage"
+    | "loading_dock"
+    | "green_room"
+    | "control_room"
+    | "storage_room"
+    | "breakout_room"
     // Outdoor
-    | 'outdoor_zone' | 'parking_lot' | 'perimeter'
+    | "outdoor_zone"
+    | "parking_lot"
+    | "perimeter"
     // Generic
-    | 'other';
+    | "other";
 
 export type LocationStatus =
-    | 'prospecting' | 'onboarding' | 'active' | 'seasonal'
-    | 'maintenance' | 'reconfiguring' | 'archived';
+    | "prospecting"
+    | "onboarding"
+    | "active"
+    | "seasonal"
+    | "maintenance"
+    | "reconfiguring"
+    | "archived";
 
-export type LocationOwnership =
-    | 'owned' | 'leased' | 'temporary' | 'partner' | 'client_provided';
+export type LocationOwnership = "owned" | "leased" | "temporary" | "partner" | "client_provided";
 
 export type ProjectLocationRole =
-    | 'primary' | 'secondary' | 'staging' | 'storage'
-    | 'fabrication' | 'backup' | 'load_in' | 'load_out';
+    | "primary"
+    | "secondary"
+    | "staging"
+    | "storage"
+    | "fabrication"
+    | "backup"
+    | "load_in"
+    | "load_out";
 
 export type SpaceBookingType =
-    | 'event' | 'rehearsal' | 'setup' | 'strike' | 'load_in'
-    | 'load_out' | 'maintenance' | 'hold' | 'site_visit' | 'inspection';
+    | "event"
+    | "rehearsal"
+    | "setup"
+    | "strike"
+    | "load_in"
+    | "load_out"
+    | "maintenance"
+    | "hold"
+    | "site_visit"
+    | "inspection";
 
-export type SpaceBookingStatus = 'tentative' | 'confirmed' | 'cancelled';
+export type SpaceBookingStatus = "tentative" | "confirmed" | "cancelled";
 
 export type LocationDocType =
-    | 'fire_cert' | 'occupancy_permit' | 'ada_cert' | 'health_dept'
-    | 'env_assessment' | 'insurance_cert' | 'engineering_cert'
-    | 'noise_permit' | 'alcohol_license' | 'building_permit'
-    | 'zoning_approval' | 'safety_plan' | 'structural_report'
-    | 'electrical_cert' | 'plumbing_cert';
+    | "fire_cert"
+    | "occupancy_permit"
+    | "ada_cert"
+    | "health_dept"
+    | "env_assessment"
+    | "insurance_cert"
+    | "engineering_cert"
+    | "noise_permit"
+    | "alcohol_license"
+    | "building_permit"
+    | "zoning_approval"
+    | "safety_plan"
+    | "structural_report"
+    | "electrical_cert"
+    | "plumbing_cert";
 
-export type LocComplianceDocStatus =
-    | 'valid' | 'expiring_soon' | 'expired' | 'pending' | 'rejected';
+export type LocComplianceDocStatus = "valid" | "expiring_soon" | "expired" | "pending" | "rejected";
 
 export type LocationInspectionType =
-    | 'fire' | 'safety' | 'structural' | 'electrical' | 'plumbing'
-    | 'ada' | 'health' | 'environmental' | 'security' | 'general';
+    | "fire"
+    | "safety"
+    | "structural"
+    | "electrical"
+    | "plumbing"
+    | "ada"
+    | "health"
+    | "environmental"
+    | "security"
+    | "general";
 
-export type LocationInspectionResult = 'passed' | 'failed' | 'conditional' | 'pending';
+export type LocationInspectionResult = "passed" | "failed" | "conditional" | "pending";
 
 export type LocationCostType =
-    | 'lease' | 'rent' | 'utilities' | 'maintenance' | 'insurance'
-    | 'security' | 'cleaning' | 'taxes' | 'renovation' | 'equipment' | 'other';
+    | "lease"
+    | "rent"
+    | "utilities"
+    | "maintenance"
+    | "insurance"
+    | "security"
+    | "cleaning"
+    | "taxes"
+    | "renovation"
+    | "equipment"
+    | "other";
 
-export type LocationCostFrequency =
-    | 'one_time' | 'monthly' | 'quarterly' | 'annual' | 'per_event';
+export type LocationCostFrequency = "one_time" | "monthly" | "quarterly" | "annual" | "per_event";
 
 export type LocationContactRole =
-    | 'venue_manager' | 'building_ops' | 'security' | 'fire_marshal'
-    | 'loading_dock' | 'catering' | 'av_tech' | 'facilities' | 'emergency';
+    | "venue_manager"
+    | "building_ops"
+    | "security"
+    | "fire_marshal"
+    | "loading_dock"
+    | "catering"
+    | "av_tech"
+    | "facilities"
+    | "emergency";
 
 // ─── Core Entities ───
 
@@ -126,24 +199,6 @@ export interface SpatialLocation {
     floorplanAssetId: string | null;
     primaryContactId: string | null;
     managerId: string | null;
-
-    // Legacy (backward compat)
-    projectId: string | null;
-    contactName: string | null;
-    contactPhone: string | null;
-    contactEmail: string | null;
-    venueRepId: string | null;
-    accessStartDate: string | null;
-    accessEndDate: string | null;
-    loadInWindows: Record<string, unknown>[];
-    loadOutWindows: Record<string, unknown>[];
-    parkingInfo: string | null;
-    dockInfo: string | null;
-    purpose: string | null;
-    dailyRate: number | null;
-    totalCost: number | null;
-    insuranceRequired: boolean;
-    permitsRequired: string[];
 
     // Audit
     createdBy: string | null;
@@ -323,7 +378,14 @@ export interface LocationProfitability {
 export interface LocationTypeConfig {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
-    category: 'site' | 'venue' | 'operational' | 'hospitality' | 'sub_space' | 'outdoor' | 'generic';
+    category:
+        | "site"
+        | "venue"
+        | "operational"
+        | "hospitality"
+        | "sub_space"
+        | "outdoor"
+        | "generic";
     typicalDepth: number[];
 }
 

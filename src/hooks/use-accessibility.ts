@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 /**
  * Hook to manage focus trap within a container
@@ -20,7 +20,9 @@ export function useFocusTrap(isActive: boolean = true) {
         if (focusableElements.length === 0) return;
 
         const firstElement = focusableElements[0] as HTMLElement | undefined;
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement | undefined;
+        const lastElement = focusableElements[focusableElements.length - 1] as
+            | HTMLElement
+            | undefined;
 
         if (!firstElement || !lastElement) return;
 

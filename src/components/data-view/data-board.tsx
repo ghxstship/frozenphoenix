@@ -7,7 +7,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { FieldRenderer, type FieldConfig, type FieldType } from "./field-renderers";
+import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import type { BadgeVariant } from "@/config/ui-variants";
 
 // ─── Column Definition ───
@@ -141,7 +141,8 @@ export function DataBoard<T extends object>({
                 className={cn(
                     "bg-card rounded-lg border border-border p-3 shadow-sm",
                     "hover:shadow-md hover:border-border/80 transition-all duration-200",
-                    onCardClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    onCardClick &&
+                        "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     cardClassName
                 )}
             >
@@ -169,11 +170,18 @@ export function DataBoard<T extends object>({
                             const value = getFieldValue(item, field);
                             if (value == null) return null;
                             return (
-                                <div key={field.id} className="flex items-center justify-between gap-2">
+                                <div
+                                    key={field.id}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     {field.label && (
-                                        <span className="text-xs text-muted-foreground">{field.label}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {field.label}
+                                        </span>
                                     )}
-                                    <div className="flex-1 text-right">{renderCardField(item, field)}</div>
+                                    <div className="flex-1 text-right">
+                                        {renderCardField(item, field)}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -217,7 +225,10 @@ export function DataBoard<T extends object>({
                         {/* Column Header */}
                         <div className="flex items-center justify-between mb-3 px-1">
                             <div className="flex items-center gap-2">
-                                <Badge variant={column.variant ?? "secondary"} className="font-medium">
+                                <Badge
+                                    variant={column.variant ?? "secondary"}
+                                    className="font-medium"
+                                >
                                     {column.title}
                                 </Badge>
                                 <span className="text-xs text-muted-foreground font-medium tabular-nums">
@@ -227,12 +238,14 @@ export function DataBoard<T extends object>({
                         </div>
 
                         {/* Column Content */}
-                        <div className={cn(
-                            "flex-1 space-y-2 min-h-[200px] p-2 rounded-lg transition-colors",
-                            items.length === 0
-                                ? "border-2 border-dashed border-border/50 bg-muted/10"
-                                : "bg-muted/30"
-                        )}>
+                        <div
+                            className={cn(
+                                "flex-1 space-y-2 min-h-[200px] p-2 rounded-lg transition-colors",
+                                items.length === 0
+                                    ? "border-2 border-dashed border-border/50 bg-muted/10"
+                                    : "bg-muted/30"
+                            )}
+                        >
                             {items.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-1 py-8">
                                     <p className="text-sm text-muted-foreground/60">

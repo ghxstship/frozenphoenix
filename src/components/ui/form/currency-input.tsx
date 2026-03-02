@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange"> {
+export interface CurrencyInputProps extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type" | "value" | "onChange"
+> {
     value?: number;
     onChange?: (value: number | undefined) => void;
     currency?: string;
@@ -16,17 +19,20 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
             value !== undefined ? formatCurrency(value) : ""
         );
 
-        const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-            const raw = e.target.value.replace(/[^0-9.]/g, "");
-            setDisplayValue(raw);
-            
-            const numValue = parseFloat(raw);
-            if (!isNaN(numValue)) {
-                onChange?.(numValue);
-            } else if (raw === "") {
-                onChange?.(undefined);
-            }
-        }, [onChange]);
+        const handleChange = useCallback(
+            (e: React.ChangeEvent<HTMLInputElement>) => {
+                const raw = e.target.value.replace(/[^0-9.]/g, "");
+                setDisplayValue(raw);
+
+                const numValue = parseFloat(raw);
+                if (!isNaN(numValue)) {
+                    onChange?.(numValue);
+                } else if (raw === "") {
+                    onChange?.(undefined);
+                }
+            },
+            [onChange]
+        );
 
         const handleBlur = useCallback(() => {
             if (value !== undefined) {
@@ -36,7 +42,9 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
         return (
             <div className="relative">
-                <span className="absolute left-2.5 top-2 text-sm text-muted-foreground pointer-events-none">{currencySymbol}</span>
+                <span className="absolute left-2.5 top-2 text-sm text-muted-foreground pointer-events-none">
+                    {currencySymbol}
+                </span>
                 <input
                     ref={ref}
                     type="text"

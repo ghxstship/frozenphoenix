@@ -1,11 +1,12 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, Textarea } from "@/components/ui/form";
-import { useCreateVendor, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { isSupabaseConfigured, useCreateVendor } from "@/lib/supabase/hooks";
 
 const SPECIALTY_OPTIONS = [
     { value: "Fabrication", label: "Fabrication" },
@@ -54,15 +55,18 @@ export default function NewVendorPage() {
                     status: formData.status,
                     notes: formData.notes || null,
                 };
-                await createVendor.mutateAsync(vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]);
+                await createVendor.mutateAsync(
+                    vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]
+                );
             }
             router.push("/vendors");
         } catch (error) {
-            console.error("Failed to create vendor:", error);
+            logger.error("Failed to create vendor", { error });
         }
     };
 
-    const isValid = formData.name.trim() !== "" && formData.email.trim() !== "" && formData.specialty !== "";
+    const isValid =
+        formData.name.trim() !== "" && formData.email.trim() !== "" && formData.specialty !== "";
 
     return (
         <FormLayout
@@ -90,7 +94,9 @@ export default function NewVendorPage() {
                         <Select
                             id="specialty"
                             value={formData.specialty}
-                            onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, specialty: e.target.value })
+                            }
                             options={SPECIALTY_OPTIONS}
                             placeholder="Select specialty"
                         />
@@ -139,7 +145,11 @@ export default function NewVendorPage() {
             </FormSection>
 
             <FormSection title="Additional Information">
-                <FormField label="Notes" htmlFor="notes" description="Any additional notes about this vendor">
+                <FormField
+                    label="Notes"
+                    htmlFor="notes"
+                    description="Any additional notes about this vendor"
+                >
                     <Textarea
                         id="notes"
                         value={formData.notes}

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Users, TrendingUp, Clock, ShoppingCart } from "lucide-react";
+import { Clock, ShoppingCart, TrendingUp, Users } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
@@ -23,12 +23,78 @@ interface MockZone {
 }
 
 const mockZones: MockZone[] = [
-    { id: "1", name: "Main Entry", zoneType: "entry", capacity: 500, occupancy: 340, entryRate: 45, queueLength: 120, avgWaitMinutes: 8, salesAmount: 0, incidents: 0 },
-    { id: "2", name: "General Admission", zoneType: "general", capacity: 5000, occupancy: 3200, entryRate: 0, queueLength: 0, avgWaitMinutes: 0, salesAmount: 0, incidents: 2 },
-    { id: "3", name: "VIP Lounge", zoneType: "vip", capacity: 200, occupancy: 145, entryRate: 5, queueLength: 0, avgWaitMinutes: 0, salesAmount: 8400, incidents: 0 },
-    { id: "4", name: "Main Bar", zoneType: "fb", capacity: 300, occupancy: 210, entryRate: 12, queueLength: 35, avgWaitMinutes: 6, salesAmount: 14200, incidents: 1 },
-    { id: "5", name: "Merch Tent", zoneType: "merch", capacity: 150, occupancy: 85, entryRate: 8, queueLength: 22, avgWaitMinutes: 4, salesAmount: 6800, incidents: 0 },
-    { id: "6", name: "Medical Station", zoneType: "medical", capacity: 20, occupancy: 3, entryRate: 1, queueLength: 0, avgWaitMinutes: 0, salesAmount: 0, incidents: 4 },
+    {
+        id: "1",
+        name: "Main Entry",
+        zoneType: "entry",
+        capacity: 500,
+        occupancy: 340,
+        entryRate: 45,
+        queueLength: 120,
+        avgWaitMinutes: 8,
+        salesAmount: 0,
+        incidents: 0,
+    },
+    {
+        id: "2",
+        name: "General Admission",
+        zoneType: "general",
+        capacity: 5000,
+        occupancy: 3200,
+        entryRate: 0,
+        queueLength: 0,
+        avgWaitMinutes: 0,
+        salesAmount: 0,
+        incidents: 2,
+    },
+    {
+        id: "3",
+        name: "VIP Lounge",
+        zoneType: "vip",
+        capacity: 200,
+        occupancy: 145,
+        entryRate: 5,
+        queueLength: 0,
+        avgWaitMinutes: 0,
+        salesAmount: 8400,
+        incidents: 0,
+    },
+    {
+        id: "4",
+        name: "Main Bar",
+        zoneType: "fb",
+        capacity: 300,
+        occupancy: 210,
+        entryRate: 12,
+        queueLength: 35,
+        avgWaitMinutes: 6,
+        salesAmount: 14200,
+        incidents: 1,
+    },
+    {
+        id: "5",
+        name: "Merch Tent",
+        zoneType: "merch",
+        capacity: 150,
+        occupancy: 85,
+        entryRate: 8,
+        queueLength: 22,
+        avgWaitMinutes: 4,
+        salesAmount: 6800,
+        incidents: 0,
+    },
+    {
+        id: "6",
+        name: "Medical Station",
+        zoneType: "medical",
+        capacity: 20,
+        occupancy: 3,
+        entryRate: 1,
+        queueLength: 0,
+        avgWaitMinutes: 0,
+        salesAmount: 0,
+        incidents: 4,
+    },
 ];
 
 export default function FohPage() {
@@ -39,12 +105,27 @@ export default function FohPage() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Front of House" description="Zone occupancy, queue management, sales tracking, and crowd flow" />
+            <PageHeader
+                title="Front of House"
+                description="Zone occupancy, queue management, sales tracking, and crowd flow"
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Attendance" value={`${totalOccupancy.toLocaleString()} / ${totalCapacity.toLocaleString()}`} icon={Users} />
-                <StatCard title="Occupancy" value={`${Math.round((totalOccupancy / totalCapacity) * 100)}%`} icon={TrendingUp} />
-                <StatCard title="Zone Sales" value={formatCurrency(totalSales)} icon={ShoppingCart} />
+                <StatCard
+                    title="Total Attendance"
+                    value={`${totalOccupancy.toLocaleString()} / ${totalCapacity.toLocaleString()}`}
+                    icon={Users}
+                />
+                <StatCard
+                    title="Occupancy"
+                    value={`${Math.round((totalOccupancy / totalCapacity) * 100)}%`}
+                    icon={TrendingUp}
+                />
+                <StatCard
+                    title="Zone Sales"
+                    value={formatCurrency(totalSales)}
+                    icon={ShoppingCart}
+                />
                 <StatCard title="Active Incidents" value={totalIncidents} icon={Clock} />
             </div>
 
@@ -53,38 +134,50 @@ export default function FohPage() {
                     const utilPct = Math.round((zone.occupancy / zone.capacity) * 100);
                     return (
                         <StaggerItem key={zone.id} index={i} stagger="tight">
-                        <Card className="hover:shadow-sm transition-all">
-                            <CardContent className="py-4">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-sm font-semibold">{zone.name}</h3>
-                                    <StatusBadge status={zone.zoneType} className="text-[10px]" />
-                                </div>
-                                <div className="mb-3">
-                                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                        <span>Occupancy</span>
-                                        <span className="font-medium">{zone.occupancy} / {zone.capacity} ({utilPct}%)</span>
+                            <Card className="hover:shadow-sm transition-all">
+                                <CardContent className="py-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-sm font-semibold">{zone.name}</h3>
+                                        <StatusBadge
+                                            status={zone.zoneType}
+                                            className="text-[10px]"
+                                        />
                                     </div>
-                                    <ProgressBar value={utilPct} size="sm" />
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-[11px]">
-                                    <div>
-                                        <p className="text-muted-foreground">Queue</p>
-                                        <p className="font-medium">{zone.queueLength}</p>
+                                    <div className="mb-3">
+                                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                            <span>Occupancy</span>
+                                            <span className="font-medium">
+                                                {zone.occupancy} / {zone.capacity} ({utilPct}%)
+                                            </span>
+                                        </div>
+                                        <ProgressBar value={utilPct} size="sm" />
                                     </div>
-                                    <div>
-                                        <p className="text-muted-foreground">Wait</p>
-                                        <p className="font-medium">{zone.avgWaitMinutes}m</p>
+                                    <div className="grid grid-cols-3 gap-2 text-[11px]">
+                                        <div>
+                                            <p className="text-muted-foreground">Queue</p>
+                                            <p className="font-medium">{zone.queueLength}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-muted-foreground">Wait</p>
+                                            <p className="font-medium">{zone.avgWaitMinutes}m</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-muted-foreground">Sales</p>
+                                            <p className="font-medium">
+                                                {zone.salesAmount > 0
+                                                    ? formatCurrency(zone.salesAmount)
+                                                    : "—"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-muted-foreground">Sales</p>
-                                        <p className="font-medium">{zone.salesAmount > 0 ? formatCurrency(zone.salesAmount) : "—"}</p>
-                                    </div>
-                                </div>
-                                {zone.incidents > 0 && (
-                                    <p className="text-[10px] text-warning mt-2">{zone.incidents} active incident{zone.incidents > 1 ? "s" : ""}</p>
-                                )}
-                            </CardContent>
-                        </Card>
+                                    {zone.incidents > 0 && (
+                                        <p className="text-[10px] text-warning mt-2">
+                                            {zone.incidents} active incident
+                                            {zone.incidents > 1 ? "s" : ""}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </StaggerItem>
                     );
                 })}

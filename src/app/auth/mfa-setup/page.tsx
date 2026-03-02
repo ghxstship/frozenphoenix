@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/lib/auth-utils";
-import { Loader2, CheckCircle2, AlertCircle, ArrowRight, Copy, Check } from "lucide-react";
+import { AlertCircle, ArrowRight, Check, CheckCircle2, Copy, Loader2 } from "lucide-react";
 
 interface MfaEnrollment {
     id: string;
@@ -63,53 +63,57 @@ function MfaSetupForm() {
         enroll();
     }, []);
 
-    const handleVerify = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleVerify = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!verifyCode.trim() || verifyCode.length !== 6) {
-            setError("Please enter a 6-digit code from your authenticator app.");
-            return;
-        }
-
-        if (!enrollment) return;
-
-        setVerifying(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable.");
+            if (!verifyCode.trim() || verifyCode.length !== 6) {
+                setError("Please enter a 6-digit code from your authenticator app.");
                 return;
             }
 
-            const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
-                factorId: enrollment.id,
-            });
+            if (!enrollment) return;
 
-            if (challengeError) {
-                setError(mapAuthError(challengeError.message));
-                return;
+            setVerifying(true);
+
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable.");
+                    return;
+                }
+
+                const { data: challenge, error: challengeError } =
+                    await supabase.auth.mfa.challenge({
+                        factorId: enrollment.id,
+                    });
+
+                if (challengeError) {
+                    setError(mapAuthError(challengeError.message));
+                    return;
+                }
+
+                const { error: verifyError } = await supabase.auth.mfa.verify({
+                    factorId: enrollment.id,
+                    challengeId: challenge.id,
+                    code: verifyCode,
+                });
+
+                if (verifyError) {
+                    setError("Invalid code. Please check your authenticator app and try again.");
+                    return;
+                }
+
+                setSuccess(true);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setVerifying(false);
             }
-
-            const { error: verifyError } = await supabase.auth.mfa.verify({
-                factorId: enrollment.id,
-                challengeId: challenge.id,
-                code: verifyCode,
-            });
-
-            if (verifyError) {
-                setError("Invalid code. Please check your authenticator app and try again.");
-                return;
-            }
-
-            setSuccess(true);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setVerifying(false);
-        }
-    }, [verifyCode, enrollment]);
+        },
+        [verifyCode, enrollment]
+    );
 
     const copySecret = useCallback(() => {
         if (!enrollment?.totp.secret) return;
@@ -126,7 +130,9 @@ function MfaSetupForm() {
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-lg font-semibold">Two-factor authentication is active</h2>
+                        <h2 className="text-lg font-semibold">
+                            Two-factor authentication is active
+                        </h2>
                         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                             You&apos;ll need your authenticator app each time you sign in.
                         </p>
@@ -141,7 +147,10 @@ function MfaSetupForm() {
     }
 
     return (
-        <AuthLayout title="Set up two-factor authentication" subtitle="Add an extra layer of security to your account">
+        <AuthLayout
+            title="Set up two-factor authentication"
+            subtitle="Add an extra layer of security to your account"
+        >
             <div className="space-y-6">
                 {error && (
                     <div
@@ -163,7 +172,9 @@ function MfaSetupForm() {
                         {/* Step 1: Scan QR */}
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-sm font-medium">
-                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                                    1
+                                </span>
                                 Scan this QR code with your authenticator app
                             </div>
                             <div className="flex justify-center p-4 bg-white rounded-xl">
@@ -204,7 +215,9 @@ function MfaSetupForm() {
                         {/* Step 2: Verify */}
                         <form onSubmit={handleVerify} className="space-y-3">
                             <div className="flex items-center gap-2 text-sm font-medium">
-                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
+                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                                    2
+                                </span>
                                 Enter the 6-digit code to verify
                             </div>
                             <div className="flex gap-2">
@@ -216,7 +229,9 @@ function MfaSetupForm() {
                                     maxLength={6}
                                     placeholder="000000"
                                     value={verifyCode}
-                                    onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                                    onChange={(e) =>
+                                        setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                                    }
                                     autoComplete="one-time-code"
                                     className="text-center text-lg font-mono tracking-[0.5em] flex-1"
                                     aria-label="6-digit verification code"
@@ -228,7 +243,10 @@ function MfaSetupForm() {
                                     aria-busy={verifying}
                                 >
                                     {verifying ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                        <Loader2
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                        />
                                     ) : (
                                         "Verify"
                                     )}
@@ -252,11 +270,13 @@ function MfaSetupForm() {
 
 export default function MfaSetupPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            }
+        >
             <MfaSetupForm />
         </Suspense>
     );

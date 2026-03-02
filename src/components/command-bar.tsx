@@ -5,14 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navigationConfig } from "@/config/navigation";
 import type { LucideIcon } from "lucide-react";
-import {
-    Search,
-    X,
-    ArrowRight,
-    Command,
-    Clock,
-    Sparkles,
-} from "lucide-react";
+import { ArrowRight, Clock, Command, Search, Sparkles, X } from "lucide-react";
 
 interface CommandBarProps {
     className?: string;
@@ -46,7 +39,9 @@ export function CommandBar({ className }: CommandBarProps) {
         try {
             const stored = localStorage.getItem("pb-recent-nav");
             if (stored) setRecentPaths(JSON.parse(stored));
-        } catch { /* ignore */ }
+        } catch {
+            /* ignore */
+        }
     }, []);
 
     // Build flat command list from navigation config (including nested children)
@@ -205,16 +200,23 @@ export function CommandBar({ className }: CommandBarProps) {
         return () => document.removeEventListener("keydown", handleTab);
     }, [open]);
 
-    const handleSelect = React.useCallback((item: CommandItem) => {
-        // Track recent navigation
-        setRecentPaths((prev) => {
-            const next = [item.path, ...prev.filter((p) => p !== item.path)].slice(0, 5);
-            try { localStorage.setItem("pb-recent-nav", JSON.stringify(next)); } catch { /* ignore */ }
-            return next;
-        });
-        setOpen(false);
-        router.push(item.path);
-    }, [router]);
+    const handleSelect = React.useCallback(
+        (item: CommandItem) => {
+            // Track recent navigation
+            setRecentPaths((prev) => {
+                const next = [item.path, ...prev.filter((p) => p !== item.path)].slice(0, 5);
+                try {
+                    localStorage.setItem("pb-recent-nav", JSON.stringify(next));
+                } catch {
+                    /* ignore */
+                }
+                return next;
+            });
+            setOpen(false);
+            router.push(item.path);
+        },
+        [router]
+    );
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         switch (e.key) {
@@ -304,8 +306,12 @@ export function CommandBar({ className }: CommandBarProps) {
                     {filteredCommands.length === 0 ? (
                         <div className="px-4 py-10 text-center">
                             <Sparkles className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">No results for &ldquo;{query}&rdquo;</p>
-                            <p className="text-xs text-muted-foreground/60 mt-1">Try a different search term</p>
+                            <p className="text-sm text-muted-foreground">
+                                No results for &ldquo;{query}&rdquo;
+                            </p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">
+                                Try a different search term
+                            </p>
                         </div>
                     ) : (
                         groupedResults.map((group) => (
@@ -332,11 +338,17 @@ export function CommandBar({ className }: CommandBarProps) {
                                             role="option"
                                             aria-selected={flatIndex === selectedIndex}
                                         >
-                                            <Icon className={cn(
-                                                "h-4 w-4 shrink-0",
-                                                flatIndex === selectedIndex ? "text-primary" : "text-muted-foreground"
-                                            )} />
-                                            <span className="font-medium truncate flex-1">{cmd.title}</span>
+                                            <Icon
+                                                className={cn(
+                                                    "h-4 w-4 shrink-0",
+                                                    flatIndex === selectedIndex
+                                                        ? "text-primary"
+                                                        : "text-muted-foreground"
+                                                )}
+                                            />
+                                            <span className="font-medium truncate flex-1">
+                                                {cmd.title}
+                                            </span>
                                             {flatIndex === selectedIndex && (
                                                 <ArrowRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                                             )}
@@ -352,13 +364,15 @@ export function CommandBar({ className }: CommandBarProps) {
                 <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-[11px] text-muted-foreground">
                     <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑↓</kbd> navigate
+                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑↓</kbd>{" "}
+                            navigate
                         </span>
                         <span className="flex items-center gap-1">
                             <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↵</kbd> open
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">esc</kbd> close
+                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">esc</kbd>{" "}
+                            close
                         </span>
                     </div>
                     <span className="flex items-center gap-1">

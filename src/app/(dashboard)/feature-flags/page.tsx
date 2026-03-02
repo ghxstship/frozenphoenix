@@ -6,19 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PermissionGate } from "@/components/permission-guard";
-import {
-    useFeatureFlags,
-    useUpdateFeatureFlag,
-} from "@/lib/settings/hooks";
-import {
-    Flag,
-    Search,
-    Loader2,
-    Users,
-    Globe,
-    Percent,
-    ToggleLeft,
-} from "lucide-react";
+import { useFeatureFlags, useUpdateFeatureFlag } from "@/lib/settings/hooks";
+import { Flag, Globe, Loader2, Percent, Search, ToggleLeft, Users } from "lucide-react";
 
 export default function FeatureFlagsPage() {
     const { data: flags, isLoading } = useFeatureFlags();
@@ -73,7 +62,10 @@ export default function FeatureFlagsPage() {
                             </div>
                             <div>
                                 <p className="text-2xl font-bold">
-                                    {(flags ?? []).filter((f) => f.flag_type === "percentage").length}
+                                    {
+                                        (flags ?? []).filter((f) => f.flag_type === "percentage")
+                                            .length
+                                    }
                                 </p>
                                 <p className="text-xs text-muted-foreground">Percentage Rollouts</p>
                             </div>
@@ -103,29 +95,39 @@ export default function FeatureFlagsPage() {
                             </div>
                         ) : filtered.length === 0 ? (
                             <div className="text-center py-12 text-sm text-muted-foreground">
-                                {search ? "No flags match your search." : "No feature flags defined yet."}
+                                {search
+                                    ? "No flags match your search."
+                                    : "No feature flags defined yet."}
                             </div>
                         ) : (
                             <div className="space-y-1">
                                 {filtered.map((flag) => (
-                                    <div key={flag.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors gap-4">
+                                    <div
+                                        key={flag.id}
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors gap-4"
+                                    >
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-medium">{flag.label}</p>
-                                                <Badge variant="ghost" className="text-[10px]">{flag.flag_type}</Badge>
+                                                <Badge variant="ghost" className="text-[10px]">
+                                                    {flag.flag_type}
+                                                </Badge>
                                                 {flag.target_orgs.length > 0 && (
                                                     <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Globe className="h-3 w-3" />{flag.target_orgs.length}
+                                                        <Globe className="h-3 w-3" />
+                                                        {flag.target_orgs.length}
                                                     </span>
                                                 )}
                                                 {flag.target_roles.length > 0 && (
                                                     <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Users className="h-3 w-3" />{flag.target_roles.length}
+                                                        <Users className="h-3 w-3" />
+                                                        {flag.target_roles.length}
                                                     </span>
                                                 )}
                                                 {flag.flag_type === "percentage" && (
                                                     <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Percent className="h-3 w-3" />{flag.rollout_percentage}%
+                                                        <Percent className="h-3 w-3" />
+                                                        {flag.rollout_percentage}%
                                                     </span>
                                                 )}
                                             </div>
@@ -135,7 +137,10 @@ export default function FeatureFlagsPage() {
                                         </div>
                                         <button
                                             onClick={() =>
-                                                updateFlag.mutate({ id: flag.id, is_active: !flag.is_active })
+                                                updateFlag.mutate({
+                                                    id: flag.id,
+                                                    is_active: !flag.is_active,
+                                                })
                                             }
                                             disabled={updateFlag.isPending}
                                             className={`h-6 w-11 rounded-full transition-colors shrink-0 ${
@@ -147,7 +152,9 @@ export default function FeatureFlagsPage() {
                                         >
                                             <div
                                                 className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${
-                                                    flag.is_active ? "translate-x-5" : "translate-x-0.5"
+                                                    flag.is_active
+                                                        ? "translate-x-5"
+                                                        : "translate-x-0.5"
                                                 }`}
                                             />
                                         </button>

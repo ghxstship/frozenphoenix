@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
-import { X, CheckCircle, AlertTriangle, AlertCircle, Info } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import { INTERACTION_TIMING } from "@/config/design-tokens";
 
 const toastVariants = cva(
@@ -107,13 +107,7 @@ const variantIcons = {
     info: Info,
 };
 
-function ToastItem({
-    toast,
-    onDismiss,
-}: {
-    toast: ToastData;
-    onDismiss: (id: string) => void;
-}) {
+function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: string) => void }) {
     const Icon = variantIcons[toast.variant ?? "default"];
     const duration = toast.duration ?? INTERACTION_TIMING.toastDuration;
     const [paused, setPaused] = React.useState(false);
@@ -163,7 +157,10 @@ function ToastItem({
             </div>
             {/* Auto-dismiss timer bar */}
             {duration > 0 && (
-                <div className="w-full h-0.5 rounded-full overflow-hidden mt-2 bg-foreground/5" aria-hidden="true">
+                <div
+                    className="w-full h-0.5 rounded-full overflow-hidden mt-2 bg-foreground/5"
+                    aria-hidden="true"
+                >
                     <div
                         className={cn(
                             "h-full rounded-full origin-left",

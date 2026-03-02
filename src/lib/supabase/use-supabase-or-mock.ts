@@ -13,6 +13,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { logger } from "@/lib/logger";
 import { isSupabaseConfigured } from "./client";
 
 export { isSupabaseConfigured };
@@ -29,7 +30,7 @@ export function useSupabaseOrMock<T>(
     queryKey: string | string[],
     supabaseFetcher: () => Promise<T>,
     mockData: T,
-    options?: UseSupabaseOrMockOptions,
+    options?: UseSupabaseOrMockOptions
 ) {
     const key = Array.isArray(queryKey) ? queryKey : [queryKey];
     const enabled = options?.enabled !== false;
@@ -42,9 +43,7 @@ export function useSupabaseOrMock<T>(
                 return await supabaseFetcher();
             } catch {
                 // Supabase query failed — fall back to mock silently in dev
-                if (process.env.NODE_ENV === "development") {
-                    console.warn(`[useSupabaseOrMock] "${key.join("/")}" failed, using mock data`);
-                }
+                logger.warn(`useSupabaseOrMock: "${key.join("/")}" failed, using mock data`);
                 return mockData;
             }
         },

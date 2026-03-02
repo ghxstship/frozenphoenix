@@ -3,13 +3,13 @@
 import * as React from "react";
 import { Badge, type BadgeProps } from "./badge";
 import {
-    getStatusVariant,
-    getPriorityVariant,
-    getConditionVariant,
-    getStatusLabel,
-    getPriorityLabel,
-    getConditionLabel,
     type BadgeVariant,
+    getConditionLabel,
+    getConditionVariant,
+    getPriorityLabel,
+    getPriorityVariant,
+    getStatusLabel,
+    getStatusVariant,
 } from "@/config/ui-variants";
 
 interface StatusBadgeProps extends Omit<BadgeProps, "variant"> {

@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { TabBar } from "@/components/ui/tab-bar";
+import type { TabBarItem } from "@/components/ui/tab-bar";
+import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
 
-export interface DetailTabConfig {
-    id: string;
-    label: string;
-    count?: number;
-}
+/** @deprecated Use TabBarItem from '@/components/ui/tab-bar' directly */
+export type DetailTabConfig = TabBarItem;
 
 export interface DetailLayoutProps {
     backHref: string;
@@ -23,7 +22,7 @@ export interface DetailLayoutProps {
     avatar?: React.ReactNode;
     actions?: React.ReactNode;
     menuItems?: { label: string; onClick: () => void; variant?: "default" | "destructive" }[];
-    tabs?: DetailTabConfig[];
+    tabs?: TabBarItem[];
     activeTab?: string;
     onTabChange?: (tabId: string) => void;
     sidebar?: React.ReactNode;
@@ -50,7 +49,8 @@ export function DetailLayout({
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
-    const tabsRef = useRef<HTMLDivElement>(null);
+    const tabIdPrefix = `detail-layout-${React.useId().replace(/:/g, "")}`;
+    const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
 
     // Escape key to close overflow menu
     useEffect(() => {
@@ -77,33 +77,6 @@ export function DetailLayout({
         return () => document.removeEventListener("mousedown", handleClick);
     }, [menuOpen]);
 
-    // Keyboard navigation for tabs
-    const handleTabKeyDown = useCallback((e: React.KeyboardEvent, tabIndex: number) => {
-        if (!tabs || !tabsRef.current) return;
-        const buttons = tabsRef.current.querySelectorAll<HTMLButtonElement>("[role='tab']");
-        let nextIndex = tabIndex;
-
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-            e.preventDefault();
-            nextIndex = (tabIndex + 1) % tabs.length;
-        } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-            e.preventDefault();
-            nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
-        } else if (e.key === "Home") {
-            e.preventDefault();
-            nextIndex = 0;
-        } else if (e.key === "End") {
-            e.preventDefault();
-            nextIndex = tabs.length - 1;
-        } else {
-            return;
-        }
-
-        buttons[nextIndex]?.focus();
-        const nextTab = tabs[nextIndex];
-        if (nextTab) onTabChange?.(nextTab.id);
-    }, [tabs, onTabChange]);
-
     return (
         <div className={cn("animate-fade-in", className)}>
             {/* Back Link */}
@@ -118,11 +91,7 @@ export function DetailLayout({
             {/* Header */}
             <div className="flex items-start justify-between gap-4 mb-6">
                 <div className="flex items-start gap-4 min-w-0">
-                    {avatar && (
-                        <div className="shrink-0">
-                            {avatar}
-                        </div>
-                    )}
+                    {avatar && <div className="shrink-0">{avatar}</div>}
                     <div className="min-w-0">
                         <div className="flex items-center gap-3 flex-wrap">
                             <h1 className="text-2xl font-bold truncate">{title}</h1>
@@ -184,56 +153,58 @@ export function DetailLayout({
                 </div>
             </div>
 
-            {/* Tabs — keyboard navigable */}
-            {tabs && tabs.length > 0 && (
-                <div
-                    ref={tabsRef}
-                    className="flex gap-1 border-b border-border mb-6 overflow-x-auto scrollbar-hide"
-                    role="tablist"
-                    aria-label="Detail tabs"
-                >
-                    {tabs.map((tab, index) => (
-                        <button
-                            key={tab.id}
-                            role="tab"
-                            aria-selected={activeTab === tab.id}
-                            aria-controls={`tabpanel-${tab.id}`}
-                            tabIndex={activeTab === tab.id ? 0 : -1}
-                            onClick={() => onTabChange?.(tab.id)}
-                            onKeyDown={(e) => handleTabKeyDown(e, index)}
-                            className={cn(
-                                "px-4 py-2.5 text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                                activeTab === tab.id
-                                    ? "border-primary text-primary"
-                                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                            )}
-                        >
-                            {tab.label}
-                            {tab.count !== undefined && (
-                                <span className={cn(
-                                    "ml-2 text-xs px-1.5 py-0.5 rounded-full tabular-nums",
-                                    activeTab === tab.id
-                                        ? "bg-primary/15 text-primary"
-                                        : "bg-muted text-muted-foreground"
-                                )}>
-                                    {tab.count}
-                                </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
+            {/* Tabs */}
+            {tabs && tabs.length > 0 && resolvedActiveTab && (
+                <TabBar
+                    items={tabs}
+                    value={resolvedActiveTab}
+                    onValueChange={(id) => onTabChange?.(id)}
+                    idPrefix={tabIdPrefix}
+                    ariaLabel="Detail tabs"
+                    className="mb-6 overflow-x-auto scrollbar-hide"
+                />
             )}
 
             {/* Content — responsive sidebar */}
             {sidebar ? (
                 <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="flex-1 min-w-0" role="tabpanel" id={activeTab ? `tabpanel-${activeTab}` : undefined}>
+                    <div
+                        className="flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        role={resolvedActiveTab ? "tabpanel" : undefined}
+                        id={
+                            resolvedActiveTab
+                                ? `${tabIdPrefix}-tabpanel-${resolvedActiveTab}`
+                                : undefined
+                        }
+                        aria-labelledby={
+                            resolvedActiveTab
+                                ? `${tabIdPrefix}-tab-${resolvedActiveTab}`
+                                : undefined
+                        }
+                        tabIndex={resolvedActiveTab ? 0 : undefined}
+                    >
                         {children}
                     </div>
                     <aside className="w-full lg:w-80 shrink-0">{sidebar}</aside>
                 </div>
             ) : (
-                <div role="tabpanel" id={activeTab ? `tabpanel-${activeTab}` : undefined}>
+                <div
+                    className={
+                        resolvedActiveTab
+                            ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            : undefined
+                    }
+                    role={resolvedActiveTab ? "tabpanel" : undefined}
+                    id={
+                        resolvedActiveTab
+                            ? `${tabIdPrefix}-tabpanel-${resolvedActiveTab}`
+                            : undefined
+                    }
+                    aria-labelledby={
+                        resolvedActiveTab ? `${tabIdPrefix}-tab-${resolvedActiveTab}` : undefined
+                    }
+                    tabIndex={resolvedActiveTab ? 0 : undefined}
+                >
                     {children}
                 </div>
             )}

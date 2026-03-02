@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/form/textarea";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import { Send, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Send, Trash2 } from "lucide-react";
 
 export interface CommentItem {
     id: string;
@@ -111,20 +111,26 @@ export function CommentsSection({
     };
 
     // Ctrl/Cmd+Enter to submit new comment
-    const handleNewCommentKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-            e.preventDefault();
-            handleSubmit();
-        }
-    }, [handleSubmit]);
+    const handleNewCommentKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                handleSubmit();
+            }
+        },
+        [handleSubmit]
+    );
 
     // Ctrl/Cmd+Enter to save edit
-    const handleEditKeyDown = useCallback((id: string) => (e: React.KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-            e.preventDefault();
-            handleEdit(id);
-        }
-    }, [editContent, onEditComment]); // eslint-disable-line react-hooks/exhaustive-deps -- handleEdit uses editContent via closure; listing editContent+onEditComment is the correct subset
+    const handleEditKeyDown = useCallback(
+        (id: string) => (e: React.KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                handleEdit(id);
+            }
+        },
+        [editContent, onEditComment]
+    ); // eslint-disable-line react-hooks/exhaustive-deps -- handleEdit uses editContent via closure; listing editContent+onEditComment is the correct subset
 
     return (
         <div className={cn("space-y-4", className)}>
@@ -143,7 +149,8 @@ export function CommentsSection({
                         />
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] text-muted-foreground/50">
-                                <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">⌘↵</kbd> to send
+                                <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">⌘↵</kbd> to
+                                send
                             </span>
                             <Button
                                 size="sm"
@@ -171,106 +178,134 @@ export function CommentsSection({
 
                         return (
                             <StaggerItem key={comment.id} index={index} stagger="tight">
-                            <div
-                                className="group flex gap-3 rounded-lg py-2.5 px-2 hover:bg-muted/40 transition-colors"
-                                role="article"
-                                aria-label={`Comment by ${comment.authorName}`}
-                            >
-                                <Avatar name={comment.authorName} size="sm" />
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium">{comment.authorName}</span>
-                                            <time
-                                                className="text-[10px] text-muted-foreground"
-                                                dateTime={comment.createdAt}
-                                            >
-                                                {formatRelativeTime(comment.createdAt)}
-                                                {comment.updatedAt && " (edited)"}
-                                            </time>
-                                        </div>
-                                        {isOwner && !isEditing && (
-                                            <div className="relative" ref={menuOpenId === comment.id ? menuRef : undefined}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-                                                    onClick={() => setMenuOpenId(menuOpenId === comment.id ? null : comment.id)}
-                                                    aria-expanded={menuOpenId === comment.id}
-                                                    aria-haspopup="true"
-                                                    aria-label="Comment actions"
-                                                >
-                                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                                </Button>
-                                                {menuOpenId === comment.id && (
-                                                    <div
-                                                        className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-scale-in origin-top-right"
-                                                        role="menu"
-                                                        aria-label="Comment actions"
-                                                    >
-                                                        <button
-                                                            role="menuitem"
-                                                            onClick={() => startEditing(comment)}
-                                                            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                                        >
-                                                            <Pencil className="h-3 w-3" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            role="menuitem"
-                                                            onClick={() => handleDelete(comment.id)}
-                                                            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded text-destructive hover:bg-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {isEditing ? (
-                                        <div className="mt-2 space-y-2">
-                                            <Textarea
-                                                value={editContent}
-                                                onChange={(e) => setEditContent(e.target.value)}
-                                                onKeyDown={handleEditKeyDown(comment.id)}
-                                                className="min-h-[60px] resize-none"
-                                                aria-label="Edit comment"
-                                                autoFocus
-                                            />
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[10px] text-muted-foreground/50">
-                                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">esc</kbd> cancel · <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">⌘↵</kbd> save
+                                <div
+                                    className="group flex gap-3 rounded-lg py-2.5 px-2 hover:bg-muted/40 transition-colors"
+                                    role="article"
+                                    aria-label={`Comment by ${comment.authorName}`}
+                                >
+                                    <Avatar name={comment.authorName} size="sm" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">
+                                                    {comment.authorName}
                                                 </span>
-                                                <div className="flex gap-2">
+                                                <time
+                                                    className="text-[10px] text-muted-foreground"
+                                                    dateTime={comment.createdAt}
+                                                >
+                                                    {formatRelativeTime(comment.createdAt)}
+                                                    {comment.updatedAt && " (edited)"}
+                                                </time>
+                                            </div>
+                                            {isOwner && !isEditing && (
+                                                <div
+                                                    className="relative"
+                                                    ref={
+                                                        menuOpenId === comment.id
+                                                            ? menuRef
+                                                            : undefined
+                                                    }
+                                                >
                                                     <Button
                                                         variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            setEditingId(null);
-                                                            setEditContent("");
-                                                        }}
+                                                        size="icon"
+                                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                                        onClick={() =>
+                                                            setMenuOpenId(
+                                                                menuOpenId === comment.id
+                                                                    ? null
+                                                                    : comment.id
+                                                            )
+                                                        }
+                                                        aria-expanded={menuOpenId === comment.id}
+                                                        aria-haspopup="true"
+                                                        aria-label="Comment actions"
                                                     >
-                                                        Cancel
+                                                        <MoreHorizontal className="h-3.5 w-3.5" />
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleEdit(comment.id)}
-                                                        disabled={!editContent.trim() || isSubmitting}
-                                                    >
-                                                        Save
-                                                    </Button>
+                                                    {menuOpenId === comment.id && (
+                                                        <div
+                                                            className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-scale-in origin-top-right"
+                                                            role="menu"
+                                                            aria-label="Comment actions"
+                                                        >
+                                                            <button
+                                                                role="menuitem"
+                                                                onClick={() =>
+                                                                    startEditing(comment)
+                                                                }
+                                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                            >
+                                                                <Pencil className="h-3 w-3" />
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                role="menuitem"
+                                                                onClick={() =>
+                                                                    handleDelete(comment.id)
+                                                                }
+                                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded text-destructive hover:bg-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {isEditing ? (
+                                            <div className="mt-2 space-y-2">
+                                                <Textarea
+                                                    value={editContent}
+                                                    onChange={(e) => setEditContent(e.target.value)}
+                                                    onKeyDown={handleEditKeyDown(comment.id)}
+                                                    className="min-h-[60px] resize-none"
+                                                    aria-label="Edit comment"
+                                                    autoFocus
+                                                />
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] text-muted-foreground/50">
+                                                        <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">
+                                                            esc
+                                                        </kbd>{" "}
+                                                        cancel ·{" "}
+                                                        <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">
+                                                            ⌘↵
+                                                        </kbd>{" "}
+                                                        save
+                                                    </span>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setEditingId(null);
+                                                                setEditContent("");
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleEdit(comment.id)}
+                                                            disabled={
+                                                                !editContent.trim() || isSubmitting
+                                                            }
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
-                                            {comment.content}
-                                        </p>
-                                    )}
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+                                                {comment.content}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
                             </StaggerItem>
                         );
                     })}

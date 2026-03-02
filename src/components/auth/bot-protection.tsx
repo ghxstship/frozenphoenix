@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 interface BotProtectionProps {
     siteKey?: string;
@@ -13,10 +13,7 @@ interface BotProtectionProps {
 declare global {
     interface Window {
         turnstile?: {
-            render: (
-                container: HTMLElement,
-                options: Record<string, unknown>
-            ) => string;
+            render: (container: HTMLElement, options: Record<string, unknown>) => string;
             reset: (widgetId: string) => void;
             remove: (widgetId: string) => void;
         };
@@ -33,13 +30,9 @@ export function BotProtection({
     const containerRef = useRef<HTMLDivElement>(null);
     const widgetIdRef = useRef<string | null>(null);
 
-    const resolvedSiteKey =
-        siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    const resolvedSiteKey = siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-    const handleVerify = useCallback(
-        (token: string) => onVerify(token),
-        [onVerify]
-    );
+    const handleVerify = useCallback((token: string) => onVerify(token), [onVerify]);
 
     useEffect(() => {
         if (!resolvedSiteKey || !containerRef.current) return;
@@ -64,8 +57,7 @@ export function BotProtection({
             renderWidget();
         } else {
             const script = document.createElement("script");
-            script.src =
-                "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
             script.async = true;
             script.onload = renderWidget;
             document.head.appendChild(script);

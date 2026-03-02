@@ -1,11 +1,12 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
-import { FormField, Select, CurrencyInput, Textarea } from "@/components/ui/form";
-import { useCreateAsset, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { CurrencyInput, FormField, Select, Textarea } from "@/components/ui/form";
+import { isSupabaseConfigured, useCreateAsset } from "@/lib/supabase/hooks";
 
 const CATEGORY_OPTIONS = [
     { value: "Tools", label: "Tools" },
@@ -63,11 +64,13 @@ export default function NewAssetPage() {
                     notes: formData.notes || null,
                     status: "available",
                 };
-                await createAsset.mutateAsync(assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]);
+                await createAsset.mutateAsync(
+                    assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]
+                );
             }
             router.push("/assets");
         } catch (error) {
-            console.error("Failed to create asset:", error);
+            logger.error("Failed to create asset", { error });
         }
     };
 
@@ -121,7 +124,9 @@ export default function NewAssetPage() {
                         <Select
                             id="condition"
                             value={formData.condition}
-                            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, condition: e.target.value })
+                            }
                             options={CONDITION_OPTIONS}
                         />
                     </FormField>
@@ -129,13 +134,19 @@ export default function NewAssetPage() {
                         <Select
                             id="ownership"
                             value={formData.ownedOrRental}
-                            onChange={(e) => setFormData({ ...formData, ownedOrRental: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, ownedOrRental: e.target.value })
+                            }
                             options={OWNERSHIP_OPTIONS}
                         />
                     </FormField>
                 </div>
 
-                <FormField label="Location" htmlFor="location" description="Current storage or deployment location">
+                <FormField
+                    label="Location"
+                    htmlFor="location"
+                    description="Current storage or deployment location"
+                >
                     <Input
                         id="location"
                         value={formData.location}
@@ -146,11 +157,17 @@ export default function NewAssetPage() {
             </FormSection>
 
             <FormSection title="Financial" description="Purchase and value information">
-                <FormField label="Purchase Price" htmlFor="purchasePrice" description="Original purchase price (if owned)">
+                <FormField
+                    label="Purchase Price"
+                    htmlFor="purchasePrice"
+                    description="Original purchase price (if owned)"
+                >
                     <CurrencyInput
                         id="purchasePrice"
                         value={formData.purchasePrice}
-                        onChange={(value) => setFormData({ ...formData, purchasePrice: value || 0 })}
+                        onChange={(value) =>
+                            setFormData({ ...formData, purchasePrice: value || 0 })
+                        }
                         placeholder="0.00"
                     />
                 </FormField>

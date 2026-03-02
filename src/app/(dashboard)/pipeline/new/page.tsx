@@ -1,21 +1,22 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateDeal, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { isSupabaseConfigured, useCreateDeal } from "@/lib/supabase/hooks";
 import {
     ArrowLeft,
-    Save,
-    Loader2,
     Building2,
-    User,
-    DollarSign,
     Calendar,
+    DollarSign,
     FileText,
+    Loader2,
+    Save,
+    User,
 } from "lucide-react";
 
 const DEAL_STAGES = [
@@ -41,7 +42,7 @@ const PROJECT_TYPES = [
 export default function NewDealPage() {
     const router = useRouter();
     const createDeal = useCreateDeal();
-    
+
     const [formData, setFormData] = useState({
         name: "",
         company: "",
@@ -60,7 +61,7 @@ export default function NewDealPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         try {
             if (isSupabaseConfigured) {
                 const dealData = {
@@ -69,22 +70,30 @@ export default function NewDealPage() {
                     contact_name: formData.contactName || "Unknown",
                     contact_email: formData.contactEmail || "unknown@example.com",
                     value: formData.value ? parseFloat(formData.value) : 0,
-                    stage: formData.stage as "lead" | "qualified" | "proposal" | "negotiation" | "won" | "lost",
+                    stage: formData.stage as
+                        | "lead"
+                        | "qualified"
+                        | "proposal"
+                        | "negotiation"
+                        | "won"
+                        | "lost",
                     probability: parseInt(formData.probability),
                     expected_close_date: formData.expectedCloseDate || null,
                     notes: formData.description || null,
                 };
-                await createDeal.mutateAsync(dealData as unknown as Parameters<typeof createDeal.mutateAsync>[0]);
+                await createDeal.mutateAsync(
+                    dealData as unknown as Parameters<typeof createDeal.mutateAsync>[0]
+                );
             }
             router.push("/pipeline");
         } catch (error) {
-            console.error("Failed to create deal:", error);
+            logger.error("Failed to create deal", { error });
         }
     };
 
     const updateField = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        
+        setFormData((prev) => ({ ...prev, [field]: value }));
+
         if (field === "stage") {
             const probabilities: Record<string, string> = {
                 lead: "10",
@@ -94,7 +103,7 @@ export default function NewDealPage() {
                 closed_won: "100",
                 closed_lost: "0",
             };
-            setFormData(prev => ({ ...prev, probability: probabilities[value] || "25" }));
+            setFormData((prev) => ({ ...prev, probability: probabilities[value] || "25" }));
         }
     };
 
@@ -108,7 +117,10 @@ export default function NewDealPage() {
                         <ArrowLeft className="h-4 w-4" />
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit} disabled={createDeal.isPending || !formData.name}>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={createDeal.isPending || !formData.name}
+                    >
                         {createDeal.isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
@@ -140,15 +152,19 @@ export default function NewDealPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Project Type</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Project Type
+                                </label>
                                 <select
                                     className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm"
                                     value={formData.projectType}
                                     onChange={(e) => updateField("projectType", e.target.value)}
                                 >
                                     <option value="">Select type...</option>
-                                    {PROJECT_TYPES.map(type => (
-                                        <option key={type.value} value={type.value}>{type.label}</option>
+                                    {PROJECT_TYPES.map((type) => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -159,8 +175,10 @@ export default function NewDealPage() {
                                     value={formData.stage}
                                     onChange={(e) => updateField("stage", e.target.value)}
                                 >
-                                    {DEAL_STAGES.map(stage => (
-                                        <option key={stage.value} value={stage.value}>{stage.label}</option>
+                                    {DEAL_STAGES.map((stage) => (
+                                        <option key={stage.value} value={stage.value}>
+                                            {stage.label}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -200,7 +218,9 @@ export default function NewDealPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Contact Name</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Contact Name
+                                </label>
                                 <Input
                                     placeholder="Primary contact"
                                     value={formData.contactName}
@@ -242,7 +262,9 @@ export default function NewDealPage() {
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Deal Value</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Deal Value
+                                </label>
                                 <div className="relative">
                                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -255,7 +277,9 @@ export default function NewDealPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Probability (%)</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Probability (%)
+                                </label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -265,23 +289,35 @@ export default function NewDealPage() {
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Expected Close</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Expected Close
+                                </label>
                                 <div className="relative">
                                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         type="date"
                                         className="pl-9"
                                         value={formData.expectedCloseDate}
-                                        onChange={(e) => updateField("expectedCloseDate", e.target.value)}
+                                        onChange={(e) =>
+                                            updateField("expectedCloseDate", e.target.value)
+                                        }
                                     />
                                 </div>
                             </div>
                         </div>
                         <div className="p-4 rounded-lg bg-secondary/30">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Weighted Value</span>
+                                <span className="text-sm text-muted-foreground">
+                                    Weighted Value
+                                </span>
                                 <span className="text-lg font-bold">
-                                    ${formData.value ? (parseFloat(formData.value) * (parseInt(formData.probability) / 100)).toLocaleString() : "0"}
+                                    $
+                                    {formData.value
+                                        ? (
+                                              parseFloat(formData.value) *
+                                              (parseInt(formData.probability) / 100)
+                                          ).toLocaleString()
+                                        : "0"}
                                 </span>
                             </div>
                         </div>
@@ -299,7 +335,9 @@ export default function NewDealPage() {
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="col-span-2">
-                                <label className="text-sm font-medium mb-1.5 block">Next Action</label>
+                                <label className="text-sm font-medium mb-1.5 block">
+                                    Next Action
+                                </label>
                                 <Input
                                     placeholder="e.g., Schedule discovery call"
                                     value={formData.nextStep}

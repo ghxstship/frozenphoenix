@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { AuthLayout, AuthFormField, BotProtection, useBotProtection } from "@/components/auth";
+import { AuthFormField, AuthLayout, BotProtection, useBotProtection } from "@/components/auth";
 import { mapAuthError } from "@/lib/auth-utils";
-import { Mail, AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -17,41 +17,44 @@ export default function ForgotPasswordPage() {
 
     const botProtection = useBotProtection();
 
-    const handleReset = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleReset = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!email.trim()) {
-            setError("Please enter your email address.");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
+            if (!email.trim()) {
+                setError("Please enter your email address.");
                 return;
             }
 
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/auth/reset-password`,
-            });
+            setLoading(true);
 
-            if (resetError) {
-                setError(mapAuthError(resetError.message));
-                return;
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
+                    return;
+                }
+
+                const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/auth/reset-password`,
+                });
+
+                if (resetError) {
+                    setError(mapAuthError(resetError.message));
+                    return;
+                }
+
+                // Always show success to prevent email enumeration
+                setSuccess(true);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
             }
-
-            // Always show success to prevent email enumeration
-            setSuccess(true);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [email]);
+        },
+        [email]
+    );
 
     const handleResend = useCallback(() => {
         if (cooldown > 0) return;
@@ -59,7 +62,10 @@ export default function ForgotPasswordPage() {
         setSuccess(false);
         const timer = setInterval(() => {
             setCooldown((prev) => {
-                if (prev <= 1) { clearInterval(timer); return 0; }
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
                 return prev - 1;
             });
         }, 1000);
@@ -75,8 +81,8 @@ export default function ForgotPasswordPage() {
                     <div className="space-y-2">
                         <h2 className="text-lg font-semibold">Reset link sent</h2>
                         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                            If an account exists for <strong>{email}</strong>, we&apos;ve sent
-                            a password reset link. Check your inbox and spam folder.
+                            If an account exists for <strong>{email}</strong>, we&apos;ve sent a
+                            password reset link. Check your inbox and spam folder.
                         </p>
                     </div>
                     <div className="flex flex-col items-center gap-2">
@@ -86,7 +92,9 @@ export default function ForgotPasswordPage() {
                             onClick={handleResend}
                             disabled={cooldown > 0}
                         >
-                            {cooldown > 0 ? `Resend in ${cooldown}s` : "Didn\u2019t receive it? Resend"}
+                            {cooldown > 0
+                                ? `Resend in ${cooldown}s`
+                                : "Didn\u2019t receive it? Resend"}
                         </Button>
                         <Link href="/login">
                             <Button variant="ghost" size="sm">
@@ -101,7 +109,10 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <AuthLayout title="Reset your password" subtitle="Enter your email and we\u2019ll send you a reset link">
+        <AuthLayout
+            title="Reset your password"
+            subtitle="Enter your email and we\u2019ll send you a reset link"
+        >
             <form onSubmit={handleReset} className="space-y-4" noValidate>
                 {error && (
                     <div
@@ -134,12 +145,7 @@ export default function ForgotPasswordPage() {
                     action="forgot-password"
                 />
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                    aria-busy={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -152,7 +158,10 @@ export default function ForgotPasswordPage() {
             </form>
 
             <div className="text-center text-sm text-muted-foreground">
-                <Link href="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+                <Link
+                    href="/login"
+                    className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+                >
                     <ArrowLeft className="h-3 w-3" aria-hidden="true" />
                     Back to Sign In
                 </Link>

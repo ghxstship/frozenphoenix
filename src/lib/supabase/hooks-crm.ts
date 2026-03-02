@@ -2,24 +2,15 @@
    CRM & PUBLIC SITE HOOKS — Migration 004 tables
    ═══════════════════════════════════════════════════════════════ */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
+import { logger } from "@/lib/logger";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 type Lead = Tables<"leads">;
 type Testimonial = Tables<"testimonials">;
 type Review = Tables<"reviews">;
 type LeadInsert = TablesInsert<"leads">;
-
-function filterValue<T>(value: string): T {
-    return value as unknown as T;
-}
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) throw new Error("Supabase not configured");
-    return client;
-}
 
 // ─── Leads ───
 
@@ -51,7 +42,10 @@ export function useLead(id: string) {
                 .eq("id", id)
                 .single();
             if (error) throw error;
-            return data as unknown as Lead & { profiles: { name: string } | null; lead_activities: Tables<"lead_activities">[] };
+            return data as unknown as Lead & {
+                profiles: { name: string } | null;
+                lead_activities: Tables<"lead_activities">[];
+            };
         },
         enabled: !!id,
     });
@@ -62,8 +56,13 @@ export function useCreateLead() {
     return useMutation({
         mutationFn: async (lead: LeadInsert) => {
             if (!isSupabaseConfigured) {
-                console.log("Lead submission (demo mode):", lead);
-                return { id: `demo-lead-${Date.now()}`, ...lead, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as unknown as Lead;
+                logger.debug("Lead submission (demo mode)", { lead });
+                return {
+                    id: `demo-lead-${Date.now()}`,
+                    ...lead,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                } as unknown as Lead;
             }
             const { data, error } = await getSupabase()
                 .from("leads")
@@ -101,9 +100,15 @@ export function useUpdateLead() {
 export function useConvertLeadToDeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ leadId, dealData }: { leadId: string; dealData: Record<string, unknown> }) => {
+        mutationFn: async ({
+            leadId,
+            dealData,
+        }: {
+            leadId: string;
+            dealData: Record<string, unknown>;
+        }) => {
             if (!isSupabaseConfigured) return { dealId: "mock-deal-id" };
-            
+
             // Create deal
             const { data: deal, error: dealError } = await getSupabase()
                 .from("deals")
@@ -112,18 +117,18 @@ export function useConvertLeadToDeal() {
                 .single();
             if (dealError) throw dealError;
             const dealRow = deal as unknown as Tables<"deals">;
-            
+
             // Update lead
             const { error: leadError } = await getSupabase()
                 .from("leads")
-                .update({ 
-                    status: "won", 
+                .update({
+                    status: "won",
                     converted_to_deal_id: dealRow.id,
-                    converted_at: new Date().toISOString()
+                    converted_at: new Date().toISOString(),
                 })
                 .eq("id", leadId);
             if (leadError) throw leadError;
-            
+
             return { dealId: dealRow.id };
         },
         onSuccess: () => {
@@ -165,10 +170,14 @@ export function useTestimonials(options?: { featured?: boolean; status?: string 
                 .from("testimonials")
                 .select("*, projects(name), case_studies(title)")
                 .order("display_order");
-            
+
             if (options?.featured) query = query.eq("featured", true);
-            if (options?.status) query = query.eq("status", options.status as Database["public"]["Enums"]["testimonial_status"]);
-            
+            if (options?.status)
+                query = query.eq(
+                    "status",
+                    options.status as Database["public"]["Enums"]["testimonial_status"]
+                );
+
             const { data, error } = await query;
             if (error) throw error;
             return data as unknown as Testimonial[];
@@ -238,14 +247,11 @@ export function useReviewStats() {
                 return {
                     total_reviews: MOCK_REVIEWS.length,
                     average_rating: 4.8,
-                    positive_reviews: MOCK_REVIEWS.filter(r => r.rating >= 4).length,
+                    positive_reviews: MOCK_REVIEWS.filter((r) => r.rating >= 4).length,
                     platforms: 3,
                 };
             }
-            const { data, error } = await getSupabase()
-                .from("review_stats")
-                .select("*")
-                .single();
+            const { data, error } = await getSupabase().from("review_stats").select("*").single();
             if (error) throw error;
             return data;
         },
@@ -261,9 +267,7 @@ export function useLeadPipelineStats() {
             if (!isSupabaseConfigured) {
                 return DEMO_PIPELINE_STATS;
             }
-            const { data, error } = await getSupabase()
-                .from("lead_pipeline_stats")
-                .select("*");
+            const { data, error } = await getSupabase().from("lead_pipeline_stats").select("*");
             if (error) throw error;
             return data;
         },
@@ -363,7 +367,8 @@ const MOCK_REVIEWS: Review[] = [
         reviewer_avatar_url: null,
         rating: 5,
         title: "Outstanding Production Partner",
-        content: "We've worked with Playbook on three major events now. Each one has been flawlessly executed.",
+        content:
+            "We've worked with Playbook on three major events now. Each one has been flawlessly executed.",
         review_date: "2024-02-15",
         helpful_count: 12,
         response: null,
@@ -382,7 +387,8 @@ const MOCK_REVIEWS: Review[] = [
         reviewer_avatar_url: null,
         rating: 5,
         title: "Best in the Business",
-        content: "Their project management system kept us informed every step of the way. Highly recommend.",
+        content:
+            "Their project management system kept us informed every step of the way. Highly recommend.",
         review_date: "2024-01-28",
         helpful_count: 8,
         response: null,

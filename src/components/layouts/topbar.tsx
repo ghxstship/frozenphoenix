@@ -1,66 +1,70 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
-import { MOCK_NOTIFICATIONS } from "@/lib/demo-data";
-import { useNotifications, isSupabaseConfigured } from "@/lib/supabase/hooks";
-import { createClient } from "@/lib/supabase/client";
+import { NotificationBell } from "@/components/notifications";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { useReducedMotion } from "@/hooks/use-media-query";
-import { FOCUS_RING, ICON_SIZES } from "@/config/design-tokens";
+
+import { FOCUS_RING, ICON_SIZES, LAYOUT } from "@/config/design-tokens";
 import { hasPermission } from "@/config/rbac";
+import {
+    getContextualNavigationVisibility,
+    getNavigationBreadcrumbs,
+    getNavigationContext,
+    getNavigationSectionsForRole,
+} from "@/config/navigation";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
-    DropdownMenuTrigger,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuLabel,
     DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SupportedLocale } from "@/lib/locale";
 import type { PermissionLevel } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {
-    Bell,
-    Search,
-    Menu,
-    Sun,
-    Moon,
-    Monitor,
-    Settings,
-    ChevronRight,
-    ChevronDown,
-    Command,
-    MessageSquare,
-    HelpCircle,
-    Globe,
-    Plus,
-    User,
-    LogOut,
-    Shield,
-    Keyboard,
+    Briefcase,
     Building2,
+    CalendarPlus,
     Check,
+    ChevronDown,
+    ChevronRight,
+    CircleDot,
+    ClipboardPlus,
+    Command,
+    ExternalLink,
+    FileText,
+    FolderPlus,
+    Globe,
+    HelpCircle,
+    Keyboard,
+    LifeBuoy,
+    LogOut,
+    Menu,
+    MessageSquare,
+    Monitor,
+    Moon,
+    MoreHorizontal,
+    Plus,
+    Search,
+    Settings,
+    Shield,
+    Sparkles,
+    Sun,
+    User,
+    UserPlus,
     Wifi,
     WifiOff,
-    CircleDot,
-    MoreHorizontal,
-    FileText,
-    LifeBuoy,
-    Sparkles,
-    ExternalLink,
-    FolderPlus,
-    UserPlus,
-    Briefcase,
-    CalendarPlus,
-    ClipboardPlus,
 } from "lucide-react";
 
 // ─── Shared icon button with tooltip, focus ring, and consistent sizing ───
@@ -96,14 +100,16 @@ function TopbarIconButton({
             {label}
             <kbd className="text-[10px] font-mono bg-background/20 px-1 rounded">{shortcut}</kbd>
         </span>
-    ) : label;
+    ) : (
+        label
+    );
 
     const buttonClasses = cn(
         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
         "hover:text-foreground hover:bg-secondary transition-colors relative",
         FOCUS_RING,
         active && "text-foreground bg-secondary",
-        className,
+        className
     );
 
     const inner = (
@@ -163,8 +169,8 @@ function ThemeSwitcher() {
 // ─── Connection Status Indicator ───
 
 function ConnectionIndicator() {
-    const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">(
-        () => isSupabaseConfigured ? "connecting" : "disconnected"
+    const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">(() =>
+        isSupabaseConfigured ? "connecting" : "disconnected"
     );
 
     useEffect(() => {
@@ -173,28 +179,36 @@ function ConnectionIndicator() {
         if (!supabase) return;
 
         const channel = supabase.channel("connection-probe");
-        channel
-            .subscribe((s) => {
-                if (s === "SUBSCRIBED") setStatus("connected");
-                else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") setStatus("disconnected");
-                else setStatus("connecting");
-            });
+        channel.subscribe((s) => {
+            if (s === "SUBSCRIBED") setStatus("connected");
+            else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") setStatus("disconnected");
+            else setStatus("connecting");
+        });
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     if (status === "connected") return null;
 
     const icon = status === "disconnected" ? WifiOff : Wifi;
-    const color = status === "disconnected"
-        ? "text-destructive"
-        : "text-warning animate-pulse";
+    const color = status === "disconnected" ? "text-destructive" : "text-warning animate-pulse";
 
     return (
-        <Tooltip content={status === "disconnected" ? "Offline — data may be stale" : "Reconnecting..."} side="bottom">
-            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", color)} role="status" aria-live="polite">
+        <Tooltip
+            content={status === "disconnected" ? "Offline — data may be stale" : "Reconnecting..."}
+            side="bottom"
+        >
+            <div
+                className={cn("h-8 w-8 rounded-lg flex items-center justify-center", color)}
+                role="status"
+                aria-live="polite"
+            >
                 {React.createElement(icon, { className: ICON_SIZES.sm })}
-                <span className="sr-only">{status === "disconnected" ? "Disconnected" : "Reconnecting"}</span>
+                <span className="sr-only">
+                    {status === "disconnected" ? "Disconnected" : "Reconnecting"}
+                </span>
             </div>
         </Tooltip>
     );
@@ -206,11 +220,14 @@ function EnvironmentBadge() {
     const env = process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV;
     if (env === "production") return null;
 
-    const label = env === "development" ? "Dev" : env === "preview" ? "Preview" : env ?? "Dev";
+    const label = env === "development" ? "Dev" : env === "preview" ? "Preview" : (env ?? "Dev");
     const variant = env === "development" ? "warning" : "info";
 
     return (
-        <Badge variant={variant as "warning" | "info"} className="text-[9px] px-1.5 py-0 h-5 hidden sm:flex">
+        <Badge
+            variant={variant as "warning" | "info"}
+            className="text-[9px] px-1.5 py-0 h-5 hidden sm:flex"
+        >
             {label}
         </Badge>
     );
@@ -241,18 +258,30 @@ interface QuickCreateAction {
 }
 
 const QUICK_CREATE_ACTIONS: QuickCreateAction[] = [
-    { label: "New Project", icon: FolderPlus, href: "/projects?action=create", resource: "projects" },
+    {
+        label: "New Project",
+        icon: FolderPlus,
+        href: "/projects?action=create",
+        resource: "projects",
+    },
     { label: "New Deal", icon: Briefcase, href: "/pipeline?action=create", resource: "deals" },
     { label: "New Task", icon: ClipboardPlus, href: "/tasks?action=create", resource: "tasks" },
     { label: "New Event", icon: CalendarPlus, href: "/events?action=create", resource: "events" },
-    { label: "Invite Member", icon: UserPlus, href: "/onboarding/invite-team", resource: "invitations" },
+    {
+        label: "Invite Member",
+        icon: UserPlus,
+        href: "/onboarding/invite-team",
+        resource: "invitations",
+    },
 ];
 
 // ─── Quick Create Dropdown ───
 
 function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
     const router = useRouter();
-    const visible = QUICK_CREATE_ACTIONS.filter((a) => hasPermission(userRole, a.resource, "write"));
+    const visible = QUICK_CREATE_ACTIONS.filter((a) =>
+        hasPermission(userRole, a.resource, "write")
+    );
     if (visible.length === 0) return null;
 
     return (
@@ -262,7 +291,7 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
                     className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                         "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label="Quick create"
                 >
@@ -295,7 +324,7 @@ function MessagesMenu() {
                     className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                         "hover:text-foreground hover:bg-secondary transition-colors relative",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label={`Messages${messageCount > 0 ? ` (${messageCount} unread)` : ""}`}
                 >
@@ -331,7 +360,7 @@ function HelpMenu() {
                     className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                         "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label="Help and resources"
                 >
@@ -345,9 +374,13 @@ function HelpMenu() {
                     Documentation
                     <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground/50" />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                    document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }));
-                }}>
+                <DropdownMenuItem
+                    onClick={() => {
+                        document.dispatchEvent(
+                            new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })
+                        );
+                    }}
+                >
                     <Keyboard className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
                     Keyboard shortcuts
                     <kbd className="ml-auto text-[10px] font-mono text-muted-foreground/60">⌘K</kbd>
@@ -396,7 +429,7 @@ function LocaleSwitcher() {
                     className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                         "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label={`Language: ${currentOption?.label ?? current}`}
                 >
@@ -438,7 +471,7 @@ function UserMenu() {
                     className={cn(
                         "flex items-center gap-2 h-8 rounded-lg px-1.5",
                         "hover:bg-secondary transition-colors",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label="User menu"
                 >
@@ -471,7 +504,9 @@ function UserMenu() {
                 </DropdownMenuLabel>
                 <div className="px-2 pb-1">
                     {memberships.length <= 1 ? (
-                        <div className="px-2 py-1 text-xs text-foreground font-medium truncate">{orgName}</div>
+                        <div className="px-2 py-1 text-xs text-foreground font-medium truncate">
+                            {orgName}
+                        </div>
                     ) : (
                         memberships.map((m) => (
                             <DropdownMenuItem
@@ -479,13 +514,17 @@ function UserMenu() {
                                 onClick={() => switchOrg(m.organization_id)}
                                 className="text-xs"
                             >
-                                <CircleDot className={cn(
-                                    "h-3 w-3 mr-2",
-                                    m.organization_id === activeOrg?.organization_id
-                                        ? "text-primary"
-                                        : "text-muted-foreground/30"
-                                )} />
-                                <span className="truncate">{m.organizations?.name || m.organization_id}</span>
+                                <CircleDot
+                                    className={cn(
+                                        "h-3 w-3 mr-2",
+                                        m.organization_id === activeOrg?.organization_id
+                                            ? "text-primary"
+                                            : "text-muted-foreground/30"
+                                    )}
+                                />
+                                <span className="truncate">
+                                    {m.organizations?.name || m.organization_id}
+                                </span>
                                 {m.organization_id === activeOrg?.organization_id && (
                                     <Check className="h-3 w-3 ml-auto text-primary" />
                                 )}
@@ -508,7 +547,10 @@ function UserMenu() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                    onClick={signOut}
+                    className="text-destructive focus:text-destructive"
+                >
                     <LogOut className={cn(ICON_SIZES.sm, "mr-2")} />
                     Sign out
                 </DropdownMenuItem>
@@ -527,7 +569,7 @@ function OverflowMenu() {
                     className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                         "hover:text-foreground hover:bg-secondary transition-colors md:hidden",
-                        FOCUS_RING,
+                        FOCUS_RING
                     )}
                     aria-label="More actions"
                 >
@@ -557,15 +599,9 @@ function OverflowMenu() {
 export function Topbar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { isMobile, setOpen } = useSidebar();
-    const reducedMotion = useReducedMotion();
-    const [showNotifications, setShowNotifications] = useState(false);
-    const notifRef = useRef<HTMLDivElement>(null);
-    const notifAnnouncerRef = useRef<HTMLDivElement>(null);
-    const { data: sbNotifications } = useNotifications();
-    const notifications = isSupabaseConfigured && sbNotifications ? sbNotifications : MOCK_NOTIFICATIONS;
-    const unreadCount = notifications.filter((n) => !n.read).length;
-
+    const isMobile = useSidebar((state) => state.isMobile);
+    const isOpen = useSidebar((state) => state.isOpen);
+    const setOpen = useSidebar((state) => state.setOpen);
     // Auth context (safe fallback for when not inside AuthProvider)
     let profile: Record<string, unknown> | null = null;
     let userRole: PermissionLevel = "pm";
@@ -577,56 +613,68 @@ export function Topbar() {
         // Outside AuthProvider — use defaults
     }
 
-    // Build breadcrumb from path with overflow handling
-    const segments = pathname.split("/").filter(Boolean);
-    const breadcrumbs = useMemo(() =>
-        segments.map((seg, i) => ({
-            label: seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " "),
-            path: "/" + segments.slice(0, i + 1).join("/"),
-            isLast: i === segments.length - 1,
-        })),
-        [pathname] // eslint-disable-line react-hooks/exhaustive-deps -- segments is derived from pathname; listing pathname is sufficient and avoids object identity churn
+    const contextualVisibility = useMemo(
+        () => getContextualNavigationVisibility(pathname),
+        [pathname]
     );
+    const roleScopedSections = useMemo(
+        () => getNavigationSectionsForRole(userRole, { contextualVisibility }),
+        [userRole, contextualVisibility]
+    );
+
+    const activeNavContext = useMemo(
+        () => getNavigationContext(pathname, roleScopedSections),
+        [pathname, roleScopedSections]
+    );
+
+    // Build breadcrumbs from navigation SSOT with fallback formatting for non-nav routes.
+    const breadcrumbs = useMemo(() => {
+        const baseCrumbs = getNavigationBreadcrumbs(pathname, roleScopedSections);
+        if (!activeNavContext?.parentItem || baseCrumbs.length === 0) {
+            return baseCrumbs;
+        }
+
+        const parentPath = activeNavContext.parentItem.path;
+        const hasParentCrumb = baseCrumbs.some((crumb) => crumb.path === parentPath);
+        if (hasParentCrumb) {
+            return baseCrumbs;
+        }
+
+        const currentCrumb = baseCrumbs[baseCrumbs.length - 1];
+        if (!currentCrumb) {
+            return baseCrumbs;
+        }
+
+        const leadingCrumbs = baseCrumbs.slice(0, -1).map((crumb) => ({ ...crumb, isLast: false }));
+        return [
+            ...leadingCrumbs,
+            {
+                label: activeNavContext.parentItem.title,
+                path: parentPath,
+                isLast: false,
+            },
+            {
+                ...currentCrumb,
+                isLast: true,
+            },
+        ];
+    }, [pathname, activeNavContext, roleScopedSections]);
 
     // Breadcrumb overflow: collapse middle segments if > 3 levels deep
     const MAX_VISIBLE_CRUMBS = 3;
-    const hasOverflow = breadcrumbs.length > MAX_VISIBLE_CRUMBS;
     const visibleCrumbs = useMemo(() => {
-        if (!hasOverflow) return breadcrumbs;
+        if (breadcrumbs.length <= MAX_VISIBLE_CRUMBS) return breadcrumbs;
         return [
             breadcrumbs[0]!,
-            { label: "…", path: breadcrumbs[breadcrumbs.length - 2]!.path, isLast: false, isEllipsis: true },
+            {
+                label: "…",
+                path: breadcrumbs[breadcrumbs.length - 2]!.path,
+                isLast: false,
+                isEllipsis: true,
+            },
             breadcrumbs[breadcrumbs.length - 1]!,
         ];
-    }, [breadcrumbs, hasOverflow]);
-
-    // Click-outside to close notifications
-    useEffect(() => {
-        if (!showNotifications) return;
-        const handleClick = (e: MouseEvent) => {
-            if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-                setShowNotifications(false);
-            }
-        };
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === "Escape") setShowNotifications(false);
-        };
-        document.addEventListener("mousedown", handleClick);
-        document.addEventListener("keydown", handleEsc);
-        return () => {
-            document.removeEventListener("mousedown", handleClick);
-            document.removeEventListener("keydown", handleEsc);
-        };
-    }, [showNotifications]);
-
-    // Announce new notifications to screen readers
-    const prevUnreadRef = useRef(unreadCount);
-    useEffect(() => {
-        if (unreadCount > prevUnreadRef.current && notifAnnouncerRef.current) {
-            notifAnnouncerRef.current.textContent = `${unreadCount} new notification${unreadCount === 1 ? "" : "s"}`;
-        }
-        prevUnreadRef.current = unreadCount;
-    }, [unreadCount]);
+    }, [breadcrumbs]);
 
     // Open command bar via Cmd+K
     const openCommandBar = useCallback(() => {
@@ -638,27 +686,26 @@ export function Topbar() {
         document.dispatchEvent(event);
     }, []);
 
-    const dropdownAnimation = reducedMotion ? "" : "animate-slide-down";
-
     return (
         <header
-            className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6"
+            className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6"
+            style={{ height: LAYOUT.topbar.height }}
             role="banner"
         >
-            {/* Screen reader notification announcer */}
-            <div ref={notifAnnouncerRef} className="sr-only" aria-live="polite" aria-atomic="true" />
-
             {/* Left: Mobile Menu + Breadcrumbs + Env Badge */}
             <div className="flex items-center gap-3 min-w-0">
                 {isMobile && (
                     <button
+                        id="sidebar-menu-toggle"
                         onClick={() => setOpen(true)}
                         className={cn(
                             "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
                             "hover:text-foreground hover:bg-secondary transition-colors lg:hidden shrink-0",
-                            FOCUS_RING,
+                            FOCUS_RING
                         )}
                         aria-label="Open navigation menu"
+                        aria-controls="main-navigation"
+                        aria-expanded={isOpen}
                     >
                         <Menu className={ICON_SIZES.md} />
                     </button>
@@ -666,13 +713,28 @@ export function Topbar() {
 
                 <EnvironmentBadge />
 
+                {activeNavContext?.section.title && (
+                    <Badge
+                        variant="secondary"
+                        className="hidden md:inline-flex h-5 px-1.5 text-[10px] font-medium"
+                    >
+                        {activeNavContext.section.title}
+                    </Badge>
+                )}
+
                 {/* Desktop Breadcrumbs with overflow collapse */}
-                <nav className="hidden sm:flex items-center gap-1 text-sm min-w-0" aria-label="Breadcrumb">
+                <nav
+                    className="hidden sm:flex items-center gap-1 text-sm min-w-0"
+                    aria-label="Breadcrumb"
+                >
                     <ol className="flex items-center gap-1 min-w-0">
                         {visibleCrumbs.map((crumb, i) => (
                             <li key={crumb.path + i} className="flex items-center gap-1 min-w-0">
                                 {i > 0 && (
-                                    <ChevronRight className="h-3 w-3 text-muted-foreground/40 shrink-0" aria-hidden="true" />
+                                    <ChevronRight
+                                        className="h-3 w-3 text-muted-foreground/40 shrink-0"
+                                        aria-hidden="true"
+                                    />
                                 )}
                                 {"isEllipsis" in crumb && crumb.isEllipsis ? (
                                     <DropdownMenu>
@@ -680,7 +742,7 @@ export function Topbar() {
                                             <button
                                                 className={cn(
                                                     "font-medium text-muted-foreground hover:text-foreground transition-colors px-1",
-                                                    FOCUS_RING,
+                                                    FOCUS_RING
                                                 )}
                                                 aria-label="Show collapsed breadcrumbs"
                                             >
@@ -689,20 +751,29 @@ export function Topbar() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-48">
                                             {breadcrumbs.slice(1, -1).map((hidden) => (
-                                                <DropdownMenuItem key={hidden.path} onClick={() => router.push(hidden.path)}>
+                                                <DropdownMenuItem
+                                                    key={hidden.path}
+                                                    onClick={() => router.push(hidden.path)}
+                                                >
                                                     {hidden.label}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 ) : crumb.isLast ? (
-                                    <span className="font-semibold text-foreground truncate" aria-current="page">
+                                    <span
+                                        className="font-semibold text-foreground truncate"
+                                        aria-current="page"
+                                    >
                                         {crumb.label}
                                     </span>
                                 ) : (
                                     <Link
                                         href={crumb.path}
-                                        className={cn("font-medium text-muted-foreground hover:text-foreground transition-colors truncate", FOCUS_RING)}
+                                        className={cn(
+                                            "font-medium text-muted-foreground hover:text-foreground transition-colors truncate",
+                                            FOCUS_RING
+                                        )}
                                     >
                                         {crumb.label}
                                     </Link>
@@ -724,7 +795,7 @@ export function Topbar() {
                 className={cn(
                     "hidden md:flex items-center gap-2 h-8 px-3 rounded-lg border border-border",
                     "bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer",
-                    FOCUS_RING,
+                    FOCUS_RING
                 )}
                 aria-label="Search or type a command"
             >
@@ -755,83 +826,7 @@ export function Topbar() {
                 </div>
 
                 {/* Notifications */}
-                <div className="relative" ref={notifRef}>
-                    <TopbarIconButton
-                        icon={Bell}
-                        label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
-                        badge={unreadCount}
-                        onClick={() => setShowNotifications(!showNotifications)}
-                        active={showNotifications}
-                        aria-expanded={showNotifications}
-                        aria-haspopup="dialog"
-                    />
-
-                    {showNotifications && (
-                        <div
-                            className={cn(
-                                "absolute right-0 top-11 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-lg border border-border bg-popover text-popover-foreground shadow-lg p-0 overflow-hidden z-50",
-                                dropdownAnimation,
-                            )}
-                            role="dialog"
-                            aria-label="Notifications"
-                        >
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                                <h3 className="text-sm font-semibold">Notifications</h3>
-                                {unreadCount > 0 && (
-                                    <button className={cn("text-[11px] text-primary hover:underline", FOCUS_RING)}>
-                                        Mark all read
-                                    </button>
-                                )}
-                            </div>
-                            <div className="max-h-72 overflow-y-auto">
-                                {notifications.length === 0 ? (
-                                    <div className="px-4 py-8 text-center text-xs text-muted-foreground">
-                                        No notifications
-                                    </div>
-                                ) : (
-                                    notifications.map((notif) => (
-                                        <div
-                                            key={notif.id}
-                                            className={cn(
-                                                "px-4 py-3 border-b border-border/50 hover:bg-secondary/50 transition-colors cursor-pointer",
-                                                !notif.read && "bg-primary/5"
-                                            )}
-                                        >
-                                            <div className="flex items-start gap-2">
-                                                {!notif.read && (
-                                                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" aria-label="Unread" />
-                                                )}
-                                                <Badge
-                                                    variant={
-                                                        notif.type === "error" ? "destructive" :
-                                                            notif.type === "warning" ? "warning" :
-                                                                notif.type === "success" ? "success" : "info"
-                                                    }
-                                                    className="mt-0.5 text-[9px] px-1.5 shrink-0"
-                                                >
-                                                    {notif.type}
-                                                </Badge>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-xs font-medium">{notif.title}</p>
-                                                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{notif.message}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                            <div className="px-4 py-2 border-t border-border bg-muted/30">
-                                <Link
-                                    href="/notifications"
-                                    className={cn("text-[11px] text-primary hover:underline font-medium", FOCUS_RING)}
-                                    onClick={() => setShowNotifications(false)}
-                                >
-                                    View all notifications
-                                </Link>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <NotificationBell />
 
                 {/* Messages */}
                 <div className="hidden sm:block">

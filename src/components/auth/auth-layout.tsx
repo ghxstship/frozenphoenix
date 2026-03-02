@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
-import { Play, Shield, Lock, Globe } from "lucide-react";
-import { brandConfig } from "@/config/brand";
+import { Globe, Lock, Play, Shield } from "lucide-react";
+import { getActiveBrand } from "@/config/brands";
 import { cn } from "@/lib/utils";
+
+const brandConfig = getActiveBrand();
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -46,8 +48,14 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
 
                 <div className="space-y-3">
                     {TRUST_SIGNALS.map((signal) => (
-                        <div key={signal.text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                            <signal.icon className="h-4 w-4 text-primary/70 shrink-0" aria-hidden="true" />
+                        <div
+                            key={signal.text}
+                            className="flex items-center gap-2.5 text-sm text-muted-foreground"
+                        >
+                            <signal.icon
+                                className="h-4 w-4 text-primary/70 shrink-0"
+                                aria-hidden="true"
+                            />
                             {signal.text}
                         </div>
                     ))}
@@ -65,17 +73,13 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             {brandConfig.name}
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {brandConfig.tagline}
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">{brandConfig.tagline}</p>
                     </div>
 
                     {/* Desktop title */}
                     <div className="hidden lg:block space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-                        {subtitle && (
-                            <p className="text-sm text-muted-foreground">{subtitle}</p>
-                        )}
+                        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
                     </div>
 
                     {/* Mobile title inside card context */}

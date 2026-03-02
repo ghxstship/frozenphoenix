@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { parseAndValidate, ApiErrors } from "@/lib/api-utils";
+import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { invitationCreateSchema } from "@/lib/validation/schemas";
 import { randomBytes } from "crypto";
 
@@ -10,7 +10,9 @@ export async function POST(request: Request) {
         return ApiErrors.serviceUnavailable();
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
         return ApiErrors.unauthorized();
     }
@@ -22,7 +24,8 @@ export async function POST(request: Request) {
     const { invitees, organization_id, message } = parsed.data;
 
     // Verify the inviter has permission (exec or pm)
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await supabase
+        .from("org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", organization_id)
@@ -34,7 +37,8 @@ export async function POST(request: Request) {
     }
 
     // Fetch org name for email content
-    const { data: org } = await supabase.from("organizations")
+    const { data: org } = await supabase
+        .from("organizations")
         .select("name")
         .eq("id", organization_id)
         .single();
@@ -53,7 +57,8 @@ export async function POST(request: Request) {
         personal_message: message || null,
     }));
 
-    const { data, error } = await supabase.from("invitations")
+    const { data, error } = await supabase
+        .from("invitations")
         .insert(invitations)
         .select("id, email, role, expires_at, token");
 
@@ -63,7 +68,8 @@ export async function POST(request: Request) {
 
     // Send invitation emails (fire-and-forget — don't block the response)
     if (data) {
-        const baseUrl = request.headers.get("origin") || request.headers.get("x-forwarded-host") || "";
+        const baseUrl =
+            request.headers.get("origin") || request.headers.get("x-forwarded-host") || "";
         const protocol = request.headers.get("x-forwarded-proto") || "https";
         const appUrl = baseUrl.startsWith("http") ? baseUrl : `${protocol}://${baseUrl}`;
 
@@ -90,9 +96,11 @@ export async function POST(request: Request) {
     }
 
     // Strip tokens from the response — they are delivered via email only
-    const safeData = (data || []).map(({ token: _stripToken, ...rest }: { token: string; [key: string]: unknown }) => {
-        void _stripToken;
-        return rest;
-    });
+    const safeData = (data || []).map(
+        ({ token: _stripToken, ...rest }: { token: string; [key: string]: unknown }) => {
+            void _stripToken;
+            return rest;
+        }
+    );
     return NextResponse.json({ invitations: safeData }, { status: 201 });
 }

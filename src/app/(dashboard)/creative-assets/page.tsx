@@ -2,35 +2,28 @@
 
 import { formatDate } from "@/lib/locale";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SearchInput } from "@/components/ui/search-input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { getStatusVariant, getStatusLabel } from "@/config/ui-variants";
+import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     MOCK_CAMPAIGN_ASSETS,
-    MOCK_CREATIVE_REVIEWS,
     MOCK_CAMPAIGNS,
+    MOCK_CREATIVE_REVIEWS,
 } from "@/lib/demo-data-creative-brand";
-import { useCreativeAssets, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { isSupabaseConfigured, useCreativeAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-import type { CampaignAsset, CreativeReview, CampaignAssetProductionStatus } from "@/types";
-import {
-    Plus,
-    CheckCircle2,
-    Clock,
-    Filter,
-    Shield,
-    Globe,
-    Layers,
-    Loader2,
-} from "lucide-react";
+import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
+import { CheckCircle2, Clock, Filter, Globe, Layers, Loader2, Plus, Shield } from "lucide-react";
 
 const STATUS_ORDER: CampaignAssetProductionStatus[] = [
     "briefed",
@@ -53,17 +46,24 @@ const GATE_LABELS: Record<string, string> = {
 export default function CreativeAssetsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
-    const [view, setView] = useState<"board" | "list">("board");
+    const VIEW_MODES = ["board", "list"] as const;
+    const [view, setView] = useQueryTabState({
+        key: "view",
+        defaultValue: "board",
+        validValues: VIEW_MODES,
+    });
     const { data: sbAssets, isLoading } = useCreativeAssets();
 
-    const assets = isSupabaseConfigured && sbAssets ? (sbAssets as unknown as CampaignAsset[]) : MOCK_CAMPAIGN_ASSETS;
+    const assets =
+        isSupabaseConfigured && sbAssets
+            ? (sbAssets as unknown as CampaignAsset[])
+            : MOCK_CAMPAIGN_ASSETS;
     const reviews = MOCK_CREATIVE_REVIEWS;
     const campaigns = MOCK_CAMPAIGNS;
 
     const filtered = useMemo(() => {
         return assets.filter((a) => {
-            const matchesSearch =
-                !search || a.name.toLowerCase().includes(search.toLowerCase());
+            const matchesSearch = !search || a.name.toLowerCase().includes(search.toLowerCase());
             const matchesStatus = statusFilter === "all" || a.production_status === statusFilter;
             return matchesSearch && matchesStatus;
         });
@@ -78,12 +78,17 @@ export default function CreativeAssetsPage() {
     }
 
     const totalAssets = assets.length;
-    const approvedCount = assets.filter((a) => a.production_status === "approved" || a.production_status === "deployed").length;
+    const approvedCount = assets.filter(
+        (a) => a.production_status === "approved" || a.production_status === "deployed"
+    ).length;
     const pendingReviewCount = assets.filter((a) => a.production_status === "in_review").length;
     const avgComplianceScore = (() => {
         const withScore = assets.filter((a) => a.brand_compliance_score !== null);
         return withScore.length > 0
-            ? Math.round(withScore.reduce((sum, a) => sum + (a.brand_compliance_score ?? 0), 0) / withScore.length)
+            ? Math.round(
+                  withScore.reduce((sum, a) => sum + (a.brand_compliance_score ?? 0), 0) /
+                      withScore.length
+              )
             : 0;
     })();
 
@@ -97,109 +102,133 @@ export default function CreativeAssetsPage() {
 
     return (
         <PermissionGate resource="creative_assets" action="read">
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Creative Assets" description="Campaign asset production, review workflow, and brand compliance tracking">
-                <div className="flex gap-2">
-                    <div className="flex rounded-lg border border-input overflow-hidden">
-                        <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${view === "board" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
-                            onClick={() => setView("board")}
-                        >
-                            Board
-                        </button>
-                        <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
-                            onClick={() => setView("list")}
-                        >
-                            List
-                        </button>
-                    </div>
-                    <Link href="/creative-assets/new"><Button size="sm">
-                        <Plus className="h-4 w-4" />
-                        New Asset
-                    </Button></Link>
-                </div>
-            </PageHeader>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Assets" value={totalAssets} icon={Layers} />
-                <StatCard title="Approved / Deployed" value={approvedCount} icon={CheckCircle2} />
-                <StatCard title="Pending Review" value={pendingReviewCount} icon={Clock} />
-                <StatCard title="Avg Compliance" value={`${avgComplianceScore}%`} icon={Shield} />
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <SearchInput value={search} onValueChange={setSearch} placeholder="Search assets..." className="flex-1" />
-                <select
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+            <div className="space-y-6 animate-fade-in">
+                <PageHeader
+                    title="Creative Assets"
+                    description="Campaign asset production, review workflow, and brand compliance tracking"
                 >
-                    <option value="all">All Statuses</option>
-                    {STATUS_ORDER.map((s) => (
-                        <option key={s} value={s}>
-                            {getStatusLabel(s)}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Board View */}
-            {view === "board" && (
-                <div className="flex gap-4 overflow-x-auto pb-4">
-                    {STATUS_ORDER.filter((s) => s !== "retired").map((status) => {
-                        const statusAssets = filtered.filter((a) => a.production_status === status);
-                        return (
-                            <div key={status} className="flex-shrink-0 w-72">
-                                <div className="flex items-center justify-between mb-2">
-                                    <Badge variant={getStatusVariant(status) as "default"} className="text-[9px]">
-                                        {getStatusLabel(status)}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground">{statusAssets.length}</span>
-                                </div>
-                                <div className="space-y-2">
-                                    {statusAssets.map((asset) => (
-                                        <AssetCard
-                                            key={asset.id}
-                                            asset={asset}
-                                            reviews={getReviewsForAsset(asset.id)}
-                                            campaignName={getCampaignName(asset.campaign_id)}
-                                        />
-                                    ))}
-                                    {statusAssets.length === 0 && (
-                                        <div className="p-4 border border-dashed border-border rounded-lg text-center">
-                                            <p className="text-[10px] text-muted-foreground">No assets</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* List View */}
-            {view === "list" && (
-                <div className="space-y-2">
-                    {filtered.map((asset, i) => (
-                        <AssetListRow
-                            key={asset.id}
-                            asset={asset}
-                            reviews={getReviewsForAsset(asset.id)}
-                            campaignName={getCampaignName(asset.campaign_id)}
-                            index={i}
+                    <div className="flex gap-2">
+                        <SegmentedControl
+                            value={view}
+                            onValueChange={(v) => setView(v as "board" | "list")}
+                            options={[
+                                { value: "board", label: "Board" },
+                                { value: "list", label: "List" },
+                            ]}
+                            ariaLabel="View mode"
                         />
-                    ))}
-                    {filtered.length === 0 && (
-                        <div className="text-center py-12">
-                            <Filter className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">No assets match your filters</p>
-                        </div>
-                    )}
+                        <Link href="/creative-assets/new">
+                            <Button size="sm">
+                                <Plus className="h-4 w-4" />
+                                New Asset
+                            </Button>
+                        </Link>
+                    </div>
+                </PageHeader>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard title="Total Assets" value={totalAssets} icon={Layers} />
+                    <StatCard
+                        title="Approved / Deployed"
+                        value={approvedCount}
+                        icon={CheckCircle2}
+                    />
+                    <StatCard title="Pending Review" value={pendingReviewCount} icon={Clock} />
+                    <StatCard
+                        title="Avg Compliance"
+                        value={`${avgComplianceScore}%`}
+                        icon={Shield}
+                    />
                 </div>
-            )}
-        </div>
+
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search assets..."
+                        className="flex-1"
+                    />
+                    <select
+                        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">All Statuses</option>
+                        {STATUS_ORDER.map((s) => (
+                            <option key={s} value={s}>
+                                {getStatusLabel(s)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Board View */}
+                {view === "board" && (
+                    <div className="flex gap-4 overflow-x-auto pb-4">
+                        {STATUS_ORDER.filter((s) => s !== "retired").map((status) => {
+                            const statusAssets = filtered.filter(
+                                (a) => a.production_status === status
+                            );
+                            return (
+                                <div key={status} className="flex-shrink-0 w-72">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Badge
+                                            variant={getStatusVariant(status) as "default"}
+                                            className="text-[9px]"
+                                        >
+                                            {getStatusLabel(status)}
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground">
+                                            {statusAssets.length}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {statusAssets.map((asset) => (
+                                            <AssetCard
+                                                key={asset.id}
+                                                asset={asset}
+                                                reviews={getReviewsForAsset(asset.id)}
+                                                campaignName={getCampaignName(asset.campaign_id)}
+                                            />
+                                        ))}
+                                        {statusAssets.length === 0 && (
+                                            <div className="p-4 border border-dashed border-border rounded-lg text-center">
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    No assets
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* List View */}
+                {view === "list" && (
+                    <div className="space-y-2">
+                        {filtered.map((asset, i) => (
+                            <AssetListRow
+                                key={asset.id}
+                                asset={asset}
+                                reviews={getReviewsForAsset(asset.id)}
+                                campaignName={getCampaignName(asset.campaign_id)}
+                                index={i}
+                            />
+                        ))}
+                        {filtered.length === 0 && (
+                            <div className="text-center py-12">
+                                <Filter className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                                <p className="text-sm text-muted-foreground">
+                                    No assets match your filters
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </PermissionGate>
     );
 }
@@ -235,7 +264,9 @@ function AssetCard({
                                 <Shield className="h-3 w-3" />
                                 Compliance
                             </span>
-                            <span className={`font-semibold ${asset.brand_compliance_score >= 90 ? "text-success" : asset.brand_compliance_score >= 70 ? "text-warning" : "text-destructive"}`}>
+                            <span
+                                className={`font-semibold ${asset.brand_compliance_score >= 90 ? "text-success" : asset.brand_compliance_score >= 70 ? "text-warning" : "text-destructive"}`}
+                            >
                                 {asset.brand_compliance_score}%
                             </span>
                         </div>
@@ -252,13 +283,18 @@ function AssetCard({
                                 className={`h-5 w-5 rounded-full flex items-center justify-center text-[8px] ${
                                     r.status === "approved"
                                         ? "bg-success/20 text-success"
-                                        : r.status === "rejected" || r.status === "revision_requested"
-                                        ? "bg-destructive/20 text-destructive"
-                                        : "bg-muted text-muted-foreground"
+                                        : r.status === "rejected" ||
+                                            r.status === "revision_requested"
+                                          ? "bg-destructive/20 text-destructive"
+                                          : "bg-muted text-muted-foreground"
                                 }`}
                                 title={`${GATE_LABELS[r.gate_type] ?? r.gate_type}: ${getStatusLabel(r.status)}`}
                             >
-                                {r.status === "approved" ? "✓" : r.status === "rejected" ? "✗" : "·"}
+                                {r.status === "approved"
+                                    ? "✓"
+                                    : r.status === "rejected"
+                                      ? "✗"
+                                      : "·"}
                             </div>
                         ))}
                         <span className="text-[9px] text-muted-foreground">
@@ -311,69 +347,67 @@ function AssetListRow({
 
     return (
         <StaggerItem index={index} stagger="tight">
-        <Card
-            className="hover:border-primary/30 transition-colors"
-        >
-            <CardContent className="py-3 flex items-center gap-4">
-                {/* Status */}
-                <Badge
-                    variant={getStatusVariant(asset.production_status) as "default"}
-                    className="text-[9px] w-24 justify-center flex-shrink-0"
-                >
-                    {getStatusLabel(asset.production_status)}
-                </Badge>
+            <Card className="hover:border-primary/30 transition-colors">
+                <CardContent className="py-3 flex items-center gap-4">
+                    {/* Status */}
+                    <Badge
+                        variant={getStatusVariant(asset.production_status) as "default"}
+                        className="text-[9px] w-24 justify-center flex-shrink-0"
+                    >
+                        {getStatusLabel(asset.production_status)}
+                    </Badge>
 
-                {/* Name & Campaign */}
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{asset.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{campaignName}</p>
-                </div>
+                    {/* Name & Campaign */}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{asset.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{campaignName}</p>
+                    </div>
 
-                {/* Role */}
-                <Badge variant="outline" className="text-[9px] flex-shrink-0">
-                    {asset.asset_role}
-                </Badge>
+                    {/* Role */}
+                    <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                        {asset.asset_role}
+                    </Badge>
 
-                {/* Compliance */}
-                <div className="flex-shrink-0 w-16 text-right">
-                    {asset.brand_compliance_score !== null ? (
-                        <span className={`text-xs font-semibold ${asset.brand_compliance_score >= 90 ? "text-success" : asset.brand_compliance_score >= 70 ? "text-warning" : "text-destructive"}`}>
-                            {asset.brand_compliance_score}%
-                        </span>
-                    ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                </div>
+                    {/* Compliance */}
+                    <div className="flex-shrink-0 w-16 text-right">
+                        {asset.brand_compliance_score !== null ? (
+                            <span
+                                className={`text-xs font-semibold ${asset.brand_compliance_score >= 90 ? "text-success" : asset.brand_compliance_score >= 70 ? "text-warning" : "text-destructive"}`}
+                            >
+                                {asset.brand_compliance_score}%
+                            </span>
+                        ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                    </div>
 
-                {/* Review Gates */}
-                <div className="flex-shrink-0 w-20 text-right">
-                    {totalGates > 0 ? (
-                        <span className="text-xs">
-                            <span className="font-semibold text-success">{approvedGates}</span>
-                            <span className="text-muted-foreground">/{totalGates} gates</span>
-                        </span>
-                    ) : (
-                        <span className="text-xs text-muted-foreground">No reviews</span>
-                    )}
-                </div>
+                    {/* Review Gates */}
+                    <div className="flex-shrink-0 w-20 text-right">
+                        {totalGates > 0 ? (
+                            <span className="text-xs">
+                                <span className="font-semibold text-success">{approvedGates}</span>
+                                <span className="text-muted-foreground">/{totalGates} gates</span>
+                            </span>
+                        ) : (
+                            <span className="text-xs text-muted-foreground">No reviews</span>
+                        )}
+                    </div>
 
-                {/* Channels */}
-                <div className="flex gap-1 flex-shrink-0">
-                    {asset.target_channels.slice(0, 2).map((ch) => (
-                        <Badge key={ch} variant="outline" className="text-[8px]">
-                            {ch.replace("social_", "").replace(/_/g, " ")}
-                        </Badge>
-                    ))}
-                </div>
+                    {/* Channels */}
+                    <div className="flex gap-1 flex-shrink-0">
+                        {asset.target_channels.slice(0, 2).map((ch) => (
+                            <Badge key={ch} variant="outline" className="text-[8px]">
+                                {ch.replace("social_", "").replace(/_/g, " ")}
+                            </Badge>
+                        ))}
+                    </div>
 
-                {/* Due Date */}
-                <div className="flex-shrink-0 w-20 text-right text-[10px] text-muted-foreground">
-                    {asset.due_date
-                        ? formatDate(asset.due_date, "compact")
-                        : "—"}
-                </div>
-            </CardContent>
-        </Card>
+                    {/* Due Date */}
+                    <div className="flex-shrink-0 w-20 text-right text-[10px] text-muted-foreground">
+                        {asset.due_date ? formatDate(asset.due_date, "compact") : "—"}
+                    </div>
+                </CardContent>
+            </Card>
         </StaggerItem>
     );
 }

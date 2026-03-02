@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { type LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { type LucideIcon, Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 interface StatCardProps {
     title: string;
@@ -12,7 +12,15 @@ interface StatCardProps {
     className?: string;
 }
 
-export function StatCard({ title, value, change, changeSuffix = "%", icon: Icon, description, className }: StatCardProps) {
+export function StatCard({
+    title,
+    value,
+    change,
+    changeSuffix = "%",
+    icon: Icon,
+    description,
+    className,
+}: StatCardProps) {
     const isPositive = change !== undefined && change > 0;
     const isNegative = change !== undefined && change < 0;
     const TrendIcon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
@@ -33,13 +41,17 @@ export function StatCard({ title, value, change, changeSuffix = "%", icon: Icon,
             {(change !== undefined || description) && (
                 <div className="mt-3 flex items-center gap-2 text-xs">
                     {change !== undefined && (
-                        <span className={cn("flex items-center gap-0.5 font-medium",
-                            isPositive && "text-success",
-                            isNegative && "text-destructive",
-                            !isPositive && !isNegative && "text-muted-foreground"
-                        )}>
+                        <span
+                            className={cn(
+                                "flex items-center gap-0.5 font-medium",
+                                isPositive && "text-success",
+                                isNegative && "text-destructive",
+                                !isPositive && !isNegative && "text-muted-foreground"
+                            )}
+                        >
                             <TrendIcon className="h-3 w-3" />
-                            {Math.abs(change)}{changeSuffix}
+                            {Math.abs(change)}
+                            {changeSuffix}
                         </span>
                     )}
                     {description && <span className="text-muted-foreground">{description}</span>}

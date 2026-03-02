@@ -22,7 +22,7 @@ import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getBrand } from "@/config/brands";
-import type { BrandId, BrandColorPalette } from "@/config/brands";
+import type { BrandColorPalette, BrandId } from "@/config/brands";
 
 // ─── Theme Token Override Shape ───
 
@@ -176,10 +176,21 @@ function brandPaletteToTokens(palette: BrandColorPalette): ThemeTokens {
 function clearCustomTokensFromDOM() {
     const root = document.documentElement;
     const vars = [
-        "--primary", "--primary-foreground", "--secondary", "--secondary-foreground",
-        "--accent", "--accent-foreground", "--background", "--foreground",
-        "--muted", "--muted-foreground", "--card", "--card-foreground",
-        "--border", "--ring", "--radius",
+        "--primary",
+        "--primary-foreground",
+        "--secondary",
+        "--secondary-foreground",
+        "--accent",
+        "--accent-foreground",
+        "--background",
+        "--foreground",
+        "--muted",
+        "--muted-foreground",
+        "--card",
+        "--card-foreground",
+        "--border",
+        "--ring",
+        "--radius",
     ];
     vars.forEach((v) => root.style.removeProperty(v));
 }
@@ -282,8 +293,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 if (brand && store.brandId !== "playbook") {
                     brandTokens = brandPaletteToTokens(brand.colors[resolved]);
                 }
-            } catch { /* use defaults */ }
-            const merged = mergeTokens(brandTokens, useThemeStore.getState().orgTokens, useThemeStore.getState().projectTokens, useThemeStore.getState().userTokens);
+            } catch {
+                /* use defaults */
+            }
+            const merged = mergeTokens(
+                brandTokens,
+                useThemeStore.getState().orgTokens,
+                useThemeStore.getState().projectTokens,
+                useThemeStore.getState().userTokens
+            );
             if (Object.keys(merged).length > 0) {
                 applyTokensToDOM(merged);
             }
@@ -304,7 +322,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                     if (newMode && newMode !== useThemeStore.getState().colorMode) {
                         useThemeStore.getState().setColorMode(newMode);
                     }
-                } catch { /* ignore parse errors */ }
+                } catch {
+                    /* ignore parse errors */
+                }
             }
         };
         window.addEventListener("storage", handler);
@@ -341,9 +361,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         ]
     );
 
-    return (
-        <ThemeContext.Provider value={contextValue}>
-            {children}
-        </ThemeContext.Provider>
-    );
+    return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }

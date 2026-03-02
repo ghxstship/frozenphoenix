@@ -1,66 +1,43 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
-import { navigationConfig, flattenNavItems, type NavItem, type NavSection } from "@/config/navigation";
-import { hasPermission } from "@/config/rbac";
+import {
+    flattenNavItems,
+    getContextualNavigationVisibility,
+    getNavigationSectionsForRole,
+    navigationConfig,
+    type NavItem,
+} from "@/config/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { brandConfig } from "@/config/brand";
-import { LAYOUT, BREAKPOINTS } from "@/config/design-tokens";
+import { getActiveBrand } from "@/config/brands";
+import { LAYOUT } from "@/config/design-tokens";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { PermissionLevel } from "@/types";
 import {
     ChevronDown,
     ChevronRight,
-    PanelLeftClose,
-    PanelLeft,
-    Play,
-    X,
-    LogOut,
     Loader2,
-    Search,
+    LogOut,
+    PanelLeft,
+    PanelLeftClose,
     Pin,
     PinOff,
+    Play,
+    Search,
     Star,
+    X,
 } from "lucide-react";
 
+const brandConfig = getActiveBrand();
 const SIDEBAR_WIDTH = LAYOUT.sidebar;
 
-// ─── RBAC helpers ───────────────────────────────────────────────────
-function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): boolean {
-    if (!role) return false;
-    if (role === "exec") return true;
-    if (!item.permission) return true;
-    const parts = item.permission.split(".");
-    const resource = parts[0] ?? "";
-    const action = parts[1] as "read" | "write" | "delete" | "manage" | undefined;
-    return hasPermission(role, resource, action ?? "read");
-}
-
-function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undefined): NavItem[] {
-    return items
-        .filter((item) => isItemPermitted(item, role))
-        .map((item) =>
-            item.children
-                ? { ...item, children: item.children.filter((c) => isItemPermitted(c, role)) }
-                : item
-        );
-}
-
-function filterSectionsByPermission(sections: NavSection[], role: PermissionLevel | undefined): NavSection[] {
-    return sections
-        .map((section) => ({
-            ...section,
-            items: filterItemsByPermission(section.items, role),
-        }))
-        .filter((section) => section.items.length > 0);
-}
-
 // ─── Nested NavItem with children support ───────────────────────────
-function SidebarNavItem({
+const SidebarNavItem = React.memo(function SidebarNavItem({
     item,
     isActive,
     collapsed,
@@ -69,6 +46,8 @@ function SidebarNavItem({
     onTogglePin,
     pathname,
     pinnedPaths,
+    expandedItems,
+    onToggleChildren,
     depth = 0,
 }: {
     item: NavItem;
@@ -79,24 +58,20 @@ function SidebarNavItem({
     onTogglePin: (path: string) => void;
     pathname: string;
     pinnedPaths: string[];
+    expandedItems: Record<string, boolean>;
+    onToggleChildren: (path: string) => void;
     depth?: number;
 }) {
     const Icon = item.icon;
     const hasChildren = item.children && item.children.length > 0;
-    const isChildActive = hasChildren && item.children!.some(
-        (c) => pathname === c.path || pathname.startsWith(c.path + "/")
-    );
-    // User can manually collapse, but active children always force open.
-    // `userClosed` tracks explicit collapse; isChildActive overrides it.
-    const [userClosed, setUserClosed] = useState(false);
-    const childrenOpen = isChildActive || (isActive && !userClosed) || (!userClosed && (isActive || isChildActive));
-    const [showPinAction, setShowPinAction] = useState(false);
+    const isChildActive =
+        hasChildren &&
+        item.children!.some((c) => pathname === c.path || pathname.startsWith(c.path + "/"));
+    const isManuallyExpanded = expandedItems[item.path] ?? false;
+    const childrenOpen = isChildActive || isActive || isManuallyExpanded;
 
     const content = (
-        <div
-            onMouseEnter={() => setShowPinAction(true)}
-            onMouseLeave={() => setShowPinAction(false)}
-        >
+        <div>
             <div className="flex items-center">
                 <Link
                     href={item.path}
@@ -108,8 +83,8 @@ function SidebarNavItem({
                         isActive
                             ? "bg-sidebar-primary/12 text-sidebar-primary"
                             : isChildActive
-                                ? "text-sidebar-primary/80"
-                                : "text-sidebar-foreground/65 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
+                              ? "text-sidebar-primary/80"
+                              : "text-sidebar-foreground/65 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
                     )}
                     aria-current={isActive ? "page" : undefined}
                 >
@@ -119,10 +94,14 @@ function SidebarNavItem({
                             aria-hidden="true"
                         />
                     )}
-                    <Icon className={cn(
-                        "h-[18px] w-[18px] shrink-0 transition-colors",
-                        isActive || isChildActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"
-                    )} />
+                    <Icon
+                        className={cn(
+                            "h-[18px] w-[18px] shrink-0 transition-colors",
+                            isActive || isChildActive
+                                ? "text-sidebar-primary"
+                                : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"
+                        )}
+                    />
                     {(!collapsed || isMobile) && (
                         <>
                             <span className="truncate flex-1">{item.title}</span>
@@ -131,7 +110,7 @@ function SidebarNavItem({
                                     {item.badge}
                                 </span>
                             )}
-                            {showPinAction && depth === 0 && (
+                            {depth === 0 && (
                                 <button
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -139,14 +118,23 @@ function SidebarNavItem({
                                         onTogglePin(item.path);
                                     }}
                                     className={cn(
-                                        "h-5 w-5 rounded flex items-center justify-center transition-all opacity-0 group-hover:opacity-100",
+                                        "h-5 w-5 rounded flex items-center justify-center transition-opacity",
+                                        isPinned
+                                            ? "opacity-100"
+                                            : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto",
                                         isPinned
                                             ? "text-sidebar-primary hover:text-sidebar-primary/70"
                                             : "text-sidebar-foreground/30 hover:text-sidebar-foreground/60"
                                     )}
-                                    aria-label={isPinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
+                                    aria-label={
+                                        isPinned ? `Unpin ${item.title}` : `Pin ${item.title}`
+                                    }
                                 >
-                                    {isPinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                                    {isPinned ? (
+                                        <PinOff className="h-3 w-3" />
+                                    ) : (
+                                        <Pin className="h-3 w-3" />
+                                    )}
                                 </button>
                             )}
                         </>
@@ -155,15 +143,18 @@ function SidebarNavItem({
                 {/* Expand/collapse toggle for items with children */}
                 {hasChildren && (!collapsed || isMobile) && (
                     <button
-                        onClick={() => setUserClosed((v) => !v)}
+                        onClick={() => onToggleChildren(item.path)}
                         className="h-6 w-6 shrink-0 rounded flex items-center justify-center text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
-                        aria-label={childrenOpen ? `Collapse ${item.title}` : `Expand ${item.title}`}
+                        aria-label={
+                            childrenOpen ? `Collapse ${item.title}` : `Expand ${item.title}`
+                        }
                         aria-expanded={childrenOpen}
                     >
-                        {childrenOpen
-                            ? <ChevronDown className="h-3 w-3" />
-                            : <ChevronRight className="h-3 w-3" />
-                        }
+                        {childrenOpen ? (
+                            <ChevronDown className="h-3 w-3" />
+                        ) : (
+                            <ChevronRight className="h-3 w-3" />
+                        )}
                     </button>
                 )}
             </div>
@@ -178,7 +169,8 @@ function SidebarNavItem({
                 >
                     <div className="space-y-0.5 mt-0.5">
                         {item.children!.map((child) => {
-                            const childActive = pathname === child.path || pathname.startsWith(child.path + "/");
+                            const childActive =
+                                pathname === child.path || pathname.startsWith(child.path + "/");
                             return (
                                 <SidebarNavItem
                                     key={child.path}
@@ -190,6 +182,8 @@ function SidebarNavItem({
                                     onTogglePin={onTogglePin}
                                     pathname={pathname}
                                     pinnedPaths={pinnedPaths}
+                                    expandedItems={expandedItems}
+                                    onToggleChildren={onToggleChildren}
                                     depth={1}
                                 />
                             );
@@ -209,27 +203,50 @@ function SidebarNavItem({
     }
 
     return content;
-}
+});
 
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { profile, loading: authLoading, signOut } = useAuth();
-    const {
-        isOpen, isCollapsed, isMobile, filterQuery, pinnedPaths,
-        setOpen, setMobile, setFilterQuery, togglePin, toggleCollapse,
-    } = useSidebar();
+    const isOpen = useSidebar((state) => state.isOpen);
+    const isCollapsed = useSidebar((state) => state.isCollapsed);
+    const isMobile = useSidebar((state) => state.isMobile);
+    const filterQuery = useSidebar((state) => state.filterQuery);
+    const pinnedPaths = useSidebar((state) => state.pinnedPaths);
+    const setOpen = useSidebar((state) => state.setOpen);
+    const setFilterQuery = useSidebar((state) => state.setFilterQuery);
+    const togglePin = useSidebar((state) => state.togglePin);
+    const toggleCollapse = useSidebar((state) => state.toggleCollapse);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
         Object.fromEntries(navigationConfig.map((s) => [s.title, s.defaultExpanded ?? false]))
     );
+    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
     const [signingOut, setSigningOut] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const mobileNavRef = useFocusTrap(isMobile && isOpen);
 
     const collapsed = isMobile ? false : isCollapsed;
     const sidebarWidth = collapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded;
+    const mobileSidebarWidth = SIDEBAR_WIDTH.mobile;
+    const deferredFilterQuery = useDeferredValue(filterQuery);
 
     const userRole = profile?.role as PermissionLevel | undefined;
+
+    const closeMobileSidebar = useCallback(() => {
+        setOpen(false);
+        if (typeof window !== "undefined") {
+            window.requestAnimationFrame(() => {
+                const trigger = document.getElementById("sidebar-menu-toggle");
+                if (trigger instanceof HTMLElement) {
+                    trigger.focus();
+                }
+            });
+        }
+    }, [setOpen]);
+
+    useEscapeKey(closeMobileSidebar, isMobile && isOpen);
 
     const handleSignOut = async () => {
         setSigningOut(true);
@@ -238,19 +255,40 @@ export function Sidebar() {
     };
 
     useEffect(() => {
-        const checkMobile = () => {
-            const mobile = window.innerWidth < BREAKPOINTS.lg;
-            setMobile(mobile);
-            if (!mobile && isOpen) setOpen(false);
-        };
-        checkMobile();
-        window.addEventListener("resize", checkMobile);
-        return () => window.removeEventListener("resize", checkMobile);
-    }, [setMobile, setOpen, isOpen]);
+        if (isMobile && isOpen) closeMobileSidebar();
+    }, [pathname, isMobile, isOpen, closeMobileSidebar]);
 
     useEffect(() => {
-        if (isMobile && isOpen) setOpen(false);
-    }, [pathname, isMobile, isOpen, setOpen]);
+        if (!isMobile || !isOpen) return;
+
+        const body = document.body;
+        const shellMain = document.getElementById("shell-main-content");
+        const previousOverflow = body.style.overflow;
+        const previousAriaHidden = shellMain?.getAttribute("aria-hidden") ?? null;
+        const hadInert = shellMain?.hasAttribute("inert") ?? false;
+
+        body.style.overflow = "hidden";
+        shellMain?.setAttribute("aria-hidden", "true");
+        if (shellMain) {
+            shellMain.setAttribute("inert", "");
+        }
+
+        return () => {
+            body.style.overflow = previousOverflow;
+
+            if (shellMain) {
+                if (previousAriaHidden === null) {
+                    shellMain.removeAttribute("aria-hidden");
+                } else {
+                    shellMain.setAttribute("aria-hidden", previousAriaHidden);
+                }
+
+                if (!hadInert) {
+                    shellMain.removeAttribute("inert");
+                }
+            }
+        };
+    }, [isMobile, isOpen]);
 
     // Scroll active item into view on mount
     useEffect(() => {
@@ -281,14 +319,19 @@ export function Sidebar() {
         setExpandedSections((prev) => ({ ...prev, [title]: !prev[title] }));
     }, []);
 
-    // ── RBAC-filtered navigation ──
-    // Remove items/sections the current role cannot access.
-    // Contextual sections (e.g. Live Ops) are hidden unless explicitly shown.
-    // TODO: Wire `contextual: "live-ops"` to a real "hasActiveEvent" signal.
+    const toggleItemChildren = useCallback((path: string) => {
+        setExpandedItems((prev) => ({ ...prev, [path]: !prev[path] }));
+    }, []);
+
+    const contextualVisibility = useMemo(
+        () => getContextualNavigationVisibility(pathname),
+        [pathname]
+    );
+
+    // ── RBAC + contextual filtered navigation ──
     const rbacFilteredSections = useMemo(() => {
-        const nonContextual = navigationConfig.filter((s) => !s.contextual);
-        return filterSectionsByPermission(nonContextual, userRole);
-    }, [userRole]);
+        return getNavigationSectionsForRole(userRole, { contextualVisibility });
+    }, [userRole, contextualVisibility]);
 
     // Build pinned items from all navigation sections (including children)
     const pinnedItems = useMemo(() => {
@@ -299,30 +342,48 @@ export function Sidebar() {
             .filter(Boolean) as NavItem[];
     }, [pinnedPaths, rbacFilteredSections]);
 
+    const normalizedFilterQuery = useMemo(
+        () => deferredFilterQuery.trim().toLowerCase(),
+        [deferredFilterQuery]
+    );
+
+    const itemSearchIndex = useMemo(() => {
+        const index = new Map<string, string>();
+
+        for (const section of rbacFilteredSections) {
+            for (const item of section.items) {
+                const childSearch = (item.children ?? [])
+                    .map((child) => `${child.title} ${child.path}`)
+                    .join(" ");
+                index.set(item.path, `${item.title} ${item.path} ${childSearch}`.toLowerCase());
+            }
+        }
+
+        return index;
+    }, [rbacFilteredSections]);
+
     // Filter sections based on search query (matches parent or child titles)
     const filteredSections = useMemo(() => {
-        if (!filterQuery.trim()) return rbacFilteredSections;
-        const q = filterQuery.toLowerCase();
+        if (!normalizedFilterQuery) return rbacFilteredSections;
+
         return rbacFilteredSections
             .map((section) => ({
                 ...section,
-                items: section.items.filter(
-                    (item) =>
-                        item.title.toLowerCase().includes(q) ||
-                        item.path.toLowerCase().includes(q) ||
-                        (item.children && item.children.some(
-                            (c) => c.title.toLowerCase().includes(q) || c.path.toLowerCase().includes(q)
-                        ))
+                items: section.items.filter((item) =>
+                    itemSearchIndex.get(item.path)?.includes(normalizedFilterQuery)
                 ),
             }))
             .filter((section) => section.items.length > 0);
-    }, [filterQuery, rbacFilteredSections]);
+    }, [normalizedFilterQuery, itemSearchIndex, rbacFilteredSections]);
 
     // When filtering, treat all sections as expanded (derived, no setState needed)
-    const isFiltering = filterQuery.trim().length > 0;
-    const isSectionExpanded = useCallback((title: string) => {
-        return isFiltering || (expandedSections[title] ?? false);
-    }, [isFiltering, expandedSections]);
+    const isFiltering = normalizedFilterQuery.length > 0;
+    const isSectionExpanded = useCallback(
+        (title: string) => {
+            return isFiltering || (expandedSections[title] ?? false);
+        },
+        [isFiltering, expandedSections]
+    );
 
     return (
         <>
@@ -330,26 +391,28 @@ export function Sidebar() {
             {isMobile && isOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-foreground/50 backdrop-blur-sm lg:hidden"
-                    onClick={() => setOpen(false)}
+                    onClick={closeMobileSidebar}
                     aria-hidden="true"
                 />
             )}
 
             <aside
+                ref={mobileNavRef}
                 id="main-navigation"
                 role="navigation"
                 aria-label="Main navigation"
                 className={cn(
                     "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-all duration-300",
-                    isMobile
-                        ? cn("w-[280px]", isOpen ? "translate-x-0" : "-translate-x-full")
-                        : collapsed ? "w-[68px]" : "w-[260px]"
+                    isMobile && (isOpen ? "translate-x-0" : "-translate-x-full")
                 )}
-                style={{ width: isMobile ? 280 : sidebarWidth }}
+                style={{ width: isMobile ? mobileSidebarWidth : sidebarWidth }}
                 aria-hidden={isMobile && !isOpen}
             >
                 {/* Logo */}
-                <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-border shrink-0">
+                <div
+                    className="flex items-center justify-between px-4 border-b border-sidebar-border shrink-0"
+                    style={{ height: LAYOUT.topbar.height }}
+                >
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
                             <Play className="h-4.5 w-4.5 text-primary-foreground fill-primary-foreground" />
@@ -362,7 +425,7 @@ export function Sidebar() {
                     </Link>
                     {isMobile ? (
                         <button
-                            onClick={() => setOpen(false)}
+                            onClick={closeMobileSidebar}
                             className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
                             aria-label="Close sidebar"
                         >
@@ -374,7 +437,11 @@ export function Sidebar() {
                             className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
                             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                         >
-                            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                            {collapsed ? (
+                                <PanelLeft className="h-4 w-4" />
+                            ) : (
+                                <PanelLeftClose className="h-4 w-4" />
+                            )}
                         </button>
                     )}
                 </div>
@@ -413,7 +480,7 @@ export function Sidebar() {
                 {/* Nav Sections */}
                 <nav ref={navRef} className="flex-1 overflow-y-auto py-2 px-2 scrollbar-hide">
                     {/* Pinned / Favorites Section */}
-                    {pinnedItems.length > 0 && !filterQuery && (
+                    {pinnedItems.length > 0 && !isFiltering && (
                         <div className="mb-2">
                             {(!collapsed || isMobile) && (
                                 <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-primary/60">
@@ -428,7 +495,9 @@ export function Sidebar() {
                             )}
                             <div className="space-y-0.5">
                                 {pinnedItems.map((item) => {
-                                    const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+                                    const isActive =
+                                        pathname === item.path ||
+                                        pathname.startsWith(item.path + "/");
                                     return (
                                         <SidebarNavItem
                                             key={`pin-${item.path}`}
@@ -440,6 +509,8 @@ export function Sidebar() {
                                             onTogglePin={togglePin}
                                             pathname={pathname}
                                             pinnedPaths={pinnedPaths}
+                                            expandedItems={expandedItems}
+                                            onToggleChildren={toggleItemChildren}
                                         />
                                     );
                                 })}
@@ -452,17 +523,19 @@ export function Sidebar() {
                     {filteredSections.map((section) => (
                         <div key={section.title} className="mb-0.5">
                             {/* Section Header */}
-                            {(!collapsed || isMobile) ? (
+                            {!collapsed || isMobile ? (
                                 <button
                                     onClick={() => toggleSection(section.title)}
                                     className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/35 hover:text-sidebar-foreground/55 transition-colors"
                                     aria-expanded={isSectionExpanded(section.title)}
                                 >
                                     <span>{section.title}</span>
-                                    <ChevronDown className={cn(
-                                        "h-3 w-3 transition-transform duration-200",
-                                        !isSectionExpanded(section.title) && "-rotate-90"
-                                    )} />
+                                    <ChevronDown
+                                        className={cn(
+                                            "h-3 w-3 transition-transform duration-200",
+                                            !isSectionExpanded(section.title) && "-rotate-90"
+                                        )}
+                                    />
                                 </button>
                             ) : (
                                 <div className="mx-auto my-1.5 w-6 border-t border-sidebar-border/40" />
@@ -479,7 +552,9 @@ export function Sidebar() {
                             >
                                 <div className="space-y-0.5 mt-0.5">
                                     {section.items.map((item) => {
-                                        const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+                                        const isActive =
+                                            pathname === item.path ||
+                                            pathname.startsWith(item.path + "/");
                                         return (
                                             <SidebarNavItem
                                                 key={item.path}
@@ -491,6 +566,8 @@ export function Sidebar() {
                                                 onTogglePin={togglePin}
                                                 pathname={pathname}
                                                 pinnedPaths={pinnedPaths}
+                                                expandedItems={expandedItems}
+                                                onToggleChildren={toggleItemChildren}
                                             />
                                         );
                                     })}
@@ -499,7 +576,7 @@ export function Sidebar() {
                         </div>
                     ))}
 
-                    {filteredSections.length === 0 && filterQuery && (
+                    {filteredSections.length === 0 && isFiltering && (
                         <div className="px-3 py-8 text-center">
                             <p className="text-xs text-sidebar-foreground/40">No matching pages</p>
                             <button

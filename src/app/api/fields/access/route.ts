@@ -10,13 +10,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import {
-    resolveFieldAccess,
     type FieldAccessRule,
-    type FieldResolutionContext,
-    type PricingTier,
-    type Visibility,
-    type FieldWriteAccess,
     type FieldOverride,
+    type FieldResolutionContext,
+    type FieldWriteAccess,
+    type PricingTier,
+    resolveFieldAccess,
+    type Visibility,
 } from "@/lib/permissions/field-resolver";
 import type { PermissionLevel } from "@/types";
 
@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
         return ApiErrors.serviceUnavailable();
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
         return ApiErrors.unauthorized();
     }
@@ -76,17 +78,19 @@ export async function GET(request: NextRequest) {
     // Load role access rules for user's role
     const { data: roleAccess } = await supabase
         .from("field_role_access")
-        .select("field_type_id, role_key, visibility, write_access, exportable, api_accessible, audit_logged, override_allowed")
+        .select(
+            "field_type_id, role_key, visibility, write_access, exportable, api_accessible, audit_logged, override_allowed"
+        )
         .eq("role_key", userRole);
 
-    const roleAccessMap = new Map(
-        (roleAccess ?? []).map((r) => [r.field_type_id, r] as const)
-    );
+    const roleAccessMap = new Map((roleAccess ?? []).map((r) => [r.field_type_id, r] as const));
 
     // Load overrides for this org
     const { data: overrides } = await supabase
         .from("field_access_overrides")
-        .select("field_type_id, granted_visibility, granted_write, scope_type, scope_id, expires_at")
+        .select(
+            "field_type_id, granted_visibility, granted_write, scope_type, scope_id, expires_at"
+        )
         .eq("organization_id", orgId)
         .eq("role_key", userRole)
         .eq("is_active", true);
@@ -118,18 +122,40 @@ export async function GET(request: NextRequest) {
             pricingTier: fa.pricing_tier as PricingTier,
             safetyCritical: fa.safety_critical,
             roleAccess: {
-                exec: { visibility: "VISIBLE" as Visibility, write: "manage" as FieldWriteAccess, exportable: true, apiAccessible: true },
-                pm: { visibility: "VISIBLE" as Visibility, write: "write" as FieldWriteAccess, exportable: true, apiAccessible: true },
-                client: { visibility: "VISIBLE" as Visibility, write: "none" as FieldWriteAccess, exportable: false, apiAccessible: true },
-                vendor: { visibility: "HIDDEN" as Visibility, write: "none" as FieldWriteAccess, exportable: false, apiAccessible: false },
-                ...(ra ? {
-                    [userRole]: {
-                        visibility: ra.visibility as Visibility,
-                        write: (ra.write_access ?? "none") as FieldWriteAccess,
-                        exportable: ra.exportable,
-                        apiAccessible: ra.api_accessible,
-                    }
-                } : {}),
+                exec: {
+                    visibility: "VISIBLE" as Visibility,
+                    write: "manage" as FieldWriteAccess,
+                    exportable: true,
+                    apiAccessible: true,
+                },
+                pm: {
+                    visibility: "VISIBLE" as Visibility,
+                    write: "write" as FieldWriteAccess,
+                    exportable: true,
+                    apiAccessible: true,
+                },
+                client: {
+                    visibility: "VISIBLE" as Visibility,
+                    write: "none" as FieldWriteAccess,
+                    exportable: false,
+                    apiAccessible: true,
+                },
+                vendor: {
+                    visibility: "HIDDEN" as Visibility,
+                    write: "none" as FieldWriteAccess,
+                    exportable: false,
+                    apiAccessible: false,
+                },
+                ...(ra
+                    ? {
+                          [userRole]: {
+                              visibility: ra.visibility as Visibility,
+                              write: (ra.write_access ?? "none") as FieldWriteAccess,
+                              exportable: ra.exportable,
+                              apiAccessible: ra.api_accessible,
+                          },
+                      }
+                    : {}),
             },
             auditLogged: ra?.audit_logged ?? false,
             rlsEnforced: true,

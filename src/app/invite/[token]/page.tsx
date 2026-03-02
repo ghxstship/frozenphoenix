@@ -1,12 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthLayout } from "@/components/auth";
-import { Building2, Users, Shield, AlertCircle, Loader2, CheckCircle2, ArrowRight, XCircle } from "lucide-react";
+import {
+    AlertCircle,
+    ArrowRight,
+    Building2,
+    CheckCircle2,
+    Loader2,
+    Shield,
+    Users,
+    XCircle,
+} from "lucide-react";
 
 interface InvitationData {
     email: string;
@@ -115,8 +124,8 @@ export default function InviteAcceptPage() {
                         <XCircle className="h-7 w-7 text-destructive" aria-hidden="true" />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        This invitation link is invalid or has been removed.
-                        Please contact your team administrator for a new invite.
+                        This invitation link is invalid or has been removed. Please contact your
+                        team administrator for a new invite.
                     </p>
                     <Link href="/login">
                         <Button variant="outline">Go to Sign In</Button>
@@ -134,8 +143,8 @@ export default function InviteAcceptPage() {
                         <AlertCircle className="h-7 w-7 text-warning" aria-hidden="true" />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        This invitation has expired. Please ask your team administrator
-                        to send a new invitation.
+                        This invitation has expired. Please ask your team administrator to send a
+                        new invitation.
                     </p>
                     <Link href="/login">
                         <Button variant="outline">Go to Sign In</Button>
@@ -153,8 +162,8 @@ export default function InviteAcceptPage() {
                         <CheckCircle2 className="h-7 w-7 text-info" aria-hidden="true" />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        This invitation has already been accepted.
-                        If this was you, sign in to access the organization.
+                        This invitation has already been accepted. If this was you, sign in to
+                        access the organization.
                     </p>
                     <Link href="/login">
                         <Button>Sign In</Button>
@@ -177,7 +186,11 @@ export default function InviteAcceptPage() {
                             You&apos;ve joined {invitation?.organizations?.name}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            You&apos;re now a member as <strong>{ROLE_LABELS[invitation?.role || ""] || invitation?.role}</strong>.
+                            You&apos;re now a member as{" "}
+                            <strong>
+                                {ROLE_LABELS[invitation?.role || ""] || invitation?.role}
+                            </strong>
+                            .
                         </p>
                     </div>
                     <Button onClick={() => router.push("/dashboard")}>
@@ -192,7 +205,7 @@ export default function InviteAcceptPage() {
     // Valid invitation — show accept card
     return (
         <AuthLayout
-            title="You&apos;re invited"
+            title="You're invited"
             subtitle={`Join ${invitation?.organizations?.name || "a team"} on the platform`}
         >
             <div className="space-y-6">
@@ -266,7 +279,10 @@ export default function InviteAcceptPage() {
                     </Button>
                 ) : (
                     <div className="space-y-3">
-                        <Button className="w-full" onClick={() => router.push(`/signup?invite=${token}`)}>
+                        <Button
+                            className="w-full"
+                            onClick={() => router.push(`/signup?invite=${token}`)}
+                        >
                             Create Account & Join
                             <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </Button>

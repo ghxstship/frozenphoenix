@@ -5,11 +5,37 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
-    FolderKanban, MapPin, Sparkles, Calendar, Activity,
-    Hammer, Wrench, Printer, Utensils, Truck, Users, DollarSign,
-    AlertTriangle, FileText, BookOpen, Package, Clock, CheckCircle,
-    XCircle, Pause, Play, Archive, Send, Eye, Receipt, CreditCard,
-    Building, Warehouse as WarehouseIcon, HardHat, Shield, Zap,
+    Activity,
+    AlertTriangle,
+    Archive,
+    BookOpen,
+    Building,
+    Calendar,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Eye,
+    FileText,
+    FolderKanban,
+    Hammer,
+    HardHat,
+    MapPin,
+    Package,
+    Pause,
+    Play,
+    Printer,
+    Receipt,
+    Send,
+    Shield,
+    Sparkles,
+    Truck,
+    Users,
+    Utensils,
+    Warehouse as WarehouseIcon,
+    Wrench,
+    XCircle,
+    Zap,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -318,13 +344,21 @@ export const PAYMENT_METHOD_CONFIG = {
 export const INCIDENT_TYPE_CONFIG = {
     safety: { label: "Safety", icon: Shield, color: "hsl(var(--chart-5))" },
     injury: { label: "Injury", icon: AlertTriangle, color: "hsl(var(--destructive))" },
-    property_damage: { label: "Property Damage", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
+    property_damage: {
+        label: "Property Damage",
+        icon: AlertTriangle,
+        color: "hsl(var(--chart-8))",
+    },
     theft: { label: "Theft", icon: AlertTriangle, color: "hsl(var(--chart-5))" },
     security: { label: "Security", icon: Shield, color: "hsl(var(--chart-8))" },
     weather: { label: "Weather", icon: AlertTriangle, color: "hsl(var(--chart-1))" },
     equipment_failure: { label: "Equipment Failure", icon: Wrench, color: "hsl(var(--chart-8))" },
     vendor_issue: { label: "Vendor Issue", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
-    client_complaint: { label: "Client Complaint", icon: AlertTriangle, color: "hsl(var(--chart-8))" },
+    client_complaint: {
+        label: "Client Complaint",
+        icon: AlertTriangle,
+        color: "hsl(var(--chart-8))",
+    },
     other: { label: "Other", icon: AlertTriangle, color: "hsl(var(--muted-foreground))" },
 } as const;
 
@@ -381,7 +415,16 @@ export const ENTITY_RELATIONSHIP_MAP: Record<string, EntityRelationship> = {
         icon: FolderKanban,
         path: "/projects",
         parentEntities: ["deal", "client"],
-        childEntities: ["location", "activation", "event", "task", "milestone", "budget", "shipment", "incident"],
+        childEntities: [
+            "location",
+            "activation",
+            "event",
+            "task",
+            "milestone",
+            "budget",
+            "shipment",
+            "incident",
+        ],
         relatedEntities: ["crew_member", "vendor", "asset", "purchase_order", "invoice"],
     },
     location: {
@@ -500,13 +543,31 @@ export const ENTITY_RELATIONSHIP_MAP: Record<string, EntityRelationship> = {
 // WHO/WHAT/WHEN/WHERE/WHY/HOW/IF-THEN FIELD MAPPINGS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type FieldCategory = "who" | "what" | "when" | "where" | "why" | "how" | "if_then" | "relationships";
+export type FieldCategory =
+    | "who"
+    | "what"
+    | "when"
+    | "where"
+    | "why"
+    | "how"
+    | "if_then"
+    | "relationships";
 
 export interface FieldMapping {
     field: string;
     label: string;
     category: FieldCategory;
-    type: "text" | "number" | "date" | "datetime" | "currency" | "select" | "multiselect" | "reference" | "boolean" | "textarea";
+    type:
+        | "text"
+        | "number"
+        | "date"
+        | "datetime"
+        | "currency"
+        | "select"
+        | "multiselect"
+        | "reference"
+        | "boolean"
+        | "textarea";
     referenceEntity?: string;
     required?: boolean;
     editable?: boolean;
@@ -514,10 +575,35 @@ export interface FieldMapping {
 
 export const ENTITY_FIELD_MAPPINGS: Record<string, FieldMapping[]> = {
     project: [
-        { field: "clientId", label: "Client", category: "who", type: "reference", referenceEntity: "client", required: true },
-        { field: "accountManagerId", label: "Account Manager", category: "who", type: "reference", referenceEntity: "crew_member" },
-        { field: "projectManagerId", label: "Project Manager", category: "who", type: "reference", referenceEntity: "crew_member" },
-        { field: "teamIds", label: "Team Members", category: "who", type: "multiselect", referenceEntity: "crew_member" },
+        {
+            field: "clientId",
+            label: "Client",
+            category: "who",
+            type: "reference",
+            referenceEntity: "client",
+            required: true,
+        },
+        {
+            field: "accountManagerId",
+            label: "Account Manager",
+            category: "who",
+            type: "reference",
+            referenceEntity: "crew_member",
+        },
+        {
+            field: "projectManagerId",
+            label: "Project Manager",
+            category: "who",
+            type: "reference",
+            referenceEntity: "crew_member",
+        },
+        {
+            field: "teamIds",
+            label: "Team Members",
+            category: "who",
+            type: "multiselect",
+            referenceEntity: "crew_member",
+        },
         { field: "name", label: "Project Name", category: "what", type: "text", required: true },
         { field: "type", label: "Project Type", category: "what", type: "select" },
         { field: "description", label: "Description", category: "what", type: "textarea" },
@@ -526,31 +612,78 @@ export const ENTITY_FIELD_MAPPINGS: Record<string, FieldMapping[]> = {
         { field: "endDate", label: "End Date", category: "when", type: "date", required: true },
         { field: "loadInDate", label: "Load In Date", category: "when", type: "date" },
         { field: "loadOutDate", label: "Load Out Date", category: "when", type: "date" },
-        { field: "primaryLocationId", label: "Primary Location", category: "where", type: "reference", referenceEntity: "location" },
+        {
+            field: "primaryLocationId",
+            label: "Primary Location",
+            category: "where",
+            type: "reference",
+            referenceEntity: "location",
+        },
         { field: "objectives", label: "Objectives", category: "why", type: "textarea" },
         { field: "successMetrics", label: "Success Metrics", category: "why", type: "textarea" },
         { field: "budget", label: "Budget", category: "how", type: "currency", required: true },
         { field: "status", label: "Status", category: "how", type: "select" },
         { field: "riskLevel", label: "Risk Level", category: "if_then", type: "select" },
-        { field: "contingencyPercent", label: "Contingency %", category: "if_then", type: "number" },
+        {
+            field: "contingencyPercent",
+            label: "Contingency %",
+            category: "if_then",
+            type: "number",
+        },
     ],
     task: [
-        { field: "assigneeId", label: "Assignee", category: "who", type: "reference", referenceEntity: "crew_member" },
-        { field: "reviewerId", label: "Reviewer", category: "who", type: "reference", referenceEntity: "crew_member" },
-        { field: "vendorId", label: "Vendor", category: "who", type: "reference", referenceEntity: "vendor" },
+        {
+            field: "assigneeId",
+            label: "Assignee",
+            category: "who",
+            type: "reference",
+            referenceEntity: "crew_member",
+        },
+        {
+            field: "reviewerId",
+            label: "Reviewer",
+            category: "who",
+            type: "reference",
+            referenceEntity: "crew_member",
+        },
+        {
+            field: "vendorId",
+            label: "Vendor",
+            category: "who",
+            type: "reference",
+            referenceEntity: "vendor",
+        },
         { field: "title", label: "Title", category: "what", type: "text", required: true },
         { field: "description", label: "Description", category: "what", type: "textarea" },
         { field: "deliverables", label: "Deliverables", category: "what", type: "textarea" },
         { field: "startDate", label: "Start Date", category: "when", type: "date" },
         { field: "dueDate", label: "Due Date", category: "when", type: "date" },
         { field: "estimatedHours", label: "Estimated Hours", category: "when", type: "number" },
-        { field: "locationId", label: "Location", category: "where", type: "reference", referenceEntity: "location" },
-        { field: "activationId", label: "Activation", category: "where", type: "reference", referenceEntity: "activation" },
+        {
+            field: "locationId",
+            label: "Location",
+            category: "where",
+            type: "reference",
+            referenceEntity: "location",
+        },
+        {
+            field: "activationId",
+            label: "Activation",
+            category: "where",
+            type: "reference",
+            referenceEntity: "activation",
+        },
         { field: "priority", label: "Priority", category: "why", type: "select", required: true },
         { field: "impactIfDelayed", label: "Impact if Delayed", category: "why", type: "textarea" },
         { field: "status", label: "Status", category: "how", type: "select", required: true },
         { field: "percentComplete", label: "% Complete", category: "how", type: "number" },
-        { field: "dependencies", label: "Dependencies", category: "if_then", type: "multiselect", referenceEntity: "task" },
+        {
+            field: "dependencies",
+            label: "Dependencies",
+            category: "if_then",
+            type: "multiselect",
+            referenceEntity: "task",
+        },
         { field: "blockers", label: "Blockers", category: "if_then", type: "textarea" },
     ],
 };

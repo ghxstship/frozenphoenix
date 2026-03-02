@@ -9,63 +9,110 @@
  */
 
 import type {
-  CheckCategory,
-  CheckType,
-  SeverityLevel,
-  AttestationRequirement,
-  ThresholdOverride,
-  StandardsVersion,
-} from '../../quality-gate.config';
+    AttestationRequirement,
+    CheckCategory,
+    CheckType,
+    SeverityLevel,
+    StandardsVersion,
+    ThresholdOverride,
+} from "../../quality-gate.config";
 
 // ---------------------------------------------------------------------------
 // Criterion Type
 // ---------------------------------------------------------------------------
 
 export interface QualityCriterion {
-  readonly id: string;
-  readonly section: number;
-  readonly subsection: number;
-  readonly title: string;
-  readonly description: string;
-  readonly category: CheckCategory;
-  readonly originalSeverity: SeverityLevel;
-  readonly isDeployBlocker: boolean;
-  readonly checkType: CheckType;
-  readonly automatedCheck: string | null;
-  readonly attestation: AttestationRequirement | null;
-  readonly threshold: ThresholdOverride | null;
-  readonly addedInVersion: StandardsVersion;
-  readonly lastUpdatedVersion: StandardsVersion;
-  readonly externalRef: string | null;
-  readonly tags: ReadonlyArray<string>;
+    readonly id: string;
+    readonly section: number;
+    readonly subsection: number;
+    readonly title: string;
+    readonly description: string;
+    readonly category: CheckCategory;
+    readonly originalSeverity: SeverityLevel;
+    readonly isDeployBlocker: boolean;
+    readonly checkType: CheckType;
+    readonly automatedCheck: string | null;
+    readonly attestation: AttestationRequirement | null;
+    readonly threshold: ThresholdOverride | null;
+    readonly addedInVersion: StandardsVersion;
+    readonly lastUpdatedVersion: StandardsVersion;
+    readonly externalRef: string | null;
+    readonly tags: ReadonlyArray<string>;
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const V1: StandardsVersion = '2026.1';
+const V1: StandardsVersion = "2026.1";
 
 function c(
-  id: string, s: number, ss: number, title: string, desc: string,
-  cat: CheckCategory, sev: SeverityLevel, ct: CheckType,
-  opts: { ac?: string; at?: AttestationRequirement; th?: ThresholdOverride; er?: string; tg?: string[] } = {},
+    id: string,
+    s: number,
+    ss: number,
+    title: string,
+    desc: string,
+    cat: CheckCategory,
+    sev: SeverityLevel,
+    ct: CheckType,
+    opts: {
+        ac?: string;
+        at?: AttestationRequirement;
+        th?: ThresholdOverride;
+        er?: string;
+        tg?: string[];
+    } = {}
 ): QualityCriterion {
-  return {
-    id, section: s, subsection: ss, title, description: desc, category: cat,
-    originalSeverity: sev, isDeployBlocker: true, checkType: ct,
-    automatedCheck: opts.ac ?? null, attestation: opts.at ?? null,
-    threshold: opts.th ?? null, addedInVersion: V1, lastUpdatedVersion: V1,
-    externalRef: opts.er ?? null, tags: opts.tg ?? [],
-  };
+    return {
+        id,
+        section: s,
+        subsection: ss,
+        title,
+        description: desc,
+        category: cat,
+        originalSeverity: sev,
+        isDeployBlocker: true,
+        checkType: ct,
+        automatedCheck: opts.ac ?? null,
+        attestation: opts.at ?? null,
+        threshold: opts.th ?? null,
+        addedInVersion: V1,
+        lastUpdatedVersion: V1,
+        externalRef: opts.er ?? null,
+        tags: opts.tg ?? [],
+    };
 }
 
-const engA: AttestationRequirement = { requiredRole: 'engineer', evidenceRequired: true, reattestIntervalDays: 30 };
-const leadA: AttestationRequirement = { requiredRole: 'lead', evidenceRequired: true, reattestIntervalDays: 30 };
-const secA: AttestationRequirement = { requiredRole: 'security', evidenceRequired: true, reattestIntervalDays: 30 };
-const a11yA: AttestationRequirement = { requiredRole: 'accessibility', evidenceRequired: true, reattestIntervalDays: 30 };
-const legalA: AttestationRequirement = { requiredRole: 'legal', evidenceRequired: true, reattestIntervalDays: 90 };
-const qaA: AttestationRequirement = { requiredRole: 'qa', evidenceRequired: true, reattestIntervalDays: 30 };
+const engA: AttestationRequirement = {
+    requiredRole: "engineer",
+    evidenceRequired: true,
+    reattestIntervalDays: 30,
+};
+const leadA: AttestationRequirement = {
+    requiredRole: "lead",
+    evidenceRequired: true,
+    reattestIntervalDays: 30,
+};
+const secA: AttestationRequirement = {
+    requiredRole: "security",
+    evidenceRequired: true,
+    reattestIntervalDays: 30,
+};
+const a11yA: AttestationRequirement = {
+    requiredRole: "accessibility",
+    evidenceRequired: true,
+    reattestIntervalDays: 30,
+};
+const legalA: AttestationRequirement = {
+    requiredRole: "legal",
+    evidenceRequired: true,
+    reattestIntervalDays: 90,
+};
+const qaA: AttestationRequirement = {
+    requiredRole: "qa",
+    evidenceRequired: true,
+    reattestIntervalDays: 30,
+};
 
 // ---------------------------------------------------------------------------
 // Exported helpers — used by quality-standards-registry.ts

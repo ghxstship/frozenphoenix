@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { permissionCache, cachedPermissionCheck, type CachedPermission } from "@/lib/permission-cache";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+    type CachedPermission,
+    cachedPermissionCheck,
+    permissionCache,
+} from "@/lib/permission-cache";
 
 beforeEach(() => {
     permissionCache.clear();
@@ -13,9 +17,7 @@ describe("PermissionCache", () => {
     const entry: CachedPermission = {
         role: "pm",
         orgId,
-        grants: [
-            { resource: "projects", action: "read", scope_id: null, effect: "allow" },
-        ],
+        grants: [{ resource: "projects", action: "read", scope_id: null, effect: "allow" }],
         cachedAt: Date.now(),
     };
 
@@ -97,9 +99,7 @@ describe("cachedPermissionCheck", () => {
     const resolved: CachedPermission = {
         role: "pm",
         orgId,
-        grants: [
-            { resource: "projects", action: "read", scope_id: null, effect: "allow" },
-        ],
+        grants: [{ resource: "projects", action: "read", scope_id: null, effect: "allow" }],
         cachedAt: Date.now(),
     };
 

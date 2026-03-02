@@ -8,7 +8,7 @@
    Run: npm test -- accessibility
    ═══════════════════════════════════════════════════════════════ */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 // Axe-core integration test helper
 // Note: Full axe-core testing requires @axe-core/react or jest-axe.

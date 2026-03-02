@@ -10,16 +10,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type {
+    Approval,
+    Asset,
+    CaseStudy,
+    CrewMember,
     Deal,
     Project,
-    Task,
-    CrewMember,
-    Asset,
-    Vendor,
     PurchaseOrder,
-    Approval,
     Stakeholder,
-    CaseStudy,
+    Task,
+    Vendor,
 } from "@/types";
 
 // ─── Conference Configuration ───
@@ -46,10 +46,7 @@ export const RILLA_MASTERS_2026 = {
             address: "Miami Gardens, FL",
             events: ["Welcome Reception"],
         },
-        partnerHotels: [
-            "Aloft Miami Aventura",
-            "DoubleTree Resort by Hilton Hollywood Beach",
-        ],
+        partnerHotels: ["Aloft Miami Aventura", "DoubleTree Resort by Hilton Hollywood Beach"],
     },
     ticketPrice: {
         coachesTrack: 1500,
@@ -65,7 +62,13 @@ export const RILLA_MASTERS_2026 = {
     ],
     schedule: {
         march11: ["Registration", "Welcome Reception at Miami Autodrome"],
-        march12: ["Morning Workout", "Breakfast", "Keynotes", "Breakout Sessions", "Jungle After Party"],
+        march12: [
+            "Morning Workout",
+            "Breakfast",
+            "Keynotes",
+            "Breakout Sessions",
+            "Jungle After Party",
+        ],
         march13: ["Morning Workout", "Breakfast", "Keynotes", "Breakout Sessions", "Closing"],
     },
 } as const;
@@ -193,7 +196,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t1",
         projectId: "rm-p1",
         title: "Main Stage Design - Keynote Platform",
-        description: "Design premium keynote stage with LED backdrop for Pat Riley, Coach K, and Sebastian Jimenez presentations",
+        description:
+            "Design premium keynote stage with LED backdrop for Pat Riley, Coach K, and Sebastian Jimenez presentations",
         status: "done",
         priority: "critical",
         assigneeId: "u1",
@@ -209,7 +213,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t2",
         projectId: "rm-p1",
         title: "LED Wall Array - Main Ballroom",
-        description: "High-resolution LED wall installation for keynote presentations and sponsor content",
+        description:
+            "High-resolution LED wall installation for keynote presentations and sponsor content",
         status: "done",
         priority: "high",
         assigneeId: "u3",
@@ -225,7 +230,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t3",
         projectId: "rm-p1",
         title: "Breakout Room AV Packages (8 Rooms)",
-        description: "Complete AV setup for 8 breakout session rooms with screens, audio, and streaming capability",
+        description:
+            "Complete AV setup for 8 breakout session rooms with screens, audio, and streaming capability",
         status: "in_progress",
         priority: "high",
         assigneeId: "u3",
@@ -241,7 +247,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t4",
         projectId: "rm-p1",
         title: "Conference Signage & Wayfinding",
-        description: "Branded signage, directional wayfinding, and session room identification throughout The Diplomat",
+        description:
+            "Branded signage, directional wayfinding, and session room identification throughout The Diplomat",
         status: "in_progress",
         priority: "medium",
         assigneeId: "u4",
@@ -257,7 +264,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t5",
         projectId: "rm-p1",
         title: "Audio System - Main Ballroom",
-        description: "Professional audio system for main ballroom with wireless mics for keynote speakers",
+        description:
+            "Professional audio system for main ballroom with wireless mics for keynote speakers",
         status: "done",
         priority: "high",
         assigneeId: "u3",
@@ -287,7 +295,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t7",
         projectId: "rm-p2",
         title: "F1 Track Activation Design",
-        description: "Design immersive activation experience on the Miami International Autodrome F1 track",
+        description:
+            "Design immersive activation experience on the Miami International Autodrome F1 track",
         status: "done",
         priority: "critical",
         assigneeId: "u2",
@@ -320,7 +329,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t9",
         projectId: "rm-p3",
         title: "Poolside Jungle Theming - Scenic Elements",
-        description: "Immersive jungle-themed scenic elements for poolside party: faux foliage, vines, tropical lighting",
+        description:
+            "Immersive jungle-themed scenic elements for poolside party: faux foliage, vines, tropical lighting",
         status: "in_progress",
         priority: "critical",
         assigneeId: "u2",
@@ -352,7 +362,8 @@ export const RILLA_TASKS: Task[] = [
         id: "rm-t11",
         projectId: "rm-p3",
         title: "Neon Signage - Rilla Branding",
-        description: "Custom neon Rilla logo and jungle-themed neon accents for photo opportunities",
+        description:
+            "Custom neon Rilla logo and jungle-themed neon accents for photo opportunities",
         status: "done",
         priority: "medium",
         assigneeId: "u4",
@@ -377,8 +388,22 @@ export const RILLA_CREW: CrewMember[] = [
         hourlyRate: 85,
         status: "assigned",
         certifications: [
-            { id: "cert-rm1", type: "electrical", label: "Electrical", issuedDate: "2025-03-01", expiryDate: "2027-03-01", isValid: true },
-            { id: "cert-rm2", type: "osha_10", label: "OSHA 10", issuedDate: "2025-06-01", expiryDate: "2027-06-01", isValid: true },
+            {
+                id: "cert-rm1",
+                type: "electrical",
+                label: "Electrical",
+                issuedDate: "2025-03-01",
+                expiryDate: "2027-03-01",
+                isValid: true,
+            },
+            {
+                id: "cert-rm2",
+                type: "osha_10",
+                label: "OSHA 10",
+                issuedDate: "2025-06-01",
+                expiryDate: "2027-06-01",
+                isValid: true,
+            },
         ],
     },
     {
@@ -390,8 +415,22 @@ export const RILLA_CREW: CrewMember[] = [
         hourlyRate: 70,
         status: "assigned",
         certifications: [
-            { id: "cert-rm3", type: "rigging", label: "Rigging", issuedDate: "2024-11-01", expiryDate: "2026-11-01", isValid: true },
-            { id: "cert-rm4", type: "osha_30", label: "OSHA 30", issuedDate: "2025-01-01", expiryDate: "2027-01-01", isValid: true },
+            {
+                id: "cert-rm3",
+                type: "rigging",
+                label: "Rigging",
+                issuedDate: "2024-11-01",
+                expiryDate: "2026-11-01",
+                isValid: true,
+            },
+            {
+                id: "cert-rm4",
+                type: "osha_30",
+                label: "OSHA 30",
+                issuedDate: "2025-01-01",
+                expiryDate: "2027-01-01",
+                isValid: true,
+            },
         ],
     },
     {
@@ -403,7 +442,14 @@ export const RILLA_CREW: CrewMember[] = [
         hourlyRate: 90,
         status: "available",
         certifications: [
-            { id: "cert-rm5", type: "electrical", label: "Electrical", issuedDate: "2025-02-01", expiryDate: "2027-02-01", isValid: true },
+            {
+                id: "cert-rm5",
+                type: "electrical",
+                label: "Electrical",
+                issuedDate: "2025-02-01",
+                expiryDate: "2027-02-01",
+                isValid: true,
+            },
         ],
     },
     {
@@ -415,20 +461,88 @@ export const RILLA_CREW: CrewMember[] = [
         hourlyRate: 55,
         status: "available",
         certifications: [
-            { id: "cert-rm6", type: "osha_30", label: "OSHA 30", issuedDate: "2025-04-01", expiryDate: "2027-04-01", isValid: true },
-            { id: "cert-rm7", type: "forklift", label: "Forklift", issuedDate: "2025-05-01", expiryDate: "2026-05-01", isValid: true },
+            {
+                id: "cert-rm6",
+                type: "osha_30",
+                label: "OSHA 30",
+                issuedDate: "2025-04-01",
+                expiryDate: "2027-04-01",
+                isValid: true,
+            },
+            {
+                id: "cert-rm7",
+                type: "forklift",
+                label: "Forklift",
+                issuedDate: "2025-05-01",
+                expiryDate: "2026-05-01",
+                isValid: true,
+            },
         ],
     },
 ];
 
 // ─── Assets ───
 export const RILLA_ASSETS: Asset[] = [
-    { id: "rm-a1", name: "Meta Quest Pro (Tournament)", category: "VR", barcode: "RL-VR-001", condition: "excellent", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 1500 },
-    { id: "rm-a2", name: "Meta Quest Pro (Tournament)", category: "VR", barcode: "RL-VR-002", condition: "excellent", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 1500 },
-    { id: "rm-a3", name: "LED Panel 2.5mm (Indoor)", category: "AV", barcode: "RL-LED-001", condition: "excellent", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 4200 },
-    { id: "rm-a4", name: "Streaming PC - Observer Rig", category: "IT", barcode: "RL-PC-001", condition: "excellent", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 8500 },
-    { id: "rm-a5", name: "PTZ Camera - Broadcast", category: "AV", barcode: "RL-CAM-001", condition: "good", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 6800 },
-    { id: "rm-a6", name: "Wireless Headset System", category: "Audio", barcode: "RL-AUD-001", condition: "excellent", location: "Warehouse A", ownedOrRental: "owned", purchasePrice: 2400 },
+    {
+        id: "rm-a1",
+        name: "Meta Quest Pro (Tournament)",
+        category: "VR",
+        barcode: "RL-VR-001",
+        condition: "excellent",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 1500,
+    },
+    {
+        id: "rm-a2",
+        name: "Meta Quest Pro (Tournament)",
+        category: "VR",
+        barcode: "RL-VR-002",
+        condition: "excellent",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 1500,
+    },
+    {
+        id: "rm-a3",
+        name: "LED Panel 2.5mm (Indoor)",
+        category: "AV",
+        barcode: "RL-LED-001",
+        condition: "excellent",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 4200,
+    },
+    {
+        id: "rm-a4",
+        name: "Streaming PC - Observer Rig",
+        category: "IT",
+        barcode: "RL-PC-001",
+        condition: "excellent",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 8500,
+    },
+    {
+        id: "rm-a5",
+        name: "PTZ Camera - Broadcast",
+        category: "AV",
+        barcode: "RL-CAM-001",
+        condition: "good",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 6800,
+    },
+    {
+        id: "rm-a6",
+        name: "Wireless Headset System",
+        category: "Audio",
+        barcode: "RL-AUD-001",
+        condition: "excellent",
+        location: "Warehouse A",
+        ownedOrRental: "owned",
+        purchasePrice: 2400,
+    },
 ];
 
 // ─── Vendors ───
@@ -485,8 +599,18 @@ export const RILLA_POS: PurchaseOrder[] = [
         vendorId: "rm-vn1",
         vendorName: "VR Stage Systems",
         items: [
-            { description: "Custom VR Pod Frame - Steel", quantity: 16, unitPrice: 2800, total: 44800 },
-            { description: "VR Cable Management System", quantity: 16, unitPrice: 450, total: 7200 },
+            {
+                description: "Custom VR Pod Frame - Steel",
+                quantity: 16,
+                unitPrice: 2800,
+                total: 44800,
+            },
+            {
+                description: "VR Cable Management System",
+                quantity: 16,
+                unitPrice: 450,
+                total: 7200,
+            },
             { description: "Tracking Sensor Array", quantity: 16, unitPrice: 1200, total: 19200 },
         ],
         totalAmount: 71200,
@@ -500,7 +624,12 @@ export const RILLA_POS: PurchaseOrder[] = [
         vendorName: "Neon Dreams Studio",
         items: [
             { description: "Rilla Logo Neon - 8ft", quantity: 2, unitPrice: 4500, total: 9000 },
-            { description: "Stage Edge LED Strip - 100ft", quantity: 4, unitPrice: 1800, total: 7200 },
+            {
+                description: "Stage Edge LED Strip - 100ft",
+                quantity: 4,
+                unitPrice: 1800,
+                total: 7200,
+            },
             { description: "Custom Jungle Vine Neon", quantity: 12, unitPrice: 850, total: 10200 },
         ],
         totalAmount: 26400,
@@ -595,7 +724,8 @@ export const RILLA_CASE_STUDY_TEMPLATE: CaseStudy = {
     projectId: "rm-p1",
     title: "Rilla Masters 2026",
     client: "Rilla",
-    summary: "The flagship conference for mastering in-person sales at The Diplomat Beach Resort, Hollywood FL. March 11-13, 2026. Featuring keynotes from Pat Riley (Miami Heat), Coach K (Duke Basketball), and Sebastian Jimenez (Rilla CEO). Welcome Reception at Miami International Autodrome F1 track. Poolside Jungle Afterparty.",
+    summary:
+        "The flagship conference for mastering in-person sales at The Diplomat Beach Resort, Hollywood FL. March 11-13, 2026. Featuring keynotes from Pat Riley (Miami Heat), Coach K (Duke Basketball), and Sebastian Jimenez (Rilla CEO). Welcome Reception at Miami International Autodrome F1 track. Poolside Jungle Afterparty.",
     heroImage: "/brands/rilla/case-studies/rm2026-hero.jpg",
     metrics: [
         { label: "Conference Days", value: "3" },
@@ -652,7 +782,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-1",
         conferenceId: "rm2026",
         title: "Welcome Keynote",
-        description: "Sebastian Jimenez kicks off with a State of the Union on the teams winning with Rilla. Breaks down the features and coaching breakthroughs driving the biggest gains. Lays out the shifts and opportunities defining the next era of coaching and sales.",
+        description:
+            "Sebastian Jimenez kicks off with a State of the Union on the teams winning with Rilla. Breaks down the features and coaching breakthroughs driving the biggest gains. Lays out the shifts and opportunities defining the next era of coaching and sales.",
         track: "sales-leadership",
         type: "keynote",
         speakerName: "Sebastian Jimenez",
@@ -667,7 +798,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-2",
         conferenceId: "rm2026",
         title: "High-Performance Keynote",
-        description: "Learn the same performance protocols used by pro athletes and Fortune 50 executives. Unlock a longevity blueprint that boosts energy, recovery, and cognitive sharpness.",
+        description:
+            "Learn the same performance protocols used by pro athletes and Fortune 50 executives. Unlock a longevity blueprint that boosts energy, recovery, and cognitive sharpness.",
         track: "performance",
         type: "keynote",
         speakerName: "Dr. Tommy Wood",
@@ -682,7 +814,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-3",
         conferenceId: "rm2026",
         title: "Inside The Top Performers: What The Best Brands Do Differently",
-        description: "Boris Valkov is joined by Jason Beckly (HomeFirst), George Donaldson (FixItGroup), Brian Remington (FixItGroup), and Mario Martinez (ServiceMinds) to share how top brands prioritize AI investments.",
+        description:
+            "Boris Valkov is joined by Jason Beckly (HomeFirst), George Donaldson (FixItGroup), Brian Remington (FixItGroup), and Mario Martinez (ServiceMinds) to share how top brands prioritize AI investments.",
         track: "ai-technology",
         type: "panel",
         speakerName: "Boris Valkov",
@@ -697,7 +830,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-4",
         conferenceId: "rm2026",
         title: "Sales Leadership at the Intersection of People and Technology",
-        description: "See how elite sales leaders diagnose slumps and reset momentum in real time. Watch how AI is used inside weekly coaching to drive consistent improvement.",
+        description:
+            "See how elite sales leaders diagnose slumps and reset momentum in real time. Watch how AI is used inside weekly coaching to drive consistent improvement.",
         track: "sales-leadership",
         type: "breakout",
         speakerName: "Jon Gilge",
@@ -712,7 +846,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-5",
         conferenceId: "rm2026",
         title: "The Art of Coaching",
-        description: "Learn how to give feedback that actually improves performance. Top operators break down the techniques and habits behind feedback that lands, motivates, and drives better results.",
+        description:
+            "Learn how to give feedback that actually improves performance. Top operators break down the techniques and habits behind feedback that lands, motivates, and drives better results.",
         track: "coaching",
         type: "breakout",
         speakerName: "Pete Marchmont",
@@ -727,7 +862,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-6",
         conferenceId: "rm2026",
         title: "The Silent Signals That Decide Every Sale",
-        description: "Allan Langer — 5× National Coach of the Year — shares how he studied FBI interrogation and body-language frameworks to read buyers body language clues.",
+        description:
+            "Allan Langer — 5× National Coach of the Year — shares how he studied FBI interrogation and body-language frameworks to read buyers body language clues.",
         track: "coaching",
         type: "breakout",
         speakerName: "Allan Langer",
@@ -742,7 +878,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-7",
         conferenceId: "rm2026",
         title: "Pat Riley Keynote",
-        description: "The architect behind five NBA championships breaks down the leadership principles that built the Lakers dynasty and the Heat culture. He'll unpack the systems, discipline, and standards that turned good players into legends.",
+        description:
+            "The architect behind five NBA championships breaks down the leadership principles that built the Lakers dynasty and the Heat culture. He'll unpack the systems, discipline, and standards that turned good players into legends.",
         track: "performance",
         type: "keynote",
         speakerName: "Pat Riley",
@@ -757,7 +894,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-8",
         conferenceId: "rm2026",
         title: "Rilla Live: How to Save Millions of Dollars with Real Time Coaching",
-        description: "How teams use Rilla Live to intervene mid-conversation and save deals in real time. The adoption frameworks behind 230% revenue growth and $100K+ weekly lift.",
+        description:
+            "How teams use Rilla Live to intervene mid-conversation and save deals in real time. The adoption frameworks behind 230% revenue growth and $100K+ weekly lift.",
         track: "ai-technology",
         type: "breakout",
         speakerName: "John Wensel",
@@ -772,7 +910,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-9",
         conferenceId: "rm2026",
         title: "Rilla for the Enterprise",
-        description: "Learn how leading enterprises deployed Rilla across hundreds of reps and made virtual coaching a core system. See the strategies that created fast adoption and strong cultural buy-in.",
+        description:
+            "Learn how leading enterprises deployed Rilla across hundreds of reps and made virtual coaching a core system. See the strategies that created fast adoption and strong cultural buy-in.",
         track: "ai-technology",
         type: "breakout",
         speakerName: "Paulina Parsons",
@@ -788,7 +927,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-10",
         conferenceId: "rm2026",
         title: "The Future of Rilla Keynote",
-        description: "Sebastian Jimenez unveils the future roadmap for Rilla and the next era of AI-powered sales coaching.",
+        description:
+            "Sebastian Jimenez unveils the future roadmap for Rilla and the next era of AI-powered sales coaching.",
         track: "ai-technology",
         type: "keynote",
         speakerName: "Sebastian Jimenez",
@@ -803,7 +943,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-11",
         conferenceId: "rm2026",
         title: "AI That Makes You More Human: Unlocking EQ in High-Performing Teams",
-        description: "Discover how AI reveals emotional signals that top performers use to build stronger, more authentic connections. Coach emotional intelligence at scale.",
+        description:
+            "Discover how AI reveals emotional signals that top performers use to build stronger, more authentic connections. Coach emotional intelligence at scale.",
         track: "coaching",
         type: "breakout",
         speakerName: "Demitria Comforti",
@@ -818,7 +959,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-12",
         conferenceId: "rm2026",
         title: "The Culture Operating System",
-        description: "Learn to create high standards without burnout and establish rituals and traditions that reinforce a unified, high-performance team.",
+        description:
+            "Learn to create high standards without burnout and establish rituals and traditions that reinforce a unified, high-performance team.",
         track: "culture",
         type: "breakout",
         speakerName: "Barnaby Hitzig",
@@ -833,7 +975,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-13",
         conferenceId: "rm2026",
         title: "The Hard Truth About Today's PE Market",
-        description: "Hear the unfiltered reality of today's PE landscape from Rob Parker, one of the top dealmakers in the space. Learn why many 'strong' companies are getting passed over.",
+        description:
+            "Hear the unfiltered reality of today's PE landscape from Rob Parker, one of the top dealmakers in the space. Learn why many 'strong' companies are getting passed over.",
         track: "sales-leadership",
         type: "breakout",
         speakerName: "Rob Parker",
@@ -848,7 +991,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-14",
         conferenceId: "rm2026",
         title: "Always Say Yes: How Customer Obsession Leads to Profits",
-        description: "Learn how Joe Adams scaled his auto shop into a $100M nationwide organization by building a culture of customer obsession.",
+        description:
+            "Learn how Joe Adams scaled his auto shop into a $100M nationwide organization by building a culture of customer obsession.",
         track: "culture",
         type: "breakout",
         speakerName: "Joe Adams",
@@ -863,7 +1007,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-15",
         conferenceId: "rm2026",
         title: "Mastering Rilla Intelligence",
-        description: "See how top organizations use Rilla Intelligence to pull insights from every sales conversation. Learn the core workflows and data patterns driving better coaching.",
+        description:
+            "See how top organizations use Rilla Intelligence to pull insights from every sales conversation. Learn the core workflows and data patterns driving better coaching.",
         track: "ai-technology",
         type: "breakout",
         speakerName: "Tobias Hanl",
@@ -878,7 +1023,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-16",
         conferenceId: "rm2026",
         title: "Coach K Keynote",
-        description: "Hear rare insights from one of the most decorated coaches in sports on leading under pressure and sustaining excellence. Learn the principles that build trust, discipline, and high performance inside championship teams.",
+        description:
+            "Hear rare insights from one of the most decorated coaches in sports on leading under pressure and sustaining excellence. Learn the principles that build trust, discipline, and high performance inside championship teams.",
         track: "coaching",
         type: "keynote",
         speakerName: "Coach K",
@@ -893,7 +1039,8 @@ export const RILLA_SESSIONS: ConferenceSession[] = [
         id: "sess-17",
         conferenceId: "rm2026",
         title: "Closing Comments",
-        description: "Sebastian Jimenez wraps up Rilla Masters 2026 with key takeaways and a call to action.",
+        description:
+            "Sebastian Jimenez wraps up Rilla Masters 2026 with key takeaways and a call to action.",
         track: "sales-leadership",
         type: "keynote",
         speakerName: "Sebastian Jimenez",

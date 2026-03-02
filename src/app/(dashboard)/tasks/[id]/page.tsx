@@ -1,34 +1,49 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StatusBadge, PriorityBadge } from "@/components/ui/status-badge";
+import { PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_TASKS, MOCK_PROJECTS } from "@/lib/demo-data";
-import { PROJECT_PHASE_MAP, FABRICATION_STATUS_MAP } from "@/config/domain-config";
-import { useUpdateTask, useDeleteTask, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { RecordChatter } from "@/components/activity";
+import type { CommentItem } from "@/components/activity";
+import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
+import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/demo-data";
+import { FABRICATION_STATUS_MAP, PROJECT_PHASE_MAP } from "@/config/domain-config";
+import { isSupabaseConfigured, useDeleteTask, useUpdateTask } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-    Edit,
-    DollarSign,
-    Clock,
-    CheckSquare,
-    Link2,
-    MessageSquare,
-    User,
-} from "lucide-react";
+import { CheckSquare, Clock, DollarSign, Edit, Link2, MessageSquare, User } from "lucide-react";
 
-type TabId = "overview" | "subtasks" | "comments";
+type TabId = "overview" | "subtasks" | "comments" | "chatter";
+const TAB_VALUES = ["overview", "subtasks", "comments", "chatter"] as const;
 
 export default function TaskDetailPage() {
     const params = useParams();
     const router = useRouter();
     const taskId = params.id as string;
-    const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
+        key: "tab",
+        defaultValue: "overview",
+        validValues: TAB_VALUES,
+    });
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const handleAddComment = async (content: string) => {
+        setChatterComments((prev) => [
+            ...prev,
+            {
+                id: `c-${Date.now()}`,
+                authorId: "u1",
+                authorName: "Sarah Chen",
+                content,
+                createdAt: new Date().toISOString(),
+            },
+        ]);
+    };
     const updateTask = useUpdateTask();
     const deleteTask = useDeleteTask();
 
@@ -38,9 +53,11 @@ export default function TaskDetailPage() {
     const handleMarkComplete = async () => {
         if (!isSupabaseConfigured) return;
         try {
-            await updateTask.mutateAsync({ id: taskId, status: "done" } as unknown as Parameters<typeof updateTask.mutateAsync>[0]);
+            await updateTask.mutateAsync({ id: taskId, status: "done" } as unknown as Parameters<
+                typeof updateTask.mutateAsync
+            >[0]);
         } catch (error) {
-            console.error("Failed to mark task complete:", error);
+            logger.error("Failed to mark task complete", { error });
         }
     };
 
@@ -50,7 +67,7 @@ export default function TaskDetailPage() {
             await deleteTask.mutateAsync(taskId);
             router.push("/tasks");
         } catch (error) {
-            console.error("Failed to delete task:", error);
+            logger.error("Failed to delete task", { error });
         }
     };
 
@@ -66,7 +83,9 @@ export default function TaskDetailPage() {
     }
 
     const phaseConfig = PROJECT_PHASE_MAP[task.phase];
-    const fabConfig = task.fabricationStatus ? FABRICATION_STATUS_MAP[task.fabricationStatus] : null;
+    const fabConfig = task.fabricationStatus
+        ? FABRICATION_STATUS_MAP[task.fabricationStatus]
+        : null;
 
     const tabs = [
         { id: "overview" as const, label: "Overview" },
@@ -154,9 +173,16 @@ export default function TaskDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: updateTask.isPending ? "Completing..." : "Mark Complete", onClick: handleMarkComplete },
+                {
+                    label: updateTask.isPending ? "Completing..." : "Mark Complete",
+                    onClick: handleMarkComplete,
+                },
                 { label: "Duplicate Task", onClick: () => {} },
-                { label: deleteTask.isPending ? "Deleting..." : "Delete Task", onClick: handleDeleteTask, variant: "destructive" },
+                {
+                    label: deleteTask.isPending ? "Deleting..." : "Delete Task",
+                    onClick: handleDeleteTask,
+                    variant: "destructive",
+                },
             ]}
             tabs={tabs}
             activeTab={activeTab}
@@ -183,7 +209,9 @@ export default function TaskDetailPage() {
                                         <DollarSign className="h-4 w-4" />
                                         <span className="text-xs">Material Cost</span>
                                     </div>
-                                    <p className="text-xl font-bold">{formatCurrency(task.materialCost)}</p>
+                                    <p className="text-xl font-bold">
+                                        {formatCurrency(task.materialCost)}
+                                    </p>
                                 </CardContent>
                             </Card>
                         )}
@@ -204,7 +232,9 @@ export default function TaskDetailPage() {
                                     <Link2 className="h-4 w-4" />
                                     <span className="text-xs">Dependencies</span>
                                 </div>
-                                <p className="text-xl font-bold">{task.dependencies?.length || 0}</p>
+                                <p className="text-xl font-bold">
+                                    {task.dependencies?.length || 0}
+                                </p>
                             </CardContent>
                         </Card>
                     </div>
@@ -235,7 +265,10 @@ export default function TaskDetailPage() {
                                         const depTask = MOCK_TASKS.find((t) => t.id === depId);
                                         if (!depTask) return null;
                                         return (
-                                            <div key={depId} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                                            <div
+                                                key={depId}
+                                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     <Link2 className="h-4 w-4 text-muted-foreground" />
                                                     <span className="text-sm">{depTask.title}</span>
@@ -281,6 +314,17 @@ export default function TaskDetailPage() {
                         />
                     </CardContent>
                 </Card>
+            )}
+
+            {activeTab === "chatter" && (
+                <RecordChatter
+                    recordType="task"
+                    recordId={taskId}
+                    activityItems={makeMockActivity("task")}
+                    comments={chatterComments}
+                    currentUserId="u1"
+                    onAddComment={handleAddComment}
+                />
             )}
         </DetailLayout>
     );

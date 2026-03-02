@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LucideIcon, Inbox } from "lucide-react";
+import { Inbox, LucideIcon } from "lucide-react";
 
 export interface EmptyStateProps {
     icon?: LucideIcon;
@@ -39,19 +39,15 @@ export function EmptyState({
             )}
             role="status"
         >
-            <div className={cn(
-                "rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 ring-1 ring-border/50",
-                compact ? "h-12 w-12" : "h-16 w-16"
-            )}>
-                <Icon className={cn(
-                    "text-muted-foreground/60",
-                    compact ? "h-6 w-6" : "h-8 w-8"
-                )} />
+            <div
+                className={cn(
+                    "rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 ring-1 ring-border/50",
+                    compact ? "h-12 w-12" : "h-16 w-16"
+                )}
+            >
+                <Icon className={cn("text-muted-foreground/60", compact ? "h-6 w-6" : "h-8 w-8")} />
             </div>
-            <h3 className={cn(
-                "font-semibold mb-1",
-                compact ? "text-base" : "text-lg"
-            )}>{title}</h3>
+            <h3 className={cn("font-semibold mb-1", compact ? "text-base" : "text-lg")}>{title}</h3>
             {description && (
                 <p className="text-sm text-muted-foreground max-w-sm mb-5 leading-relaxed">
                     {description}

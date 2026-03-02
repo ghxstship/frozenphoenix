@@ -1,104 +1,109 @@
 import {
-    LayoutDashboard,
-    Filter,
-    Users,
-    FolderKanban,
-    CheckSquare,
-    CalendarDays,
-    HardHat,
-    Package,
-    Truck,
-    Palette,
-    Presentation,
-    ShieldCheck,
-    Store,
-    Receipt,
-    ShoppingCart,
-    UserCircle,
-    GitBranch,
-    BookOpen,
-    Lock,
-    Settings,
-    Award,
-    BarChart3,
-    MapPin,
-    Sparkles,
-    Calendar,
-    DollarSign,
     AlertTriangle,
-    Warehouse,
-    FileSignature,
-    ClipboardList,
-    Cpu,
-    LayoutTemplate,
-    Zap,
-    Shield,
-    Palmtree,
-    TrendingUp,
-    CreditCard,
-    LayoutList,
-    Banknote,
-    ReceiptText,
-    ScrollText,
-    FlaskConical,
-    ClipboardCheck,
-    UserPlus,
-    ShieldAlert,
-    Star,
-    Navigation,
-    ListChecks,
-    Calculator,
-    Inbox,
-    UsersRound,
-    Target,
-    Handshake,
-    Building2,
-    ArrowRightLeft,
-    Scale,
-    BadgeCheck,
-    HardDriveDownload,
-    Wrench,
-    ClipboardMinus,
-    Fingerprint,
-    BookLock,
-    FileBadge,
-    CircleDollarSign,
-    KeyRound,
-    ShieldQuestion,
-    Radio,
-    Megaphone,
-    Gauge,
-    Thermometer,
-    Drama,
-    Crown,
     ArrowLeftRight,
-    FileBarChart,
-    HeartPulse,
-    Download,
-    // Deduplicated icon additions
-    Send,
-    Boxes,
-    PenTool,
-    FolderOpen,
-    FileCheck,
-    Layers,
-    ContactRound,
-    Timer,
-    Car,
+    ArrowRightLeft,
+    Award,
+    BadgeCheck,
+    Banknote,
+    BarChart3,
     BarChartHorizontal,
+    Blocks,
+    BookLock,
+    BookOpen,
+    Boxes,
+    Brain,
     Brush,
-    ImagePlus,
-    SwatchBook,
+    Building2,
+    Calculator,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckSquare,
+    CircleDollarSign,
+    ClipboardCheck,
+    ClipboardList,
+    ClipboardMinus,
+    ClipboardPenLine,
+    ContactRound,
+    Cpu,
+    CreditCard,
+    Crown,
+    DollarSign,
+    Download,
+    Drama,
+    FileBadge,
+    FileBarChart,
+    FileCheck,
     FilePenLine,
-    GanttChart,
-    Landmark,
+    FileSignature,
     FileSpreadsheet,
-    WalletCards,
-    Repeat,
+    Filter,
+    Fingerprint,
+    FlaskConical,
+    FolderKanban,
+    FolderOpen,
+    GanttChart,
+    Gauge,
+    GitBranch,
+    Handshake,
+    HardDriveDownload,
+    HardHat,
+    HeartPulse,
+    ImagePlus,
+    Inbox,
+    KeyRound,
+    Landmark,
+    Layers,
+    LayoutDashboard,
+    LayoutList,
+    LayoutTemplate,
+    ListChecks,
+    Lock,
+    Mail,
+    MapPin,
+    Megaphone,
+    Navigation,
+    Package,
+    Palette,
+    Palmtree,
+    PenTool,
     PiggyBank,
+    Presentation,
+    Radio,
+    Receipt,
+    ReceiptText,
+    Repeat,
+    Scale,
     ScanBarcode,
-    type LucideIcon,
+    ScrollText,
+    Send,
+    Settings,
+    Shield,
+    ShieldAlert,
+    ShieldCheck,
+    ShieldQuestion,
+    ShoppingCart,
+    Sparkles,
+    Star,
+    Store,
+    SwatchBook,
+    Target,
+    Thermometer,
+    Timer,
+    TrendingUp,
+    Truck,
+    UserCircle,
+    UserPlus,
+    Users,
+    UsersRound,
+    WalletCards,
+    Warehouse,
+    Wrench,
+    Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { hasPermission } from "@/config/rbac";
+import type { PermissionLevel } from "@/types";
 
 export interface NavItem {
     title: string;
@@ -133,6 +138,60 @@ export function flattenNavItems(sections: NavSection[]): NavItem[] {
     return result;
 }
 
+export interface NavigationVisibilityOptions {
+    includeContextual?: boolean;
+    contextualVisibility?: Partial<Record<NonNullable<NavSection["contextual"]>, boolean>>;
+}
+
+function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): boolean {
+    if (!role) return false;
+    if (role === "exec") return true;
+    if (!item.permission) return true;
+
+    const parts = item.permission.split(".");
+    const resource = parts[0] ?? "";
+    const action = parts[1] as "read" | "write" | "delete" | "manage" | undefined;
+    return hasPermission(role, resource, action ?? "read");
+}
+
+function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undefined): NavItem[] {
+    return items
+        .filter((item) => isItemPermitted(item, role))
+        .map((item) => {
+            if (!item.children || item.children.length === 0) {
+                return item;
+            }
+
+            return {
+                ...item,
+                children: filterItemsByPermission(item.children, role),
+            };
+        });
+}
+
+function isContextualSectionVisible(
+    section: NavSection,
+    options?: NavigationVisibilityOptions
+): boolean {
+    if (!section.contextual) return true;
+    if (options?.includeContextual) return true;
+    return Boolean(options?.contextualVisibility?.[section.contextual]);
+}
+
+export function getNavigationSectionsForRole(
+    role: PermissionLevel | undefined,
+    options?: NavigationVisibilityOptions,
+    sections: NavSection[] = navigationConfig
+): NavSection[] {
+    return sections
+        .filter((section) => isContextualSectionVisible(section, options))
+        .map((section) => ({
+            ...section,
+            items: filterItemsByPermission(section.items, role),
+        }))
+        .filter((section) => section.items.length > 0);
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // INFORMATION ARCHITECTURE v2
 //
@@ -155,15 +214,54 @@ export const navigationConfig: NavSection[] = [
         title: "Home",
         defaultExpanded: true,
         items: [
-            { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, permission: "dashboard.read" },
-            { title: "Calendar", path: "/calendar", icon: CalendarDays, permission: "calendar.read" },
             {
-                title: "Insights", path: "/reports", icon: BarChart3, permission: "reports.read",
+                title: "Dashboard",
+                path: "/dashboard",
+                icon: LayoutDashboard,
+                permission: "dashboard.read",
+            },
+            {
+                title: "Calendar",
+                path: "/calendar",
+                icon: CalendarDays,
+                permission: "calendar.read",
+            },
+            {
+                title: "Insights",
+                path: "/reports",
+                icon: BarChart3,
+                permission: "reports.read",
                 children: [
-                    { title: "Forecasting", path: "/forecasting", icon: TrendingUp, permission: "forecasting.read" },
-                    { title: "Scenarios", path: "/scenarios", icon: FlaskConical, permission: "scenarios.read" },
-                    { title: "Saved Views", path: "/saved-views", icon: LayoutList, permission: "saved_views.read" },
-                    { title: "Custom Dashboards", path: "/dashboards", icon: GanttChart, permission: "dashboards.read" },
+                    {
+                        title: "Forecasting",
+                        path: "/forecasting",
+                        icon: TrendingUp,
+                        permission: "forecasting.read",
+                    },
+                    {
+                        title: "Scenarios",
+                        path: "/scenarios",
+                        icon: FlaskConical,
+                        permission: "scenarios.read",
+                    },
+                    {
+                        title: "AI Reports",
+                        path: "/reports/ai",
+                        icon: Brain,
+                        permission: "reports.read",
+                    },
+                    {
+                        title: "Saved Views",
+                        path: "/saved-views",
+                        icon: LayoutList,
+                        permission: "saved_views.read",
+                    },
+                    {
+                        title: "Custom Dashboards",
+                        path: "/dashboards",
+                        icon: GanttChart,
+                        permission: "dashboards.read",
+                    },
                 ],
             },
         ],
@@ -176,26 +274,77 @@ export const navigationConfig: NavSection[] = [
         items: [
             { title: "Pipeline", path: "/pipeline", icon: Filter, permission: "pipeline.read" },
             { title: "Leads", path: "/leads", icon: UserPlus, permission: "leads.read" },
-            { title: "Opportunities", path: "/opportunities", icon: Target, permission: "opportunities.read" },
+            {
+                title: "Opportunities",
+                path: "/opportunities",
+                icon: Target,
+                permission: "opportunities.read",
+            },
             { title: "Accounts", path: "/accounts", icon: Building2, permission: "accounts.read" },
-            { title: "Contacts", path: "/companies", icon: ContactRound, permission: "people.read" },
+            {
+                title: "Contacts",
+                path: "/companies",
+                icon: ContactRound,
+                permission: "people.read",
+            },
             { title: "Deals", path: "/deals", icon: Handshake, permission: "deals.read" },
             { title: "Revenue", path: "/revenue", icon: DollarSign, permission: "revenue.read" },
-            { title: "Change Orders", path: "/change-orders", icon: ArrowRightLeft, permission: "change_orders.read" },
-            { title: "Case Studies", path: "/case-studies", icon: Award, permission: "case_studies.read" },
-            { title: "Service Requests", path: "/service-requests", icon: Inbox, permission: "service_requests.read" },
+            {
+                title: "Change Orders",
+                path: "/change-orders",
+                icon: ArrowRightLeft,
+                permission: "change_orders.read",
+            },
+            {
+                title: "Case Studies",
+                path: "/case-studies",
+                icon: Award,
+                permission: "case_studies.read",
+            },
+            {
+                title: "Service Requests",
+                path: "/service-requests",
+                icon: Inbox,
+                permission: "service_requests.read",
+            },
+            {
+                title: "Surveys",
+                path: "/surveys",
+                icon: ClipboardPenLine,
+                permission: "surveys.read",
+            },
         ],
     },
     {
         title: "Production",
         defaultExpanded: true,
         items: [
-            { title: "Projects", path: "/projects", icon: FolderKanban, permission: "projects.read" },
+            {
+                title: "Projects",
+                path: "/projects",
+                icon: FolderKanban,
+                permission: "projects.read",
+            },
             { title: "Events", path: "/events", icon: Calendar, permission: "events.read" },
-            { title: "Activations", path: "/activations", icon: Sparkles, permission: "activations.read" },
+            {
+                title: "Activations",
+                path: "/activations",
+                icon: Sparkles,
+                permission: "activations.read",
+            },
             { title: "Tasks", path: "/tasks", icon: CheckSquare, permission: "tasks.read" },
-            { title: "Scopes of Work", path: "/scopes-of-work", icon: ScrollText, permission: "sow.read" },
-            { title: "Schedule", path: "/scheduling", icon: GanttChart, permission: "schedule.read" },
+            {
+                title: "Scopes of Work",
+                path: "/scopes-of-work",
+                icon: ScrollText,
+                permission: "sow.read",
+            },
+            {
+                title: "Schedule",
+                path: "/scheduling",
+                icon: GanttChart,
+                permission: "schedule.read",
+            },
             { title: "Locations", path: "/locations", icon: MapPin, permission: "locations.read" },
         ],
     },
@@ -204,15 +353,44 @@ export const navigationConfig: NavSection[] = [
         defaultExpanded: false,
         items: [
             { title: "Crew", path: "/crew", icon: HardHat, permission: "crew.read" },
-            { title: "Time Tracking", path: "/time-tracking", icon: Timer, permission: "time_tracking.read" },
+            {
+                title: "Time Tracking",
+                path: "/time-tracking",
+                icon: Timer,
+                permission: "time_tracking.read",
+            },
+            {
+                title: "Goals & OKRs",
+                path: "/workforce/goals",
+                icon: Target,
+                permission: "workforce.read",
+            },
             { title: "Time Off", path: "/time-off", icon: Palmtree, permission: "time_off.read" },
-            { title: "Resource Planner", path: "/resource-planner", icon: BarChartHorizontal, permission: "resource_planner.read" },
+            {
+                title: "Resource Planner",
+                path: "/resource-planner",
+                icon: BarChartHorizontal,
+                permission: "resource_planner.read",
+            },
             { title: "Fleet", path: "/fleet", icon: Car, permission: "fleet.read" },
             {
-                title: "Workforce", path: "/workforce", icon: UsersRound, permission: "workforce.read",
+                title: "Workforce",
+                path: "/workforce",
+                icon: UsersRound,
+                permission: "workforce.read",
                 children: [
-                    { title: "Onboarding / Offboarding", path: "/workforce/onboarding", icon: UserPlus, permission: "workforce_onboarding.read" },
-                    { title: "Performance Reviews", path: "/workforce/reviews", icon: Star, permission: "workforce_reviews.read" },
+                    {
+                        title: "Onboarding / Offboarding",
+                        path: "/workforce/onboarding",
+                        icon: UserPlus,
+                        permission: "workforce_onboarding.read",
+                    },
+                    {
+                        title: "Performance Reviews",
+                        path: "/workforce/reviews",
+                        icon: Star,
+                        permission: "workforce_reviews.read",
+                    },
                 ],
             },
         ],
@@ -223,7 +401,12 @@ export const navigationConfig: NavSection[] = [
         items: [
             { title: "Assets", path: "/assets", icon: Package, permission: "assets.read" },
             { title: "Inventory", path: "/inventory", icon: Boxes, permission: "inventory.read" },
-            { title: "Warehouses", path: "/warehouses", icon: Warehouse, permission: "warehouses.read" },
+            {
+                title: "Warehouses",
+                path: "/warehouses",
+                icon: Warehouse,
+                permission: "warehouses.read",
+            },
             { title: "Shipments", path: "/shipments", icon: Truck, permission: "shipments.read" },
         ],
     },
@@ -233,37 +416,115 @@ export const navigationConfig: NavSection[] = [
         items: [
             { title: "Overview", path: "/finance", icon: Landmark, permission: "finance.read" },
             {
-                title: "Billing", path: "/invoices", icon: FileSpreadsheet, permission: "invoices.read",
+                title: "Billing",
+                path: "/invoices",
+                icon: FileSpreadsheet,
+                permission: "invoices.read",
                 children: [
-                    { title: "Client Invoices", path: "/client-invoices", icon: Send, permission: "client_invoices.read" },
-                    { title: "Payments", path: "/payments", icon: Banknote, permission: "payments.read" },
-                    { title: "Credit Notes", path: "/credit-notes", icon: ReceiptText, permission: "credit_notes.read" },
-                    { title: "Recurring Invoices", path: "/recurring-invoices", icon: Repeat, permission: "recurring_invoices.read" },
+                    {
+                        title: "Client Invoices",
+                        path: "/client-invoices",
+                        icon: Send,
+                        permission: "client_invoices.read",
+                    },
+                    {
+                        title: "Payments",
+                        path: "/payments",
+                        icon: Banknote,
+                        permission: "payments.read",
+                    },
+                    {
+                        title: "Credit Notes",
+                        path: "/credit-notes",
+                        icon: ReceiptText,
+                        permission: "credit_notes.read",
+                    },
+                    {
+                        title: "Recurring Invoices",
+                        path: "/recurring-invoices",
+                        icon: Repeat,
+                        permission: "recurring_invoices.read",
+                    },
                 ],
             },
             {
-                title: "Budgeting", path: "/budgets", icon: PiggyBank, permission: "budgets.read",
+                title: "Budgeting",
+                path: "/budgets",
+                icon: PiggyBank,
+                permission: "budgets.read",
                 children: [
-                    { title: "Estimates", path: "/estimates", icon: FileSignature, permission: "estimates.read" },
-                    { title: "Job Costing", path: "/job-costing", icon: Calculator, permission: "job_costing.read" },
-                    { title: "Rate Cards", path: "/rate-cards", icon: CreditCard, permission: "rate_cards.read" },
+                    {
+                        title: "Estimates",
+                        path: "/estimates",
+                        icon: FileSignature,
+                        permission: "estimates.read",
+                    },
+                    {
+                        title: "Job Costing",
+                        path: "/job-costing",
+                        icon: Calculator,
+                        permission: "job_costing.read",
+                    },
+                    {
+                        title: "Rate Cards",
+                        path: "/rate-cards",
+                        icon: CreditCard,
+                        permission: "rate_cards.read",
+                    },
                 ],
+            },
+            {
+                title: "Revenue Recognition",
+                path: "/finance/revenue-recognition",
+                icon: TrendingUp,
+                permission: "finance.read",
             },
             { title: "Expenses", path: "/expenses", icon: Receipt, permission: "expenses.read" },
             {
-                title: "Procurement", path: "/procurement", icon: ShoppingCart, permission: "procurement.read",
+                title: "Procurement",
+                path: "/procurement",
+                icon: ShoppingCart,
+                permission: "procurement.read",
                 children: [
                     { title: "Vendors", path: "/vendors", icon: Store, permission: "vendors.read" },
-                    { title: "Purchase Requisitions", path: "/purchase-requisitions", icon: ClipboardList, permission: "purchase_requisitions.read" },
-                    { title: "Goods Receipts", path: "/goods-receipts", icon: HardDriveDownload, permission: "goods_receipts.read" },
-                    { title: "Vendor Risk", path: "/vendor-risk", icon: Scale, permission: "vendor_risk.read" },
+                    {
+                        title: "Purchase Requisitions",
+                        path: "/purchase-requisitions",
+                        icon: ClipboardList,
+                        permission: "purchase_requisitions.read",
+                    },
+                    {
+                        title: "Goods Receipts",
+                        path: "/goods-receipts",
+                        icon: HardDriveDownload,
+                        permission: "goods_receipts.read",
+                    },
+                    {
+                        title: "Vendor Risk",
+                        path: "/vendor-risk",
+                        icon: Scale,
+                        permission: "vendor_risk.read",
+                    },
                 ],
             },
             {
-                title: "Governance", path: "/gl-accounts", icon: CircleDollarSign, permission: "gl_accounts.read",
+                title: "Governance",
+                path: "/gl-accounts",
+                icon: CircleDollarSign,
+                permission: "gl_accounts.read",
                 children: [
-                    { title: "Budget Approvals", path: "/budget-approvals", icon: ShieldCheck, permission: "budget_approvals.read" },
-                    { title: "Payment Approvals", path: "/payment-approvals", icon: WalletCards, permission: "payment_approvals.read" },
+                    {
+                        title: "Budget Approvals",
+                        path: "/budget-approvals",
+                        icon: ShieldCheck,
+                        permission: "budget_approvals.read",
+                    },
+                    {
+                        title: "Payment Approvals",
+                        path: "/payment-approvals",
+                        icon: WalletCards,
+                        permission: "payment_approvals.read",
+                    },
                 ],
             },
         ],
@@ -273,19 +534,62 @@ export const navigationConfig: NavSection[] = [
         defaultExpanded: false,
         items: [
             { title: "Briefs", path: "/briefs", icon: PenTool, permission: "creative_briefs.read" },
-            { title: "Brand Guidelines", path: "/brand-guidelines", icon: Palette, permission: "brand_guidelines.read" },
-            { title: "Campaigns", path: "/campaigns", icon: Megaphone, permission: "campaigns.read" },
-            { title: "Creative Assets", path: "/creative-assets", icon: Brush, permission: "creative_reviews.read" },
-            { title: "Digital Assets", path: "/digital-assets", icon: ImagePlus, permission: "digital_assets.read" },
+            {
+                title: "Brand Guidelines",
+                path: "/brand-guidelines",
+                icon: Palette,
+                permission: "brand_guidelines.read",
+            },
+            {
+                title: "Campaigns",
+                path: "/campaigns",
+                icon: Megaphone,
+                permission: "campaigns.read",
+            },
+            {
+                title: "Creative Assets",
+                path: "/creative-assets",
+                icon: Brush,
+                permission: "creative_reviews.read",
+            },
+            {
+                title: "Digital Assets",
+                path: "/digital-assets",
+                icon: ImagePlus,
+                permission: "digital_assets.read",
+            },
             { title: "Brand Kit", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
             { title: "Decks", path: "/decks", icon: Presentation, permission: "decks.read" },
-            { title: "Templates", path: "/templates", icon: LayoutTemplate, permission: "templates.read" },
             {
-                title: "Documents", path: "/documents", icon: FolderOpen, permission: "documents.read",
+                title: "Templates",
+                path: "/templates",
+                icon: LayoutTemplate,
+                permission: "templates.read",
+            },
+            {
+                title: "Documents",
+                path: "/documents",
+                icon: FolderOpen,
+                permission: "documents.read",
                 children: [
-                    { title: "Call Sheets", path: "/call-sheets", icon: ClipboardList, permission: "call_sheets.read" },
-                    { title: "Tech Sheets", path: "/tech-sheets", icon: Cpu, permission: "tech_sheets.read" },
-                    { title: "Proposals", path: "/proposals", icon: FilePenLine, permission: "proposals.read" },
+                    {
+                        title: "Call Sheets",
+                        path: "/call-sheets",
+                        icon: ClipboardList,
+                        permission: "call_sheets.read",
+                    },
+                    {
+                        title: "Tech Sheets",
+                        path: "/tech-sheets",
+                        icon: Cpu,
+                        permission: "tech_sheets.read",
+                    },
+                    {
+                        title: "Proposals",
+                        path: "/proposals",
+                        icon: FilePenLine,
+                        permission: "proposals.read",
+                    },
                 ],
             },
         ],
@@ -296,51 +600,198 @@ export const navigationConfig: NavSection[] = [
         title: "Vendor Management",
         defaultExpanded: false,
         items: [
-            { title: "Work Orders", path: "/work-orders", icon: ClipboardCheck, permission: "work_orders.read" },
+            {
+                title: "Work Orders",
+                path: "/work-orders",
+                icon: ClipboardCheck,
+                permission: "work_orders.read",
+            },
             { title: "Dispatch", path: "/dispatch", icon: Navigation, permission: "dispatch.read" },
-            { title: "Vendor Onboarding", path: "/vendor-onboarding", icon: UserPlus, permission: "vendor_onboarding.read" },
-            { title: "Vendor Compliance", path: "/vendor-compliance", icon: ShieldAlert, permission: "vendor_compliance.read" },
-            { title: "Vendor Reviews", path: "/vendor-reviews", icon: Star, permission: "vendor_reviews.read" },
-            { title: "Checklists", path: "/checklists", icon: ListChecks, permission: "checklists.read" },
+            {
+                title: "Vendor Onboarding",
+                path: "/vendor-onboarding",
+                icon: UserPlus,
+                permission: "vendor_onboarding.read",
+            },
+            {
+                title: "Vendor Compliance",
+                path: "/vendor-compliance",
+                icon: ShieldAlert,
+                permission: "vendor_compliance.read",
+            },
+            {
+                title: "Vendor Reviews",
+                path: "/vendor-reviews",
+                icon: Star,
+                permission: "vendor_reviews.read",
+            },
+            {
+                title: "Checklists",
+                path: "/checklists",
+                icon: ListChecks,
+                permission: "checklists.read",
+            },
         ],
     },
     {
         title: "Legal & Compliance",
         defaultExpanded: false,
         items: [
-            { title: "Contracts", path: "/contracts", icon: FileSignature, permission: "contracts.read" },
-            { title: "Insurance", path: "/insurance-policies", icon: Shield, permission: "insurance_policies.read" },
-            { title: "IP & Usage Rights", path: "/ip-rights", icon: Fingerprint, permission: "ip_rights.read" },
-            { title: "Clause Library", path: "/clause-library", icon: BookLock, permission: "clause_library.read" },
-            { title: "Obligations", path: "/obligations", icon: ClipboardMinus, permission: "obligations.read" },
-            { title: "Incidents", path: "/incidents", icon: AlertTriangle, permission: "incidents.read" },
-            { title: "Permits & Licenses", path: "/permits", icon: FileBadge, permission: "permits.read" },
-            { title: "Engineering Approvals", path: "/engineering-approvals", icon: Wrench, permission: "engineering_approvals.read" },
-            { title: "Compliance Checklists", path: "/compliance-checklists", icon: FileCheck, permission: "compliance_checklists.read" },
-            { title: "Certifications", path: "/certifications", icon: BadgeCheck, permission: "certifications.read" },
-            { title: "Approvals", path: "/approvals", icon: ShieldCheck, permission: "approvals.read" },
-            { title: "Automations", path: "/automations", icon: Zap, permission: "automations.read" },
+            {
+                title: "Contracts",
+                path: "/contracts",
+                icon: FileSignature,
+                permission: "contracts.read",
+            },
+            {
+                title: "Insurance",
+                path: "/insurance-policies",
+                icon: Shield,
+                permission: "insurance_policies.read",
+            },
+            {
+                title: "IP & Usage Rights",
+                path: "/ip-rights",
+                icon: Fingerprint,
+                permission: "ip_rights.read",
+            },
+            {
+                title: "Clause Library",
+                path: "/clause-library",
+                icon: BookLock,
+                permission: "clause_library.read",
+            },
+            {
+                title: "Obligations",
+                path: "/obligations",
+                icon: ClipboardMinus,
+                permission: "obligations.read",
+            },
+            {
+                title: "Incidents",
+                path: "/incidents",
+                icon: AlertTriangle,
+                permission: "incidents.read",
+            },
+            {
+                title: "Permits & Licenses",
+                path: "/permits",
+                icon: FileBadge,
+                permission: "permits.read",
+            },
+            {
+                title: "Engineering Approvals",
+                path: "/engineering-approvals",
+                icon: Wrench,
+                permission: "engineering_approvals.read",
+            },
+            {
+                title: "Compliance Checklists",
+                path: "/compliance-checklists",
+                icon: FileCheck,
+                permission: "compliance_checklists.read",
+            },
+            {
+                title: "Certifications",
+                path: "/certifications",
+                icon: BadgeCheck,
+                permission: "certifications.read",
+            },
+            {
+                title: "Approvals",
+                path: "/approvals",
+                icon: ShieldCheck,
+                permission: "approvals.read",
+            },
+            {
+                title: "Automations",
+                path: "/automations",
+                icon: Zap,
+                permission: "automations.read",
+            },
         ],
     },
     {
         title: "Admin",
         defaultExpanded: false,
         items: [
-            { title: "Users", path: "/user-management", icon: UsersRound, permission: "user_management.read" },
-            { title: "Invitations", path: "/user-management/invitations", icon: UserPlus, permission: "invitations.read" },
-            { title: "Access Reviews", path: "/user-management/access-reviews", icon: ShieldQuestion, permission: "access_reviews.read" },
-            { title: "Audit Log", path: "/user-management/audit-log", icon: KeyRound, permission: "audit_log.read" },
+            {
+                title: "Users",
+                path: "/user-management",
+                icon: UsersRound,
+                permission: "user_management.read",
+            },
+            {
+                title: "Invitations",
+                path: "/user-management/invitations",
+                icon: UserPlus,
+                permission: "invitations.read",
+            },
+            {
+                title: "Access Reviews",
+                path: "/user-management/access-reviews",
+                icon: ShieldQuestion,
+                permission: "access_reviews.read",
+            },
+            {
+                title: "Audit Log",
+                path: "/user-management/audit-log",
+                icon: KeyRound,
+                permission: "audit_log.read",
+            },
             { title: "People", path: "/people", icon: UserCircle, permission: "people.read" },
-            { title: "Org Chart", path: "/org-chart", icon: GitBranch, permission: "org_chart.read" },
-            { title: "Knowledge Base", path: "/knowledge-base", icon: BookOpen, permission: "kb.read" },
+            {
+                title: "Org Chart",
+                path: "/org-chart",
+                icon: GitBranch,
+                permission: "org_chart.read",
+            },
+            {
+                title: "Knowledge Base",
+                path: "/knowledge-base",
+                icon: BookOpen,
+                permission: "kb.read",
+            },
             { title: "SOPs", path: "/sops", icon: Layers, permission: "sops.read" },
             { title: "Vault", path: "/vault", icon: Lock, permission: "vault.read" },
             { title: "Roles", path: "/roles", icon: Shield, permission: "roles.manage" },
             { title: "Settings", path: "/settings", icon: Settings, permission: "settings.manage" },
-            { title: "System Health", path: "/system-health", icon: HeartPulse, permission: "system_health.read" },
-            { title: "Data Export", path: "/data-export", icon: Download, permission: "data_export.read" },
-            { title: "Client Portal", path: "/client-portal", icon: Users, permission: "client_portal.read" },
-            { title: "Vendor Portal", path: "/vendor-portal", icon: ScanBarcode, permission: "vendor_portal.read" },
+            {
+                title: "Custom Fields",
+                path: "/settings/custom-fields",
+                icon: Blocks,
+                permission: "settings.manage",
+            },
+            {
+                title: "Email Integration",
+                path: "/settings/email-integration",
+                icon: Mail,
+                permission: "settings.manage",
+            },
+            {
+                title: "System Health",
+                path: "/system-health",
+                icon: HeartPulse,
+                permission: "system_health.read",
+            },
+            {
+                title: "Data Export",
+                path: "/data-export",
+                icon: Download,
+                permission: "data_export.read",
+            },
+            {
+                title: "Client Portal",
+                path: "/client-portal",
+                icon: Users,
+                permission: "client_portal.read",
+            },
+            {
+                title: "Vendor Portal",
+                path: "/vendor-portal",
+                icon: ScanBarcode,
+                permission: "vendor_portal.read",
+            },
         ],
     },
 
@@ -350,21 +801,235 @@ export const navigationConfig: NavSection[] = [
         defaultExpanded: true,
         contextual: "live-ops",
         items: [
-            { title: "Command Dashboard", path: "/live-ops", icon: Radio, permission: "live_events.read" },
-            { title: "Run of Show", path: "/live-ops/run-of-show", icon: Megaphone, permission: "ros_cues.read" },
-            { title: "Readiness Gates", path: "/live-ops/readiness", icon: Gauge, permission: "readiness_gates.read" },
-            { title: "Department Status", path: "/live-ops/departments", icon: LayoutList, permission: "department_statuses.read" },
-            { title: "Live Crew", path: "/live-ops/crew", icon: HardHat, permission: "live_crew.read" },
-            { title: "Equipment", path: "/live-ops/equipment", icon: ScanBarcode, permission: "equipment_check_ins.read" },
-            { title: "Comms", path: "/live-ops/comms", icon: Radio, permission: "comm_channels.read" },
-            { title: "Environment", path: "/live-ops/environment", icon: Thermometer, permission: "environmental_readings.read" },
-            { title: "Financials", path: "/live-ops/financials", icon: Landmark, permission: "live_financial.read" },
-            { title: "Front of House", path: "/live-ops/foh", icon: Drama, permission: "foh_zones.read" },
-            { title: "VIP Management", path: "/live-ops/vip", icon: Crown, permission: "vip_guests.read" },
-            { title: "Guest Incidents", path: "/live-ops/guest-incidents", icon: AlertTriangle, permission: "guest_incidents.read" },
-            { title: "Strike & Load-Out", path: "/live-ops/strike", icon: ArrowLeftRight, permission: "strike_sequences.read" },
-            { title: "Reconciliation", path: "/live-ops/reconciliation", icon: ClipboardCheck, permission: "asset_reconciliation.read" },
-            { title: "Post-Event Reports", path: "/live-ops/reports", icon: FileBarChart, permission: "post_event_reports.read" },
+            {
+                title: "Command Dashboard",
+                path: "/live-ops",
+                icon: Radio,
+                permission: "live_events.read",
+            },
+            {
+                title: "Run of Show",
+                path: "/live-ops/run-of-show",
+                icon: Megaphone,
+                permission: "ros_cues.read",
+            },
+            {
+                title: "Readiness Gates",
+                path: "/live-ops/readiness",
+                icon: Gauge,
+                permission: "readiness_gates.read",
+            },
+            {
+                title: "Department Status",
+                path: "/live-ops/departments",
+                icon: LayoutList,
+                permission: "department_statuses.read",
+            },
+            {
+                title: "Live Crew",
+                path: "/live-ops/crew",
+                icon: HardHat,
+                permission: "live_crew.read",
+            },
+            {
+                title: "Equipment",
+                path: "/live-ops/equipment",
+                icon: ScanBarcode,
+                permission: "equipment_check_ins.read",
+            },
+            {
+                title: "Comms",
+                path: "/live-ops/comms",
+                icon: Radio,
+                permission: "comm_channels.read",
+            },
+            {
+                title: "Environment",
+                path: "/live-ops/environment",
+                icon: Thermometer,
+                permission: "environmental_readings.read",
+            },
+            {
+                title: "Financials",
+                path: "/live-ops/financials",
+                icon: Landmark,
+                permission: "live_financial.read",
+            },
+            {
+                title: "Front of House",
+                path: "/live-ops/foh",
+                icon: Drama,
+                permission: "foh_zones.read",
+            },
+            {
+                title: "VIP Management",
+                path: "/live-ops/vip",
+                icon: Crown,
+                permission: "vip_guests.read",
+            },
+            {
+                title: "Guest Incidents",
+                path: "/live-ops/guest-incidents",
+                icon: AlertTriangle,
+                permission: "guest_incidents.read",
+            },
+            {
+                title: "Strike & Load-Out",
+                path: "/live-ops/strike",
+                icon: ArrowLeftRight,
+                permission: "strike_sequences.read",
+            },
+            {
+                title: "Reconciliation",
+                path: "/live-ops/reconciliation",
+                icon: ClipboardCheck,
+                permission: "asset_reconciliation.read",
+            },
+            {
+                title: "Post-Event Reports",
+                path: "/live-ops/reports",
+                icon: FileBarChart,
+                permission: "post_event_reports.read",
+            },
         ],
     },
 ];
+
+interface NavItemMatch {
+    section: NavSection;
+    item: NavItem;
+    parentItem?: NavItem;
+    matchLength: number;
+}
+
+function normalizeNavigationPath(path: string): string {
+    if (!path) return "/";
+    const withoutQuery = path.split(/[?#]/)[0] ?? path;
+    const normalized = withoutQuery.replace(/\/+$/, "");
+    return normalized === "" ? "/" : normalized;
+}
+
+function isPathMatch(candidatePath: string, currentPath: string): boolean {
+    const candidate = normalizeNavigationPath(candidatePath);
+    const current = normalizeNavigationPath(currentPath);
+    return current === candidate || current.startsWith(`${candidate}/`);
+}
+
+export function getContextualNavigationVisibility(
+    pathname: string
+): NavigationVisibilityOptions["contextualVisibility"] {
+    const currentPath = normalizeNavigationPath(pathname);
+
+    return {
+        "live-ops": currentPath === "/live-ops" || currentPath.startsWith("/live-ops/"),
+    };
+}
+
+function findLongestNavItemMatch(pathname: string, sections: NavSection[]): NavItemMatch | null {
+    const currentPath = normalizeNavigationPath(pathname);
+    let bestMatch: NavItemMatch | null = null;
+
+    const visit = (section: NavSection, item: NavItem, parentItem?: NavItem) => {
+        if (isPathMatch(item.path, currentPath)) {
+            const matchLength = normalizeNavigationPath(item.path).length;
+            if (!bestMatch || matchLength > bestMatch.matchLength) {
+                bestMatch = { section, item, parentItem, matchLength };
+            }
+        }
+
+        for (const child of item.children ?? []) {
+            visit(section, child, item);
+        }
+    };
+
+    for (const section of sections) {
+        for (const item of section.items) {
+            visit(section, item);
+        }
+    }
+
+    return bestMatch;
+}
+
+export interface NavigationContext {
+    section: NavSection;
+    item: NavItem;
+    parentItem?: NavItem;
+}
+
+export interface NavigationBreadcrumb {
+    label: string;
+    path: string;
+    isLast: boolean;
+}
+
+export function getNavigationContext(
+    pathname: string,
+    sections: NavSection[] = navigationConfig
+): NavigationContext | null {
+    const match = findLongestNavItemMatch(pathname, sections);
+    if (!match) return null;
+
+    return {
+        section: match.section,
+        item: match.item,
+        parentItem: match.parentItem,
+    };
+}
+
+function getNavigationLabel(
+    pathname: string,
+    sections: NavSection[] = navigationConfig
+): string | null {
+    const targetPath = normalizeNavigationPath(pathname);
+
+    const findExact = (items: NavItem[]): string | null => {
+        for (const item of items) {
+            if (normalizeNavigationPath(item.path) === targetPath) {
+                return item.title;
+            }
+
+            if (item.children) {
+                const childMatch = findExact(item.children);
+                if (childMatch) return childMatch;
+            }
+        }
+
+        return null;
+    };
+
+    for (const section of sections) {
+        const match = findExact(section.items);
+        if (match) return match;
+    }
+
+    return null;
+}
+
+function formatPathSegment(segment: string): string {
+    const decoded = decodeURIComponent(segment);
+    return decoded.replace(/[-_]/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function getNavigationBreadcrumbs(
+    pathname: string,
+    sections: NavSection[] = navigationConfig
+): NavigationBreadcrumb[] {
+    const normalizedPath = normalizeNavigationPath(pathname);
+    const segments = normalizedPath.split("/").filter(Boolean);
+
+    if (segments.length === 0) {
+        return [];
+    }
+
+    return segments.map((segment, index) => {
+        const path = `/${segments.slice(0, index + 1).join("/")}`;
+        const label = getNavigationLabel(path, sections) ?? formatPathSegment(segment);
+
+        return {
+            label,
+            path,
+            isLast: index === segments.length - 1,
+        };
+    });
+}

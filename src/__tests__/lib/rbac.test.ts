@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+    type DbPermissionGrant,
+    FIELD_VISIBILITY_MASKS,
     hasPermission,
     isFieldVisible,
     maskSensitiveFields,
-    shouldRevokeAccess,
-    resolvePermissionsFromGrants,
     PERMISSION_MATRIX,
-    FIELD_VISIBILITY_MASKS,
-    type DbPermissionGrant,
+    resolvePermissionsFromGrants,
+    shouldRevokeAccess,
 } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 
@@ -75,10 +75,7 @@ describe("hasPermission — DB grants", () => {
     });
 
     it("deny grant overrides allow", () => {
-        const grants = [
-            grant("projects", "read", "allow"),
-            grant("projects", "read", "deny"),
-        ];
+        const grants = [grant("projects", "read", "allow"), grant("projects", "read", "deny")];
         expect(hasPermission("pm", "projects", "read", { dbGrants: grants })).toBe(false);
     });
 
@@ -256,10 +253,7 @@ describe("resolvePermissionsFromGrants", () => {
     });
 
     it("removes resource entirely if all actions denied", () => {
-        const grants = [
-            grant("secrets", "read"),
-            grant("secrets", "read", "deny"),
-        ];
+        const grants = [grant("secrets", "read"), grant("secrets", "read", "deny")];
         const perms = resolvePermissionsFromGrants(grants);
         expect(perms.find((p) => p.resource === "secrets")).toBeUndefined();
     });

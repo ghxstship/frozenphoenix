@@ -104,5 +104,45 @@ export {
     getPaginationRange,
 } from "./mutation-utils";
 
+// ─── V2 Feature Hooks ───
+export {
+    useAutomationExecutions,
+    useCreateAutomationExecution,
+    useUpdateAutomationExecution,
+    useRevenueRecognitionEntries,
+    useRevenueRecognitionSummary,
+    useCreateRevenueRecognition,
+    useTimeTrackingPolicy,
+    useUpsertTimeTrackingPolicy,
+    useTimeTrackingCompliance,
+    useNotifications,
+    useUnreadNotificationCount,
+    useCreateNotification,
+    useMarkNotificationRead,
+    useMarkAllNotificationsRead,
+    useNotificationPreferences,
+    useUpsertNotificationPreference,
+    useEmailMessages,
+    useCreateEmailMessage,
+    useSurveyTemplates,
+    useCreateSurveyTemplate,
+    useSurveyResponses,
+    useCreateSurveyResponse,
+    useSlaPolicies,
+    useCreateSlaPolicy,
+    useSlaStatus,
+    useCustomFieldDefinitions,
+    useCreateCustomFieldDefinition,
+    useUpdateCustomFieldDefinition,
+    useCustomFieldValues,
+    useUpsertCustomFieldValue,
+    useProjectTemplates,
+    useCreateProjectTemplate,
+    useUpdateProjectTemplate,
+    useAiReportQueries,
+    useCreateAiReportQuery,
+    useGenerateInvoiceFromTime,
+} from "./hooks-v2-features";
+
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { BREAKPOINTS, LAYOUT } from "@/config/design-tokens";
+import { LAYOUT } from "@/config/design-tokens";
 
 const SIDEBAR_WIDTH = LAYOUT.sidebar;
 
@@ -17,7 +17,6 @@ interface SidebarState {
     setMobile: (mobile: boolean) => void;
     setFilterQuery: (query: string) => void;
     togglePin: (path: string) => void;
-    toggle: () => void;
     toggleCollapse: () => void;
 }
 
@@ -29,17 +28,21 @@ export const useSidebar = create<SidebarState>()(
             isMobile: false,
             filterQuery: "",
             pinnedPaths: [],
-            setOpen: (open) => set({ isOpen: open }),
-            setCollapsed: (collapsed) => set({ isCollapsed: collapsed }),
-            setMobile: (mobile) => set({ isMobile: mobile }),
-            setFilterQuery: (filterQuery) => set({ filterQuery }),
+            setOpen: (open) => set((state) => (state.isOpen === open ? state : { isOpen: open })),
+            setCollapsed: (collapsed) =>
+                set((state) =>
+                    state.isCollapsed === collapsed ? state : { isCollapsed: collapsed }
+                ),
+            setMobile: (mobile) =>
+                set((state) => (state.isMobile === mobile ? state : { isMobile: mobile })),
+            setFilterQuery: (filterQuery) =>
+                set((state) => (state.filterQuery === filterQuery ? state : { filterQuery })),
             togglePin: (path) =>
                 set((state) => ({
                     pinnedPaths: state.pinnedPaths.includes(path)
                         ? state.pinnedPaths.filter((p) => p !== path)
                         : [...state.pinnedPaths, path],
                 })),
-            toggle: () => set((state) => ({ isOpen: !state.isOpen })),
             toggleCollapse: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
         }),
         {
@@ -52,9 +55,4 @@ export const useSidebar = create<SidebarState>()(
     )
 );
 
-export function getSidebarWidth(isCollapsed: boolean, isMobile: boolean): number {
-    if (isMobile) return 0;
-    return isCollapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded;
-}
-
-export { BREAKPOINTS, SIDEBAR_WIDTH };
+export { SIDEBAR_WIDTH };

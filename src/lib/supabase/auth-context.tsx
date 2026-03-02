@@ -1,11 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createClient, isSupabaseConfigured } from "./client";
-import type { User, Session } from "@supabase/supabase-js";
-import type { Tables } from "./database.types";
+import type { Session, User } from "@supabase/supabase-js";
+import type { Database, Tables } from "./database.types";
 
 type Profile = Tables<"profiles">;
+type OrgMembershipStatus = Database["public"]["Enums"]["org_membership_status"];
 
 // ─── Org Membership (lightweight shape for context) ────────────
 interface OrgMembership {
@@ -13,9 +14,9 @@ interface OrgMembership {
     user_id: string;
     organization_id: string;
     role: string;
-    status: string;
-    is_default: boolean;
-    organizations?: {
+    status: OrgMembershipStatus;
+    is_default_org: boolean;
+    organizations: {
         id: string;
         name: string;
         slug: string;
@@ -61,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (match) return match;
         }
         // Fallback: default org, or first membership
-        return memberships.find((m) => m.is_default) ?? memberships[0] ?? null;
+        return memberships.find((m) => m.is_default_org) ?? memberships[0] ?? null;
     }, [memberships, activeOrgId]);
 
     const switchOrg = useCallback((orgId: string) => {
@@ -71,87 +72,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    const fetchMemberships = useCallback(async (userId: string) => {
-        if (!supabase) return;
-        const { data } = await supabase
-            .from("org_memberships")
-            .select("id, user_id, organization_id, role, status, is_default, organizations(id, name, slug)")
-            .eq("user_id", userId)
-            .eq("status", "active");
-
-        if (data && data.length > 0) {
-            setMemberships(data as unknown as OrgMembership[]);
-            return;
-        }
-
-        // No org_memberships — create one in the default org
-        const { data: defaultOrg } = await supabase
-            .from("organizations")
-            .select("id")
-            .eq("slug", "default")
-            .single();
-
-        if (defaultOrg) {
-            const { data: created } = await supabase
+    const fetchMemberships = useCallback(
+        async (userId: string) => {
+            if (!supabase) return;
+            const { data } = await supabase
                 .from("org_memberships")
-                .upsert(
-                    {
-                        user_id: userId,
-                        organization_id: defaultOrg.id,
-                        role: "pm",
-                        status: "active",
-                        is_default: true,
-                    },
-                    { onConflict: "user_id,organization_id" }
+                .select(
+                    "id, user_id, organization_id, role, status, is_default_org, organizations(id, name, slug)"
                 )
-                .select("id, user_id, organization_id, role, status, is_default, organizations(id, name, slug)")
+                .eq("user_id", userId)
+                .eq("status", "active");
+
+            if (data && data.length > 0) {
+                setMemberships(data);
+                return;
+            }
+
+            // No org_memberships — create one in the default org
+            const { data: defaultOrg } = await supabase
+                .from("organizations")
+                .select("id")
+                .eq("slug", "default")
                 .single();
 
-            if (created) {
-                setMemberships([created as unknown as OrgMembership]);
+            if (defaultOrg) {
+                const { data: created } = await supabase
+                    .from("org_memberships")
+                    .upsert(
+                        {
+                            user_id: userId,
+                            organization_id: defaultOrg.id,
+                            role: "pm",
+                            status: "active",
+                            is_default_org: true,
+                        },
+                        { onConflict: "user_id,organization_id" }
+                    )
+                    .select(
+                        "id, user_id, organization_id, role, status, is_default_org, organizations(id, name, slug)"
+                    )
+                    .single();
+
+                if (created) {
+                    setMemberships([created]);
+                }
             }
-        }
-    }, [supabase]);
+        },
+        [supabase]
+    );
 
-    const fetchProfile = useCallback(async (userId: string) => {
-        if (!supabase) return;
-        const { data } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", userId)
-            .single();
+    const fetchProfile = useCallback(
+        async (userId: string) => {
+            if (!supabase) return;
+            const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
 
-        if (data) {
-            setProfile(data as Profile);
-            return;
-        }
+            if (data) {
+                setProfile(data as Profile);
+                return;
+            }
 
-        // Profile row missing — DB trigger may have failed.
-        // Create it from auth metadata so the user is never stuck as "Guest".
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) return;
+            // Profile row missing — DB trigger may have failed.
+            // Create it from auth metadata so the user is never stuck as "Guest".
+            const {
+                data: { user: authUser },
+            } = await supabase.auth.getUser();
+            if (!authUser) return;
 
-        const displayName =
-            authUser.user_metadata?.name ||
-            authUser.user_metadata?.full_name ||
-            authUser.email?.split("@")[0] ||
-            "User";
+            const displayName =
+                authUser.user_metadata?.name ||
+                authUser.user_metadata?.full_name ||
+                authUser.email?.split("@")[0] ||
+                "User";
 
-        const { data: created } = await supabase
-            .from("profiles")
-            .upsert(
-                {
-                    id: userId,
-                    email: authUser.email ?? "",
-                    name: displayName,
-                },
-                { onConflict: "id" }
-            )
-            .select("*")
-            .single();
+            const { data: created } = await supabase
+                .from("profiles")
+                .upsert(
+                    {
+                        id: userId,
+                        email: authUser.email ?? "",
+                        name: displayName,
+                    },
+                    { onConflict: "id" }
+                )
+                .select("*")
+                .single();
 
-        setProfile((created as Profile | null) ?? null);
-    }, [supabase]);
+            setProfile((created as Profile | null) ?? null);
+        },
+        [supabase]
+    );
 
     const refreshProfile = useCallback(async () => {
         if (user) {

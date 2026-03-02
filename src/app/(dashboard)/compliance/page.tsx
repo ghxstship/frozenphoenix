@@ -1,22 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Shield,
+    Activity,
     AlertTriangle,
     CheckCircle2,
-    XCircle,
+    FileText,
     Info,
-    RefreshCw,
     Loader2,
     Lock,
+    RefreshCw,
+    Shield,
     Users,
-    FileText,
-    Activity,
+    XCircle,
 } from "lucide-react";
 
 interface DriftItem {
@@ -49,8 +49,16 @@ interface ComplianceCheck {
 }
 
 const SEVERITY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-    critical: { bg: "bg-destructive/10", text: "text-destructive", icon: <XCircle className="h-4 w-4" /> },
-    warning: { bg: "bg-warning/10", text: "text-warning", icon: <AlertTriangle className="h-4 w-4" /> },
+    critical: {
+        bg: "bg-destructive/10",
+        text: "text-destructive",
+        icon: <XCircle className="h-4 w-4" />,
+    },
+    warning: {
+        bg: "bg-warning/10",
+        text: "text-warning",
+        icon: <AlertTriangle className="h-4 w-4" />,
+    },
     info: { bg: "bg-info/10", text: "text-info", icon: <Info className="h-4 w-4" /> },
 };
 
@@ -63,34 +71,35 @@ export default function ComplianceDashboardPage() {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchDrift = async (isRefresh = false) => {
-        if (!orgId) return;
-        if (isRefresh) setRefreshing(true);
-        else setLoading(true);
-        setError(null);
+    const fetchDrift = useCallback(
+        async (isRefresh = false) => {
+            if (!orgId) return;
+            if (isRefresh) setRefreshing(true);
+            else setLoading(true);
+            setError(null);
 
-        try {
-            const res = await fetch(`/api/settings/drift-detection?organization_id=${orgId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setDriftReport(data);
-            } else {
-                const data = await res.json();
-                setError(data.error || "Failed to load compliance data.");
+            try {
+                const res = await fetch(`/api/settings/drift-detection?organization_id=${orgId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setDriftReport(data);
+                } else {
+                    const data = await res.json();
+                    setError(data.error || "Failed to load compliance data.");
+                }
+            } catch {
+                setError("Failed to load compliance data.");
+            } finally {
+                setLoading(false);
+                setRefreshing(false);
             }
-        } catch {
-            setError("Failed to load compliance data.");
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+        },
+        [orgId]
+    );
 
-    // FIND-020: fetchDrift depends on orgId but is not stable (re-created each render).
-    // Intentionally listing only orgId — fetchDrift reads orgId via closure.
     useEffect(() => {
         fetchDrift();
-    }, [orgId]); // eslint-disable-line react-hooks/exhaustive-deps -- fetchDrift is intentionally unstable; orgId is the true trigger
+    }, [fetchDrift]);
 
     // Build compliance checks from available data
     const complianceChecks: ComplianceCheck[] = [
@@ -105,7 +114,8 @@ export default function ComplianceDashboardPage() {
         {
             id: "cc7.1",
             label: "Settings Audit Trail",
-            description: "All settings changes are logged to settings_change_log with immutable records.",
+            description:
+                "All settings changes are logged to settings_change_log with immutable records.",
             status: "pass",
             soc2Control: "CC7.1",
             icon: <FileText className="h-4 w-4" aria-hidden="true" />,
@@ -131,9 +141,11 @@ export default function ComplianceDashboardPage() {
             label: "Settings Drift Detection",
             description: "Active monitoring of settings configuration drift.",
             status: driftReport
-                ? driftReport.critical_count > 0 ? "fail"
-                    : driftReport.warning_count > 0 ? "warning"
-                        : "pass"
+                ? driftReport.critical_count > 0
+                    ? "fail"
+                    : driftReport.warning_count > 0
+                      ? "warning"
+                      : "pass"
                 : "unknown",
             soc2Control: "CC8.1",
             icon: <Activity className="h-4 w-4" aria-hidden="true" />,
@@ -170,11 +182,7 @@ export default function ComplianceDashboardPage() {
                         <strong>{activeOrg?.organizations?.name || "your organization"}</strong>
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => fetchDrift(true)}
-                    disabled={refreshing}
-                >
+                <Button variant="outline" onClick={() => fetchDrift(true)} disabled={refreshing}>
                     {refreshing ? (
                         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     ) : (
@@ -185,7 +193,10 @@ export default function ComplianceDashboardPage() {
             </div>
 
             {error && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm" role="alert">
+                <div
+                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                    role="alert"
+                >
                     <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
                     {error}
                 </div>
@@ -195,7 +206,9 @@ export default function ComplianceDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                     <CardContent className="pt-6 text-center">
-                        <div className={`text-4xl font-bold ${overallScore >= 80 ? "text-success" : overallScore >= 50 ? "text-warning" : "text-destructive"}`}>
+                        <div
+                            className={`text-4xl font-bold ${overallScore >= 80 ? "text-success" : overallScore >= 50 ? "text-warning" : "text-destructive"}`}
+                        >
                             {overallScore}%
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">Overall Score</p>
@@ -244,7 +257,9 @@ export default function ComplianceDashboardPage() {
                                     {check.icon}
                                     <div>
                                         <p className="text-sm font-medium">{check.label}</p>
-                                        <p className="text-xs text-muted-foreground">{check.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {check.description}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -252,13 +267,25 @@ export default function ComplianceDashboardPage() {
                                         {check.soc2Control}
                                     </Badge>
                                     {check.status === "pass" ? (
-                                        <CheckCircle2 className="h-5 w-5 text-success" aria-label="Passing" />
+                                        <CheckCircle2
+                                            className="h-5 w-5 text-success"
+                                            aria-label="Passing"
+                                        />
                                     ) : check.status === "fail" ? (
-                                        <XCircle className="h-5 w-5 text-destructive" aria-label="Failing" />
+                                        <XCircle
+                                            className="h-5 w-5 text-destructive"
+                                            aria-label="Failing"
+                                        />
                                     ) : check.status === "warning" ? (
-                                        <AlertTriangle className="h-5 w-5 text-warning" aria-label="Warning" />
+                                        <AlertTriangle
+                                            className="h-5 w-5 text-warning"
+                                            aria-label="Warning"
+                                        />
                                     ) : (
-                                        <Info className="h-5 w-5 text-muted-foreground" aria-label="Unknown" />
+                                        <Info
+                                            className="h-5 w-5 text-muted-foreground"
+                                            aria-label="Unknown"
+                                        />
                                     )}
                                 </div>
                             </li>
@@ -287,13 +314,17 @@ export default function ComplianceDashboardPage() {
                     <CardContent>
                         <ul className="space-y-2" role="list">
                             {driftReport.items.map((item, idx) => {
-                                const style = SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info!;
+                                const style =
+                                    SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info!;
                                 return (
                                     <li
                                         key={`${item.setting_key}-${idx}`}
                                         className={`flex items-start gap-3 p-3 rounded-lg ${style.bg}`}
                                     >
-                                        <span className={`shrink-0 mt-0.5 ${style.text}`} aria-hidden="true">
+                                        <span
+                                            className={`shrink-0 mt-0.5 ${style.text}`}
+                                            aria-hidden="true"
+                                        >
                                             {style.icon}
                                         </span>
                                         <div className="flex-1 min-w-0">
@@ -323,10 +354,14 @@ export default function ComplianceDashboardPage() {
             {driftReport && driftReport.items.length === 0 && (
                 <Card>
                     <CardContent className="py-8 text-center">
-                        <CheckCircle2 className="h-8 w-8 text-success mx-auto mb-2" aria-hidden="true" />
+                        <CheckCircle2
+                            className="h-8 w-8 text-success mx-auto mb-2"
+                            aria-hidden="true"
+                        />
                         <p className="text-sm font-medium">No configuration drift detected</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                            All {driftReport.total_definitions} setting definitions are properly configured.
+                            All {driftReport.total_definitions} setting definitions are properly
+                            configured.
                         </p>
                     </CardContent>
                 </Card>

@@ -6,18 +6,8 @@
    This ensures SSOT by providing a single entry point.
    ═══════════════════════════════════════════════════════════════ */
 
-// Brand & Identity (legacy single-brand config)
-export { brandConfig } from "./brand";
-export type { BrandConfig as LegacyBrandConfig } from "./brand";
-
 // Multi-Tenant Brand System
-export {
-    BRAND_REGISTRY,
-    RILLA_BRAND,
-    PLAYBOOK_BRAND,
-    getBrand,
-    getActiveBrand,
-} from "./brands";
+export { BRAND_REGISTRY, RILLA_BRAND, PLAYBOOK_BRAND, getBrand, getActiveBrand } from "./brands";
 export type {
     BrandConfig,
     BrandId,

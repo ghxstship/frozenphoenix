@@ -1,31 +1,48 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
-import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
+import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/demo-data-crm-revenue";
 import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
-import { useOpportunities, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { isSupabaseConfigured, useOpportunities } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Opportunity, OpportunityStage } from "@/types";
 import {
-    Plus, Columns, List, Target, DollarSign, TrendingUp, Clock,
-    GripVertical, Calendar, User, Building2, Loader2,
+    Building2,
+    Calendar,
+    Clock,
+    Columns,
+    DollarSign,
+    GripVertical,
+    List,
+    Loader2,
+    Plus,
+    Target,
+    TrendingUp,
+    User,
 } from "lucide-react";
 
 type ViewMode = "board" | "table";
 
 const ACTIVE_STAGES: OpportunityStage[] = [
-    "discovery", "qualification", "proposal_sent", "proposal_review", "negotiation", "contract_sent",
+    "discovery",
+    "qualification",
+    "proposal_sent",
+    "proposal_review",
+    "negotiation",
+    "contract_sent",
 ];
 
 const tableColumns: ColumnDef<Opportunity>[] = [
@@ -102,19 +119,27 @@ const tableColumns: ColumnDef<Opportunity>[] = [
         accessorKey: "nextStep",
         minWidth: 200,
         render: (value) => (
-            <span className="text-xs text-muted-foreground line-clamp-2">{String(value ?? "")}</span>
+            <span className="text-xs text-muted-foreground line-clamp-2">
+                {String(value ?? "")}
+            </span>
         ),
     },
 ];
 
 export default function OpportunitiesPage() {
-    const [viewMode, setViewMode] = useState<ViewMode>("board");
+    const VIEW_MODES = ["board", "table"] as const;
+    const [viewMode, setViewMode] = useQueryTabState({
+        key: "view",
+        defaultValue: "board",
+        validValues: VIEW_MODES,
+    });
     const [search, setSearch] = useState("");
     const [stageFilter, setStageFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbOpps, isLoading } = useOpportunities();
 
-    const opportunities = isSupabaseConfigured && sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
+    const opportunities =
+        isSupabaseConfigured && sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
 
     const filtered = useMemo(() => {
         let result = opportunities;
@@ -138,7 +163,10 @@ export default function OpportunitiesPage() {
             totalPipeline: active.reduce((s, o) => s + o.value, 0),
             weightedPipeline: active.reduce((s, o) => s + o.weightedValue, 0),
             activeCount: active.length,
-            avgProbability: active.length > 0 ? Math.round(active.reduce((s, o) => s + o.probability, 0) / active.length) : 0,
+            avgProbability:
+                active.length > 0
+                    ? Math.round(active.reduce((s, o) => s + o.probability, 0) / active.length)
+                    : 0,
         };
     }, [opportunities]);
 
@@ -154,131 +182,208 @@ export default function OpportunitiesPage() {
 
     return (
         <PermissionGate resource="opportunities" action="read">
-        <div className="space-y-6">
-            <PageHeader title="Opportunities" description="Sales pipeline — track opportunities from discovery to close">
-                <Link href="/opportunities/new">
-                    <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" /> New Opportunity
-                    </Button>
-                </Link>
-            </PageHeader>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Opportunities"
+                    description="Sales pipeline — track opportunities from discovery to close"
+                >
+                    <Link href="/opportunities/new">
+                        <Button size="sm">
+                            <Plus className="mr-2 h-4 w-4" /> New Opportunity
+                        </Button>
+                    </Link>
+                </PageHeader>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Pipeline Value" value={formatCurrency(stats.totalPipeline)} icon={DollarSign} />
-                <StatCard title="Weighted Value" value={formatCurrency(stats.weightedPipeline)} icon={TrendingUp} />
-                <StatCard title="Active Opportunities" value={stats.activeCount} icon={Target} />
-                <StatCard title="Avg. Probability" value={`${stats.avgProbability}%`} icon={Clock} />
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <SearchInput value={search} onValueChange={setSearch} placeholder="Search opportunities..." />
-                    <select
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={stageFilter}
-                        onChange={(e) => setStageFilter(e.target.value)}
-                    >
-                        <option value="all">All Stages</option>
-                        {OPPORTUNITY_STAGES.map((s) => (
-                            <option key={s.id} value={s.id}>{s.label}</option>
-                        ))}
-                    </select>
-                    <select
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                    >
-                        <option value="all">All Types</option>
-                        <option value="new_business">New Business</option>
-                        <option value="expansion">Expansion</option>
-                        <option value="renewal">Renewal</option>
-                        <option value="upsell">Upsell</option>
-                    </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        title="Pipeline Value"
+                        value={formatCurrency(stats.totalPipeline)}
+                        icon={DollarSign}
+                    />
+                    <StatCard
+                        title="Weighted Value"
+                        value={formatCurrency(stats.weightedPipeline)}
+                        icon={TrendingUp}
+                    />
+                    <StatCard
+                        title="Active Opportunities"
+                        value={stats.activeCount}
+                        icon={Target}
+                    />
+                    <StatCard
+                        title="Avg. Probability"
+                        value={`${stats.avgProbability}%`}
+                        icon={Clock}
+                    />
                 </div>
-                <div className="flex gap-1 border rounded-lg p-0.5">
-                    <Button variant={viewMode === "board" ? "secondary" : "ghost"} size="sm" onClick={() => setViewMode("board")}>
-                        <Columns className="h-4 w-4" />
-                    </Button>
-                    <Button variant={viewMode === "table" ? "secondary" : "ghost"} size="sm" onClick={() => setViewMode("table")}>
-                        <List className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
 
-            {viewMode === "table" ? (
-                <DataTable columns={tableColumns} data={filtered} keyField="id" emptyState={<div className="text-center py-8 text-muted-foreground">No opportunities found</div>} />
-            ) : (
-                <div className="flex gap-3 overflow-x-auto pb-4">
-                    {boardStages.map((stage) => {
-                        const stageOpps = filtered.filter((o) => o.stage === stage.id);
-                        const stageTotal = stageOpps.reduce((s, o) => s + o.value, 0);
-                        return (
-                            <div key={stage.id} className="flex-shrink-0 w-72 bg-muted/50 rounded-lg p-3 space-y-2">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
-                                        <span className="text-sm font-medium">{stage.label}</span>
-                                        <Badge variant="secondary" className="text-xs">{stageOpps.length}</Badge>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">{formatCurrency(stageTotal)}</span>
-                                </div>
-                                <div className="space-y-2">
-                                    {stageOpps.map((opp) => (
-                                        <div
-                                            key={opp.id}
-                                            className="bg-background rounded-lg border p-3 space-y-2 cursor-grab hover:shadow-sm transition-shadow"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-1.5">
-                                                    <GripVertical className="h-3 w-3 text-muted-foreground/50" />
-                                                    <span className="font-medium text-sm leading-tight">{opp.name}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                <Building2 className="h-3 w-3" />
-                                                <span>{opp.companyName}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <div className="flex items-center gap-1 text-muted-foreground">
-                                                    <DollarSign className="h-3 w-3" />
-                                                    <span className="font-medium text-foreground">
-                                                        {formatCurrency(opp.value)}
-                                                    </span>
-                                                    <span className="text-muted-foreground">({opp.probability}%)</span>
-                                                </div>
-                                            </div>
-                                            {opp.type !== "new_business" && (
-                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                                    {OPPORTUNITY_TYPE_MAP[opp.type]?.label ?? opp.type}
-                                                </Badge>
-                                            )}
-                                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" />
-                                                    <span>{opp.expectedCloseDate ? formatDate(opp.expectedCloseDate, "compact") : "TBD"}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <User className="h-3 w-3" />
-                                                    <span>{opp.assignedToName?.split(" ")[0] ?? "Unassigned"}</span>
-                                                </div>
-                                            </div>
-                                            {opp.nextStep && (
-                                                <p className="text-[10px] text-muted-foreground line-clamp-2 border-t pt-1.5 mt-1">
-                                                    {opp.nextStep}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                    {stageOpps.length === 0 && (
-                                        <div className="text-xs text-muted-foreground text-center py-4">No opportunities</div>
-                                    )}
-                                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search opportunities..."
+                        />
+                        <select
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={stageFilter}
+                            onChange={(e) => setStageFilter(e.target.value)}
+                        >
+                            <option value="all">All Stages</option>
+                            {OPPORTUNITY_STAGES.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                    {s.label}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                        >
+                            <option value="all">All Types</option>
+                            <option value="new_business">New Business</option>
+                            <option value="expansion">Expansion</option>
+                            <option value="renewal">Renewal</option>
+                            <option value="upsell">Upsell</option>
+                        </select>
+                    </div>
+                    <SegmentedControl
+                        value={viewMode}
+                        onValueChange={(v) => setViewMode(v as ViewMode)}
+                        options={[
+                            {
+                                value: "board",
+                                label: "Board",
+                                icon: <Columns className="h-4 w-4" />,
+                                labelHidden: true,
+                            },
+                            {
+                                value: "table",
+                                label: "Table",
+                                icon: <List className="h-4 w-4" />,
+                                labelHidden: true,
+                            },
+                        ]}
+                        ariaLabel="View mode"
+                    />
+                </div>
+
+                {viewMode === "table" ? (
+                    <DataTable
+                        columns={tableColumns}
+                        data={filtered}
+                        keyField="id"
+                        emptyState={
+                            <div className="text-center py-8 text-muted-foreground">
+                                No opportunities found
                             </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
+                        }
+                    />
+                ) : (
+                    <div className="flex gap-3 overflow-x-auto pb-4">
+                        {boardStages.map((stage) => {
+                            const stageOpps = filtered.filter((o) => o.stage === stage.id);
+                            const stageTotal = stageOpps.reduce((s, o) => s + o.value, 0);
+                            return (
+                                <div
+                                    key={stage.id}
+                                    className="flex-shrink-0 w-72 bg-muted/50 rounded-lg p-3 space-y-2"
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="w-2 h-2 rounded-full"
+                                                style={{ backgroundColor: stage.color }}
+                                            />
+                                            <span className="text-sm font-medium">
+                                                {stage.label}
+                                            </span>
+                                            <Badge variant="secondary" className="text-xs">
+                                                {stageOpps.length}
+                                            </Badge>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">
+                                            {formatCurrency(stageTotal)}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {stageOpps.map((opp) => (
+                                            <div
+                                                key={opp.id}
+                                                className="bg-background rounded-lg border p-3 space-y-2 cursor-grab hover:shadow-sm transition-shadow"
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <GripVertical className="h-3 w-3 text-muted-foreground/50" />
+                                                        <span className="font-medium text-sm leading-tight">
+                                                            {opp.name}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <Building2 className="h-3 w-3" />
+                                                    <span>{opp.companyName}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <DollarSign className="h-3 w-3" />
+                                                        <span className="font-medium text-foreground">
+                                                            {formatCurrency(opp.value)}
+                                                        </span>
+                                                        <span className="text-muted-foreground">
+                                                            ({opp.probability}%)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {opp.type !== "new_business" && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px] px-1.5 py-0"
+                                                    >
+                                                        {OPPORTUNITY_TYPE_MAP[opp.type]?.label ??
+                                                            opp.type}
+                                                    </Badge>
+                                                )}
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-1">
+                                                        <Calendar className="h-3 w-3" />
+                                                        <span>
+                                                            {opp.expectedCloseDate
+                                                                ? formatDate(
+                                                                      opp.expectedCloseDate,
+                                                                      "compact"
+                                                                  )
+                                                                : "TBD"}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <User className="h-3 w-3" />
+                                                        <span>
+                                                            {opp.assignedToName?.split(" ")[0] ??
+                                                                "Unassigned"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {opp.nextStep && (
+                                                    <p className="text-[10px] text-muted-foreground line-clamp-2 border-t pt-1.5 mt-1">
+                                                        {opp.nextStep}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {stageOpps.length === 0 && (
+                                            <div className="text-xs text-muted-foreground text-center py-4">
+                                                No opportunities
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
         </PermissionGate>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, createContext, useContext } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -84,7 +84,11 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
                                 {state.options.cancelLabel ?? "Cancel"}
                             </Button>
                             <Button
-                                variant={state.options.variant === "destructive" ? "destructive" : "default"}
+                                variant={
+                                    state.options.variant === "destructive"
+                                        ? "destructive"
+                                        : "default"
+                                }
                                 size="sm"
                                 onClick={handleConfirm}
                                 autoFocus

@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { AuthLayout, AuthFormField, PasswordInput, OAuthButtons } from "@/components/auth";
-import { validateRedirectUrl, checkRateLimit, recordFailedAttempt, resetRateLimit, formatLockoutTime, mapAuthError } from "@/lib/auth-utils";
-import { Mail, AlertCircle, Loader2 } from "lucide-react";
+import { AuthFormField, AuthLayout, OAuthButtons, PasswordInput } from "@/components/auth";
+import {
+    checkRateLimit,
+    formatLockoutTime,
+    mapAuthError,
+    recordFailedAttempt,
+    resetRateLimit,
+    validateRedirectUrl,
+} from "@/lib/auth-utils";
+import { AlertCircle, Loader2, Mail } from "lucide-react";
 
 function LoginForm() {
     const router = useRouter();
@@ -19,7 +26,9 @@ function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(
-        suspendedReason ? "Your account has been suspended. Please contact your organization administrator." : null
+        suspendedReason
+            ? "Your account has been suspended. Please contact your organization administrator."
+            : null
     );
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<string | null>(null);
@@ -41,79 +50,87 @@ function LoginForm() {
         return () => clearInterval(timer);
     }, [lockoutMs]);
 
-    const handleLogin = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleLogin = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        // Rate limit check
-        const limit = checkRateLimit();
-        if (!limit.allowed) {
-            setLockoutMs(limit.retryAfterMs);
-            setError(`Too many attempts. Try again in ${formatLockoutTime(limit.retryAfterMs)}.`);
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
+            // Rate limit check
+            const limit = checkRateLimit();
+            if (!limit.allowed) {
+                setLockoutMs(limit.retryAfterMs);
+                setError(
+                    `Too many attempts. Try again in ${formatLockoutTime(limit.retryAfterMs)}.`
+                );
                 return;
             }
-            const { error: authError } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
 
-            if (authError) {
-                recordFailedAttempt();
-                const limit = checkRateLimit();
-                if (!limit.allowed) {
-                    setLockoutMs(limit.retryAfterMs);
+            setLoading(true);
+
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
+                    return;
                 }
-                setError(mapAuthError(authError.message));
-                return;
+                const { error: authError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (authError) {
+                    recordFailedAttempt();
+                    const limit = checkRateLimit();
+                    if (!limit.allowed) {
+                        setLockoutMs(limit.retryAfterMs);
+                    }
+                    setError(mapAuthError(authError.message));
+                    return;
+                }
+
+                resetRateLimit();
+                router.push(redirectTo);
+                router.refresh();
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
             }
+        },
+        [email, password, redirectTo, router]
+    );
 
-            resetRateLimit();
-            router.push(redirectTo);
-            router.refresh();
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [email, password, redirectTo, router]);
+    const handleOAuthLogin = useCallback(
+        async (provider: "google" | "github") => {
+            setError(null);
+            setOauthLoading(provider);
 
-    const handleOAuthLogin = useCallback(async (provider: "google" | "github") => {
-        setError(null);
-        setOauthLoading(provider);
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
+                    return;
+                }
 
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
-                return;
+                const safeRedirect = validateRedirectUrl(redirectTo);
+                const { error: oauthError } = await supabase.auth.signInWithOAuth({
+                    provider,
+                    options: {
+                        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
+                    },
+                });
+
+                if (oauthError) {
+                    setError(mapAuthError(oauthError.message));
+                }
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setOauthLoading(null);
             }
-
-            const safeRedirect = validateRedirectUrl(redirectTo);
-            const { error: oauthError } = await supabase.auth.signInWithOAuth({
-                provider,
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
-                },
-            });
-
-            if (oauthError) {
-                setError(mapAuthError(oauthError.message));
-            }
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setOauthLoading(null);
-        }
-    }, [redirectTo]);
+        },
+        [redirectTo]
+    );
 
     const isLocked = lockoutMs > 0;
     const isDisabled = loading || isLocked;
@@ -169,12 +186,7 @@ function LoginForm() {
                     </Link>
                 </div>
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isDisabled}
-                    aria-busy={loading}
-                >
+                <Button type="submit" className="w-full" disabled={isDisabled} aria-busy={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -188,11 +200,7 @@ function LoginForm() {
                 </Button>
             </form>
 
-            <OAuthButtons
-                onOAuth={handleOAuthLogin}
-                loading={oauthLoading}
-                disabled={isDisabled}
-            />
+            <OAuthButtons onOAuth={handleOAuthLogin} loading={oauthLoading} disabled={isDisabled} />
 
             <div className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
@@ -206,11 +214,13 @@ function LoginForm() {
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            }
+        >
             <LoginForm />
         </Suspense>
     );

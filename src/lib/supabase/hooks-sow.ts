@@ -1,13 +1,8 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
-
-// ─── Filter value helper ───
-function filterValue<T>(value: string): T {
-    return value as unknown as T;
-}
 
 // ─── Join-aware return types ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
@@ -27,7 +22,9 @@ export type SOWDeliverableWithJoins = WithJoin<
 >;
 export type ClientInvoiceWithJoins = WithJoin<
     Tables<"client_invoices">,
-    ProjectName & CompanyName & ContactName & { scopes_of_work: { title: string; number: string } | null }
+    ProjectName &
+        CompanyName &
+        ContactName & { scopes_of_work: { title: string; number: string } | null }
 >;
 export type InvoiceLineItemWithDeliverable = WithJoin<
     Tables<"invoice_line_items">,
@@ -36,14 +33,6 @@ export type InvoiceLineItemWithDeliverable = WithJoin<
 export type InvoiceTimeEntryRow = Tables<"invoice_time_entries">;
 export type SOWChangeLogWithProfile = WithJoin<Tables<"sow_change_log">, ProfileName>;
 export type DeliverableProgressSnapshotRow = Tables<"deliverable_progress_snapshots">;
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error("Supabase client not configured");
-    }
-    return client;
-}
 
 export { isSupabaseConfigured };
 
@@ -178,7 +167,10 @@ export function useCreateSOWDeliverable() {
 export function useUpdateSOWDeliverable() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"sow_deliverables"> & { id: string }) => {
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"sow_deliverables"> & { id: string }) => {
             const { data, error } = await getSupabase()
                 .from("sow_deliverables")
                 .update(updates)
@@ -201,10 +193,7 @@ export function useDeleteSOWDeliverable() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, sowId }: { id: string; sowId: string }) => {
-            const { error } = await getSupabase()
-                .from("sow_deliverables")
-                .delete()
-                .eq("id", id);
+            const { error } = await getSupabase().from("sow_deliverables").delete().eq("id", id);
             if (error) throw error;
             return { id, sowId };
         },
@@ -225,7 +214,9 @@ export function useClientInvoices(projectId?: string, status?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("client_invoices")
-                .select("*, projects(name), companies(name), contacts(full_name), scopes_of_work(title, number)")
+                .select(
+                    "*, projects(name), companies(name), contacts(full_name), scopes_of_work(title, number)"
+                )
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
             if (status && status !== "all") query = query.eq("status", filterValue(status));
@@ -242,7 +233,9 @@ export function useClientInvoice(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("client_invoices")
-                .select("*, projects(name), companies(name), contacts(full_name), scopes_of_work(title, number)")
+                .select(
+                    "*, projects(name), companies(name), contacts(full_name), scopes_of_work(title, number)"
+                )
                 .eq("id", id)
                 .single();
             if (error) throw error;
@@ -271,7 +264,10 @@ export function useCreateClientInvoice() {
 export function useUpdateClientInvoice() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"client_invoices"> & { id: string }) => {
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"client_invoices"> & { id: string }) => {
             const { data, error } = await getSupabase()
                 .from("client_invoices")
                 .update(updates)
@@ -322,7 +318,9 @@ export function useCreateInvoiceLineItem() {
         },
         onSuccess: (data) => {
             const row = data as Tables<"invoice_line_items">;
-            queryClient.invalidateQueries({ queryKey: ["invoice_line_items", row.client_invoice_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["invoice_line_items", row.client_invoice_id],
+            });
             queryClient.invalidateQueries({ queryKey: ["client_invoices"] });
         },
     });
@@ -331,7 +329,10 @@ export function useCreateInvoiceLineItem() {
 export function useUpdateInvoiceLineItem() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"invoice_line_items"> & { id: string }) => {
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"invoice_line_items"> & { id: string }) => {
             const { data, error } = await getSupabase()
                 .from("invoice_line_items")
                 .update(updates)
@@ -343,7 +344,9 @@ export function useUpdateInvoiceLineItem() {
         },
         onSuccess: (data) => {
             const row = data as Tables<"invoice_line_items">;
-            queryClient.invalidateQueries({ queryKey: ["invoice_line_items", row.client_invoice_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["invoice_line_items", row.client_invoice_id],
+            });
             queryClient.invalidateQueries({ queryKey: ["client_invoices"] });
         },
     });
@@ -353,15 +356,14 @@ export function useDeleteInvoiceLineItem() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, invoiceId }: { id: string; invoiceId: string }) => {
-            const { error } = await getSupabase()
-                .from("invoice_line_items")
-                .delete()
-                .eq("id", id);
+            const { error } = await getSupabase().from("invoice_line_items").delete().eq("id", id);
             if (error) throw error;
             return { id, invoiceId };
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ["invoice_line_items", variables.invoiceId] });
+            queryClient.invalidateQueries({
+                queryKey: ["invoice_line_items", variables.invoiceId],
+            });
             queryClient.invalidateQueries({ queryKey: ["client_invoices"] });
         },
     });
@@ -400,7 +402,9 @@ export function useCreateInvoiceTimeEntry() {
         },
         onSuccess: (data) => {
             const row = data as InvoiceTimeEntryRow;
-            queryClient.invalidateQueries({ queryKey: ["invoice_time_entries", row.invoice_line_item_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["invoice_time_entries", row.invoice_line_item_id],
+            });
         },
     });
 }
@@ -459,7 +463,9 @@ export function useCreateDeliverableProgressSnapshot() {
         },
         onSuccess: (data) => {
             const row = data as DeliverableProgressSnapshotRow;
-            queryClient.invalidateQueries({ queryKey: ["deliverable_progress_snapshots", row.sow_deliverable_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["deliverable_progress_snapshots", row.sow_deliverable_id],
+            });
         },
     });
 }

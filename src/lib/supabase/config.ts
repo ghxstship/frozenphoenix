@@ -70,20 +70,25 @@ function extractProjectRefFromUrl(url: string | null): string | null {
     }
 }
 
-const envSupabaseUrl = normalizeSupabaseUrl(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? null
-);
+const envSupabaseUrl = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? null);
 
-export const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? null;
+export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? null;
 
 const keyProjectRef = extractProjectRefFromAnonKey(supabaseAnonKey);
 const urlProjectRef = extractProjectRefFromUrl(envSupabaseUrl);
 
-const shouldPreferKeyProjectUrl =
-    !!keyProjectRef && (!envSupabaseUrl || (urlProjectRef !== null && urlProjectRef !== keyProjectRef));
+// Only use the key-derived URL as a fallback when no explicit URL is configured.
+// Never silently override an explicit env var — that causes hard-to-debug mismatches.
+const shouldFallbackToKeyUrl = !!keyProjectRef && !envSupabaseUrl;
 
-export const supabaseUrl = shouldPreferKeyProjectUrl
+if (keyProjectRef && envSupabaseUrl && urlProjectRef && urlProjectRef !== keyProjectRef) {
+    console.warn(
+        `[Supabase Config] Project ref mismatch: URL implies "${urlProjectRef}" but anon key implies "${keyProjectRef}". ` +
+            `Using the explicit NEXT_PUBLIC_SUPABASE_URL. Verify your env vars are for the same project.`
+    );
+}
+
+export const supabaseUrl = shouldFallbackToKeyUrl
     ? `https://${keyProjectRef}.supabase.co`
     : envSupabaseUrl;
 

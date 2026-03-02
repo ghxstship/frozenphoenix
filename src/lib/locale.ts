@@ -38,6 +38,22 @@ function getLocale(): SupportedLocale {
     return (process.env.NEXT_PUBLIC_DEFAULT_LOCALE as SupportedLocale) || "en-US";
 }
 
+/**
+ * H-004: Extract BCP-47 language tag from a locale (e.g. "en-US" → "en").
+ * Used by RootLayout to set the `<html lang>` attribute.
+ */
+export function getLanguageTag(locale?: SupportedLocale): string {
+    const l = locale ?? getDefaultLocale();
+    return l.split("-")[0] ?? "en";
+}
+
+/**
+ * Server-safe default locale (no window/localStorage).
+ */
+export function getDefaultLocale(): SupportedLocale {
+    return (process.env.NEXT_PUBLIC_DEFAULT_LOCALE as SupportedLocale) || "en-US";
+}
+
 export function formatCurrency(
     amount: number,
     currency: string = "USD",
@@ -81,18 +97,12 @@ export function formatCompactCurrency(
     }).format(amount);
 }
 
-export function formatNumber(
-    value: number,
-    locale?: SupportedLocale
-): string {
+export function formatNumber(value: number, locale?: SupportedLocale): string {
     const l = locale ?? getLocale();
     return new Intl.NumberFormat(l).format(value);
 }
 
-export function formatPercent(
-    value: number,
-    locale?: SupportedLocale
-): string {
+export function formatPercent(value: number, locale?: SupportedLocale): string {
     const l = locale ?? getLocale();
     return new Intl.NumberFormat(l, {
         style: "percent",
@@ -117,10 +127,7 @@ export function formatDate(
     return new Intl.DateTimeFormat(l, dateStyles[style]).format(new Date(date));
 }
 
-export function formatDateTime(
-    date: string | Date,
-    locale?: SupportedLocale
-): string {
+export function formatDateTime(date: string | Date, locale?: SupportedLocale): string {
     const l = locale ?? getLocale();
     return new Intl.DateTimeFormat(l, {
         month: "short",
@@ -131,10 +138,7 @@ export function formatDateTime(
     }).format(new Date(date));
 }
 
-export function formatRelativeTime(
-    date: string | Date,
-    locale?: SupportedLocale
-): string {
+export function formatRelativeTime(date: string | Date, locale?: SupportedLocale): string {
     const l = locale ?? getLocale();
     const now = new Date();
     const then = new Date(date);
@@ -155,10 +159,7 @@ export function formatRelativeTime(
     return rtf.format(-Math.floor(diffDays / 365), "year");
 }
 
-export function formatTime(
-    date: string | Date,
-    locale?: SupportedLocale
-): string {
+export function formatTime(date: string | Date, locale?: SupportedLocale): string {
     const l = locale ?? getLocale();
     return new Intl.DateTimeFormat(l, {
         hour: "numeric",

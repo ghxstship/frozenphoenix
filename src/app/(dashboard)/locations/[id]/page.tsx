@@ -1,43 +1,72 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
+import { RecordChatter } from "@/components/activity";
+import type { CommentItem } from "@/components/activity";
+import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_LOCATIONS, MOCK_ACTIVATIONS, MOCK_EVENTS } from "@/lib/demo-data-production";
+import { MOCK_ACTIVATIONS, MOCK_EVENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
-import { useLocation, useActivations, useEvents, useProjects, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import {
+    isSupabaseConfigured,
+    useActivations,
+    useEvents,
+    useLocation,
+    useProjects,
+} from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
+import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
+    Calendar,
+    Clock,
+    DollarSign,
     Edit,
+    ExternalLink,
+    FileText,
     Loader2,
+    Mail,
     MapPin,
     Phone,
-    Mail,
-    Users,
-    Calendar,
-    DollarSign,
-    Zap,
-    Wifi,
-    Clock,
-    FileText,
     Sparkles,
-    ExternalLink,
+    Users,
+    Wifi,
+    Zap,
 } from "lucide-react";
 
-type TabId = "overview" | "activations" | "events" | "schedule";
+type TabId = "overview" | "activations" | "events" | "schedule" | "chatter";
+const TAB_VALUES = ["overview", "activations", "events", "schedule", "chatter"] as const;
 
 export default function LocationDetailPage() {
     const params = useParams();
     const router = useRouter();
     const locationId = params.id as string;
-    const [activeTab, setActiveTab] = useState<TabId>("overview");
+    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
+        key: "tab",
+        defaultValue: "overview",
+        validValues: TAB_VALUES,
+    });
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const handleAddComment = async (content: string) => {
+        setChatterComments((prev) => [
+            ...prev,
+            {
+                id: `c-${Date.now()}`,
+                authorId: "u1",
+                authorName: "Sarah Chen",
+                content,
+                createdAt: new Date().toISOString(),
+            },
+        ]);
+    };
 
     const { data: sbLocation, isLoading: loadingLocation } = useLocation(locationId);
     const { data: sbActivations, isLoading: loadingActivations } = useActivations();
@@ -46,49 +75,100 @@ export default function LocationDetailPage() {
 
     const isLoading = loadingLocation || loadingActivations || loadingEvents;
 
-    const location = isSupabaseConfigured && sbLocation ? {
-        id: sbLocation.id,
-        projectId: sbLocation.project_id,
-        name: sbLocation.name,
-        type: sbLocation.type,
-        address: (sbLocation as unknown as { address?: { street1: string; street2?: string; city: string; state: string; postalCode: string } }).address,
-        capacity: sbLocation.capacity ?? undefined,
-        squareFootage: sbLocation.square_footage ?? undefined,
-        dailyRate: sbLocation.daily_rate ?? undefined,
-        totalCost: sbLocation.total_cost ?? undefined,
-        contactName: sbLocation.contact_name ?? undefined,
-        contactEmail: sbLocation.contact_email ?? undefined,
-        contactPhone: sbLocation.contact_phone ?? undefined,
-        accessStartDate: sbLocation.access_start_date ?? undefined,
-        accessEndDate: sbLocation.access_end_date ?? undefined,
-        powerAvailable: sbLocation.power_available ?? undefined,
-        internetAvailable: sbLocation.internet_available ?? false,
-        insuranceRequired: sbLocation.insurance_required ?? false,
-        permitsRequired: (sbLocation as unknown as { permits_required?: string[] }).permits_required ?? [],
-        amenities: (sbLocation as unknown as { amenities?: string[] }).amenities ?? [],
-        restrictions: (sbLocation as unknown as { restrictions?: string[] }).restrictions ?? [],
-        loadInWindows: (sbLocation as unknown as { load_in_windows?: { date: string; startTime: string; endTime: string }[] }).load_in_windows ?? [],
-        loadOutWindows: (sbLocation as unknown as { load_out_windows?: { date: string; startTime: string; endTime: string }[] }).load_out_windows ?? [],
-    } : MOCK_LOCATIONS.find((l) => l.id === locationId);
+    const location =
+        isSupabaseConfigured && sbLocation
+            ? {
+                  id: sbLocation.id,
+                  projectId: sbLocation.project_id,
+                  name: sbLocation.name,
+                  type: sbLocation.type,
+                  address: (
+                      sbLocation as unknown as {
+                          address?: {
+                              street1: string;
+                              street2?: string;
+                              city: string;
+                              state: string;
+                              postalCode: string;
+                          };
+                      }
+                  ).address,
+                  capacity: sbLocation.capacity ?? undefined,
+                  squareFootage: sbLocation.square_footage ?? undefined,
+                  dailyRate: sbLocation.daily_rate ?? undefined,
+                  totalCost: sbLocation.total_cost ?? undefined,
+                  contactName: sbLocation.contact_name ?? undefined,
+                  contactEmail: sbLocation.contact_email ?? undefined,
+                  contactPhone: sbLocation.contact_phone ?? undefined,
+                  accessStartDate: sbLocation.access_start_date ?? undefined,
+                  accessEndDate: sbLocation.access_end_date ?? undefined,
+                  powerAvailable: sbLocation.power_available ?? undefined,
+                  internetAvailable: sbLocation.internet_available ?? false,
+                  insuranceRequired: sbLocation.insurance_required ?? false,
+                  permitsRequired:
+                      (sbLocation as unknown as { permits_required?: string[] }).permits_required ??
+                      [],
+                  amenities: (sbLocation as unknown as { amenities?: string[] }).amenities ?? [],
+                  restrictions:
+                      (sbLocation as unknown as { restrictions?: string[] }).restrictions ?? [],
+                  loadInWindows:
+                      (
+                          sbLocation as unknown as {
+                              load_in_windows?: {
+                                  date: string;
+                                  startTime: string;
+                                  endTime: string;
+                              }[];
+                          }
+                      ).load_in_windows ?? [],
+                  loadOutWindows:
+                      (
+                          sbLocation as unknown as {
+                              load_out_windows?: {
+                                  date: string;
+                                  startTime: string;
+                                  endTime: string;
+                              }[];
+                          }
+                      ).load_out_windows ?? [],
+              }
+            : MOCK_LOCATIONS.find((l) => l.id === locationId);
 
-    const project = isSupabaseConfigured && sbProjects && location
-        ? sbProjects.find((p) => p.id === location.projectId) ?? null
-        : location ? MOCK_PROJECTS.find((p) => p.id === location.projectId) ?? null : null;
+    const project =
+        isSupabaseConfigured && sbProjects && location
+            ? (sbProjects.find((p) => p.id === location.projectId) ?? null)
+            : location
+              ? (MOCK_PROJECTS.find((p) => p.id === location.projectId) ?? null)
+              : null;
 
-    const activations = isSupabaseConfigured && sbActivations
-        ? sbActivations.filter((a) => a.location_id === locationId).map(a => ({
-            id: a.id, name: a.name, type: a.type, status: a.status,
-            zone: a.zone ?? undefined, locationId: a.location_id ?? undefined,
-        }))
-        : MOCK_ACTIVATIONS.filter((a) => a.locationId === locationId);
+    const activations =
+        isSupabaseConfigured && sbActivations
+            ? sbActivations
+                  .filter((a) => a.location_id === locationId)
+                  .map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      type: a.type,
+                      status: a.status,
+                      zone: a.zone ?? undefined,
+                      locationId: a.location_id ?? undefined,
+                  }))
+            : MOCK_ACTIVATIONS.filter((a) => a.locationId === locationId);
 
-    const events = isSupabaseConfigured && sbEvents
-        ? sbEvents.filter((e) => e.location_id === locationId).map(e => ({
-            id: e.id, name: e.name, status: e.status,
-            date: e.date ?? '', startTime: e.start_time ?? '', endTime: e.end_time ?? '',
-            locationId: e.location_id ?? undefined,
-        }))
-        : MOCK_EVENTS.filter((e) => e.locationId === locationId);
+    const events =
+        isSupabaseConfigured && sbEvents
+            ? sbEvents
+                  .filter((e) => e.location_id === locationId)
+                  .map((e) => ({
+                      id: e.id,
+                      name: e.name,
+                      status: e.status,
+                      date: e.date ?? "",
+                      startTime: e.start_time ?? "",
+                      endTime: e.end_time ?? "",
+                      locationId: e.location_id ?? undefined,
+                  }))
+            : MOCK_EVENTS.filter((e) => e.locationId === locationId);
 
     if (isSupabaseConfigured && isLoading) {
         return (
@@ -117,6 +197,7 @@ export default function LocationDetailPage() {
         { id: "activations" as const, label: "Activations", count: activations.length },
         { id: "events" as const, label: "Events", count: events.length },
         { id: "schedule" as const, label: "Schedule" },
+        { id: "chatter" as const, label: "Chatter" },
     ];
 
     const sidebar = (
@@ -154,7 +235,10 @@ export default function LocationDetailPage() {
                         {location.contactEmail && (
                             <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-muted-foreground" />
-                                <a href={`mailto:${location.contactEmail}`} className="text-primary hover:underline">
+                                <a
+                                    href={`mailto:${location.contactEmail}`}
+                                    className="text-primary hover:underline"
+                                >
                                     {location.contactEmail}
                                 </a>
                             </div>
@@ -162,7 +246,10 @@ export default function LocationDetailPage() {
                         {location.contactPhone && (
                             <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-muted-foreground" />
-                                <a href={`tel:${location.contactPhone}`} className="hover:underline">
+                                <a
+                                    href={`tel:${location.contactPhone}`}
+                                    className="hover:underline"
+                                >
                                     {location.contactPhone}
                                 </a>
                             </div>
@@ -179,8 +266,13 @@ export default function LocationDetailPage() {
                     </CardHeader>
                     <CardContent className="text-sm">
                         <p>{location.address.street1}</p>
-                        {(location.address as { street2?: string }).street2 && <p>{(location.address as { street2?: string }).street2}</p>}
-                        <p>{location.address.city}, {location.address.state} {location.address.postalCode}</p>
+                        {(location.address as { street2?: string }).street2 && (
+                            <p>{(location.address as { street2?: string }).street2}</p>
+                        )}
+                        <p>
+                            {location.address.city}, {location.address.state}{" "}
+                            {location.address.postalCode}
+                        </p>
                         <a
                             href={`https://maps.google.com/?q=${encodeURIComponent(`${location.address.street1}, ${location.address.city}, ${location.address.state}`)}`}
                             target="_blank"
@@ -195,7 +287,8 @@ export default function LocationDetailPage() {
             )}
 
             {/* Requirements */}
-            {(location.insuranceRequired || (location.permitsRequired && location.permitsRequired.length > 0)) && (
+            {(location.insuranceRequired ||
+                (location.permitsRequired && location.permitsRequired.length > 0)) && (
                 <Card className="border-warning/50 bg-warning/5">
                     <CardHeader>
                         <CardTitle className="text-sm">Requirements</CardTitle>
@@ -221,299 +314,405 @@ export default function LocationDetailPage() {
 
     return (
         <PermissionGate resource="locations" action="read">
-        <DetailLayout
-            backHref="/locations"
-            backLabel="Locations"
-            title={location.name}
-            subtitle={location.address ? `${location.address.city}, ${location.address.state}` : undefined}
-            status={location.type}
-            avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Icon className="h-7 w-7 text-primary-foreground" />
-                </div>
-            }
-            actions={
-                <Button onClick={() => router.push(`/locations/${locationId}/edit`)}>
-                    <Edit className="h-4 w-4" />
-                    Edit
-                </Button>
-            }
-            menuItems={[
-                { label: "Add Activation", onClick: () => router.push(`/activations/new?locationId=${locationId}`) },
-                { label: "Schedule Event", onClick: () => router.push(`/events/new?locationId=${locationId}`) },
-                { label: "View on Map", onClick: () => {} },
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    {/* Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {location.capacity && (
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Users className="h-4 w-4" />
-                                        <span className="text-xs">Capacity</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{location.capacity.toLocaleString()}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-                        {location.squareFootage && (
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <MapPin className="h-4 w-4" />
-                                        <span className="text-xs">Square Footage</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{location.squareFootage.toLocaleString()} sq ft</p>
-                                </CardContent>
-                            </Card>
-                        )}
-                        {location.dailyRate && (
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <DollarSign className="h-4 w-4" />
-                                        <span className="text-xs">Daily Rate</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{formatCurrency(location.dailyRate)}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-                        {location.totalCost && (
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <DollarSign className="h-4 w-4" />
-                                        <span className="text-xs">Total Cost</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{formatCurrency(location.totalCost)}</p>
-                                </CardContent>
-                            </Card>
-                        )}
+            <DetailLayout
+                backHref="/locations"
+                backLabel="Locations"
+                title={location.name}
+                subtitle={
+                    location.address
+                        ? `${location.address.city}, ${location.address.state}`
+                        : undefined
+                }
+                status={location.type}
+                avatar={
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <Icon className="h-7 w-7 text-primary-foreground" />
                     </div>
+                }
+                actions={
+                    <Button onClick={() => router.push(`/locations/${locationId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+                menuItems={[
+                    {
+                        label: "Add Activation",
+                        onClick: () => router.push(`/activations/new?locationId=${locationId}`),
+                    },
+                    {
+                        label: "Schedule Event",
+                        onClick: () => router.push(`/events/new?locationId=${locationId}`),
+                    },
+                    { label: "View on Map", onClick: () => {} },
+                ]}
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={(id) => setActiveTab(id as TabId)}
+                sidebar={sidebar}
+            >
+                {activeTab === "overview" && (
+                    <div className="space-y-6">
+                        {/* Stats */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {location.capacity && (
+                                <Card>
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                            <Users className="h-4 w-4" />
+                                            <span className="text-xs">Capacity</span>
+                                        </div>
+                                        <p className="text-xl font-bold">
+                                            {location.capacity.toLocaleString()}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {location.squareFootage && (
+                                <Card>
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                            <MapPin className="h-4 w-4" />
+                                            <span className="text-xs">Square Footage</span>
+                                        </div>
+                                        <p className="text-xl font-bold">
+                                            {location.squareFootage.toLocaleString()} sq ft
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {location.dailyRate && (
+                                <Card>
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                            <DollarSign className="h-4 w-4" />
+                                            <span className="text-xs">Daily Rate</span>
+                                        </div>
+                                        <p className="text-xl font-bold">
+                                            {formatCurrency(location.dailyRate)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {location.totalCost && (
+                                <Card>
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                            <DollarSign className="h-4 w-4" />
+                                            <span className="text-xs">Total Cost</span>
+                                        </div>
+                                        <p className="text-xl font-bold">
+                                            {formatCurrency(location.totalCost)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
 
-                    {/* Access Dates */}
-                    {(location.accessStartDate || location.accessEndDate) && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Access Period</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm">
-                                            {location.accessStartDate && formatDate(location.accessStartDate)}
-                                            {location.accessStartDate && location.accessEndDate && " — "}
-                                            {location.accessEndDate && formatDate(location.accessEndDate)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Amenities & Utilities */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {location.amenities && location.amenities.length > 0 && (
+                        {/* Access Dates */}
+                        {(location.accessStartDate || location.accessEndDate) && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base">Amenities</CardTitle>
+                                    <CardTitle className="text-base">Access Period</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        {location.amenities.map((amenity: string) => (
-                                            <Badge key={amenity} variant="secondary">
-                                                {amenity}
-                                            </Badge>
-                                        ))}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm">
+                                                {location.accessStartDate &&
+                                                    formatDate(location.accessStartDate)}
+                                                {location.accessStartDate &&
+                                                    location.accessEndDate &&
+                                                    " — "}
+                                                {location.accessEndDate &&
+                                                    formatDate(location.accessEndDate)}
+                                            </span>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
                         )}
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Utilities</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                {location.powerAvailable && (
+                        {/* Amenities & Utilities */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {location.amenities && location.amenities.length > 0 && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Amenities</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex flex-wrap gap-2">
+                                            {location.amenities.map((amenity: string) => (
+                                                <Badge key={amenity} variant="secondary">
+                                                    {amenity}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Utilities</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2">
+                                    {location.powerAvailable && (
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Zap className="h-4 w-4 text-warning" />
+                                            <span>Power: {location.powerAvailable}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2 text-sm">
-                                        <Zap className="h-4 w-4 text-warning" />
-                                        <span>Power: {location.powerAvailable}</span>
+                                        <Wifi className="h-4 w-4 text-info" />
+                                        <span>
+                                            Internet:{" "}
+                                            {location.internetAvailable
+                                                ? "Available"
+                                                : "Not Available"}
+                                        </span>
                                     </div>
-                                )}
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Wifi className="h-4 w-4 text-info" />
-                                    <span>Internet: {location.internetAvailable ? "Available" : "Not Available"}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Load In/Out Windows */}
+                        {((location.loadInWindows && location.loadInWindows.length > 0) ||
+                            (location.loadOutWindows && location.loadOutWindows.length > 0)) && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">
+                                        Load In/Out Schedule
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {location.loadInWindows &&
+                                            location.loadInWindows.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-medium mb-2 text-success">
+                                                        Load In
+                                                    </h4>
+                                                    <div className="space-y-1">
+                                                        {location.loadInWindows.map(
+                                                            (
+                                                                window: {
+                                                                    date: string;
+                                                                    startTime: string;
+                                                                    endTime: string;
+                                                                },
+                                                                i: number
+                                                            ) => (
+                                                                <div
+                                                                    key={i}
+                                                                    className="flex items-center gap-2 text-sm"
+                                                                >
+                                                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                                                    <span>
+                                                                        {formatDate(window.date)}:{" "}
+                                                                        {window.startTime} -{" "}
+                                                                        {window.endTime}
+                                                                    </span>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        {location.loadOutWindows &&
+                                            location.loadOutWindows.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-medium mb-2 text-warning">
+                                                        Load Out
+                                                    </h4>
+                                                    <div className="space-y-1">
+                                                        {location.loadOutWindows.map(
+                                                            (
+                                                                window: {
+                                                                    date: string;
+                                                                    startTime: string;
+                                                                    endTime: string;
+                                                                },
+                                                                i: number
+                                                            ) => (
+                                                                <div
+                                                                    key={i}
+                                                                    className="flex items-center gap-2 text-sm"
+                                                                >
+                                                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                                                    <span>
+                                                                        {formatDate(window.date)}:{" "}
+                                                                        {window.startTime} -{" "}
+                                                                        {window.endTime}
+                                                                    </span>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Restrictions */}
+                        {location.restrictions && location.restrictions.length > 0 && (
+                            <Card className="border-destructive/30">
+                                <CardHeader>
+                                    <CardTitle className="text-base text-destructive">
+                                        Restrictions
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ul className="space-y-1 text-sm">
+                                        {location.restrictions.map(
+                                            (restriction: string, i: number) => (
+                                                <li key={i} className="flex items-start gap-2">
+                                                    <span className="text-destructive">•</span>
+                                                    {restriction}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
+                )}
 
-                    {/* Load In/Out Windows */}
-                    {((location.loadInWindows && location.loadInWindows.length > 0) || (location.loadOutWindows && location.loadOutWindows.length > 0)) && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Load In/Out Schedule</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-6">
-                                    {location.loadInWindows && location.loadInWindows.length > 0 && (
-                                        <div>
-                                            <h4 className="text-sm font-medium mb-2 text-success">Load In</h4>
-                                            <div className="space-y-1">
-                                                {location.loadInWindows.map((window: { date: string; startTime: string; endTime: string }, i: number) => (
-                                                    <div key={i} className="flex items-center gap-2 text-sm">
-                                                        <Clock className="h-3 w-3 text-muted-foreground" />
-                                                        <span>{formatDate(window.date)}: {window.startTime} - {window.endTime}</span>
-                                                    </div>
-                                                ))}
+                {activeTab === "activations" && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base">
+                                Activations at this Location
+                            </CardTitle>
+                            <Button
+                                size="sm"
+                                onClick={() =>
+                                    router.push(`/activations/new?locationId=${locationId}`)
+                                }
+                            >
+                                <Sparkles className="h-4 w-4" />
+                                Add Activation
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {activations.length === 0 ? (
+                                <EmptyState
+                                    icon={Sparkles}
+                                    title="No activations"
+                                    description="Add an activation to this location"
+                                    action={{
+                                        label: "Add Activation",
+                                        onClick: () =>
+                                            router.push(
+                                                `/activations/new?locationId=${locationId}`
+                                            ),
+                                    }}
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {activations.map((activation) => (
+                                        <div
+                                            key={activation.id}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
+                                            onClick={() =>
+                                                router.push(`/activations/${activation.id}`)
+                                            }
+                                        >
+                                            <div>
+                                                <p className="font-medium">{activation.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {activation.type} •{" "}
+                                                    {activation.zone || "No zone assigned"}
+                                                </p>
                                             </div>
+                                            <Badge variant={getStatusVariant(activation.status)}>
+                                                {getStatusLabel(activation.status)}
+                                            </Badge>
                                         </div>
-                                    )}
-                                    {location.loadOutWindows && location.loadOutWindows.length > 0 && (
-                                        <div>
-                                            <h4 className="text-sm font-medium mb-2 text-warning">Load Out</h4>
-                                            <div className="space-y-1">
-                                                {location.loadOutWindows.map((window: { date: string; startTime: string; endTime: string }, i: number) => (
-                                                    <div key={i} className="flex items-center gap-2 text-sm">
-                                                        <Clock className="h-3 w-3 text-muted-foreground" />
-                                                        <span>{formatDate(window.date)}: {window.startTime} - {window.endTime}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Restrictions */}
-                    {location.restrictions && location.restrictions.length > 0 && (
-                        <Card className="border-destructive/30">
-                            <CardHeader>
-                                <CardTitle className="text-base text-destructive">Restrictions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-1 text-sm">
-                                    {location.restrictions.map((restriction: string, i: number) => (
-                                        <li key={i} className="flex items-start gap-2">
-                                            <span className="text-destructive">•</span>
-                                            {restriction}
-                                        </li>
                                     ))}
-                                </ul>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
-            {activeTab === "activations" && (
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-base">Activations at this Location</CardTitle>
-                        <Button size="sm" onClick={() => router.push(`/activations/new?locationId=${locationId}`)}>
-                            <Sparkles className="h-4 w-4" />
-                            Add Activation
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        {activations.length === 0 ? (
-                            <EmptyState
-                                icon={Sparkles}
-                                title="No activations"
-                                description="Add an activation to this location"
-                                action={{ label: "Add Activation", onClick: () => router.push(`/activations/new?locationId=${locationId}`) }}
-                            />
-                        ) : (
-                            <div className="space-y-3">
-                                {activations.map((activation) => (
-                                    <div
-                                        key={activation.id}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
-                                        onClick={() => router.push(`/activations/${activation.id}`)}
-                                    >
-                                        <div>
-                                            <p className="font-medium">{activation.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {activation.type} • {activation.zone || "No zone assigned"}
-                                            </p>
+                {activeTab === "events" && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base">Events at this Location</CardTitle>
+                            <Button
+                                size="sm"
+                                onClick={() => router.push(`/events/new?locationId=${locationId}`)}
+                            >
+                                <Calendar className="h-4 w-4" />
+                                Schedule Event
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {events.length === 0 ? (
+                                <EmptyState
+                                    icon={Calendar}
+                                    title="No events scheduled"
+                                    description="Schedule an event at this location"
+                                    action={{
+                                        label: "Schedule Event",
+                                        onClick: () =>
+                                            router.push(`/events/new?locationId=${locationId}`),
+                                    }}
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {events.map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
+                                            onClick={() => router.push(`/events/${event.id}`)}
+                                        >
+                                            <div>
+                                                <p className="font-medium">{event.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDate(event.date)} • {event.startTime} -{" "}
+                                                    {event.endTime}
+                                                </p>
+                                            </div>
+                                            <Badge variant={getStatusVariant(event.status)}>
+                                                {getStatusLabel(event.status)}
+                                            </Badge>
                                         </div>
-                                        <Badge variant={activation.status === "active" ? "success" : "secondary"}>
-                                            {activation.status}
-                                        </Badge>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
-            {activeTab === "events" && (
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-base">Events at this Location</CardTitle>
-                        <Button size="sm" onClick={() => router.push(`/events/new?locationId=${locationId}`)}>
-                            <Calendar className="h-4 w-4" />
-                            Schedule Event
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        {events.length === 0 ? (
-                            <EmptyState
-                                icon={Calendar}
-                                title="No events scheduled"
-                                description="Schedule an event at this location"
-                                action={{ label: "Schedule Event", onClick: () => router.push(`/events/new?locationId=${locationId}`) }}
-                            />
-                        ) : (
-                            <div className="space-y-3">
-                                {events.map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
-                                        onClick={() => router.push(`/events/${event.id}`)}
-                                    >
-                                        <div>
-                                            <p className="font-medium">{event.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDate(event.date)} • {event.startTime} - {event.endTime}
-                                            </p>
-                                        </div>
-                                        <Badge variant={event.status === "confirmed" ? "success" : "secondary"}>
-                                            {event.status}
-                                        </Badge>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "schedule" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Location Schedule</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground text-center py-8">
-                            Calendar view coming soon
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-        </DetailLayout>
+                {activeTab === "schedule" && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Location Schedule</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground text-center py-8">
+                                Calendar view coming soon
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+                {activeTab === "chatter" && (
+                    <RecordChatter
+                        recordType="location"
+                        recordId={locationId}
+                        activityItems={makeMockActivity("location")}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                )}
+            </DetailLayout>
         </PermissionGate>
     );
 }

@@ -1,11 +1,12 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
-import { FormField, Select, CurrencyInput } from "@/components/ui/form";
-import { useCreateCrewMember, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { CurrencyInput, FormField, Select } from "@/components/ui/form";
+import { isSupabaseConfigured, useCreateCrewMember } from "@/lib/supabase/hooks";
 
 const STATUS_OPTIONS = [
     { value: "available", label: "Available" },
@@ -52,15 +53,18 @@ export default function NewCrewMemberPage() {
                     hourly_rate: formData.hourlyRate || null,
                     status: formData.status,
                 };
-                await createCrewMember.mutateAsync(memberData as unknown as Parameters<typeof createCrewMember.mutateAsync>[0]);
+                await createCrewMember.mutateAsync(
+                    memberData as unknown as Parameters<typeof createCrewMember.mutateAsync>[0]
+                );
             }
             router.push("/crew");
         } catch (error) {
-            console.error("Failed to create crew member:", error);
+            logger.error("Failed to create crew member", { error });
         }
     };
 
-    const isValid = formData.name.trim() !== "" && formData.email.trim() !== "" && formData.role !== "";
+    const isValid =
+        formData.name.trim() !== "" && formData.email.trim() !== "" && formData.role !== "";
 
     return (
         <FormLayout
@@ -126,7 +130,11 @@ export default function NewCrewMemberPage() {
                     </FormField>
                 </div>
 
-                <FormField label="Hourly Rate" htmlFor="hourlyRate" description="Standard hourly rate for this crew member">
+                <FormField
+                    label="Hourly Rate"
+                    htmlFor="hourlyRate"
+                    description="Standard hourly rate for this crew member"
+                >
                     <CurrencyInput
                         id="hourlyRate"
                         value={formData.hourlyRate}

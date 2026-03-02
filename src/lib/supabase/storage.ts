@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { getSupabase, isSupabaseConfigured } from "./client";
 
 // ─── Bucket Constants ───
 // Canonical bucket names used across the platform.
@@ -74,27 +74,15 @@ export interface CopyOptions {
 
 // ─── Core Storage Functions ───
 
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error(
-            "Supabase client not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
-        );
-    }
-    return client;
-}
-
 export async function uploadFile(options: UploadOptions): Promise<UploadResult> {
     const supabase = getSupabase();
     const { bucket, path, file, contentType, upsert = false, cacheControl = "3600" } = options;
 
-    const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-            contentType: contentType ?? file.type,
-            upsert,
-            cacheControl,
-        });
+    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+        contentType: contentType ?? file.type,
+        upsert,
+        cacheControl,
+    });
 
     if (error) throw error;
 
@@ -109,10 +97,7 @@ export async function uploadFile(options: UploadOptions): Promise<UploadResult> 
     };
 }
 
-export async function downloadFile(
-    bucket: StorageBucket,
-    path: string
-): Promise<Blob> {
+export async function downloadFile(bucket: StorageBucket, path: string): Promise<Blob> {
     const supabase = getSupabase();
 
     const { data, error } = await supabase.storage.from(bucket).download(path);
@@ -141,9 +126,7 @@ export async function getSignedUrls(
 ): Promise<{ path: string | null; signedUrl: string; error: string | null }[]> {
     const supabase = getSupabase();
 
-    const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrls(paths, expiresIn);
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrls(paths, expiresIn);
 
     if (error) throw error;
 
@@ -164,10 +147,7 @@ export async function getPublicUrl(
     return publicUrl;
 }
 
-export async function deleteFiles(
-    bucket: StorageBucket,
-    paths: string[]
-): Promise<void> {
+export async function deleteFiles(bucket: StorageBucket, paths: string[]): Promise<void> {
     const supabase = getSupabase();
 
     const { error } = await supabase.storage.from(bucket).remove(paths);
@@ -186,7 +166,9 @@ export async function copyFile(options: CopyOptions): Promise<void> {
     const supabase = getSupabase();
     const { fromBucket, fromPath, toBucket, toPath } = options;
 
-    const { error } = await supabase.storage.from(fromBucket).copy(fromPath, `${toBucket}/${toPath}`);
+    const { error } = await supabase.storage
+        .from(fromBucket)
+        .copy(fromPath, `${toBucket}/${toPath}`);
     if (error) throw error;
 }
 
@@ -202,14 +184,12 @@ export async function listFiles(
 ): Promise<StorageFile[]> {
     const supabase = getSupabase();
 
-    const { data, error } = await supabase.storage
-        .from(bucket)
-        .list(folderPath ?? "", {
-            limit: options?.limit ?? 100,
-            offset: options?.offset ?? 0,
-            sortBy: options?.sortBy ?? { column: "name", order: "asc" },
-            search: options?.search,
-        });
+    const { data, error } = await supabase.storage.from(bucket).list(folderPath ?? "", {
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+        sortBy: options?.sortBy ?? { column: "name", order: "asc" },
+        search: options?.search,
+    });
 
     if (error) throw error;
 
@@ -233,13 +213,8 @@ export function useUploadFile() {
 export function useDeleteFiles() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({
-            bucket,
-            paths,
-        }: {
-            bucket: StorageBucket;
-            paths: string[];
-        }) => deleteFiles(bucket, paths),
+        mutationFn: async ({ bucket, paths }: { bucket: StorageBucket; paths: string[] }) =>
+            deleteFiles(bucket, paths),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({
                 queryKey: ["storage", variables.bucket],
@@ -298,11 +273,7 @@ export function useSignedUrl(
 
 // ─── Helpers ───
 
-export function buildStoragePath(
-    entityType: string,
-    entityId: string,
-    filename: string
-): string {
+export function buildStoragePath(entityType: string, entityId: string, filename: string): string {
     return `${entityType}/${entityId}/${filename}`;
 }
 
@@ -311,10 +282,7 @@ export function buildAvatarPath(userId: string, filename: string): string {
     return `${userId}/avatar.${ext}`;
 }
 
-export function buildExpenseReceiptPath(
-    expenseId: string,
-    filename: string
-): string {
+export function buildExpenseReceiptPath(expenseId: string, filename: string): string {
     return `receipts/${expenseId}/${filename}`;
 }
 

@@ -1,5 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { cn, formatCurrency, getInitials, slugify, truncate, formatCompactCurrency, percentChange } from "@/lib/utils";
+import { describe, expect, it } from "vitest";
+import {
+    cn,
+    formatCompactCurrency,
+    formatCurrency,
+    getInitials,
+    percentChange,
+    slugify,
+    truncate,
+} from "@/lib/utils";
 
 describe("cn (class name merger)", () => {
     it("merges class names", () => {

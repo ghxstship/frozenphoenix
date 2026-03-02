@@ -11,14 +11,14 @@
 
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 
 export type ConsentCategory = "essential" | "analytics" | "functional";
 
 interface ConsentState {
-    essential: boolean;   // Always true — auth cookies, CSRF
-    analytics: boolean;   // PostHog, GA, etc.
-    functional: boolean;  // Preferences, locale
+    essential: boolean; // Always true — auth cookies, CSRF
+    analytics: boolean; // PostHog, GA, etc.
+    functional: boolean; // Preferences, locale
     timestamp: string;
 }
 
@@ -67,9 +67,7 @@ export function CookieConsent() {
             setVisible(false);
 
             // Dispatch event so analytics providers can initialize
-            window.dispatchEvent(
-                new CustomEvent("cookie-consent-updated", { detail: consent })
-            );
+            window.dispatchEvent(new CustomEvent("cookie-consent-updated", { detail: consent }));
         },
         [analytics, functional]
     );
@@ -84,17 +82,11 @@ export function CookieConsent() {
             className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
         >
             <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card shadow-lg p-6">
-                <h2 className="text-base font-semibold text-foreground mb-2">
-                    Cookie Preferences
-                </h2>
+                <h2 className="text-base font-semibold text-foreground mb-2">Cookie Preferences</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                    We use essential cookies for authentication and security. Analytics
-                    cookies help us improve your experience and are only enabled with
-                    your consent.{" "}
-                    <a
-                        href="/privacy"
-                        className="underline text-primary hover:text-primary/80"
-                    >
+                    We use essential cookies for authentication and security. Analytics cookies help
+                    us improve your experience and are only enabled with your consent.{" "}
+                    <a href="/privacy" className="underline text-primary hover:text-primary/80">
                         Privacy Policy
                     </a>
                 </p>
@@ -158,9 +150,7 @@ export function CookieConsent() {
                     </button>
                     <button
                         onClick={() =>
-                            showDetails
-                                ? saveConsent("custom")
-                                : saveConsent("essential")
+                            showDetails ? saveConsent("custom") : saveConsent("essential")
                         }
                         className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                     >

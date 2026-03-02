@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useCallback, Suspense } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/lib/auth-utils";
-import { Shield, Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2, Shield } from "lucide-react";
 
 function MfaVerifyForm() {
     const router = useRouter();
@@ -16,72 +16,80 @@ function MfaVerifyForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleVerify = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleVerify = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!code.trim() || code.length !== 6) {
-            setError("Please enter a 6-digit code from your authenticator app.");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable.");
+            if (!code.trim() || code.length !== 6) {
+                setError("Please enter a 6-digit code from your authenticator app.");
                 return;
             }
 
-            // Get the user's TOTP factor
-            const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+            setLoading(true);
 
-            if (factorsError) {
-                setError(mapAuthError(factorsError.message));
-                return;
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable.");
+                    return;
+                }
+
+                // Get the user's TOTP factor
+                const { data: factorsData, error: factorsError } =
+                    await supabase.auth.mfa.listFactors();
+
+                if (factorsError) {
+                    setError(mapAuthError(factorsError.message));
+                    return;
+                }
+
+                const totpFactor = factorsData?.totp?.[0];
+
+                if (!totpFactor) {
+                    setError("No MFA factor found. Please set up MFA first.");
+                    return;
+                }
+
+                // Create a challenge
+                const { data: challenge, error: challengeError } =
+                    await supabase.auth.mfa.challenge({
+                        factorId: totpFactor.id,
+                    });
+
+                if (challengeError) {
+                    setError(mapAuthError(challengeError.message));
+                    return;
+                }
+
+                // Verify the challenge
+                const { error: verifyError } = await supabase.auth.mfa.verify({
+                    factorId: totpFactor.id,
+                    challengeId: challenge.id,
+                    code,
+                });
+
+                if (verifyError) {
+                    setError("Invalid code. Please check your authenticator app and try again.");
+                    return;
+                }
+
+                router.push("/dashboard");
+                router.refresh();
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
             }
-
-            const totpFactor = factorsData?.totp?.[0];
-
-            if (!totpFactor) {
-                setError("No MFA factor found. Please set up MFA first.");
-                return;
-            }
-
-            // Create a challenge
-            const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
-                factorId: totpFactor.id,
-            });
-
-            if (challengeError) {
-                setError(mapAuthError(challengeError.message));
-                return;
-            }
-
-            // Verify the challenge
-            const { error: verifyError } = await supabase.auth.mfa.verify({
-                factorId: totpFactor.id,
-                challengeId: challenge.id,
-                code,
-            });
-
-            if (verifyError) {
-                setError("Invalid code. Please check your authenticator app and try again.");
-                return;
-            }
-
-            router.push("/dashboard");
-            router.refresh();
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [code, router]);
+        },
+        [code, router]
+    );
 
     return (
-        <AuthLayout title="Two-factor authentication" subtitle="Enter the code from your authenticator app">
+        <AuthLayout
+            title="Two-factor authentication"
+            subtitle="Enter the code from your authenticator app"
+        >
             <form onSubmit={handleVerify} className="space-y-5" noValidate>
                 {error && (
                     <div
@@ -101,7 +109,10 @@ function MfaVerifyForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="mfa-verify-code" className="text-sm font-medium leading-none text-center block">
+                    <label
+                        htmlFor="mfa-verify-code"
+                        className="text-sm font-medium leading-none text-center block"
+                    >
                         Verification Code
                     </label>
                     <Input
@@ -161,11 +172,13 @@ function MfaVerifyForm() {
 
 export default function MfaVerifyPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            }
+        >
             <MfaVerifyForm />
         </Suspense>
     );

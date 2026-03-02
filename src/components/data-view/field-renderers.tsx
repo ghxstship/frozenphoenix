@@ -17,25 +17,26 @@
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
+import { logger } from "@/lib/logger";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate, formatRelativeTime } from "@/lib/utils";
 import {
-    Star,
-    StarHalf,
-    Calendar,
     AlertTriangle,
+    ArrowDown,
+    ArrowUp,
+    Calendar,
     CheckCircle2,
     Circle,
-    ArrowUp,
-    ArrowDown,
-    Minus,
-    Percent,
+    ExternalLink,
     Link as LinkIcon,
     Mail,
-    Phone,
     MapPin,
-    ExternalLink,
+    Minus,
+    Percent,
+    Phone,
+    Star,
+    StarHalf,
 } from "lucide-react";
 import type { BadgeVariant } from "@/config/ui-variants";
 
@@ -93,7 +94,9 @@ export function StatusField({ value, variantMap, labelMap, size = "sm" }: Status
     const variant = variantMap?.[value] ?? "ghost";
     const explicit = labelMap?.[value];
     if (!explicit && process.env.NODE_ENV === "development") {
-        console.warn(`[casing] StatusField missing labelMap entry for "${value}". Pass an explicit labelMap.`);
+        logger.warn(
+            `StatusField missing labelMap entry for "${value}". Pass an explicit labelMap.`
+        );
     }
     const label = explicit ?? value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -119,7 +122,11 @@ const priorityConfig: Record<string, { icon: React.ElementType; color: string; l
 };
 
 export function PriorityField({ value, showIcon = true, size = "sm" }: PriorityFieldProps) {
-    const config = priorityConfig[value] ?? { icon: Circle, color: "text-muted-foreground", label: value };
+    const config = priorityConfig[value] ?? {
+        icon: Circle,
+        color: "text-muted-foreground",
+        label: value,
+    };
     const Icon = config.icon;
 
     return (
@@ -231,7 +238,12 @@ interface PercentageFieldProps {
     className?: string;
 }
 
-export function PercentageField({ value, showIcon = false, colorCoded = false, className }: PercentageFieldProps) {
+export function PercentageField({
+    value,
+    showIcon = false,
+    colorCoded = false,
+    className,
+}: PercentageFieldProps) {
     const getColor = () => {
         if (!colorCoded) return "";
         if (value >= 75) return "text-success";
@@ -241,7 +253,13 @@ export function PercentageField({ value, showIcon = false, colorCoded = false, c
     };
 
     return (
-        <span className={cn("flex items-center gap-1 font-medium tabular-nums", getColor(), className)}>
+        <span
+            className={cn(
+                "flex items-center gap-1 font-medium tabular-nums",
+                getColor(),
+                className
+            )}
+        >
             {showIcon && <Percent className="h-3 w-3" />}
             {value}%
         </span>
@@ -270,9 +288,7 @@ export function DateField({
     const isOverdue = showOverdue && date < new Date();
 
     const formatted =
-        format === "relative"
-            ? formatRelativeTime(date)
-            : formatDate(date.toISOString());
+        format === "relative" ? formatRelativeTime(date) : formatDate(date.toISOString());
 
     return (
         <span
@@ -310,9 +326,7 @@ export function UserField({
 }: UserFieldProps) {
     return (
         <div className={cn("flex items-center gap-2", className)}>
-            {showAvatar && (
-                <Avatar name={name} src={avatar} size={size} />
-            )}
+            {showAvatar && <Avatar name={name} src={avatar} size={size} />}
             {showName && (
                 <div className="flex flex-col">
                     <span className="text-sm font-medium leading-tight">{name}</span>
@@ -338,7 +352,13 @@ export function UsersField({ users, max = 3, size = "sm", className }: UsersFiel
     return (
         <div className={cn("flex items-center -space-x-2", className)}>
             {visible.map((user, i) => (
-                <Avatar key={i} name={user.name} src={user.avatar} size={size} className="border-2 border-background" />
+                <Avatar
+                    key={i}
+                    name={user.name}
+                    src={user.avatar}
+                    size={size}
+                    className="border-2 border-background"
+                />
             ))}
             {remaining > 0 && (
                 <div
@@ -372,9 +392,7 @@ export function BooleanField({
 }: BooleanFieldProps) {
     if (variant === "badge") {
         return (
-            <Badge variant={value ? "success" : "ghost"}>
-                {value ? trueLabel : falseLabel}
-            </Badge>
+            <Badge variant={value ? "success" : "ghost"}>{value ? trueLabel : falseLabel}</Badge>
         );
     }
 
@@ -429,9 +447,7 @@ export function RatingField({ value, max = 5, showValue = true, size = "sm" }: R
                 ))}
             </div>
             {showValue && (
-                <span className="text-xs text-muted-foreground ml-1">
-                    {value.toFixed(1)}
-                </span>
+                <span className="text-xs text-muted-foreground ml-1">{value.toFixed(1)}</span>
             )}
         </div>
     );
@@ -463,9 +479,7 @@ export function TagsField({ tags, max = 3, size = "sm" }: TagsFieldProps) {
                     {tag.label}
                 </Badge>
             ))}
-            {remaining > 0 && (
-                <span className="text-xs text-muted-foreground">+{remaining}</span>
-            )}
+            {remaining > 0 && <span className="text-xs text-muted-foreground">+{remaining}</span>}
         </div>
     );
 }
@@ -597,7 +611,13 @@ export function FieldRenderer({ value, config, className }: FieldRendererProps) 
             return <DateField value={value as string} format="relative" />;
         case "user":
             if (typeof value === "string") {
-                return <UserField name={value} showAvatar={config.showAvatar} showName={config.showName} />;
+                return (
+                    <UserField
+                        name={value}
+                        showAvatar={config.showAvatar}
+                        showName={config.showName}
+                    />
+                );
             }
             return (
                 <UserField

@@ -9,8 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    ArrowLeft, Save, Eye, Code, Type, Image as ImageIcon,
-    AlignLeft, Variable, Plus, Trash2, GripVertical, FileText,
+    AlignLeft,
+    ArrowLeft,
+    Code,
+    Eye,
+    FileText,
+    GripVertical,
+    Image as ImageIcon,
+    Plus,
+    Save,
+    Trash2,
+    Type,
+    Variable,
 } from "lucide-react";
 
 type BlockType = "heading" | "paragraph" | "variable" | "image" | "divider" | "table";
@@ -31,9 +41,18 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: React.ElementType }[]
 ];
 
 const AVAILABLE_VARIABLES = [
-    "{{client.name}}", "{{client.address}}", "{{project.name}}", "{{project.date}}",
-    "{{invoice.number}}", "{{invoice.total}}", "{{contract.title}}", "{{contract.value}}",
-    "{{company.name}}", "{{company.logo}}", "{{date.today}}", "{{date.due}}",
+    "{{client.name}}",
+    "{{client.address}}",
+    "{{project.name}}",
+    "{{project.date}}",
+    "{{invoice.number}}",
+    "{{invoice.total}}",
+    "{{contract.title}}",
+    "{{contract.value}}",
+    "{{company.name}}",
+    "{{company.logo}}",
+    "{{date.today}}",
+    "{{date.due}}",
 ];
 
 export default function TemplateEditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -53,29 +72,53 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
         { id: "7", type: "variable", content: "{{client.name}}", variableKey: "client.name" },
         { id: "8", type: "variable", content: "{{client.address}}", variableKey: "client.address" },
         { id: "9", type: "divider", content: "" },
-        { id: "10", type: "paragraph", content: "Thank you for your business. Payment is due within 30 days." },
+        {
+            id: "10",
+            type: "paragraph",
+            content: "Thank you for your business. Payment is due within 30 days.",
+        },
     ]);
 
     const blockCounter = React.useRef(100);
     const addBlock = (type: BlockType) => {
         blockCounter.current += 1;
-        setBlocks([...blocks, { id: String(blockCounter.current), type, content: type === "variable" ? "{{variable}}" : "" }]);
+        setBlocks([
+            ...blocks,
+            {
+                id: String(blockCounter.current),
+                type,
+                content: type === "variable" ? "{{variable}}" : "",
+            },
+        ]);
     };
 
-    const removeBlock = (id: string) => setBlocks(blocks.filter(b => b.id !== id));
+    const removeBlock = (id: string) => setBlocks(blocks.filter((b) => b.id !== id));
 
     const updateBlock = (id: string, content: string) =>
-        setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
+        setBlocks(blocks.map((b) => (b.id === id ? { ...b, content } : b)));
 
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Template Editor" description={`Editing: ${templateName}`}>
                 <div className="flex gap-2">
-                    <Link href="/templates"><Button variant="outline" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Back</Button></Link>
-                    <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)}>
-                        <Eye className="mr-2 h-4 w-4" />{previewMode ? "Edit" : "Preview"}
+                    <Link href="/templates">
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back
+                        </Button>
+                    </Link>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPreviewMode(!previewMode)}
+                    >
+                        <Eye className="mr-2 h-4 w-4" />
+                        {previewMode ? "Edit" : "Preview"}
                     </Button>
-                    <Button size="sm"><Save className="mr-2 h-4 w-4" />Save</Button>
+                    <Button size="sm">
+                        <Save className="mr-2 h-4 w-4" />
+                        Save
+                    </Button>
                 </div>
             </PageHeader>
 
@@ -83,16 +126,31 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                 {/* Template Settings */}
                 <div className="space-y-4">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Settings</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Settings</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-3">
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Template Name</label>
-                                <Input value={templateName} onChange={(e) => setTemplateName(e.target.value)} />
+                                <label className="text-xs text-muted-foreground mb-1 block">
+                                    Template Name
+                                </label>
+                                <Input
+                                    value={templateName}
+                                    onChange={(e) => setTemplateName(e.target.value)}
+                                />
                             </div>
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                                <label className="text-xs text-muted-foreground mb-1 block">
+                                    Category
+                                </label>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {["invoice", "contract", "call_sheet", "tech_sheet", "proposal"].map((cat) => (
+                                    {[
+                                        "invoice",
+                                        "contract",
+                                        "call_sheet",
+                                        "tech_sheet",
+                                        "proposal",
+                                    ].map((cat) => (
                                         <Badge
                                             key={cat}
                                             variant={templateCategory === cat ? "default" : "ghost"}
@@ -109,11 +167,20 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
 
                     {/* Add Blocks */}
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Add Block</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Add Block</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-2">
                             {BLOCK_TYPES.map(({ type, label, icon: Icon }) => (
-                                <Button key={type} variant="outline" size="sm" className="w-full justify-start" onClick={() => addBlock(type)}>
-                                    <Icon className="mr-2 h-3.5 w-3.5" />{label}
+                                <Button
+                                    key={type}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full justify-start"
+                                    onClick={() => addBlock(type)}
+                                >
+                                    <Icon className="mr-2 h-3.5 w-3.5" />
+                                    {label}
                                 </Button>
                             ))}
                         </CardContent>
@@ -121,7 +188,12 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
 
                     {/* Available Variables */}
                     <Card>
-                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Variable className="h-4 w-4" />Merge Fields</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Variable className="h-4 w-4" />
+                                Merge Fields
+                            </CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="space-y-1.5 max-h-48 overflow-y-auto">
                                 {AVAILABLE_VARIABLES.map((v) => (
@@ -134,7 +206,9 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                                     </button>
                                 ))}
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-2">Click to copy to clipboard</p>
+                            <p className="text-[10px] text-muted-foreground mt-2">
+                                Click to copy to clipboard
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -144,30 +218,52 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                     {previewMode ? (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2"><Eye className="h-4 w-4" />Preview</CardTitle>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Eye className="h-4 w-4" />
+                                    Preview
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="p-8 bg-white dark:bg-zinc-900 rounded-lg border min-h-[600px] space-y-4">
                                     {blocks.map((block) => {
                                         switch (block.type) {
                                             case "heading":
-                                                return <h2 key={block.id} className="text-xl font-bold">{block.content}</h2>;
+                                                return (
+                                                    <h2
+                                                        key={block.id}
+                                                        className="text-xl font-bold"
+                                                    >
+                                                        {block.content}
+                                                    </h2>
+                                                );
                                             case "paragraph":
-                                                return <p key={block.id} className="text-sm">{block.content}</p>;
+                                                return (
+                                                    <p key={block.id} className="text-sm">
+                                                        {block.content}
+                                                    </p>
+                                                );
                                             case "variable":
                                                 return (
-                                                    <div key={block.id} className="inline-block px-2 py-1 rounded bg-primary/10 text-primary text-sm font-mono">
+                                                    <div
+                                                        key={block.id}
+                                                        className="inline-block px-2 py-1 rounded bg-primary/10 text-primary text-sm font-mono"
+                                                    >
                                                         {block.content}
                                                     </div>
                                                 );
                                             case "image":
                                                 return (
-                                                    <div key={block.id} className="h-32 bg-secondary/30 rounded-lg flex items-center justify-center">
+                                                    <div
+                                                        key={block.id}
+                                                        className="h-32 bg-secondary/30 rounded-lg flex items-center justify-center"
+                                                    >
                                                         <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
                                                     </div>
                                                 );
                                             case "divider":
-                                                return <hr key={block.id} className="border-border" />;
+                                                return (
+                                                    <hr key={block.id} className="border-border" />
+                                                );
                                             default:
                                                 return null;
                                         }
@@ -179,22 +275,32 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                         <Card>
                             <CardHeader>
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" />Template Blocks ({blocks.length})</CardTitle>
-                                    <Badge variant="ghost">{templateCategory.replace("_", " ")}</Badge>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <FileText className="h-4 w-4" />
+                                        Template Blocks ({blocks.length})
+                                    </CardTitle>
+                                    <Badge variant="ghost">
+                                        {templateCategory.replace("_", " ")}
+                                    </Badge>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-2">
                                 {blocks.map((block) => {
-                                    const blockCfg = BLOCK_TYPES.find(b => b.type === block.type);
+                                    const blockCfg = BLOCK_TYPES.find((b) => b.type === block.type);
                                     const Icon = blockCfg?.icon ?? AlignLeft;
                                     return (
-                                        <div key={block.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors group">
+                                        <div
+                                            key={block.id}
+                                            className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors group"
+                                        >
                                             <GripVertical className="h-4 w-4 text-muted-foreground/30 mt-2.5 cursor-grab shrink-0" />
                                             <div className="h-8 w-8 rounded flex items-center justify-center bg-secondary shrink-0 mt-0.5">
                                                 <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-[10px] text-muted-foreground font-medium mb-1">{blockCfg?.label ?? block.type}</p>
+                                                <p className="text-[10px] text-muted-foreground font-medium mb-1">
+                                                    {blockCfg?.label ?? block.type}
+                                                </p>
                                                 {block.type === "divider" ? (
                                                     <hr className="border-border mt-1" />
                                                 ) : block.type === "image" ? (
@@ -204,20 +310,37 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                                                 ) : (
                                                     <Input
                                                         value={block.content}
-                                                        onChange={(e) => updateBlock(block.id, e.target.value)}
+                                                        onChange={(e) =>
+                                                            updateBlock(block.id, e.target.value)
+                                                        }
                                                         className="text-sm"
-                                                        placeholder={block.type === "variable" ? "{{variable.name}}" : `Enter ${block.type} content...`}
+                                                        placeholder={
+                                                            block.type === "variable"
+                                                                ? "{{variable.name}}"
+                                                                : `Enter ${block.type} content...`
+                                                        }
                                                     />
                                                 )}
                                             </div>
-                                            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onClick={() => removeBlock(block.id)}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                                onClick={() => removeBlock(block.id)}
+                                            >
                                                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
                                             </Button>
                                         </div>
                                     );
                                 })}
-                                <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => addBlock("paragraph")}>
-                                    <Plus className="mr-2 h-4 w-4" />Add Block
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-2"
+                                    onClick={() => addBlock("paragraph")}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Block
                                 </Button>
                             </CardContent>
                         </Card>

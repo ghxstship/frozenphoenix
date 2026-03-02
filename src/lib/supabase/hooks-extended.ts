@@ -1,13 +1,8 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
-
-// ─── Filter value helper ───
-function filterValue<T>(value: string): T {
-    return value as unknown as T;
-}
 
 // ─── Join-aware return types ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
@@ -18,15 +13,36 @@ type VendorName = { vendors: { name: string } | null };
 type LocationName = { locations: { name: string } | null };
 type AssetName = { assets: { name: string } | null };
 
-export type CreditNoteWithJoins = WithJoin<Tables<"credit_notes">, { client_invoices: { number: string } | null }>;
+export type CreditNoteWithJoins = WithJoin<
+    Tables<"credit_notes">,
+    { client_invoices: { number: string } | null }
+>;
 export type ConsumableWithJoins = WithJoin<Tables<"consumables">, ProjectName>;
-export type ConsumableUsageWithJoins = WithJoin<Tables<"consumable_usage">, { consumables: { name: string } | null } & ProfileName>;
-export type MaintenanceRecordWithAsset = WithJoin<Tables<"maintenance_records">, AssetName & ProfileName>;
+export type ConsumableUsageWithJoins = WithJoin<
+    Tables<"consumable_usage">,
+    { consumables: { name: string } | null } & ProfileName
+>;
+export type MaintenanceRecordWithAsset = WithJoin<
+    Tables<"maintenance_records">,
+    AssetName & ProfileName
+>;
 export type PayrollBatchWithProfile = WithJoin<Tables<"payroll_batches">, ProfileName>;
-export type ProductionExpenseWithJoins = WithJoin<Tables<"production_expenses">, ProjectName & VendorName & ProfileName & LocationName>;
-export type ProductionTimeEntryWithJoins = WithJoin<Tables<"production_time_entries">, ProfileName & ProjectName & { production_tasks: { title: string } | null }>;
-export type ProjectAssignmentWithJoins = WithJoin<Tables<"project_assignments">, { crew_members: { name: string } | null } & ProjectName>;
-export type ScheduleEntryWithJoins = WithJoin<Tables<"schedule_entries">, ProjectName & LocationName & ProfileName>;
+export type ProductionExpenseWithJoins = WithJoin<
+    Tables<"production_expenses">,
+    ProjectName & VendorName & ProfileName & LocationName
+>;
+export type ProductionTimeEntryWithJoins = WithJoin<
+    Tables<"production_time_entries">,
+    ProfileName & ProjectName & { production_tasks: { title: string } | null }
+>;
+export type ProjectAssignmentWithJoins = WithJoin<
+    Tables<"project_assignments">,
+    { crew_members: { name: string } | null } & ProjectName
+>;
+export type ScheduleEntryWithJoins = WithJoin<
+    Tables<"schedule_entries">,
+    ProjectName & LocationName & ProfileName
+>;
 export type ReportDefinitionWithProfile = WithJoin<Tables<"report_definitions">, ProfileName>;
 export type DocumentTemplateRow = Tables<"document_templates">;
 export type InvoiceTemplateRow = Tables<"invoice_templates">;
@@ -35,14 +51,6 @@ export type OrganizationRow = Tables<"organizations">;
 export type ActivityRow = Tables<"activities">;
 export type AutomationLogRow = Tables<"automation_logs">;
 export type StakeholderProjectRow = Tables<"stakeholder_projects">;
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error("Supabase client not configured");
-    }
-    return client;
-}
 
 export { isSupabaseConfigured };
 
@@ -70,7 +78,11 @@ export function useCreateCreditNote() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (note: TablesInsert<"credit_notes">) => {
-            const { data, error } = await getSupabase().from("credit_notes").insert(note).select().single();
+            const { data, error } = await getSupabase()
+                .from("credit_notes")
+                .insert(note)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"credit_notes">;
         },
@@ -85,7 +97,12 @@ export function useUpdateCreditNote() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"credit_notes"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("credit_notes").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("credit_notes")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"credit_notes">;
         },
@@ -101,10 +118,7 @@ export function useConsumables(projectId?: string) {
     return useQuery({
         queryKey: ["consumables", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("consumables")
-                .select("*, projects(name)")
-                .order("name");
+            let query = getSupabase().from("consumables").select("*, projects(name)").order("name");
             if (projectId) query = query.eq("project_id", projectId);
             const { data, error } = await query;
             if (error) throw error;
@@ -117,7 +131,11 @@ export function useCreateConsumable() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (consumable: TablesInsert<"consumables">) => {
-            const { data, error } = await getSupabase().from("consumables").insert(consumable).select().single();
+            const { data, error } = await getSupabase()
+                .from("consumables")
+                .insert(consumable)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"consumables">;
         },
@@ -129,7 +147,12 @@ export function useUpdateConsumable() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"consumables"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("consumables").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("consumables")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"consumables">;
         },
@@ -159,12 +182,18 @@ export function useCreateConsumableUsage() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (usage: TablesInsert<"consumable_usage">) => {
-            const { data, error } = await getSupabase().from("consumable_usage").insert(usage).select().single();
+            const { data, error } = await getSupabase()
+                .from("consumable_usage")
+                .insert(usage)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"consumable_usage">;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ["consumable_usage", variables.consumable_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["consumable_usage", variables.consumable_id],
+            });
             queryClient.invalidateQueries({ queryKey: ["consumables"] });
         },
     });
@@ -194,7 +223,11 @@ export function useCreateMaintenanceRecord() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (record: TablesInsert<"maintenance_records">) => {
-            const { data, error } = await getSupabase().from("maintenance_records").insert(record).select().single();
+            const { data, error } = await getSupabase()
+                .from("maintenance_records")
+                .insert(record)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"maintenance_records">;
         },
@@ -208,8 +241,16 @@ export function useCreateMaintenanceRecord() {
 export function useUpdateMaintenanceRecord() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"maintenance_records"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("maintenance_records").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"maintenance_records"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("maintenance_records")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"maintenance_records">;
         },
@@ -241,7 +282,11 @@ export function useCreatePayrollBatch() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (batch: TablesInsert<"payroll_batches">) => {
-            const { data, error } = await getSupabase().from("payroll_batches").insert(batch).select().single();
+            const { data, error } = await getSupabase()
+                .from("payroll_batches")
+                .insert(batch)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"payroll_batches">;
         },
@@ -252,8 +297,16 @@ export function useCreatePayrollBatch() {
 export function useUpdatePayrollBatch() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"payroll_batches"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("payroll_batches").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"payroll_batches"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("payroll_batches")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"payroll_batches">;
         },
@@ -286,7 +339,11 @@ export function useCreateProductionExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (expense: TablesInsert<"production_expenses">) => {
-            const { data, error } = await getSupabase().from("production_expenses").insert(expense).select().single();
+            const { data, error } = await getSupabase()
+                .from("production_expenses")
+                .insert(expense)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"production_expenses">;
         },
@@ -297,8 +354,16 @@ export function useCreateProductionExpense() {
 export function useUpdateProductionExpense() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"production_expenses"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("production_expenses").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"production_expenses"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("production_expenses")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"production_expenses">;
         },
@@ -331,7 +396,11 @@ export function useCreateProductionTimeEntry() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (entry: TablesInsert<"production_time_entries">) => {
-            const { data, error } = await getSupabase().from("production_time_entries").insert(entry).select().single();
+            const { data, error } = await getSupabase()
+                .from("production_time_entries")
+                .insert(entry)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"production_time_entries">;
         },
@@ -342,8 +411,16 @@ export function useCreateProductionTimeEntry() {
 export function useUpdateProductionTimeEntry() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"production_time_entries"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("production_time_entries").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"production_time_entries"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("production_time_entries")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"production_time_entries">;
         },
@@ -376,7 +453,11 @@ export function useCreateProjectAssignment() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (assignment: TablesInsert<"project_assignments">) => {
-            const { data, error } = await getSupabase().from("project_assignments").insert(assignment).select().single();
+            const { data, error } = await getSupabase()
+                .from("project_assignments")
+                .insert(assignment)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"project_assignments">;
         },
@@ -390,8 +471,16 @@ export function useCreateProjectAssignment() {
 export function useUpdateProjectAssignment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"project_assignments"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("project_assignments").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"project_assignments"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("project_assignments")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"project_assignments">;
         },
@@ -436,7 +525,11 @@ export function useCreateScheduleEntry() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (entry: TablesInsert<"schedule_entries">) => {
-            const { data, error } = await getSupabase().from("schedule_entries").insert(entry).select().single();
+            const { data, error } = await getSupabase()
+                .from("schedule_entries")
+                .insert(entry)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"schedule_entries">;
         },
@@ -447,8 +540,16 @@ export function useCreateScheduleEntry() {
 export function useUpdateScheduleEntry() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"schedule_entries"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("schedule_entries").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"schedule_entries"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("schedule_entries")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"schedule_entries">;
         },
@@ -489,7 +590,11 @@ export function useCreateReportDefinition() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (report: TablesInsert<"report_definitions">) => {
-            const { data, error } = await getSupabase().from("report_definitions").insert(report).select().single();
+            const { data, error } = await getSupabase()
+                .from("report_definitions")
+                .insert(report)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"report_definitions">;
         },
@@ -500,8 +605,16 @@ export function useCreateReportDefinition() {
 export function useUpdateReportDefinition() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"report_definitions"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("report_definitions").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"report_definitions"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("report_definitions")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"report_definitions">;
         },
@@ -517,10 +630,7 @@ export function useDocumentTemplates(category?: string) {
     return useQuery({
         queryKey: ["document_templates", category],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("document_templates")
-                .select("*")
-                .order("name");
+            let query = getSupabase().from("document_templates").select("*").order("name");
             if (category) query = query.eq("category", filterValue(category));
             const { data, error } = await query;
             if (error) throw error;
@@ -533,7 +643,11 @@ export function useCreateDocumentTemplate() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (template: TablesInsert<"document_templates">) => {
-            const { data, error } = await getSupabase().from("document_templates").insert(template).select().single();
+            const { data, error } = await getSupabase()
+                .from("document_templates")
+                .insert(template)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as DocumentTemplateRow;
         },
@@ -544,8 +658,16 @@ export function useCreateDocumentTemplate() {
 export function useUpdateDocumentTemplate() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"document_templates"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("document_templates").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"document_templates"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("document_templates")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as DocumentTemplateRow;
         },
@@ -575,7 +697,11 @@ export function useCreateInvoiceTemplate() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (template: TablesInsert<"invoice_templates">) => {
-            const { data, error } = await getSupabase().from("invoice_templates").insert(template).select().single();
+            const { data, error } = await getSupabase()
+                .from("invoice_templates")
+                .insert(template)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as InvoiceTemplateRow;
         },
@@ -586,8 +712,16 @@ export function useCreateInvoiceTemplate() {
 export function useUpdateInvoiceTemplate() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"invoice_templates"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("invoice_templates").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"invoice_templates"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("invoice_templates")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as InvoiceTemplateRow;
         },
@@ -617,7 +751,11 @@ export function useCreateLostReason() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (reason: TablesInsert<"lost_reasons">) => {
-            const { data, error } = await getSupabase().from("lost_reasons").insert(reason).select().single();
+            const { data, error } = await getSupabase()
+                .from("lost_reasons")
+                .insert(reason)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as LostReasonRow;
         },
@@ -663,7 +801,12 @@ export function useUpdateOrganization() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"organizations"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("organizations").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("organizations")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as OrganizationRow;
         },
@@ -699,13 +842,19 @@ export function useCreateActivity() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (activity: TablesInsert<"activities">) => {
-            const { data, error } = await getSupabase().from("activities").insert(activity).select().single();
+            const { data, error } = await getSupabase()
+                .from("activities")
+                .insert(activity)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ActivityRow;
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["activities", variables.event_id] });
-            queryClient.invalidateQueries({ queryKey: ["activities", undefined, variables.project_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["activities", undefined, variables.project_id],
+            });
         },
     });
 }
@@ -714,7 +863,12 @@ export function useUpdateActivity() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"activities"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("activities").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("activities")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ActivityRow;
         },
@@ -750,9 +904,7 @@ export function useStakeholderProjects(stakeholderId?: string, projectId?: strin
     return useQuery({
         queryKey: ["stakeholder_projects", stakeholderId, projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("stakeholder_projects")
-                .select("*");
+            let query = getSupabase().from("stakeholder_projects").select("*");
             if (stakeholderId) query = query.eq("stakeholder_id", stakeholderId);
             if (projectId) query = query.eq("project_id", projectId);
             const { data, error } = await query;
@@ -766,7 +918,11 @@ export function useCreateStakeholderProject() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (sp: TablesInsert<"stakeholder_projects">) => {
-            const { data, error } = await getSupabase().from("stakeholder_projects").insert(sp).select().single();
+            const { data, error } = await getSupabase()
+                .from("stakeholder_projects")
+                .insert(sp)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as StakeholderProjectRow;
         },
@@ -781,7 +937,10 @@ export function useDeleteStakeholderProject() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await getSupabase().from("stakeholder_projects").delete().eq("id", id);
+            const { error } = await getSupabase()
+                .from("stakeholder_projects")
+                .delete()
+                .eq("id", id);
             if (error) throw error;
         },
         onSuccess: () => {
@@ -799,9 +958,7 @@ export function useSOWDeliverableSummary(sowId?: string) {
     return useQuery({
         queryKey: ["v_sow_deliverable_summary", sowId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("v_sow_deliverable_summary")
-                .select("*");
+            let query = getSupabase().from("v_sow_deliverable_summary").select("*");
             if (sowId) query = query.eq("sow_id", sowId);
             const { data, error } = await query;
             if (error) throw error;
@@ -818,9 +975,7 @@ export function useClientInvoiceAging() {
     return useQuery({
         queryKey: ["v_client_invoice_aging"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("v_client_invoice_aging")
-                .select("*");
+            const { data, error } = await getSupabase().from("v_client_invoice_aging").select("*");
             if (error) throw error;
             return data;
         },

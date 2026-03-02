@@ -9,57 +9,57 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type {
+    AccessGrantStatus,
+    ApiTokenStatus,
+    AssetCondition,
+    BomStatus,
+    BomType,
+    CertificationType,
+    CommandLayer,
+    CompliancePolicyType,
+    DamageResolution,
+    DamageSeverity,
     DealStage,
+    DepartmentLiveStatus,
+    EquipmentLiveStatus,
+    FabricationStatus,
+    FohZoneType,
+    GuestIncidentSeverity,
+    GuestIncidentType,
+    InventoryAuditStatus,
+    InvitationStatus,
+    KitStatus,
+    LiveEventPhase,
+    LoadPlanStatus,
+    LocationInspectionResult,
+    LocationStatus,
+    LocComplianceDocStatus,
+    OnboardingStepStatus,
+    OrgMembershipStatus,
+    OtAlertLevel,
+    PermissionLevel,
+    ProductionRunStatus,
     ProjectPhase,
     ProjectStatus,
-    TaskStatus,
-    TaskPriority,
-    FabricationStatus,
-    AssetCondition,
-    CertificationType,
-    StakeholderType,
-    PermissionLevel,
-    UserLifecycleStatus,
-    OrgMembershipStatus,
-    InvitationStatus,
-    OnboardingStepStatus,
-    ApiTokenStatus,
-    AccessGrantStatus,
-    CompliancePolicyType,
-    LiveEventPhase,
-    CommandLayer,
-    DepartmentLiveStatus,
-    ReadinessGateStatus,
-    RosCueStatus,
-    EquipmentLiveStatus,
-    FohZoneType,
-    VipTier,
-    GuestIncidentType,
-    GuestIncidentSeverity,
-    StrikeDirection,
-    ReconciliationStatus,
-    RiskLevel,
-    OtAlertLevel,
-    LocationStatus,
-    SpaceBookingStatus,
-    LocComplianceDocStatus,
-    LocationInspectionResult,
-    ReservationStatus,
-    KitStatus,
-    LoadPlanStatus,
-    InventoryAuditStatus,
-    DamageSeverity,
-    DamageResolution,
-    WorkPackageStatus,
-    ProductionRunStatus,
-    BomType,
-    BomStatus,
-    QcGateType,
     QcGateStatus,
-    RightsType,
-    RightsLicenseStatus,
-    RentalAgreementType,
+    QcGateType,
+    ReadinessGateStatus,
+    ReconciliationStatus,
     RentalAgreementStatus,
+    RentalAgreementType,
+    ReservationStatus,
+    RightsLicenseStatus,
+    RightsType,
+    RiskLevel,
+    RosCueStatus,
+    SpaceBookingStatus,
+    StakeholderType,
+    StrikeDirection,
+    TaskPriority,
+    TaskStatus,
+    UserLifecycleStatus,
+    VipTier,
+    WorkPackageStatus,
 } from "@/types";
 import type { BadgeVariant } from "./ui-variants";
 
@@ -74,16 +74,27 @@ interface EnumConfig<T extends string> {
 // ─── Deal Stages ───
 export const DEAL_STAGES: EnumConfig<DealStage>[] = [
     { value: "lead", label: "Lead", variant: "ghost", description: "Initial contact" },
-    { value: "qualified", label: "Qualified", variant: "info", description: "Budget and timeline confirmed" },
+    {
+        value: "qualified",
+        label: "Qualified",
+        variant: "info",
+        description: "Budget and timeline confirmed",
+    },
     { value: "proposal", label: "Proposal", variant: "default", description: "Proposal submitted" },
-    { value: "negotiation", label: "Negotiation", variant: "warning", description: "Terms being finalized" },
+    {
+        value: "negotiation",
+        label: "Negotiation",
+        variant: "warning",
+        description: "Terms being finalized",
+    },
     { value: "won", label: "Won", variant: "success", description: "Deal closed" },
     { value: "lost", label: "Lost", variant: "destructive", description: "Deal lost" },
 ];
 
-export const DEAL_STAGE_MAP = Object.fromEntries(
-    DEAL_STAGES.map((s) => [s.value, s])
-) as Record<DealStage, EnumConfig<DealStage>>;
+export const DEAL_STAGE_MAP = Object.fromEntries(DEAL_STAGES.map((s) => [s.value, s])) as Record<
+    DealStage,
+    EnumConfig<DealStage>
+>;
 
 // ─── Project Phases ───
 export const PROJECT_PHASES: EnumConfig<ProjectPhase>[] = [
@@ -127,9 +138,10 @@ export const TASK_STATUSES: EnumConfig<TaskStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "ghost" },
 ];
 
-export const TASK_STATUS_MAP = Object.fromEntries(
-    TASK_STATUSES.map((s) => [s.value, s])
-) as Record<TaskStatus, EnumConfig<TaskStatus>>;
+export const TASK_STATUS_MAP = Object.fromEntries(TASK_STATUSES.map((s) => [s.value, s])) as Record<
+    TaskStatus,
+    EnumConfig<TaskStatus>
+>;
 
 export const TASK_STATUS_ORDER: TaskStatus[] = TASK_STATUSES.map((s) => s.value);
 
@@ -204,8 +216,18 @@ export const STAKEHOLDER_TYPE_MAP = Object.fromEntries(
 // ─── Permission Levels ───
 export const PERMISSION_LEVELS: EnumConfig<PermissionLevel>[] = [
     { value: "exec", label: "Executive", variant: "default", description: "Full access" },
-    { value: "pm", label: "Project Manager", variant: "info", description: "Project-scoped access" },
-    { value: "client", label: "Client", variant: "warning", description: "Approved deliverables only" },
+    {
+        value: "pm",
+        label: "Project Manager",
+        variant: "info",
+        description: "Project-scoped access",
+    },
+    {
+        value: "client",
+        label: "Client",
+        variant: "warning",
+        description: "Approved deliverables only",
+    },
     { value: "vendor", label: "Vendor", variant: "secondary", description: "Task-specific access" },
 ];
 
@@ -238,9 +260,10 @@ export const DECK_TYPES: EnumConfig<DeckType>[] = [
     { value: "wrap", label: "Wrap Deck", variant: "success" },
 ];
 
-export const DECK_TYPE_MAP = Object.fromEntries(
-    DECK_TYPES.map((t) => [t.value, t])
-) as Record<DeckType, EnumConfig<DeckType>>;
+export const DECK_TYPE_MAP = Object.fromEntries(DECK_TYPES.map((t) => [t.value, t])) as Record<
+    DeckType,
+    EnumConfig<DeckType>
+>;
 
 // ─── Notification Types ───
 export type NotificationType = "info" | "warning" | "error" | "success";
@@ -257,7 +280,14 @@ export const NOTIFICATION_TYPE_MAP = Object.fromEntries(
 ) as Record<NotificationType, EnumConfig<NotificationType>>;
 
 // ─── Contract Status ───
-export type ContractStatusType = "draft" | "pending_review" | "pending_signature" | "active" | "expired" | "terminated" | "renewed";
+export type ContractStatusType =
+    | "draft"
+    | "pending_review"
+    | "pending_signature"
+    | "active"
+    | "expired"
+    | "terminated"
+    | "renewed";
 
 export const CONTRACT_STATUSES: EnumConfig<ContractStatusType>[] = [
     { value: "draft", label: "Draft", variant: "ghost" },
@@ -290,7 +320,15 @@ export const CONTRACT_TYPE_MAP = Object.fromEntries(
 ) as Record<ContractType, EnumConfig<ContractType>>;
 
 // ─── Invoice Delivery Status ───
-export type InvoiceDeliveryStatusType = "draft" | "sent" | "viewed" | "reminded" | "paid" | "overdue" | "disputed" | "void";
+export type InvoiceDeliveryStatusType =
+    | "draft"
+    | "sent"
+    | "viewed"
+    | "reminded"
+    | "paid"
+    | "overdue"
+    | "disputed"
+    | "void";
 
 export const INVOICE_DELIVERY_STATUSES: EnumConfig<InvoiceDeliveryStatusType>[] = [
     { value: "draft", label: "Draft", variant: "ghost" },
@@ -308,7 +346,12 @@ export const INVOICE_DELIVERY_STATUS_MAP = Object.fromEntries(
 ) as Record<InvoiceDeliveryStatusType, EnumConfig<InvoiceDeliveryStatusType>>;
 
 // ─── Call Sheet Status ───
-export type CallSheetStatusType = "draft" | "published" | "distributed" | "acknowledged" | "archived";
+export type CallSheetStatusType =
+    | "draft"
+    | "published"
+    | "distributed"
+    | "acknowledged"
+    | "archived";
 
 export const CALL_SHEET_STATUSES: EnumConfig<CallSheetStatusType>[] = [
     { value: "draft", label: "Draft", variant: "ghost" },
@@ -352,7 +395,12 @@ export const WORKFLOW_STATUS_MAP = Object.fromEntries(
 ) as Record<WorkflowStatusType, EnumConfig<WorkflowStatusType>>;
 
 // ─── Workflow Instance Status ───
-export type WorkflowInstanceStatusType = "pending" | "in_progress" | "completed" | "cancelled" | "escalated";
+export type WorkflowInstanceStatusType =
+    | "pending"
+    | "in_progress"
+    | "completed"
+    | "cancelled"
+    | "escalated";
 
 export const WORKFLOW_INSTANCE_STATUSES: EnumConfig<WorkflowInstanceStatusType>[] = [
     { value: "pending", label: "Pending", variant: "ghost" },
@@ -368,30 +416,110 @@ export const WORKFLOW_INSTANCE_STATUS_MAP = Object.fromEntries(
 
 // ─── Lifecycle Approval Stages ───
 export type LifecycleStage =
-    | "lead_qualified" | "qualified_proposal" | "proposal_sent"
-    | "proposal_contract" | "contract_signed" | "contract_project"
-    | "pre_production" | "fabrication_qc" | "procurement_po"
-    | "logistics_shipping" | "load_in_site" | "show_ros"
-    | "strike_completion" | "invoice_finance" | "payment_receipt"
+    | "lead_qualified"
+    | "qualified_proposal"
+    | "proposal_sent"
+    | "proposal_contract"
+    | "contract_signed"
+    | "contract_project"
+    | "pre_production"
+    | "fabrication_qc"
+    | "procurement_po"
+    | "logistics_shipping"
+    | "load_in_site"
+    | "show_ros"
+    | "strike_completion"
+    | "invoice_finance"
+    | "payment_receipt"
     | "reconciliation_close";
 
 export const LIFECYCLE_STAGES: EnumConfig<LifecycleStage>[] = [
-    { value: "lead_qualified", label: "Lead → Qualified", variant: "ghost", description: "Sales Manager Review" },
-    { value: "qualified_proposal", label: "Qualified → Proposal", variant: "ghost", description: "Scope/Budget Approval" },
-    { value: "proposal_sent", label: "Proposal Sent", variant: "info", description: "Client Acceptance" },
-    { value: "proposal_contract", label: "Proposal → Contract", variant: "info", description: "Legal Review" },
-    { value: "contract_signed", label: "Contract Signed", variant: "info", description: "Finance Approval" },
-    { value: "contract_project", label: "Contract → Project", variant: "default", description: "PM Assignment" },
-    { value: "pre_production", label: "Pre-Production", variant: "secondary", description: "Creative Approval" },
-    { value: "fabrication_qc", label: "Fabrication", variant: "warning", description: "QC Checkpoints" },
-    { value: "procurement_po", label: "Procurement", variant: "warning", description: "PO Approval" },
-    { value: "logistics_shipping", label: "Logistics", variant: "info", description: "Shipping Approval" },
+    {
+        value: "lead_qualified",
+        label: "Lead → Qualified",
+        variant: "ghost",
+        description: "Sales Manager Review",
+    },
+    {
+        value: "qualified_proposal",
+        label: "Qualified → Proposal",
+        variant: "ghost",
+        description: "Scope/Budget Approval",
+    },
+    {
+        value: "proposal_sent",
+        label: "Proposal Sent",
+        variant: "info",
+        description: "Client Acceptance",
+    },
+    {
+        value: "proposal_contract",
+        label: "Proposal → Contract",
+        variant: "info",
+        description: "Legal Review",
+    },
+    {
+        value: "contract_signed",
+        label: "Contract Signed",
+        variant: "info",
+        description: "Finance Approval",
+    },
+    {
+        value: "contract_project",
+        label: "Contract → Project",
+        variant: "default",
+        description: "PM Assignment",
+    },
+    {
+        value: "pre_production",
+        label: "Pre-Production",
+        variant: "secondary",
+        description: "Creative Approval",
+    },
+    {
+        value: "fabrication_qc",
+        label: "Fabrication",
+        variant: "warning",
+        description: "QC Checkpoints",
+    },
+    {
+        value: "procurement_po",
+        label: "Procurement",
+        variant: "warning",
+        description: "PO Approval",
+    },
+    {
+        value: "logistics_shipping",
+        label: "Logistics",
+        variant: "info",
+        description: "Shipping Approval",
+    },
     { value: "load_in_site", label: "Load-In", variant: "info", description: "Site Readiness" },
     { value: "show_ros", label: "Show", variant: "success", description: "Run-of-Show Approval" },
-    { value: "strike_completion", label: "Strike", variant: "warning", description: "Completion Sign-off" },
-    { value: "invoice_finance", label: "Invoice", variant: "default", description: "Finance Approval" },
-    { value: "payment_receipt", label: "Payment", variant: "success", description: "Receipt Confirmation" },
-    { value: "reconciliation_close", label: "Reconciliation", variant: "success", description: "Final Close-out" },
+    {
+        value: "strike_completion",
+        label: "Strike",
+        variant: "warning",
+        description: "Completion Sign-off",
+    },
+    {
+        value: "invoice_finance",
+        label: "Invoice",
+        variant: "default",
+        description: "Finance Approval",
+    },
+    {
+        value: "payment_receipt",
+        label: "Payment",
+        variant: "success",
+        description: "Receipt Confirmation",
+    },
+    {
+        value: "reconciliation_close",
+        label: "Reconciliation",
+        variant: "success",
+        description: "Final Close-out",
+    },
 ];
 
 export const LIFECYCLE_STAGE_MAP = Object.fromEntries(
@@ -413,15 +541,54 @@ export const SIGNATURE_STATUS_MAP = Object.fromEntries(
 ) as Record<SignatureStatusType, EnumConfig<SignatureStatusType>>;
 
 // ─── Opportunity Stages ───
-export type OpportunityStageType = "discovery" | "qualification" | "proposal_sent" | "proposal_review" | "negotiation" | "contract_sent" | "won" | "lost" | "on_hold";
+export type OpportunityStageType =
+    | "discovery"
+    | "qualification"
+    | "proposal_sent"
+    | "proposal_review"
+    | "negotiation"
+    | "contract_sent"
+    | "won"
+    | "lost"
+    | "on_hold";
 
 export const OPPORTUNITY_STAGES: EnumConfig<OpportunityStageType>[] = [
-    { value: "discovery", label: "Discovery", variant: "ghost", description: "Initial needs assessment" },
-    { value: "qualification", label: "Qualification", variant: "info", description: "Budget, authority, need, timeline confirmed" },
-    { value: "proposal_sent", label: "Proposal Sent", variant: "default", description: "Formal proposal delivered" },
-    { value: "proposal_review", label: "Proposal Review", variant: "secondary", description: "Client reviewing proposal" },
-    { value: "negotiation", label: "Negotiation", variant: "warning", description: "Terms being finalized" },
-    { value: "contract_sent", label: "Contract Sent", variant: "info", description: "Contract delivered for signature" },
+    {
+        value: "discovery",
+        label: "Discovery",
+        variant: "ghost",
+        description: "Initial needs assessment",
+    },
+    {
+        value: "qualification",
+        label: "Qualification",
+        variant: "info",
+        description: "Budget, authority, need, timeline confirmed",
+    },
+    {
+        value: "proposal_sent",
+        label: "Proposal Sent",
+        variant: "default",
+        description: "Formal proposal delivered",
+    },
+    {
+        value: "proposal_review",
+        label: "Proposal Review",
+        variant: "secondary",
+        description: "Client reviewing proposal",
+    },
+    {
+        value: "negotiation",
+        label: "Negotiation",
+        variant: "warning",
+        description: "Terms being finalized",
+    },
+    {
+        value: "contract_sent",
+        label: "Contract Sent",
+        variant: "info",
+        description: "Contract delivered for signature",
+    },
     { value: "won", label: "Won", variant: "success", description: "Contract signed" },
     { value: "lost", label: "Lost", variant: "destructive", description: "Opportunity lost" },
     { value: "on_hold", label: "On Hold", variant: "ghost", description: "Temporarily paused" },
@@ -446,7 +613,13 @@ export const OPPORTUNITY_TYPE_MAP = Object.fromEntries(
 ) as Record<OpportunityTypeConfig, EnumConfig<OpportunityTypeConfig>>;
 
 // ─── Change Order Status ───
-export type ChangeOrderStatusType = "draft" | "pending_review" | "pending_client" | "approved" | "rejected" | "void";
+export type ChangeOrderStatusType =
+    | "draft"
+    | "pending_review"
+    | "pending_client"
+    | "approved"
+    | "rejected"
+    | "void";
 
 export const CHANGE_ORDER_STATUSES: EnumConfig<ChangeOrderStatusType>[] = [
     { value: "draft", label: "Draft", variant: "ghost" },
@@ -462,7 +635,12 @@ export const CHANGE_ORDER_STATUS_MAP = Object.fromEntries(
 ) as Record<ChangeOrderStatusType, EnumConfig<ChangeOrderStatusType>>;
 
 // ─── Change Order Types ───
-export type ChangeOrderTypeConfig = "scope_addition" | "scope_reduction" | "timeline_change" | "budget_adjustment" | "combined";
+export type ChangeOrderTypeConfig =
+    | "scope_addition"
+    | "scope_reduction"
+    | "timeline_change"
+    | "budget_adjustment"
+    | "combined";
 
 export const CHANGE_ORDER_TYPES: EnumConfig<ChangeOrderTypeConfig>[] = [
     { value: "scope_addition", label: "Scope Addition", variant: "info" },
@@ -477,7 +655,12 @@ export const CHANGE_ORDER_TYPE_MAP = Object.fromEntries(
 ) as Record<ChangeOrderTypeConfig, EnumConfig<ChangeOrderTypeConfig>>;
 
 // ─── Revenue Schedule Status ───
-export type RevenueScheduleStatusType = "scheduled" | "invoiced" | "recognized" | "deferred" | "reversed";
+export type RevenueScheduleStatusType =
+    | "scheduled"
+    | "invoiced"
+    | "recognized"
+    | "deferred"
+    | "reversed";
 
 export const REVENUE_SCHEDULE_STATUSES: EnumConfig<RevenueScheduleStatusType>[] = [
     { value: "scheduled", label: "Scheduled", variant: "ghost" },
@@ -506,7 +689,15 @@ export const ACCOUNT_RISK_LEVEL_MAP = Object.fromEntries(
 ) as Record<AccountRiskLevelType, EnumConfig<AccountRiskLevelType>>;
 
 // ─── Creative Brief Status ───
-export type CreativeBriefStatusType = "draft" | "stakeholder_review" | "strategy_approved" | "budget_approved" | "final_approved" | "active" | "completed" | "archived";
+export type CreativeBriefStatusType =
+    | "draft"
+    | "stakeholder_review"
+    | "strategy_approved"
+    | "budget_approved"
+    | "final_approved"
+    | "active"
+    | "completed"
+    | "archived";
 
 export const CREATIVE_BRIEF_STATUSES: EnumConfig<CreativeBriefStatusType>[] = [
     { value: "draft", label: "Draft", variant: "ghost" },
@@ -524,7 +715,14 @@ export const CREATIVE_BRIEF_STATUS_MAP = Object.fromEntries(
 ) as Record<CreativeBriefStatusType, EnumConfig<CreativeBriefStatusType>>;
 
 // ─── Creative Brief Types ───
-export type CreativeBriefTypeConfig = "brand" | "campaign" | "product" | "event" | "social" | "content" | "experiential";
+export type CreativeBriefTypeConfig =
+    | "brand"
+    | "campaign"
+    | "product"
+    | "event"
+    | "social"
+    | "content"
+    | "experiential";
 
 export const CREATIVE_BRIEF_TYPES: EnumConfig<CreativeBriefTypeConfig>[] = [
     { value: "brand", label: "Brand", variant: "default" },
@@ -541,7 +739,17 @@ export const CREATIVE_BRIEF_TYPE_MAP = Object.fromEntries(
 ) as Record<CreativeBriefTypeConfig, EnumConfig<CreativeBriefTypeConfig>>;
 
 // ─── Campaign Status ───
-export type CampaignStatusType = "planning" | "brief_approved" | "in_production" | "review" | "approved" | "launching" | "live" | "optimizing" | "completed" | "archived";
+export type CampaignStatusType =
+    | "planning"
+    | "brief_approved"
+    | "in_production"
+    | "review"
+    | "approved"
+    | "launching"
+    | "live"
+    | "optimizing"
+    | "completed"
+    | "archived";
 
 export const CAMPAIGN_STATUSES: EnumConfig<CampaignStatusType>[] = [
     { value: "planning", label: "Planning", variant: "ghost" },
@@ -561,7 +769,14 @@ export const CAMPAIGN_STATUS_MAP = Object.fromEntries(
 ) as Record<CampaignStatusType, EnumConfig<CampaignStatusType>>;
 
 // ─── Campaign Asset Production Status ───
-export type CampaignAssetProductionStatusType = "briefed" | "in_production" | "in_review" | "revision_requested" | "approved" | "deployed" | "retired";
+export type CampaignAssetProductionStatusType =
+    | "briefed"
+    | "in_production"
+    | "in_review"
+    | "revision_requested"
+    | "approved"
+    | "deployed"
+    | "retired";
 
 export const CAMPAIGN_ASSET_PRODUCTION_STATUSES: EnumConfig<CampaignAssetProductionStatusType>[] = [
     { value: "briefed", label: "Briefed", variant: "ghost" },
@@ -578,7 +793,12 @@ export const CAMPAIGN_ASSET_PRODUCTION_STATUS_MAP = Object.fromEntries(
 ) as Record<CampaignAssetProductionStatusType, EnumConfig<CampaignAssetProductionStatusType>>;
 
 // ─── Creative Review Status ───
-export type CreativeReviewStatusType = "requested" | "in_review" | "approved" | "revision_requested" | "rejected";
+export type CreativeReviewStatusType =
+    | "requested"
+    | "in_review"
+    | "approved"
+    | "revision_requested"
+    | "rejected";
 
 export const CREATIVE_REVIEW_STATUSES: EnumConfig<CreativeReviewStatusType>[] = [
     { value: "requested", label: "Requested", variant: "ghost" },
@@ -607,13 +827,43 @@ export const BRAND_GUIDELINE_STATUS_MAP = Object.fromEntries(
 
 // ─── User Lifecycle Status ───
 export const USER_LIFECYCLE_STATUSES: EnumConfig<UserLifecycleStatus>[] = [
-    { value: "pending_verification", label: "Pending Verification", variant: "warning", description: "Email not yet confirmed" },
-    { value: "onboarding", label: "Onboarding", variant: "info", description: "First-time setup in progress" },
+    {
+        value: "pending_verification",
+        label: "Pending Verification",
+        variant: "warning",
+        description: "Email not yet confirmed",
+    },
+    {
+        value: "onboarding",
+        label: "Onboarding",
+        variant: "info",
+        description: "First-time setup in progress",
+    },
     { value: "active", label: "Active", variant: "success", description: "Full access" },
-    { value: "suspended", label: "Suspended", variant: "destructive", description: "Access temporarily revoked" },
-    { value: "deactivated", label: "Deactivated", variant: "ghost", description: "Account disabled" },
-    { value: "pending_deletion", label: "Pending Deletion", variant: "destructive", description: "Deletion requested — retention period" },
-    { value: "anonymized", label: "Anonymized", variant: "ghost", description: "PII removed — tombstone record" },
+    {
+        value: "suspended",
+        label: "Suspended",
+        variant: "destructive",
+        description: "Access temporarily revoked",
+    },
+    {
+        value: "deactivated",
+        label: "Deactivated",
+        variant: "ghost",
+        description: "Account disabled",
+    },
+    {
+        value: "pending_deletion",
+        label: "Pending Deletion",
+        variant: "destructive",
+        description: "Deletion requested — retention period",
+    },
+    {
+        value: "anonymized",
+        label: "Anonymized",
+        variant: "ghost",
+        description: "PII removed — tombstone record",
+    },
 ];
 
 export const USER_LIFECYCLE_STATUS_MAP = Object.fromEntries(
@@ -698,9 +948,19 @@ export const COMPLIANCE_POLICY_TYPE_MAP = Object.fromEntries(
 // ─── Live Event Phase ───
 export const LIVE_EVENT_PHASES: EnumConfig<LiveEventPhase>[] = [
     { value: "advance", label: "Advance", variant: "ghost", description: "Pre-arrival site prep" },
-    { value: "load_in", label: "Load-In", variant: "info", description: "Equipment & crew arrival" },
+    {
+        value: "load_in",
+        label: "Load-In",
+        variant: "info",
+        description: "Equipment & crew arrival",
+    },
     { value: "setup", label: "Setup", variant: "info", description: "Installation & rigging" },
-    { value: "rehearsal", label: "Rehearsal", variant: "warning", description: "Technical & dress rehearsals" },
+    {
+        value: "rehearsal",
+        label: "Rehearsal",
+        variant: "warning",
+        description: "Technical & dress rehearsals",
+    },
     { value: "ready", label: "Ready", variant: "success", description: "All gates passed" },
     { value: "live", label: "Live", variant: "success", description: "Active show/event" },
     { value: "hold", label: "Hold", variant: "destructive", description: "Emergency pause" },
@@ -809,9 +1069,10 @@ export const VIP_TIERS: EnumConfig<VipTier>[] = [
     { value: "platinum", label: "Platinum", variant: "info" },
 ];
 
-export const VIP_TIER_MAP = Object.fromEntries(
-    VIP_TIERS.map((t) => [t.value, t])
-) as Record<VipTier, EnumConfig<VipTier>>;
+export const VIP_TIER_MAP = Object.fromEntries(VIP_TIERS.map((t) => [t.value, t])) as Record<
+    VipTier,
+    EnumConfig<VipTier>
+>;
 
 // ─── Guest Incident Type ───
 export const GUEST_INCIDENT_TYPES: EnumConfig<GuestIncidentType>[] = [
@@ -868,9 +1129,10 @@ export const RISK_LEVELS: EnumConfig<RiskLevel>[] = [
     { value: "critical", label: "Critical", variant: "destructive" },
 ];
 
-export const RISK_LEVEL_MAP = Object.fromEntries(
-    RISK_LEVELS.map((r) => [r.value, r])
-) as Record<RiskLevel, EnumConfig<RiskLevel>>;
+export const RISK_LEVEL_MAP = Object.fromEntries(RISK_LEVELS.map((r) => [r.value, r])) as Record<
+    RiskLevel,
+    EnumConfig<RiskLevel>
+>;
 
 // ─── OT Alert Level ───
 export const OT_ALERT_LEVELS: EnumConfig<OtAlertLevel>[] = [
@@ -958,9 +1220,10 @@ export const KIT_STATUSES: EnumConfig<KitStatus>[] = [
     { value: "retired", label: "Retired", variant: "ghost" },
 ];
 
-export const KIT_STATUS_MAP = Object.fromEntries(
-    KIT_STATUSES.map((s) => [s.value, s])
-) as Record<KitStatus, EnumConfig<KitStatus>>;
+export const KIT_STATUS_MAP = Object.fromEntries(KIT_STATUSES.map((s) => [s.value, s])) as Record<
+    KitStatus,
+    EnumConfig<KitStatus>
+>;
 
 // ─── Load Plan Status ───
 export const LOAD_PLAN_STATUSES: EnumConfig<LoadPlanStatus>[] = [
@@ -1055,9 +1318,10 @@ export const BOM_TYPES: EnumConfig<BomType>[] = [
     { value: "bundle", label: "Bundle", variant: "ghost" },
 ];
 
-export const BOM_TYPE_MAP = Object.fromEntries(
-    BOM_TYPES.map((t) => [t.value, t])
-) as Record<BomType, EnumConfig<BomType>>;
+export const BOM_TYPE_MAP = Object.fromEntries(BOM_TYPES.map((t) => [t.value, t])) as Record<
+    BomType,
+    EnumConfig<BomType>
+>;
 
 // ─── BOM Status ───
 export const BOM_STATUSES: EnumConfig<BomStatus>[] = [
@@ -1067,9 +1331,10 @@ export const BOM_STATUSES: EnumConfig<BomStatus>[] = [
     { value: "archived", label: "Archived", variant: "ghost" },
 ];
 
-export const BOM_STATUS_MAP = Object.fromEntries(
-    BOM_STATUSES.map((s) => [s.value, s])
-) as Record<BomStatus, EnumConfig<BomStatus>>;
+export const BOM_STATUS_MAP = Object.fromEntries(BOM_STATUSES.map((s) => [s.value, s])) as Record<
+    BomStatus,
+    EnumConfig<BomStatus>
+>;
 
 // ─── QC Gate Type ───
 export const QC_GATE_TYPES: EnumConfig<QcGateType>[] = [
@@ -1122,9 +1387,10 @@ export const RIGHTS_TYPES: EnumConfig<RightsType>[] = [
     { value: "trademark", label: "Trademark", variant: "warning" },
 ];
 
-export const RIGHTS_TYPE_MAP = Object.fromEntries(
-    RIGHTS_TYPES.map((t) => [t.value, t])
-) as Record<RightsType, EnumConfig<RightsType>>;
+export const RIGHTS_TYPE_MAP = Object.fromEntries(RIGHTS_TYPES.map((t) => [t.value, t])) as Record<
+    RightsType,
+    EnumConfig<RightsType>
+>;
 
 // ─── Rights License Status ───
 export const RIGHTS_LICENSE_STATUSES: EnumConfig<RightsLicenseStatus>[] = [

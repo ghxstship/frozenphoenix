@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useCallback, Suspense } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AuthLayout, PasswordInput } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/lib/auth-utils";
-import { AlertCircle, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -18,51 +18,57 @@ function ResetPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const handleUpdatePassword = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-        setConfirmError(null);
+    const handleUpdatePassword = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
+            setConfirmError(null);
 
-        const pwError = validatePassword(password);
-        if (pwError) {
-            setError(pwError);
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setConfirmError("Passwords do not match.");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
+            const pwError = validatePassword(password);
+            if (pwError) {
+                setError(pwError);
                 return;
             }
 
-            const { error: updateError } = await supabase.auth.updateUser({
-                password,
-            });
-
-            if (updateError) {
-                setError(mapAuthError(updateError.message));
+            if (password !== confirmPassword) {
+                setConfirmError("Passwords do not match.");
                 return;
             }
 
-            setSuccess(true);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [password, confirmPassword]);
+            setLoading(true);
+
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
+                    return;
+                }
+
+                const { error: updateError } = await supabase.auth.updateUser({
+                    password,
+                });
+
+                if (updateError) {
+                    setError(mapAuthError(updateError.message));
+                    return;
+                }
+
+                setSuccess(true);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [password, confirmPassword]
+    );
 
     if (success) {
         return (
-            <AuthLayout title="Password updated" subtitle="Your account is secured with your new password">
+            <AuthLayout
+                title="Password updated"
+                subtitle="Your account is secured with your new password"
+            >
                 <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
@@ -70,7 +76,8 @@ function ResetPasswordForm() {
                     <div className="space-y-2">
                         <h2 className="text-lg font-semibold">You&apos;re all set</h2>
                         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                            Your password has been successfully updated. You can now continue to your dashboard.
+                            Your password has been successfully updated. You can now continue to
+                            your dashboard.
                         </p>
                     </div>
                     <Button onClick={() => router.push("/dashboard")}>
@@ -98,7 +105,10 @@ function ResetPasswordForm() {
 
                 <div className="space-y-2">
                     <label htmlFor="reset-password" className="text-sm font-medium leading-none">
-                        New Password <span className="text-destructive ml-1" aria-hidden="true">*</span>
+                        New Password{" "}
+                        <span className="text-destructive ml-1" aria-hidden="true">
+                            *
+                        </span>
                     </label>
                     <PasswordInput
                         id="reset-password"
@@ -114,13 +124,19 @@ function ResetPasswordForm() {
 
                 <div className="space-y-2">
                     <label htmlFor="reset-confirm" className="text-sm font-medium leading-none">
-                        Confirm Password <span className="text-destructive ml-1" aria-hidden="true">*</span>
+                        Confirm Password{" "}
+                        <span className="text-destructive ml-1" aria-hidden="true">
+                            *
+                        </span>
                     </label>
                     <PasswordInput
                         id="reset-confirm"
                         placeholder="••••••••"
                         value={confirmPassword}
-                        onChange={(e) => { setConfirmPassword(e.target.value); setConfirmError(null); }}
+                        onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            setConfirmError(null);
+                        }}
                         autoComplete="new-password"
                         showIcon={false}
                         error={confirmError ?? undefined}
@@ -128,16 +144,13 @@ function ResetPasswordForm() {
                         disabled={loading}
                     />
                     {confirmError && (
-                        <p className="text-xs text-destructive" role="alert">{confirmError}</p>
+                        <p className="text-xs text-destructive" role="alert">
+                            {confirmError}
+                        </p>
                     )}
                 </div>
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                    aria-busy={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -154,11 +167,13 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            }
+        >
             <ResetPasswordForm />
         </Suspense>
     );

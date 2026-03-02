@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import { MOCK_INVITATIONS } from "@/lib/demo-data-user-lifecycle";
-import {
-    UserPlus, Mail, Clock, CheckCircle2, XCircle, RotateCcw, Send,
-} from "lucide-react";
+import { CheckCircle2, Clock, Mail, RotateCcw, Send, UserPlus, XCircle } from "lucide-react";
 import type { InvitationStatus, PermissionLevel } from "@/types";
 
 const STATUS_FILTERS: { value: InvitationStatus | "all"; label: string }[] = [
@@ -49,7 +47,10 @@ export default function InvitationsPage() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <PageHeader title="Invitations" description="Manage pending, accepted, and expired user invitations">
+            <PageHeader
+                title="Invitations"
+                description="Manage pending, accepted, and expired user invitations"
+            >
                 <Button>
                     <Send className="mr-2 h-4 w-4" />
                     Send Invitation
@@ -66,7 +67,12 @@ export default function InvitationsPage() {
             <Card>
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <SearchInput value={search} onValueChange={setSearch} placeholder="Search by email or inviter..." className="flex-1" />
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search by email or inviter..."
+                            className="flex-1"
+                        />
                         <div className="flex gap-2 flex-wrap">
                             {STATUS_FILTERS.map((f) => (
                                 <Button
@@ -96,10 +102,15 @@ export default function InvitationsPage() {
                                                     <Mail className="h-5 w-5 text-info" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold">{inv.email}</p>
+                                                    <p className="text-sm font-semibold">
+                                                        {inv.email}
+                                                    </p>
                                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                         {roleConfig && (
-                                                            <Badge variant={roleConfig.variant} className="text-[10px]">
+                                                            <Badge
+                                                                variant={roleConfig.variant}
+                                                                className="text-[10px]"
+                                                            >
                                                                 {roleConfig.label}
                                                             </Badge>
                                                         )}
@@ -121,15 +132,32 @@ export default function InvitationsPage() {
 
                                             <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
                                                 <div className="text-right">
-                                                    <p>Invited by <span className="font-medium text-foreground">{inv.invitedByName}</span></p>
-                                                    <p>{new Date(inv.createdAt).toLocaleDateString()}</p>
+                                                    <p>
+                                                        Invited by{" "}
+                                                        <span className="font-medium text-foreground">
+                                                            {inv.invitedByName}
+                                                        </span>
+                                                    </p>
+                                                    <p>
+                                                        {new Date(
+                                                            inv.createdAt
+                                                        ).toLocaleDateString()}
+                                                    </p>
                                                 </div>
                                                 {isPending && (
                                                     <div className="flex gap-1">
-                                                        <Button variant="ghost" size="sm" title="Resend">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            title="Resend"
+                                                        >
                                                             <RotateCcw className="h-3 w-3" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" title="Revoke">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            title="Revoke"
+                                                        >
                                                             <XCircle className="h-3 w-3" />
                                                         </Button>
                                                     </div>

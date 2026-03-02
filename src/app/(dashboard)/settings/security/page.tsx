@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/auth";
-import { validatePassword, mapAuthError } from "@/lib/auth-utils";
+import { mapAuthError, validatePassword } from "@/lib/auth-utils";
 import {
+    AlertCircle,
+    CheckCircle2,
+    Key,
+    Loader2,
+    MonitorSmartphone,
+    Plus,
     Shield,
     Smartphone,
-    Key,
-    MonitorSmartphone,
-    Loader2,
-    CheckCircle2,
-    AlertCircle,
     Trash2,
-    Plus,
 } from "lucide-react";
 
 interface MfaFactor {
@@ -65,13 +65,15 @@ export default function SecuritySettingsPage() {
 
                 const { data } = await supabase.auth.mfa.listFactors();
                 if (data?.totp) {
-                    setMfaFactors(data.totp.map((f) => ({
-                        id: f.id,
-                        friendly_name: f.friendly_name || "Authenticator App",
-                        factor_type: f.factor_type,
-                        status: f.status,
-                        created_at: f.created_at,
-                    })));
+                    setMfaFactors(
+                        data.totp.map((f) => ({
+                            id: f.id,
+                            friendly_name: f.friendly_name || "Authenticator App",
+                            factor_type: f.factor_type,
+                            status: f.status,
+                            created_at: f.created_at,
+                        }))
+                    );
                 }
             } catch {
                 // Non-blocking
@@ -99,12 +101,14 @@ export default function SecuritySettingsPage() {
                     .limit(10);
 
                 if (data) {
-                    setSessions(data.map((s: Record<string, unknown>) => ({
-                        id: s.id as string,
-                        user_agent: (s.user_agent as string) || "Unknown device",
-                        ip: (s.ip_address as string) || "Unknown",
-                        created_at: s.created_at as string,
-                    })));
+                    setSessions(
+                        data.map((s: Record<string, unknown>) => ({
+                            id: s.id as string,
+                            user_agent: (s.user_agent as string) || "Unknown device",
+                            ip: (s.ip_address as string) || "Unknown",
+                            created_at: s.created_at as string,
+                        }))
+                    );
                 }
             } catch {
                 // Table may not exist yet — non-blocking
@@ -116,50 +120,53 @@ export default function SecuritySettingsPage() {
         fetchSessions();
     }, [user]);
 
-    const handlePasswordChange = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setPwError(null);
-        setPwSuccess(false);
+    const handlePasswordChange = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setPwError(null);
+            setPwSuccess(false);
 
-        const pwErr = validatePassword(newPassword);
-        if (pwErr) {
-            setPwError(pwErr);
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setPwError("New passwords do not match.");
-            return;
-        }
-
-        setPwLoading(true);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setPwError("Authentication service unavailable.");
+            const pwErr = validatePassword(newPassword);
+            if (pwErr) {
+                setPwError(pwErr);
                 return;
             }
 
-            const { error } = await supabase.auth.updateUser({
-                password: newPassword,
-            });
-
-            if (error) {
-                setPwError(mapAuthError(error.message));
+            if (newPassword !== confirmPassword) {
+                setPwError("New passwords do not match.");
                 return;
             }
 
-            setPwSuccess(true);
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-        } catch {
-            setPwError("Something went wrong. Please try again.");
-        } finally {
-            setPwLoading(false);
-        }
-    }, [newPassword, confirmPassword]);
+            setPwLoading(true);
+
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setPwError("Authentication service unavailable.");
+                    return;
+                }
+
+                const { error } = await supabase.auth.updateUser({
+                    password: newPassword,
+                });
+
+                if (error) {
+                    setPwError(mapAuthError(error.message));
+                    return;
+                }
+
+                setPwSuccess(true);
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+            } catch {
+                setPwError("Something went wrong. Please try again.");
+            } finally {
+                setPwLoading(false);
+            }
+        },
+        [newPassword, confirmPassword]
+    );
 
     const handleRemoveMfa = useCallback(async (factorId: string) => {
         setMfaRemoving(factorId);
@@ -212,20 +219,28 @@ export default function SecuritySettingsPage() {
                 <CardContent>
                     <form onSubmit={handlePasswordChange} className="space-y-4" noValidate>
                         {pwError && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm" role="alert">
+                            <div
+                                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                role="alert"
+                            >
                                 <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                                 {pwError}
                             </div>
                         )}
                         {pwSuccess && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm" role="status">
+                            <div
+                                className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm"
+                                role="status"
+                            >
                                 <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
                                 Password updated successfully.
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <label htmlFor="current-pw" className="text-sm font-medium">Current Password</label>
+                            <label htmlFor="current-pw" className="text-sm font-medium">
+                                Current Password
+                            </label>
                             <PasswordInput
                                 id="current-pw"
                                 value={currentPassword}
@@ -236,7 +251,9 @@ export default function SecuritySettingsPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="new-pw" className="text-sm font-medium">New Password</label>
+                            <label htmlFor="new-pw" className="text-sm font-medium">
+                                New Password
+                            </label>
                             <PasswordInput
                                 id="new-pw"
                                 value={newPassword}
@@ -248,7 +265,9 @@ export default function SecuritySettingsPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="confirm-new-pw" className="text-sm font-medium">Confirm New Password</label>
+                            <label htmlFor="confirm-new-pw" className="text-sm font-medium">
+                                Confirm New Password
+                            </label>
                             <PasswordInput
                                 id="confirm-new-pw"
                                 value={confirmPassword}
@@ -260,7 +279,10 @@ export default function SecuritySettingsPage() {
                         </div>
                         <Button type="submit" disabled={pwLoading} aria-busy={pwLoading}>
                             {pwLoading ? (
-                                <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Updating…</>
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{" "}
+                                    Updating…
+                                </>
                             ) : (
                                 "Update Password"
                             )}
@@ -294,9 +316,14 @@ export default function SecuritySettingsPage() {
                                     className="flex items-center justify-between p-3 rounded-lg border"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Smartphone className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                                        <Smartphone
+                                            className="h-4 w-4 text-muted-foreground"
+                                            aria-hidden="true"
+                                        />
                                         <div>
-                                            <p className="text-sm font-medium">{factor.friendly_name}</p>
+                                            <p className="text-sm font-medium">
+                                                {factor.friendly_name}
+                                            </p>
                                             <p className="text-xs text-muted-foreground">
                                                 Added {formatDate(factor.created_at)}
                                             </p>
@@ -321,7 +348,8 @@ export default function SecuritySettingsPage() {
                     ) : (
                         <div className="text-center py-4 space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                Add an extra layer of security to your account with an authenticator app.
+                                Add an extra layer of security to your account with an authenticator
+                                app.
                             </p>
                             <Button onClick={() => router.push("/auth/mfa-setup")}>
                                 <Plus className="h-4 w-4" aria-hidden="true" />

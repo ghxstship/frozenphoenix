@@ -1,14 +1,15 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
-import { FormField, Select, DatePicker, CurrencyInput } from "@/components/ui/form";
+import { CurrencyInput, DatePicker, FormField, Select } from "@/components/ui/form";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
-import { PROJECT_STATUSES, PROJECT_PHASES } from "@/config/domain-config";
-import { useUpdateProject, useProject, isSupabaseConfigured } from "@/lib/supabase/hooks";
+import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
+import { isSupabaseConfigured, useProject, useUpdateProject } from "@/lib/supabase/hooks";
 import { FolderKanban } from "lucide-react";
 
 export default function EditProjectPage() {
@@ -18,16 +19,31 @@ export default function EditProjectPage() {
     const updateProject = useUpdateProject();
     const { data: supabaseProject } = useProject(projectId);
 
-    const project = isSupabaseConfigured && supabaseProject ? supabaseProject : MOCK_PROJECTS.find((p) => p.id === projectId);
+    const project =
+        isSupabaseConfigured && supabaseProject
+            ? supabaseProject
+            : MOCK_PROJECTS.find((p) => p.id === projectId);
 
     const [formData, setFormData] = useState({
         name: project?.name || "",
         client: project?.client || "",
         status: project?.status || "draft",
-        currentPhase: (project as Record<string, unknown>)?.currentPhase as string || (project as Record<string, unknown>)?.current_phase as string || "pre_production",
-        startDate: (project as Record<string, unknown>)?.startDate as string || (project as Record<string, unknown>)?.start_date as string || "",
-        endDate: (project as Record<string, unknown>)?.endDate as string || (project as Record<string, unknown>)?.end_date as string || "",
-        budgetPlanned: (project as Record<string, unknown>)?.budgetPlanned as number || (project as Record<string, unknown>)?.budget_planned as number || 0,
+        currentPhase:
+            ((project as Record<string, unknown>)?.currentPhase as string) ||
+            ((project as Record<string, unknown>)?.current_phase as string) ||
+            "pre_production",
+        startDate:
+            ((project as Record<string, unknown>)?.startDate as string) ||
+            ((project as Record<string, unknown>)?.start_date as string) ||
+            "",
+        endDate:
+            ((project as Record<string, unknown>)?.endDate as string) ||
+            ((project as Record<string, unknown>)?.end_date as string) ||
+            "",
+        budgetPlanned:
+            ((project as Record<string, unknown>)?.budgetPlanned as number) ||
+            ((project as Record<string, unknown>)?.budget_planned as number) ||
+            0,
     });
 
     if (!project) {
@@ -56,11 +72,13 @@ export default function EditProjectPage() {
                     end_date: formData.endDate || null,
                     budget_planned: formData.budgetPlanned || null,
                 };
-                await updateProject.mutateAsync(updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]);
+                await updateProject.mutateAsync(
+                    updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]
+                );
             }
             router.push(`/projects/${projectId}`);
         } catch (error) {
-            console.error("Failed to update project:", error);
+            logger.error("Failed to update project", { error });
         }
     };
 
@@ -102,7 +120,12 @@ export default function EditProjectPage() {
                         <Select
                             id="status"
                             value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value as typeof formData.status })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    status: e.target.value as typeof formData.status,
+                                })
+                            }
                             options={statusOptions}
                         />
                     </FormField>
@@ -110,7 +133,12 @@ export default function EditProjectPage() {
                         <Select
                             id="phase"
                             value={formData.currentPhase}
-                            onChange={(e) => setFormData({ ...formData, currentPhase: e.target.value as typeof formData.currentPhase })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    currentPhase: e.target.value as typeof formData.currentPhase,
+                                })
+                            }
                             options={phaseOptions}
                         />
                     </FormField>
@@ -123,7 +151,9 @@ export default function EditProjectPage() {
                         <DatePicker
                             id="startDate"
                             value={formData.startDate}
-                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, startDate: e.target.value })
+                            }
                         />
                     </FormField>
                     <FormField label="End Date" htmlFor="endDate" required>
@@ -137,11 +167,17 @@ export default function EditProjectPage() {
             </FormSection>
 
             <FormSection title="Budget" description="Planned budget for this project">
-                <FormField label="Planned Budget" htmlFor="budget" description="Total budget allocated for this project">
+                <FormField
+                    label="Planned Budget"
+                    htmlFor="budget"
+                    description="Total budget allocated for this project"
+                >
                     <CurrencyInput
                         id="budget"
                         value={formData.budgetPlanned}
-                        onChange={(value) => setFormData({ ...formData, budgetPlanned: value || 0 })}
+                        onChange={(value) =>
+                            setFormData({ ...formData, budgetPlanned: value || 0 })
+                        }
                         placeholder="0.00"
                     />
                 </FormField>

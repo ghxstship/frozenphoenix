@@ -5,21 +5,8 @@
  * mock-data-only. These complement hooks.ts and hooks-extended.ts.
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) throw new Error("Supabase client not configured");
-    return client;
-}
-
-/* Generic table accessor for CRUD wrappers that use Record<string, unknown> payloads.
-   Scoped any-cast — see settings/hooks.ts for rationale on dynamic table typing. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromTable(table: string): any {
-    return getSupabase().from(table as never);
-}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fromTable, isSupabaseConfigured } from "./client";
 
 export { isSupabaseConfigured };
 
@@ -89,7 +76,11 @@ export function useUpdateProposal() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: Record<string, unknown>) => {
-            const { data, error } = await fromTable("proposals").update(updates).eq("id", id as string).select().single();
+            const { data, error } = await fromTable("proposals")
+                .update(updates)
+                .eq("id", id as string)
+                .select()
+                .single();
             if (error) throw error;
             return data;
         },
@@ -151,7 +142,10 @@ export function useCreateClientInvoice() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (inv: Record<string, unknown>) => {
-            const { data, error } = await fromTable("client_invoices").insert(inv).select().single();
+            const { data, error } = await fromTable("client_invoices")
+                .insert(inv)
+                .select()
+                .single();
             if (error) throw error;
             return data;
         },
@@ -167,9 +161,7 @@ export function useCompanies() {
     return useQuery({
         queryKey: ["companies"],
         queryFn: async () => {
-            const { data, error } = await fromTable("stakeholders")
-                .select("*")
-                .order("name");
+            const { data, error } = await fromTable("stakeholders").select("*").order("name");
             if (error) throw error;
             return data;
         },
@@ -490,9 +482,7 @@ export function useFleetVehicles() {
     return useQuery({
         queryKey: ["fleet_vehicles"],
         queryFn: async () => {
-            const { data, error } = await fromTable("vehicles")
-                .select("*")
-                .order("name");
+            const { data, error } = await fromTable("vehicles").select("*").order("name");
             if (error) throw error;
             return data;
         },
@@ -521,9 +511,7 @@ export function usePeople() {
     return useQuery({
         queryKey: ["people"],
         queryFn: async () => {
-            const { data, error } = await fromTable("profiles")
-                .select("*")
-                .order("full_name");
+            const { data, error } = await fromTable("profiles").select("*").order("full_name");
             if (error) throw error;
             return data;
         },
@@ -538,7 +526,9 @@ export function useCreativeAssets(campaignId?: string) {
     return useQuery({
         queryKey: ["campaign_assets", campaignId],
         queryFn: async () => {
-            let q = fromTable("campaign_assets").select("*").order("created_at", { ascending: false });
+            let q = fromTable("campaign_assets")
+                .select("*")
+                .order("created_at", { ascending: false });
             if (campaignId) q = q.eq("campaign_id", campaignId);
             const { data, error } = await q;
             if (error) throw error;
@@ -555,7 +545,9 @@ export function useOpportunities(stage?: string) {
     return useQuery({
         queryKey: ["opportunities", stage],
         queryFn: async () => {
-            let q = fromTable("opportunities").select("*").order("created_at", { ascending: false });
+            let q = fromTable("opportunities")
+                .select("*")
+                .order("created_at", { ascending: false });
             if (stage) q = q.eq("stage", stage);
             const { data, error } = await q;
             if (error) throw error;
@@ -606,7 +598,9 @@ export function usePurchaseOrders(status?: string) {
     return useQuery({
         queryKey: ["purchase_orders", status],
         queryFn: async () => {
-            let q = fromTable("purchase_orders").select("*").order("created_at", { ascending: false });
+            let q = fromTable("purchase_orders")
+                .select("*")
+                .order("created_at", { ascending: false });
             if (status) q = q.eq("status", status);
             const { data, error } = await q;
             if (error) throw error;
@@ -759,9 +753,7 @@ export function useWarehouses() {
     return useQuery({
         queryKey: ["warehouses"],
         queryFn: async () => {
-            const { data, error } = await fromTable("warehouses")
-                .select("*")
-                .order("name");
+            const { data, error } = await fromTable("warehouses").select("*").order("name");
             if (error) throw error;
             return data;
         },
@@ -1033,9 +1025,7 @@ export function useInventoryItems() {
     return useQuery({
         queryKey: ["inventory_items"],
         queryFn: async () => {
-            const { data, error } = await fromTable("consumables")
-                .select("*")
-                .order("name");
+            const { data, error } = await fromTable("consumables").select("*").order("name");
             if (error) throw error;
             return data;
         },
@@ -1186,9 +1176,7 @@ export function useUserDirectory() {
     return useQuery({
         queryKey: ["user_directory"],
         queryFn: async () => {
-            const { data, error } = await fromTable("profiles")
-                .select("*")
-                .order("name");
+            const { data, error } = await fromTable("profiles").select("*").order("name");
             if (error) throw error;
             return data;
         },

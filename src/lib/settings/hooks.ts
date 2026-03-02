@@ -5,32 +5,18 @@
    Supabase-backed CRUD for settings, feature flags, roles, brands
    ═══════════════════════════════════════════════════════════════ */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fromTable, isSupabaseConfigured } from "@/lib/supabase/client";
 import type {
-    SettingDefinition,
-    SettingValue,
+    AccessAuditLogEntry,
     FeatureFlag,
     FeatureFlagOverride,
-    RoleDefinition,
     PermissionGrant,
+    RoleDefinition,
     SettingChangeLogEntry,
-    AccessAuditLogEntry,
+    SettingDefinition,
+    SettingValue,
 } from "@/types/settings";
-
-function getSupabase() {
-    const client = createClient();
-    if (!client || !isSupabaseConfigured) throw new Error("Supabase not configured");
-    return client;
-}
-
-/* Dynamic table accessor — table names are valid Database keys but TypeScript
-   cannot resolve the generic overload from a runtime string. The `any` cast is
-   scoped to this single helper; all call-sites stay type-safe via return casts. */
-function fromTable(table: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (getSupabase() as any).from(table);
-}
 
 // ─── Setting Definitions ───
 
@@ -111,7 +97,12 @@ export function useUpsertSetting() {
 export function useLockSetting() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async (params: { settingId: string; locked: boolean; lockedBy: string; reason?: string }) => {
+        mutationFn: async (params: {
+            settingId: string;
+            locked: boolean;
+            lockedBy: string;
+            reason?: string;
+        }) => {
             const { data, error } = await fromTable("settings")
                 .update({
                     is_locked: params.locked,
@@ -158,9 +149,7 @@ export function useFeatureFlags() {
     return useQuery({
         queryKey: ["feature_flags"],
         queryFn: async () => {
-            const { data, error } = await fromTable("feature_flags")
-                .select("*")
-                .order("key");
+            const { data, error } = await fromTable("feature_flags").select("*").order("key");
             if (error) throw error;
             return data as FeatureFlag[];
         },
@@ -363,9 +352,7 @@ export function useDeletePermissionGrant() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (grantId: string) => {
-            const { error } = await fromTable("permission_grants")
-                .delete()
-                .eq("id", grantId);
+            const { error } = await fromTable("permission_grants").delete().eq("id", grantId);
             if (error) throw error;
         },
         onSuccess: () => {
@@ -439,9 +426,7 @@ export function useBrands() {
     return useQuery({
         queryKey: ["brands"],
         queryFn: async () => {
-            const { data, error } = await fromTable("brands")
-                .select("*")
-                .order("key");
+            const { data, error } = await fromTable("brands").select("*").order("key");
             if (error) throw error;
             return data;
         },

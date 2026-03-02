@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -9,18 +9,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable, type ColumnDef } from "@/components/data-view/data-table";
+import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
-import { useChangeOrders, isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
+import { isSupabaseConfigured, useChangeOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ChangeOrder } from "@/types";
 import {
-    Plus, DollarSign, Clock, CheckCircle,
-    AlertTriangle, ArrowUpRight, ArrowDownRight, Calendar, FolderKanban, Loader2,
+    AlertTriangle,
+    ArrowDownRight,
+    ArrowUpRight,
+    Calendar,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    FolderKanban,
+    Loader2,
+    Plus,
 } from "lucide-react";
 
 const tableColumns: ColumnDef<ChangeOrder>[] = [
@@ -40,7 +48,9 @@ const tableColumns: ColumnDef<ChangeOrder>[] = [
         render: (value, row) => (
             <div>
                 <div className="font-medium text-sm">{String(value)}</div>
-                <div className="text-xs text-muted-foreground">{row.projectName} — {row.companyName}</div>
+                <div className="text-xs text-muted-foreground">
+                    {row.projectName} — {row.companyName}
+                </div>
             </div>
         ),
     },
@@ -71,8 +81,14 @@ const tableColumns: ColumnDef<ChangeOrder>[] = [
             const num = Number(value);
             const isPositive = num > 0;
             return (
-                <div className={`flex items-center justify-end gap-1 font-medium text-sm ${isPositive ? "text-success" : "text-destructive"}`}>
-                    {isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                <div
+                    className={`flex items-center justify-end gap-1 font-medium text-sm ${isPositive ? "text-success" : "text-destructive"}`}
+                >
+                    {isPositive ? (
+                        <ArrowUpRight className="h-3 w-3" />
+                    ) : (
+                        <ArrowDownRight className="h-3 w-3" />
+                    )}
                     <CurrencyField value={Math.abs(num)} />
                 </div>
             );
@@ -106,7 +122,12 @@ const tableColumns: ColumnDef<ChangeOrder>[] = [
         header: "Approved",
         accessorKey: "approvedAt",
         minWidth: 120,
-        render: (value) => value ? <DateField value={String(value)} /> : <span className="text-muted-foreground">—</span>,
+        render: (value) =>
+            value ? (
+                <DateField value={String(value)} />
+            ) : (
+                <span className="text-muted-foreground">—</span>
+            ),
     },
 ];
 
@@ -116,7 +137,10 @@ export default function ChangeOrdersPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbChangeOrders, isLoading } = useChangeOrders();
 
-    const changeOrders = isSupabaseConfigured && sbChangeOrders ? (sbChangeOrders as unknown as ChangeOrder[]) : MOCK_CHANGE_ORDERS;
+    const changeOrders =
+        isSupabaseConfigured && sbChangeOrders
+            ? (sbChangeOrders as unknown as ChangeOrder[])
+            : MOCK_CHANGE_ORDERS;
 
     const filtered = useMemo(() => {
         let result = changeOrders;
@@ -137,9 +161,15 @@ export default function ChangeOrdersPage() {
 
     const stats = useMemo(() => {
         const totalImpact = changeOrders.reduce((s, co) => s + co.valueImpact, 0);
-        const approvedImpact = changeOrders.filter((co) => co.status === "approved").reduce((s, co) => s + co.valueImpact, 0);
-        const pendingCount = changeOrders.filter((co) => co.status === "pending_review" || co.status === "pending_client").length;
-        const totalScheduleImpact = changeOrders.filter((co) => co.status === "approved").reduce((s, co) => s + co.scheduleImpactDays, 0);
+        const approvedImpact = changeOrders
+            .filter((co) => co.status === "approved")
+            .reduce((s, co) => s + co.valueImpact, 0);
+        const pendingCount = changeOrders.filter(
+            (co) => co.status === "pending_review" || co.status === "pending_client"
+        ).length;
+        const totalScheduleImpact = changeOrders
+            .filter((co) => co.status === "approved")
+            .reduce((s, co) => s + co.scheduleImpactDays, 0);
         return { totalImpact, approvedImpact, pendingCount, totalScheduleImpact };
     }, [changeOrders]);
 
@@ -153,59 +183,82 @@ export default function ChangeOrdersPage() {
 
     return (
         <PermissionGate resource="change_orders" action="read">
-        <div className="space-y-6">
-            <PageHeader title="Change Orders" description="Track and manage post-contract scope modifications">
-                <Link href="/change-orders/new">
-                    <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" /> New Change Order
-                    </Button>
-                </Link>
-            </PageHeader>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Net Value Impact" value={formatCurrency(stats.totalImpact)} icon={DollarSign} />
-                <StatCard title="Approved Impact" value={formatCurrency(stats.approvedImpact)} icon={CheckCircle} />
-                <StatCard title="Pending Approval" value={stats.pendingCount} icon={AlertTriangle} />
-                <StatCard title="Schedule Impact" value={`${stats.totalScheduleImpact > 0 ? "+" : ""}${stats.totalScheduleImpact} days`} icon={Clock} />
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <SearchInput value={search} onValueChange={setSearch} placeholder="Search change orders..." />
-                <select
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+            <div className="space-y-6">
+                <PageHeader
+                    title="Change Orders"
+                    description="Track and manage post-contract scope modifications"
                 >
-                    <option value="all">All Statuses</option>
-                    <option value="draft">Draft</option>
-                    <option value="pending_review">Pending Review</option>
-                    <option value="pending_client">Pending Client</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="void">Void</option>
-                </select>
-                <select
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                >
-                    <option value="all">All Types</option>
-                    <option value="scope_addition">Scope Addition</option>
-                    <option value="scope_reduction">Scope Reduction</option>
-                    <option value="timeline_change">Timeline Change</option>
-                    <option value="budget_adjustment">Budget Adjustment</option>
-                    <option value="combined">Combined</option>
-                </select>
-            </div>
+                    <Link href="/change-orders/new">
+                        <Button size="sm">
+                            <Plus className="mr-2 h-4 w-4" /> New Change Order
+                        </Button>
+                    </Link>
+                </PageHeader>
 
-            <DataTable columns={tableColumns} data={filtered} keyField="id" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        title="Net Value Impact"
+                        value={formatCurrency(stats.totalImpact)}
+                        icon={DollarSign}
+                    />
+                    <StatCard
+                        title="Approved Impact"
+                        value={formatCurrency(stats.approvedImpact)}
+                        icon={CheckCircle}
+                    />
+                    <StatCard
+                        title="Pending Approval"
+                        value={stats.pendingCount}
+                        icon={AlertTriangle}
+                    />
+                    <StatCard
+                        title="Schedule Impact"
+                        value={`${stats.totalScheduleImpact > 0 ? "+" : ""}${stats.totalScheduleImpact} days`}
+                        icon={Clock}
+                    />
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filtered.map((co) => (
-                    <ChangeOrderCard key={co.id} co={co} />
-                ))}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search change orders..."
+                    />
+                    <select
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">All Statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="pending_review">Pending Review</option>
+                        <option value="pending_client">Pending Client</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="void">Void</option>
+                    </select>
+                    <select
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                    >
+                        <option value="all">All Types</option>
+                        <option value="scope_addition">Scope Addition</option>
+                        <option value="scope_reduction">Scope Reduction</option>
+                        <option value="timeline_change">Timeline Change</option>
+                        <option value="budget_adjustment">Budget Adjustment</option>
+                        <option value="combined">Combined</option>
+                    </select>
+                </div>
+
+                <DataTable columns={tableColumns} data={filtered} keyField="id" />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {filtered.map((co) => (
+                        <ChangeOrderCard key={co.id} co={co} />
+                    ))}
+                </div>
             </div>
-        </div>
         </PermissionGate>
     );
 }
@@ -220,7 +273,9 @@ function ChangeOrderCard({ co }: { co: ChangeOrder }) {
                 <div className="flex items-start justify-between">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="font-mono text-xs text-muted-foreground">{co.number}</span>
+                            <span className="font-mono text-xs text-muted-foreground">
+                                {co.number}
+                            </span>
                             <StatusBadge status={co.status} />
                         </div>
                         <CardTitle className="text-base">{co.title}</CardTitle>
@@ -231,8 +286,11 @@ function ChangeOrderCard({ co }: { co: ChangeOrder }) {
                             <span>{co.companyName}</span>
                         </div>
                     </div>
-                    <div className={`text-lg font-bold ${isPositive ? "text-success" : "text-destructive"}`}>
-                        {isPositive ? "+" : ""}{formatCurrency(co.valueImpact)}
+                    <div
+                        className={`text-lg font-bold ${isPositive ? "text-success" : "text-destructive"}`}
+                    >
+                        {isPositive ? "+" : ""}
+                        {formatCurrency(co.valueImpact)}
                     </div>
                 </div>
             </CardHeader>
@@ -242,14 +300,17 @@ function ChangeOrderCard({ co }: { co: ChangeOrder }) {
                 )}
 
                 <div className="flex items-center gap-4 text-xs">
-                    {typeConfig && (
-                        <Badge variant="outline">{typeConfig.label}</Badge>
-                    )}
+                    {typeConfig && <Badge variant="outline">{typeConfig.label}</Badge>}
                     {co.scheduleImpactDays !== 0 && (
                         <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span className={co.scheduleImpactDays > 0 ? "text-warning" : "text-success"}>
-                                {co.scheduleImpactDays > 0 ? "+" : ""}{co.scheduleImpactDays} days
+                            <span
+                                className={
+                                    co.scheduleImpactDays > 0 ? "text-warning" : "text-success"
+                                }
+                            >
+                                {co.scheduleImpactDays > 0 ? "+" : ""}
+                                {co.scheduleImpactDays} days
                             </span>
                         </div>
                     )}
@@ -281,12 +342,8 @@ function ChangeOrderCard({ co }: { co: ChangeOrder }) {
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-2">
                     <span>Requested by {co.requestedByName ?? "—"}</span>
-                    {co.approvedAt && (
-                        <span>Approved {formatDate(co.approvedAt, "medium")}</span>
-                    )}
-                    {co.clientApprovedBy && (
-                        <span>Client: {co.clientApprovedBy}</span>
-                    )}
+                    {co.approvedAt && <span>Approved {formatDate(co.approvedAt, "medium")}</span>}
+                    {co.clientApprovedBy && <span>Client: {co.clientApprovedBy}</span>}
                 </div>
             </CardContent>
         </Card>

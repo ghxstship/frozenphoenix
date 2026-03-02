@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-    Lock,
-    Globe,
-    Clock,
-    Users,
-    Mail,
-    Loader2,
-    CheckCircle2,
     AlertCircle,
-    Save,
+    CheckCircle2,
+    Clock,
+    Globe,
+    Loader2,
+    Lock,
+    Mail,
     Plus,
+    Save,
+    Users,
     X,
 } from "lucide-react";
 
@@ -118,12 +118,12 @@ export default function OrgSecurityPage() {
         }
     }, [settings, orgId]);
 
-    const updateField = useCallback(<K extends keyof OrgSecuritySettings>(
-        field: K,
-        value: OrgSecuritySettings[K]
-    ) => {
-        setSettings((prev) => prev ? { ...prev, [field]: value } : prev);
-    }, []);
+    const updateField = useCallback(
+        <K extends keyof OrgSecuritySettings>(field: K, value: OrgSecuritySettings[K]) => {
+            setSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
+        },
+        []
+    );
 
     const addDomain = useCallback(() => {
         const domain = newDomain.trim().toLowerCase();
@@ -136,13 +136,16 @@ export default function OrgSecurityPage() {
         setNewDomain("");
     }, [newDomain, settings, updateField]);
 
-    const removeDomain = useCallback((domain: string) => {
-        if (!settings) return;
-        updateField(
-            "allowed_email_domains",
-            settings.allowed_email_domains.filter((d) => d !== domain)
-        );
-    }, [settings, updateField]);
+    const removeDomain = useCallback(
+        (domain: string) => {
+            if (!settings) return;
+            updateField(
+                "allowed_email_domains",
+                settings.allowed_email_domains.filter((d) => d !== domain)
+            );
+        },
+        [settings, updateField]
+    );
 
     if (loading) {
         return (
@@ -168,7 +171,10 @@ export default function OrgSecurityPage() {
         return (
             <div className="max-w-2xl space-y-4">
                 <h1 className="text-2xl font-bold tracking-tight">Organization Security</h1>
-                <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive text-sm" role="alert">
+                <div
+                    className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive text-sm"
+                    role="alert"
+                >
                     <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                     {error}
                 </div>
@@ -189,21 +195,32 @@ export default function OrgSecurityPage() {
                 </div>
                 <Button onClick={handleSave} disabled={saving} aria-busy={saving}>
                     {saving ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Saving…</>
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Saving…
+                        </>
                     ) : (
-                        <><Save className="h-4 w-4" aria-hidden="true" /> Save Changes</>
+                        <>
+                            <Save className="h-4 w-4" aria-hidden="true" /> Save Changes
+                        </>
                     )}
                 </Button>
             </div>
 
             {error && settings && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm" role="alert">
+                <div
+                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                    role="alert"
+                >
                     <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                     {error}
                 </div>
             )}
             {success && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm" role="status" aria-live="polite">
+                <div
+                    className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm"
+                    role="status"
+                    aria-live="polite"
+                >
                     <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
                     Security settings saved successfully.
                 </div>
@@ -220,7 +237,9 @@ export default function OrgSecurityPage() {
                 <CardContent className="space-y-4">
                     <label className="flex items-center justify-between cursor-pointer">
                         <div className="space-y-0.5">
-                            <span className="text-sm font-medium">Require Multi-Factor Authentication</span>
+                            <span className="text-sm font-medium">
+                                Require Multi-Factor Authentication
+                            </span>
                             <p className="text-xs text-muted-foreground">
                                 All members must enable MFA to access the organization.
                             </p>
@@ -246,7 +265,8 @@ export default function OrgSecurityPage() {
                         <div className="space-y-0.5">
                             <span className="text-sm font-medium">Enforce SSO</span>
                             <p className="text-xs text-muted-foreground">
-                                Require users to authenticate via SSO. Password login will be disabled.
+                                Require users to authenticate via SSO. Password login will be
+                                disabled.
                             </p>
                         </div>
                         <button
@@ -278,7 +298,9 @@ export default function OrgSecurityPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <label htmlFor="sso-domain" className="text-sm font-medium">SSO Domain</label>
+                        <label htmlFor="sso-domain" className="text-sm font-medium">
+                            SSO Domain
+                        </label>
                         <Input
                             id="sso-domain"
                             type="text"
@@ -287,14 +309,16 @@ export default function OrgSecurityPage() {
                             onChange={(e) => updateField("sso_domain", e.target.value || null)}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Users with this email domain will be auto-assigned to this org on signup.
+                            Users with this email domain will be auto-assigned to this org on
+                            signup.
                         </p>
                     </div>
 
                     <div className="space-y-2">
                         <span className="text-sm font-medium">Allowed Email Domains</span>
                         <p className="text-xs text-muted-foreground">
-                            Restrict invitations to these email domains. Leave empty to allow any domain.
+                            Restrict invitations to these email domains. Leave empty to allow any
+                            domain.
                         </p>
                         {settings.allowed_email_domains.length > 0 && (
                             <div className="flex flex-wrap gap-2">
@@ -322,10 +346,21 @@ export default function OrgSecurityPage() {
                                 placeholder="example.com"
                                 value={newDomain}
                                 onChange={(e) => setNewDomain(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDomain(); } }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        addDomain();
+                                    }
+                                }}
                                 aria-label="Add email domain"
                             />
-                            <Button type="button" variant="outline" size="icon" onClick={addDomain} aria-label="Add domain">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={addDomain}
+                                aria-label="Add domain"
+                            >
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </div>
@@ -353,9 +388,16 @@ export default function OrgSecurityPage() {
                                 min={1}
                                 max={8760}
                                 value={settings.session_timeout_hours}
-                                onChange={(e) => updateField("session_timeout_hours", parseInt(e.target.value) || 720)}
+                                onChange={(e) =>
+                                    updateField(
+                                        "session_timeout_hours",
+                                        parseInt(e.target.value) || 720
+                                    )
+                                }
                             />
-                            <p className="text-xs text-muted-foreground">Max idle session time before re-authentication.</p>
+                            <p className="text-xs text-muted-foreground">
+                                Max idle session time before re-authentication.
+                            </p>
                         </div>
 
                         <div className="space-y-2">
@@ -368,9 +410,16 @@ export default function OrgSecurityPage() {
                                 min={1}
                                 max={50}
                                 value={settings.max_sessions_per_user}
-                                onChange={(e) => updateField("max_sessions_per_user", parseInt(e.target.value) || 5)}
+                                onChange={(e) =>
+                                    updateField(
+                                        "max_sessions_per_user",
+                                        parseInt(e.target.value) || 5
+                                    )
+                                }
                             />
-                            <p className="text-xs text-muted-foreground">Concurrent active sessions allowed.</p>
+                            <p className="text-xs text-muted-foreground">
+                                Concurrent active sessions allowed.
+                            </p>
                         </div>
 
                         <div className="space-y-2">
@@ -383,9 +432,16 @@ export default function OrgSecurityPage() {
                                 min={1}
                                 max={90}
                                 value={settings.invitation_expiry_days}
-                                onChange={(e) => updateField("invitation_expiry_days", parseInt(e.target.value) || 7)}
+                                onChange={(e) =>
+                                    updateField(
+                                        "invitation_expiry_days",
+                                        parseInt(e.target.value) || 7
+                                    )
+                                }
                             />
-                            <p className="text-xs text-muted-foreground">Days before an invitation link expires.</p>
+                            <p className="text-xs text-muted-foreground">
+                                Days before an invitation link expires.
+                            </p>
                         </div>
                     </div>
                 </CardContent>
@@ -401,9 +457,14 @@ export default function OrgSecurityPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <label htmlFor="default-role" className="text-sm font-medium">Default Role for New Members</label>
+                        <label htmlFor="default-role" className="text-sm font-medium">
+                            Default Role for New Members
+                        </label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
+                            <Mail
+                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                aria-hidden="true"
+                            />
                             <select
                                 id="default-role"
                                 value={settings.default_role}
@@ -411,7 +472,9 @@ export default function OrgSecurityPage() {
                                 className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                                 {ROLE_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -426,9 +489,13 @@ export default function OrgSecurityPage() {
             <div className="flex justify-end pt-2 pb-8">
                 <Button onClick={handleSave} disabled={saving} aria-busy={saving}>
                     {saving ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Saving…</>
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Saving…
+                        </>
                     ) : (
-                        <><Save className="h-4 w-4" aria-hidden="true" /> Save Changes</>
+                        <>
+                            <Save className="h-4 w-4" aria-hidden="true" /> Save Changes
+                        </>
                     )}
                 </Button>
             </div>

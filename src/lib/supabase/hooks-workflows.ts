@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getSupabase, isSupabaseConfigured } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
@@ -13,23 +13,30 @@ type LocationName = { locations: { name: string } | null };
 type EventName = { events: { name: string } | null };
 
 // ─── Join-aware types ───
-export type CallSheetWithJoins = WithJoin<Tables<"call_sheets">, ProjectName & LocationName & EventName>;
-export type CallSheetCrewWithJoins = WithJoin<Tables<"call_sheet_crew">, { crew_members: { name: string; email: string; phone: string } | null }>;
-export type TechSheetWithJoins = WithJoin<Tables<"tech_sheets">, ProjectName & LocationName & EventName>;
+export type CallSheetWithJoins = WithJoin<
+    Tables<"call_sheets">,
+    ProjectName & LocationName & EventName
+>;
+export type CallSheetCrewWithJoins = WithJoin<
+    Tables<"call_sheet_crew">,
+    { crew_members: { name: string; email: string; phone: string } | null }
+>;
+export type TechSheetWithJoins = WithJoin<
+    Tables<"tech_sheets">,
+    ProjectName & LocationName & EventName
+>;
 export type ApprovalWorkflowRow = Tables<"approval_workflows">;
 export type ApprovalStepRow = Tables<"approval_steps">;
-export type WorkflowInstanceWithJoins = WithJoin<Tables<"workflow_instances">, { approval_workflows: { name: string } | null } & ProfileName>;
-export type WorkflowStepApprovalWithJoins = WithJoin<Tables<"workflow_step_approvals">, ProfileName & { approval_steps: { name: string; step_order: number } | null }>;
+export type WorkflowInstanceWithJoins = WithJoin<
+    Tables<"workflow_instances">,
+    { approval_workflows: { name: string } | null } & ProfileName
+>;
+export type WorkflowStepApprovalWithJoins = WithJoin<
+    Tables<"workflow_step_approvals">,
+    ProfileName & { approval_steps: { name: string; step_order: number } | null }
+>;
 export type ESignatureRow = Tables<"e_signatures">;
 export type NotificationPreferencesRow = Tables<"notification_preferences">;
-
-function getSupabase() {
-    const client = createClient();
-    if (!client) {
-        throw new Error("Supabase client not configured.");
-    }
-    return client;
-}
 
 export { isSupabaseConfigured };
 
@@ -73,7 +80,11 @@ export function useCreateCallSheet() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (cs: TablesInsert<"call_sheets">) => {
-            const { data, error } = await getSupabase().from("call_sheets").insert(cs).select().single();
+            const { data, error } = await getSupabase()
+                .from("call_sheets")
+                .insert(cs)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"call_sheets">;
         },
@@ -85,7 +96,12 @@ export function useUpdateCallSheet() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"call_sheets"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("call_sheets").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("call_sheets")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"call_sheets">;
         },
@@ -152,7 +168,11 @@ export function useCreateTechSheet() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (ts: TablesInsert<"tech_sheets">) => {
-            const { data, error } = await getSupabase().from("tech_sheets").insert(ts).select().single();
+            const { data, error } = await getSupabase()
+                .from("tech_sheets")
+                .insert(ts)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"tech_sheets">;
         },
@@ -164,7 +184,12 @@ export function useUpdateTechSheet() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: TablesUpdate<"tech_sheets"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("tech_sheets").update(updates).eq("id", id).select().single();
+            const { data, error } = await getSupabase()
+                .from("tech_sheets")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"tech_sheets">;
         },
@@ -213,7 +238,11 @@ export function useCreateApprovalWorkflow() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (wf: TablesInsert<"approval_workflows">) => {
-            const { data, error } = await getSupabase().from("approval_workflows").insert(wf).select().single();
+            const { data, error } = await getSupabase()
+                .from("approval_workflows")
+                .insert(wf)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ApprovalWorkflowRow;
         },
@@ -224,8 +253,16 @@ export function useCreateApprovalWorkflow() {
 export function useUpdateApprovalWorkflow() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"approval_workflows"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("approval_workflows").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"approval_workflows"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("approval_workflows")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ApprovalWorkflowRow;
         },
@@ -257,11 +294,16 @@ export function useCreateApprovalStep() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (step: TablesInsert<"approval_steps">) => {
-            const { data, error } = await getSupabase().from("approval_steps").insert(step).select().single();
+            const { data, error } = await getSupabase()
+                .from("approval_steps")
+                .insert(step)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ApprovalStepRow;
         },
-        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ["approval_steps", variables.workflow_id] }),
+        onSuccess: (_, variables) =>
+            queryClient.invalidateQueries({ queryKey: ["approval_steps", variables.workflow_id] }),
     });
 }
 
@@ -290,7 +332,11 @@ export function useCreateWorkflowInstance() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (instance: TablesInsert<"workflow_instances">) => {
-            const { data, error } = await getSupabase().from("workflow_instances").insert(instance).select().single();
+            const { data, error } = await getSupabase()
+                .from("workflow_instances")
+                .insert(instance)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"workflow_instances">;
         },
@@ -301,8 +347,16 @@ export function useCreateWorkflowInstance() {
 export function useUpdateWorkflowInstance() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"workflow_instances"> & { id: string }) => {
-            const { data, error } = await getSupabase().from("workflow_instances").update(updates).eq("id", id).select().single();
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"workflow_instances"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("workflow_instances")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as Tables<"workflow_instances">;
         },
@@ -352,7 +406,11 @@ export function useCreateESignature() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (sig: TablesInsert<"e_signatures">) => {
-            const { data, error } = await getSupabase().from("e_signatures").insert(sig).select().single();
+            const { data, error } = await getSupabase()
+                .from("e_signatures")
+                .insert(sig)
+                .select()
+                .single();
             if (error) throw error;
             return data as unknown as ESignatureRow;
         },
@@ -392,6 +450,9 @@ export function useUpsertNotificationPreferences() {
             if (error) throw error;
             return data as unknown as NotificationPreferencesRow;
         },
-        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ["notification_preferences", variables.user_id] }),
+        onSuccess: (_, variables) =>
+            queryClient.invalidateQueries({
+                queryKey: ["notification_preferences", variables.user_id],
+            }),
     });
 }

@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useState } from "react";
-import { Lock, Unlock, ArrowDown, Check, X } from "lucide-react";
+import { ArrowDown, Check, Lock, Unlock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +75,11 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
                         type="number"
                         value={String(localValue ?? "")}
                         onChange={(e) => {
-                            setLocalValue(definition.value_type === "integer" ? parseInt(e.target.value) : parseFloat(e.target.value));
+                            setLocalValue(
+                                definition.value_type === "integer"
+                                    ? parseInt(e.target.value)
+                                    : parseFloat(e.target.value)
+                            );
                             if (!editing) setEditing(true);
                         }}
                         disabled={!can_edit}
@@ -98,7 +102,9 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
                             className="h-9 px-3 rounded-md border border-input bg-background text-sm"
                         >
                             {(definition.allowed_values as string[]).map((v) => (
-                                <option key={v} value={v}>{v}</option>
+                                <option key={v} value={v}>
+                                    {v}
+                                </option>
                             ))}
                         </select>
                     );
@@ -132,7 +138,9 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
             default:
                 return (
                     <Input
-                        value={typeof localValue === "string" ? localValue : JSON.stringify(localValue)}
+                        value={
+                            typeof localValue === "string" ? localValue : JSON.stringify(localValue)
+                        }
                         onChange={(e) => {
                             setLocalValue(e.target.value);
                             if (!editing) setEditing(true);
@@ -150,19 +158,27 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
                 <div className="flex items-center gap-2">
                     <p className="text-sm font-medium truncate">{definition.label}</p>
                     {is_locked && (
-                        <span className="inline-flex items-center gap-1 text-xs text-amber-500" title="Locked by admin">
+                        <span
+                            className="inline-flex items-center gap-1 text-xs text-amber-500"
+                            title="Locked by admin"
+                        >
                             <Lock className="h-3 w-3" />
                         </span>
                     )}
                     {is_inherited && (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={`Inherited from ${source_scope}`}>
+                        <span
+                            className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+                            title={`Inherited from ${source_scope}`}
+                        >
                             <ArrowDown className="h-3 w-3" />
                             <span>{source_scope}</span>
                         </span>
                     )}
                 </div>
                 {definition.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{definition.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {definition.description}
+                    </p>
                 )}
             </div>
 

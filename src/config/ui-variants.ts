@@ -8,8 +8,18 @@
    - Components consume these configs, never redefine them
    ═══════════════════════════════════════════════════════════════ */
 
+import { logger } from "@/lib/logger";
+
 // ─── Badge Variant Type ───
-export type BadgeVariant = "default" | "secondary" | "destructive" | "warning" | "success" | "info" | "outline" | "ghost";
+export type BadgeVariant =
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "warning"
+    | "success"
+    | "info"
+    | "outline"
+    | "ghost";
 
 // ─── Status Variant Mappings ───
 // Maps domain status values to UI badge variants
@@ -22,10 +32,10 @@ export const STATUS_VARIANTS = {
     completed: "info",
     cancelled: "destructive",
     draft: "ghost",
-    
+
     // Project status
     on_hold: "warning",
-    
+
     // Task status
     backlog: "ghost",
     todo: "secondary",
@@ -33,16 +43,16 @@ export const STATUS_VARIANTS = {
     review: "warning",
     done: "success",
     blocked: "destructive",
-    
+
     // Approval status
     approved: "success",
     revision_requested: "warning",
     overdue: "destructive",
     rejected: "destructive",
-    
+
     // Vendor status
     suspended: "destructive",
-    
+
     // Invoice/PO status
     issued: "info",
     received: "success",
@@ -51,90 +61,90 @@ export const STATUS_VARIANTS = {
     paid: "success",
     partially_paid: "warning",
     void: "ghost",
-    
+
     // Crew status
     available: "success",
     assigned: "info",
     unavailable: "ghost",
-    
+
     // Vehicle status
     in_transit: "info",
     loading: "warning",
     maintenance: "destructive",
-    
+
     // Shift status
     scheduled: "info",
     checked_in: "success",
     checked_out: "ghost",
     no_show: "destructive",
-    
+
     // Deck status
     ready: "success",
     presented: "info",
-    
+
     // Case study status
     published: "success",
-    
+
     // Estimate/Proposal status
     sent: "info",
     viewed: "info",
     accepted: "success",
     expired: "destructive",
     converted: "success",
-    
+
     // Document status
     pending_review: "warning",
     archived: "ghost",
-    
+
     // Work order status
     posted: "info",
     bidding: "info",
     awarded: "success",
     verified: "success",
     invoiced: "success",
-    
+
     // Dispatch status
     unassigned: "default",
     offered: "info",
     declined: "destructive",
     en_route: "warning",
     on_site: "warning",
-    
+
     // Service request status
     acknowledged: "info",
     assessment_scheduled: "warning",
     quoted: "info",
-    
+
     // Compliance status
     not_submitted: "default",
     expiring_soon: "warning",
-    
+
     // Inventory status
     in_stock: "success",
     low_stock: "warning",
     out_of_stock: "destructive",
     on_order: "info",
-    
+
     // Checklist status
     not_started: "default",
     failed: "destructive",
     skipped: "info",
-    
+
     // Expense status
     reimbursed: "success",
-    
+
     // Leave status
     taken: "info",
-    
+
     // Time entry status
     submitted: "warning",
-    
+
     // Recurring invoice status
     paused: "warning",
-    
+
     // SOW status
     pending_approval: "warning",
-    
+
     // Lead status
     new: "info",
     contacted: "secondary",
@@ -144,14 +154,14 @@ export const STATUS_VARIANTS = {
     won: "success",
     lost: "destructive",
     nurturing: "secondary",
-    
+
     // Warehouse status
     full: "destructive",
     decommissioned: "ghost",
-    
+
     // Credit note status
     applied: "success",
-    
+
     // Production phases / lifecycle
     booked: "info",
     build: "info",
@@ -163,28 +173,28 @@ export const STATUS_VARIANTS = {
     planned: "secondary",
     planning: "secondary",
     under_review: "warning",
-    
+
     // Opportunity stages
     discovery: "ghost",
     qualification: "info",
     proposal_review: "secondary",
     negotiation: "warning",
     contract_sent: "info",
-    
+
     // Change order status
     pending_client: "info",
-    
+
     // Revenue schedule status
     recognized: "success",
     deferred: "warning",
     reversed: "destructive",
-    
+
     // Account risk levels
     low: "success",
     medium: "warning",
     high: "destructive",
     critical: "destructive",
-    
+
     // Digital asset status
     in_review: "warning",
     uploading: "info",
@@ -192,7 +202,7 @@ export const STATUS_VARIANTS = {
     error: "destructive",
     locked: "ghost",
     superseded: "secondary",
-    
+
     // Permit status (migration 015)
     required: "destructive",
     application_draft: "ghost",
@@ -200,79 +210,79 @@ export const STATUS_VARIANTS = {
     revoked: "destructive",
     renewed: "success",
     not_required: "ghost",
-    
+
     // Insurance policy status
     pending_verification: "warning",
-    
+
     // Engineering approval status
     inspection_required: "warning",
     inspection_passed: "success",
     inspection_failed: "destructive",
-    
+
     // Asset certification status
     current: "success",
     pending_inspection: "warning",
-    
+
     // Requisition status
     converted_to_po: "success",
-    
+
     // Goods receipt status
     partial: "warning",
     complete: "success",
     discrepancy: "destructive",
-    
+
     // Approval workflow status
     escalated: "warning",
     delegated: "info",
-    
+
     // Obligation status
     fulfilled: "success",
     breached: "destructive",
     waived: "secondary",
-    
+
     // Dependency status
     satisfied: "success",
     not_applicable: "ghost",
-    
+
     // 3-way match status
     variance_flagged: "destructive",
     override_approved: "warning",
     pending_receipt: "info",
     pending_invoice: "info",
-    
+
     // Contract amendment status
     pending_signature: "warning",
     executed: "success",
-    
+
     // Creative brief status
     stakeholder_review: "warning",
     strategy_approved: "info",
     budget_approved: "info",
     final_approved: "success",
-    
+
     // Campaign status
     brief_approved: "info",
     launching: "info",
     live: "success",
     optimizing: "info",
-    
+
     // Campaign asset production status
     briefed: "ghost",
     deployed: "success",
     retired: "ghost",
-    
+
     // Creative review gate types
     creative_director: "default",
     brand_compliance: "info",
     stakeholder: "warning",
     requested: "ghost",
-    
+
     // User lifecycle status
     onboarding: "info",
     pending_deletion: "destructive",
     anonymized: "ghost",
     invited: "info",
-    
+
     // Live event phases
     advance: "ghost",
     load_in: "info",
@@ -281,74 +291,74 @@ export const STATUS_VARIANTS = {
     hold: "destructive",
     strike: "warning",
     wrapped: "ghost",
-    
+
     // Department live status
     not_checked_in: "ghost",
     setting_up: "info",
     issue: "warning",
     striking: "warning",
-    
+
     // Readiness gate status
     passed: "success",
-    
+
     // ROS cue status
     standby: "warning",
     called: "info",
     held: "destructive",
-    
+
     // Equipment live status
     issue_reported: "warning",
     being_repaired: "warning",
     struck: "secondary",
     loaded_out: "ghost",
-    
+
     // VIP status
     expected: "ghost",
     arrived: "success",
     in_venue: "info",
     departed: "ghost",
-    
+
     // VIP tiers
     bronze: "ghost",
     silver: "secondary",
     gold: "warning",
     platinum: "info",
-    
+
     // Guest incident types
     complaint: "warning",
     injury: "destructive",
     lost_item: "info",
     disturbance: "warning",
     ejection: "destructive",
-    
+
     // Reconciliation status
     reconciled: "success",
     write_off: "ghost",
-    
+
     // OT alert levels
     advisory: "info",
     alert: "destructive",
-    
+
     // Post-event report status
     in_review_report: "warning",
-    
+
     // Strike step status
     // (pending, in_progress, completed, blocked, skipped already exist)
-    
+
     // Missing / damaged conditions
     missing: "destructive",
     damaged: "destructive",
     excellent: "success",
     good: "info",
     fair: "warning",
-    
+
     // Location spatial hierarchy status
     prospecting: "ghost",
     reconfiguring: "info",
     tentative: "warning",
     conditional: "warning",
     valid: "success",
-    
+
     // Asset logistics
     released: "ghost",
     loaded: "success",
@@ -361,7 +371,7 @@ export const STATUS_VARIANTS = {
     scrapped: "ghost",
     returned_to_vendor: "info",
     transferred: "secondary",
-    
+
     // Production lifecycle (migration 021)
     qc_review: "secondary",
     waste_logged: "info",
@@ -421,12 +431,12 @@ export const TYPE_VARIANTS = {
     client: "warning",
     freelance: "info",
     subcontractor: "secondary",
-    
+
     // Deck types
     pitch: "default",
     progress: "info",
     wrap: "success",
-    
+
     // Document categories
     site_map: "info",
     nda: "warning",
@@ -434,7 +444,7 @@ export const TYPE_VARIANTS = {
     blueprint: "secondary",
     permit: "success",
     other: "ghost",
-    
+
     // Notification types
     info: "info",
     warning: "warning",
@@ -518,7 +528,7 @@ export const STATUS_LABELS: Record<string, string> = {
     cancelled: "Cancelled",
     draft: "Draft",
     on_hold: "On Hold",
-    
+
     // Task
     backlog: "Backlog",
     todo: "To Do",
@@ -526,16 +536,16 @@ export const STATUS_LABELS: Record<string, string> = {
     review: "Review",
     done: "Done",
     blocked: "Blocked",
-    
+
     // Approval
     approved: "Approved",
     revision_requested: "Revision Requested",
     overdue: "Overdue",
     rejected: "Rejected",
-    
+
     // Vendor
     suspended: "Suspended",
-    
+
     // Invoice/PO
     issued: "Issued",
     received: "Received",
@@ -544,90 +554,90 @@ export const STATUS_LABELS: Record<string, string> = {
     paid: "Paid",
     partially_paid: "Partially Paid",
     void: "Void",
-    
+
     // Crew
     available: "Available",
     assigned: "Assigned",
     unavailable: "Unavailable",
-    
+
     // Vehicle
     in_transit: "In Transit",
     loading: "Loading",
     maintenance: "Maintenance",
-    
+
     // Shift
     scheduled: "Scheduled",
     checked_in: "Checked In",
     checked_out: "Checked Out",
     no_show: "No Show",
-    
+
     // Deck
     ready: "Ready",
     presented: "Presented",
-    
+
     // Case study
     published: "Published",
-    
+
     // Estimate/Proposal
     sent: "Sent",
     viewed: "Viewed",
     accepted: "Accepted",
     expired: "Expired",
     converted: "Converted",
-    
+
     // Document
     pending_review: "Pending Review",
     archived: "Archived",
-    
+
     // Work order
     posted: "Posted",
     bidding: "Bidding",
     awarded: "Awarded",
     verified: "Verified",
     invoiced: "Invoiced",
-    
+
     // Dispatch
     unassigned: "Unassigned",
     offered: "Offered",
     declined: "Declined",
     en_route: "En Route",
     on_site: "On Site",
-    
+
     // Service request
     acknowledged: "Acknowledged",
     assessment_scheduled: "Assessment Scheduled",
     quoted: "Quoted",
-    
+
     // Compliance
     not_submitted: "Not Submitted",
     expiring_soon: "Expiring Soon",
-    
+
     // Inventory
     in_stock: "In Stock",
     low_stock: "Low Stock",
     out_of_stock: "Out of Stock",
     on_order: "On Order",
-    
+
     // Checklist
     not_started: "Not Started",
     failed: "Failed",
     skipped: "Skipped",
-    
+
     // Expense
     reimbursed: "Reimbursed",
-    
+
     // Leave
     taken: "Taken",
-    
+
     // Time entry
     submitted: "Submitted",
-    
+
     // Recurring
     paused: "Paused",
-    
+
     // SOW
     pending_approval: "Pending Approval",
-    
+
     // Lead
     new: "New",
     contacted: "Contacted",
@@ -637,14 +647,14 @@ export const STATUS_LABELS: Record<string, string> = {
     won: "Won",
     lost: "Lost",
     nurturing: "Nurturing",
-    
+
     // Warehouse
     full: "Full",
     decommissioned: "Decommissioned",
-    
+
     // Credit note
     applied: "Applied",
-    
+
     // Production phases / lifecycle
     booked: "Booked",
     build: "Build",
@@ -656,28 +666,28 @@ export const STATUS_LABELS: Record<string, string> = {
     planned: "Planned",
     planning: "Planning",
     under_review: "Under Review",
-    
+
     // Opportunity stages
     discovery: "Discovery",
     qualification: "Qualification",
     proposal_review: "Proposal Review",
     negotiation: "Negotiation",
     contract_sent: "Contract Sent",
-    
+
     // Change order status
     pending_client: "Pending Client",
-    
+
     // Revenue schedule status
     recognized: "Recognized",
     deferred: "Deferred",
     reversed: "Reversed",
-    
+
     // Account risk levels
     low: "Low",
     medium: "Medium",
     high: "High",
     critical: "Critical",
-    
+
     // Digital asset status
     in_review: "In Review",
     uploading: "Uploading",
@@ -685,7 +695,7 @@ export const STATUS_LABELS: Record<string, string> = {
     error: "Error",
     locked: "Locked",
     superseded: "Superseded",
-    
+
     // Permit status (migration 015)
     required: "Required",
     application_draft: "Application Draft",
@@ -693,79 +703,79 @@ export const STATUS_LABELS: Record<string, string> = {
     revoked: "Revoked",
     renewed: "Renewed",
     not_required: "Not Required",
-    
+
     // Insurance policy status
     pending_verification: "Pending Verification",
-    
+
     // Engineering approval status
     inspection_required: "Inspection Required",
     inspection_passed: "Inspection Passed",
     inspection_failed: "Inspection Failed",
-    
+
     // Asset certification status
     current: "Current",
     pending_inspection: "Pending Inspection",
-    
+
     // Requisition status
     converted_to_po: "Converted to PO",
-    
+
     // Goods receipt status
     partial: "Partial",
     complete: "Complete",
     discrepancy: "Discrepancy",
-    
+
     // Approval workflow status
     escalated: "Escalated",
     delegated: "Delegated",
-    
+
     // Obligation status
     fulfilled: "Fulfilled",
     breached: "Breached",
     waived: "Waived",
-    
+
     // Dependency status
     satisfied: "Satisfied",
     not_applicable: "N/A",
-    
+
     // 3-way match status
     variance_flagged: "Variance Flagged",
     override_approved: "Override Approved",
     pending_receipt: "Pending Receipt",
     pending_invoice: "Pending Invoice",
-    
+
     // Contract amendment status
     pending_signature: "Pending Signature",
     executed: "Executed",
-    
+
     // Creative brief status
     stakeholder_review: "Stakeholder Review",
     strategy_approved: "Strategy Approved",
     budget_approved: "Budget Approved",
     final_approved: "Final Approved",
-    
+
     // Campaign status
     brief_approved: "Brief Approved",
     launching: "Launching",
     live: "Live",
     optimizing: "Optimizing",
-    
+
     // Campaign asset production status
     briefed: "Briefed",
     deployed: "Deployed",
     retired: "Retired",
-    
+
     // Creative review
     creative_director: "Creative Director",
     brand_compliance: "Brand Compliance",
     stakeholder: "Stakeholder",
     requested: "Requested",
-    
+
     // User lifecycle status
     onboarding: "Onboarding",
     pending_deletion: "Pending Deletion",
     anonymized: "Anonymized",
     invited: "Invited",
-    
+
     // Live event phases
     advance: "Advance",
     load_in: "Load-In",
@@ -774,71 +784,71 @@ export const STATUS_LABELS: Record<string, string> = {
     hold: "Hold",
     strike: "Strike",
     wrapped: "Wrapped",
-    
+
     // Department live status
     not_checked_in: "Not Checked In",
     setting_up: "Setting Up",
     issue: "Issue",
     striking: "Striking",
-    
+
     // Readiness gate status
     passed: "Passed",
-    
+
     // ROS cue status
     standby: "Standby",
     called: "Called",
     held: "Held",
-    
+
     // Equipment live status
     issue_reported: "Issue Reported",
     being_repaired: "Being Repaired",
     struck: "Struck",
     loaded_out: "Loaded Out",
-    
+
     // VIP status
     expected: "Expected",
     arrived: "Arrived",
     in_venue: "In Venue",
     departed: "Departed",
-    
+
     // VIP tiers
     bronze: "Bronze",
     silver: "Silver",
     gold: "Gold",
     platinum: "Platinum",
-    
+
     // Guest incident types
     complaint: "Complaint",
     injury: "Injury",
     lost_item: "Lost Item",
     disturbance: "Disturbance",
     ejection: "Ejection",
-    
+
     // Reconciliation status
     reconciled: "Reconciled",
     write_off: "Write Off",
-    
+
     // OT alert levels
     advisory: "Advisory",
     alert: "Alert",
-    
+
     // Post-event report status
     in_review_report: "In Review",
-    
+
     // Asset conditions (for reconciliation)
     missing: "Missing",
     damaged: "Damaged",
     excellent: "Excellent",
     good: "Good",
     fair: "Fair",
-    
+
     // Location spatial hierarchy status
     prospecting: "Prospecting",
     reconfiguring: "Reconfiguring",
     tentative: "Tentative",
     conditional: "Conditional",
     valid: "Valid",
-    
+
     // Asset logistics
     released: "Released",
     loaded: "Loaded",
@@ -851,7 +861,7 @@ export const STATUS_LABELS: Record<string, string> = {
     scrapped: "Scrapped",
     returned_to_vendor: "Returned to Vendor",
     transferred: "Transferred",
-    
+
     // Production lifecycle (migration 021)
     qc_review: "QC Review",
     waste_logged: "Waste Logged",
@@ -878,6 +888,59 @@ export const STATUS_LABELS: Record<string, string> = {
     downloaded: "Downloaded",
 } as const satisfies Record<string, string>;
 
+// ─── Domain-Specific Label Maps ───
+// Shared across list + detail pages to prevent duplication
+
+export const CERT_TYPE_LABELS: Record<string, string> = {
+    structural_integrity: "Structural Integrity",
+    electrical_safety: "Electrical Safety",
+    fire_resistance: "Fire Resistance",
+    rigging_inspection: "Rigging Inspection",
+    pressure_vessel: "Pressure Vessel",
+    load_test: "Load Test",
+    calibration: "Calibration",
+    safety_inspection: "Safety Inspection",
+    dot_inspection: "DOT Inspection",
+    other: "Other",
+};
+
+export const EXPENSE_CATEGORY_LABELS: Record<string, string> = {
+    travel: "Travel",
+    equipment: "Equipment",
+    meals: "Meals & Entertainment",
+    materials: "Materials",
+    transport: "Transport",
+    software: "Software",
+    miscellaneous: "Misc",
+};
+
+export const LEAD_BUDGET_LABELS: Record<string, string> = {
+    under_10k: "Under $10K",
+    "10k_50k": "$10K–$50K",
+    under_50k: "Under $50K",
+    "50k_100k": "$50K–$100K",
+    "50k_150k": "$50K–$150K",
+    "100k_500k": "$100K–$500K",
+    "150k_500k": "$150K–$500K",
+    "500k_1m": "$500K–$1M",
+    over_500k: "$500K+",
+    "1m_5m": "$1M–$5M",
+    over_5m: "$5M+",
+    unknown: "Unknown",
+};
+
+export const RECORD_TYPE_LABELS: Record<string, string> = {
+    project: "Project",
+    deal: "Deal",
+    contract: "Contract",
+    event: "Event",
+    asset: "Asset",
+    task: "Task",
+    vendor: "Vendor",
+    crew: "Crew",
+    location: "Location",
+};
+
 export const PRIORITY_LABELS: Record<string, string> = {
     critical: "Critical",
     urgent: "Urgent",
@@ -902,7 +965,9 @@ export const CONDITION_LABELS: Record<string, string> = {
 export function getStatusLabel(status: string): string {
     const explicit = STATUS_LABELS[status];
     if (!explicit && process.env.NODE_ENV === "development") {
-        console.warn(`[casing] Missing STATUS_LABELS entry for "${status}". Add an explicit label to ui-variants.ts.`);
+        logger.warn(
+            `[casing] Missing STATUS_LABELS entry for "${status}". Add an explicit label to ui-variants.ts.`
+        );
     }
     return explicit ?? status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -913,7 +978,9 @@ export function getStatusLabel(status: string): string {
 export function getPriorityLabel(priority: string): string {
     const explicit = PRIORITY_LABELS[priority];
     if (!explicit && process.env.NODE_ENV === "development") {
-        console.warn(`[casing] Missing PRIORITY_LABELS entry for "${priority}". Add an explicit label to ui-variants.ts.`);
+        logger.warn(
+            `[casing] Missing PRIORITY_LABELS entry for "${priority}". Add an explicit label to ui-variants.ts.`
+        );
     }
     return explicit ?? priority.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -924,7 +991,9 @@ export function getPriorityLabel(priority: string): string {
 export function getConditionLabel(condition: string): string {
     const explicit = CONDITION_LABELS[condition];
     if (!explicit && process.env.NODE_ENV === "development") {
-        console.warn(`[casing] Missing CONDITION_LABELS entry for "${condition}". Add an explicit label to ui-variants.ts.`);
+        logger.warn(
+            `[casing] Missing CONDITION_LABELS entry for "${condition}". Add an explicit label to ui-variants.ts.`
+        );
     }
     return explicit ?? condition.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

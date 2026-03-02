@@ -4,15 +4,15 @@ import React from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { hasPermission, isFieldVisible, maskSensitiveFields } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
-import { ShieldX, Lock } from "lucide-react";
+import { Lock, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const DEFAULT_LEVEL: PermissionLevel = "vendor";
 
 function resolvePermissionLevel(profile: { role?: string | null } | null): PermissionLevel {
-    if (!profile) return DEFAULT_LEVEL;
-    const role = (profile as Record<string, unknown>).role as string | undefined;
+    if (!profile?.role) return DEFAULT_LEVEL;
+    const { role } = profile;
     if (role === "exec" || role === "pm" || role === "client" || role === "vendor") {
         return role;
     }
@@ -24,7 +24,10 @@ export function usePermissionLevel(): PermissionLevel {
     return resolvePermissionLevel(profile);
 }
 
-export function useHasPermission(resource: string, action: "read" | "write" | "delete" | "manage"): boolean {
+export function useHasPermission(
+    resource: string,
+    action: "read" | "write" | "delete" | "manage"
+): boolean {
     const level = usePermissionLevel();
     return hasPermission(level, resource, action);
 }
@@ -73,8 +76,8 @@ export function PermissionGate({
                         <div>
                             <h2 className="text-lg font-bold">Access Denied</h2>
                             <p className="text-sm text-muted-foreground mt-1">
-                                You do not have permission to access this resource.
-                                Contact your administrator if you believe this is an error.
+                                You do not have permission to access this resource. Contact your
+                                administrator if you believe this is an error.
                             </p>
                         </div>
                         <Button variant="outline" onClick={() => window.history.back()}>

@@ -4,11 +4,11 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type {
+    AccountHealthScore,
+    ChangeOrder,
     Opportunity,
     OpportunityActivity,
-    ChangeOrder,
     RevenueSchedule,
-    AccountHealthScore,
 } from "@/types";
 
 // ─── Opportunities ───
@@ -20,7 +20,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
         primaryContactId: "cont-sarah",
         leadId: "lead-1",
         name: "SXSW 2027 Brand Activation",
-        description: "Large-scale brand activation at SXSW featuring interactive installations, product demos, and influencer meetups.",
+        description:
+            "Large-scale brand activation at SXSW featuring interactive installations, product demos, and influencer meetups.",
         type: "new_business",
         stage: "negotiation",
         value: 520000,
@@ -45,7 +46,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
         companyId: "comp-lv",
         primaryContactId: "cont-pierre",
         name: "Art Basel 2026 Installation",
-        description: "Immersive art installation combining digital projection mapping with physical sculpture for Art Basel Miami.",
+        description:
+            "Immersive art installation combining digital projection mapping with physical sculpture for Art Basel Miami.",
         type: "new_business",
         stage: "proposal_sent",
         value: 1350000,
@@ -70,7 +72,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
         companyId: "comp-tesla",
         primaryContactId: "cont-mike",
         name: "CES 2027 Booth Design & Build",
-        description: "Full booth design, fabrication, and on-site management for Tesla at CES 2027.",
+        description:
+            "Full booth design, fabrication, and on-site management for Tesla at CES 2027.",
         type: "new_business",
         stage: "discovery",
         value: 880000,
@@ -95,7 +98,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
         companyId: "comp-apple",
         primaryContactId: "cont-lisa",
         name: "Product Launch Experiential Event",
-        description: "Exclusive product launch event with immersive brand storytelling and media experience.",
+        description:
+            "Exclusive product launch event with immersive brand storytelling and media experience.",
         type: "new_business",
         stage: "qualification",
         value: 2200000,
@@ -145,7 +149,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
         companyId: "comp-coachella",
         primaryContactId: "cont-derek",
         name: "Coachella 2027 Main Stage Renewal",
-        description: "Renewal of the main stage design and fabrication contract for Coachella 2027.",
+        description:
+            "Renewal of the main stage design and fabrication contract for Coachella 2027.",
         type: "renewal",
         stage: "contract_sent",
         value: 3800000,
@@ -222,7 +227,8 @@ export const MOCK_OPPORTUNITY_ACTIVITIES: OpportunityActivity[] = [
         opportunityId: "opp-1",
         type: "meeting",
         subject: "Discovery call with Nike Events team",
-        description: "Discussed scope, timeline, and budget for SXSW activation. Client confirmed $500K–600K range.",
+        description:
+            "Discussed scope, timeline, and budget for SXSW activation. Client confirmed $500K–600K range.",
         performedBy: "u1",
         performedByName: "Alex Rivera",
         performedAt: "2026-01-20T10:00:00Z",
@@ -249,7 +255,8 @@ export const MOCK_OPPORTUNITY_ACTIVITIES: OpportunityActivity[] = [
         opportunityId: "opp-1",
         type: "call",
         subject: "Pricing negotiation call",
-        description: "Client wants the mid-tier option but with VIP lounge from the top tier. Negotiating delta.",
+        description:
+            "Client wants the mid-tier option but with VIP lounge from the top tier. Negotiating delta.",
         contactId: "cont-sarah",
         contactName: "Sarah Chen",
         performedBy: "u1",
@@ -265,7 +272,8 @@ export const MOCK_OPPORTUNITY_ACTIVITIES: OpportunityActivity[] = [
         opportunityId: "opp-6",
         type: "meeting",
         subject: "Coachella 2027 renewal kick-off",
-        description: "Reviewed 2026 performance, discussed 2027 enhancements. Strong relationship — verbal commitment to renew.",
+        description:
+            "Reviewed 2026 performance, discussed 2027 enhancements. Strong relationship — verbal commitment to renew.",
         contactId: "cont-derek",
         contactName: "Derek Allen",
         performedBy: "u1",
@@ -281,7 +289,8 @@ export const MOCK_OPPORTUNITY_ACTIVITIES: OpportunityActivity[] = [
         opportunityId: "opp-6",
         type: "contract_sent",
         subject: "Renewal contract sent for signature",
-        description: "Sent 2027 main stage contract via DocuSign. Same terms as 2026 with 8% increase for enhanced LED package.",
+        description:
+            "Sent 2027 main stage contract via DocuSign. Same terms as 2026 with 8% increase for enhanced LED package.",
         performedBy: "u1",
         performedByName: "Alex Rivera",
         performedAt: "2026-02-25T08:00:00Z",
@@ -300,7 +309,8 @@ export const MOCK_CHANGE_ORDERS: ChangeOrder[] = [
         companyId: "comp-coachella",
         number: "CO-001",
         title: "Add LED Screen Array — North Stage Wing",
-        description: "Client requested additional LED screen array on the north wing to accommodate sponsor branding requirements.",
+        description:
+            "Client requested additional LED screen array on the north wing to accommodate sponsor branding requirements.",
         changeType: "scope_addition",
         valueImpact: 185000,
         scheduleImpactDays: 5,
@@ -314,7 +324,8 @@ export const MOCK_CHANGE_ORDERS: ChangeOrder[] = [
         approvedAt: "2026-02-05T16:00:00Z",
         clientApprovedBy: "Derek Allen",
         clientApprovedAt: "2026-02-03T12:00:00Z",
-        scopeAdditions: "4x LED panels (P3.9 outdoor, 3m×2m each), structural mounting, cable management, content management system integration",
+        scopeAdditions:
+            "4x LED panels (P3.9 outdoor, 3m×2m each), structural mounting, cable management, content management system integration",
         deliverablesAdded: [
             { name: "LED Panel Procurement", value: 95000 },
             { name: "Structural Engineering", value: 35000 },
@@ -334,7 +345,8 @@ export const MOCK_CHANGE_ORDERS: ChangeOrder[] = [
         companyId: "comp-coachella",
         number: "CO-002",
         title: "Reduce Pyrotechnics Package",
-        description: "Local fire marshal imposed new restrictions. Reduced pyrotechnics scope from 12 to 8 stations.",
+        description:
+            "Local fire marshal imposed new restrictions. Reduced pyrotechnics scope from 12 to 8 stations.",
         changeType: "scope_reduction",
         valueImpact: -45000,
         scheduleImpactDays: 0,
@@ -349,9 +361,7 @@ export const MOCK_CHANGE_ORDERS: ChangeOrder[] = [
         clientApprovedAt: "2026-02-11T11:00:00Z",
         scopeRemovals: "4 pyrotechnics stations removed (stations 3, 7, 9, 11)",
         deliverablesAdded: [],
-        deliverablesRemoved: [
-            { name: "Pyro Stations 3, 7, 9, 11", value: 45000 },
-        ],
+        deliverablesRemoved: [{ name: "Pyro Stations 3, 7, 9, 11", value: 45000 }],
         tags: ["regulatory", "pyro"],
         projectName: "Coachella Main Stage 2026",
         companyName: "Coachella",
@@ -365,12 +375,14 @@ export const MOCK_CHANGE_ORDERS: ChangeOrder[] = [
         companyId: "comp-glossier",
         number: "CO-001",
         title: "Extended Run — 2 Additional Weeks",
-        description: "Pop-up performing above expectations. Client wants to extend the run by 2 weeks.",
+        description:
+            "Pop-up performing above expectations. Client wants to extend the run by 2 weeks.",
         changeType: "combined",
         valueImpact: 32000,
         scheduleImpactDays: 14,
         reason: "Strong foot traffic and social media engagement exceeding KPIs",
-        businessCase: "Additional 2 weeks estimated to generate 40% more brand impressions at marginal cost",
+        businessCase:
+            "Additional 2 weeks estimated to generate 40% more brand impressions at marginal cost",
         status: "pending_client",
         requestedBy: "u2",
         requestedByName: "Jordan Park",
@@ -552,7 +564,11 @@ export const MOCK_ACCOUNT_HEALTH_SCORES: AccountHealthScore[] = [
         riskLevel: "low",
         riskFactors: [],
         recommendations: [
-            { action: "Propose 2027 multi-stage package", priority: "medium", detail: "Client has expressed interest in expanding beyond main stage" },
+            {
+                action: "Propose 2027 multi-stage package",
+                priority: "medium",
+                detail: "Client has expressed interest in expanding beyond main stage",
+            },
         ],
         lifetimeRevenue: 7200000,
         activeProjectCount: 1,
@@ -575,7 +591,11 @@ export const MOCK_ACCOUNT_HEALTH_SCORES: AccountHealthScore[] = [
         riskLevel: "low",
         riskFactors: [],
         recommendations: [
-            { action: "Pitch multi-city expansion", priority: "high", detail: "NYC pop-up exceeding KPIs — strong case for LA and Chicago" },
+            {
+                action: "Pitch multi-city expansion",
+                priority: "high",
+                detail: "NYC pop-up exceeding KPIs — strong case for LA and Chicago",
+            },
         ],
         lifetimeRevenue: 175000,
         activeProjectCount: 1,
@@ -597,11 +617,23 @@ export const MOCK_ACCOUNT_HEALTH_SCORES: AccountHealthScore[] = [
         expansionScore: 70,
         riskLevel: "medium",
         riskFactors: [
-            { factor: "Engagement declining", severity: "medium", detail: "Response times increasing — last 3 emails took 5+ days" },
+            {
+                factor: "Engagement declining",
+                severity: "medium",
+                detail: "Response times increasing — last 3 emails took 5+ days",
+            },
         ],
         recommendations: [
-            { action: "Schedule executive check-in", priority: "high", detail: "Engagement score trending down — proactive outreach recommended" },
-            { action: "Deliver SXSW proposal revisions promptly", priority: "high", detail: "Open negotiation needs swift response" },
+            {
+                action: "Schedule executive check-in",
+                priority: "high",
+                detail: "Engagement score trending down — proactive outreach recommended",
+            },
+            {
+                action: "Deliver SXSW proposal revisions promptly",
+                priority: "high",
+                detail: "Open negotiation needs swift response",
+            },
         ],
         lifetimeRevenue: 0,
         activeProjectCount: 0,
@@ -623,11 +655,23 @@ export const MOCK_ACCOUNT_HEALTH_SCORES: AccountHealthScore[] = [
         expansionScore: 15,
         riskLevel: "high",
         riskFactors: [
-            { factor: "Lost recent opportunity", severity: "high", detail: "Dreamforce Expo lost to Freeman XP on timing" },
-            { factor: "No active projects", severity: "medium", detail: "Zero revenue relationship" },
+            {
+                factor: "Lost recent opportunity",
+                severity: "high",
+                detail: "Dreamforce Expo lost to Freeman XP on timing",
+            },
+            {
+                factor: "No active projects",
+                severity: "medium",
+                detail: "Zero revenue relationship",
+            },
         ],
         recommendations: [
-            { action: "Re-engage with alternative event proposal", priority: "medium", detail: "Offer smaller-scale event to rebuild relationship" },
+            {
+                action: "Re-engage with alternative event proposal",
+                priority: "medium",
+                detail: "Offer smaller-scale event to rebuild relationship",
+            },
         ],
         lifetimeRevenue: 0,
         activeProjectCount: 0,
@@ -649,10 +693,18 @@ export const MOCK_ACCOUNT_HEALTH_SCORES: AccountHealthScore[] = [
         expansionScore: 50,
         riskLevel: "medium",
         riskFactors: [
-            { factor: "New prospect — no delivery history", severity: "low", detail: "Cannot assess delivery or payment reliability" },
+            {
+                factor: "New prospect — no delivery history",
+                severity: "low",
+                detail: "Cannot assess delivery or payment reliability",
+            },
         ],
         recommendations: [
-            { action: "Prioritize qualification", priority: "high", detail: "High-value opportunity ($2.2M) needs rapid qualification" },
+            {
+                action: "Prioritize qualification",
+                priority: "high",
+                detail: "High-value opportunity ($2.2M) needs rapid qualification",
+            },
         ],
         lifetimeRevenue: 0,
         activeProjectCount: 0,

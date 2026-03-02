@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useState, useCallback, Suspense } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { AuthLayout, AuthFormField, PasswordInput, OAuthButtons, BotProtection, useBotProtection } from "@/components/auth";
+import {
+    AuthFormField,
+    AuthLayout,
+    BotProtection,
+    OAuthButtons,
+    PasswordInput,
+    useBotProtection,
+} from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/lib/auth-utils";
-import { Mail, User, Building2, AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Building2, CheckCircle2, Loader2, Mail, User } from "lucide-react";
 
 function SignupForm() {
     const router = useRouter();
@@ -30,95 +37,102 @@ function SignupForm() {
         const errors: Record<string, string> = {};
         if (!name.trim()) errors.name = "Name is required.";
         if (!email.trim()) errors.email = "Email is required.";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email.";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+            errors.email = "Please enter a valid email.";
         const pwError = validatePassword(password);
         if (pwError) errors.password = pwError;
         setFieldErrors(errors);
         return Object.keys(errors).length === 0;
     }, [name, email, password]);
 
-    const handleSignup = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleSignup = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!validate()) return;
+            if (!validate()) return;
 
-        setLoading(true);
+            setLoading(true);
 
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
-                return;
-            }
-
-            const { data, error: authError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        name,
-                        org_name: orgName || undefined,
-                        invite_token: inviteToken || undefined,
-                    },
-                    emailRedirectTo: `${window.location.origin}/auth/callback`,
-                },
-            });
-
-            if (authError) {
-                // Prevent email enumeration — always show generic message for
-                // "User already registered" errors
-                if (authError.message.toLowerCase().includes("already registered")) {
-                    setSuccess(true);
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
                     return;
                 }
-                setError(mapAuthError(authError.message));
-                return;
+
+                const { data, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            name,
+                            org_name: orgName || undefined,
+                            invite_token: inviteToken || undefined,
+                        },
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    },
+                });
+
+                if (authError) {
+                    // Prevent email enumeration — always show generic message for
+                    // "User already registered" errors
+                    if (authError.message.toLowerCase().includes("already registered")) {
+                        setSuccess(true);
+                        return;
+                    }
+                    setError(mapAuthError(authError.message));
+                    return;
+                }
+
+                // When autoconfirm is enabled, redirect to onboarding
+                if (data?.session) {
+                    router.push(inviteToken ? "/dashboard" : "/onboarding/org-setup");
+                    return;
+                }
+
+                setSuccess(true);
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
             }
+        },
+        [email, password, name, orgName, inviteToken, router, validate]
+    );
 
-            // When autoconfirm is enabled, redirect to onboarding
-            if (data?.session) {
-                router.push(inviteToken ? "/dashboard" : "/onboarding/org-setup");
-                return;
+    const handleOAuthLogin = useCallback(
+        async (provider: "google" | "github") => {
+            setError(null);
+            setOauthLoading(provider);
+
+            try {
+                const supabase = createClient();
+                if (!supabase) {
+                    setError("Authentication service unavailable. Please try again later.");
+                    return;
+                }
+
+                const callbackUrl = inviteToken
+                    ? `${window.location.origin}/auth/callback?next=/invite/${inviteToken}`
+                    : `${window.location.origin}/auth/callback?next=/onboarding/org-setup`;
+
+                const { error: oauthError } = await supabase.auth.signInWithOAuth({
+                    provider,
+                    options: { redirectTo: callbackUrl },
+                });
+
+                if (oauthError) {
+                    setError(mapAuthError(oauthError.message));
+                }
+            } catch {
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setOauthLoading(null);
             }
-
-            setSuccess(true);
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [email, password, name, orgName, inviteToken, router, validate]);
-
-    const handleOAuthLogin = useCallback(async (provider: "google" | "github") => {
-        setError(null);
-        setOauthLoading(provider);
-
-        try {
-            const supabase = createClient();
-            if (!supabase) {
-                setError("Authentication service unavailable. Please try again later.");
-                return;
-            }
-
-            const callbackUrl = inviteToken
-                ? `${window.location.origin}/auth/callback?next=/invite/${inviteToken}`
-                : `${window.location.origin}/auth/callback?next=/onboarding/org-setup`;
-
-            const { error: oauthError } = await supabase.auth.signInWithOAuth({
-                provider,
-                options: { redirectTo: callbackUrl },
-            });
-
-            if (oauthError) {
-                setError(mapAuthError(oauthError.message));
-            }
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setOauthLoading(null);
-        }
-    }, [inviteToken]);
+        },
+        [inviteToken]
+    );
 
     if (success) {
         return (
@@ -130,11 +144,12 @@ function SignupForm() {
                     <div className="space-y-2">
                         <h2 className="text-lg font-semibold">Confirmation link sent</h2>
                         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                            We&apos;ve sent a confirmation link to <strong>{email}</strong>.
-                            Click the link in the email to activate your account.
+                            We&apos;ve sent a confirmation link to <strong>{email}</strong>. Click
+                            the link in the email to activate your account.
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Didn&apos;t receive it? Check your spam folder or try again in a few minutes.
+                            Didn&apos;t receive it? Check your spam folder or try again in a few
+                            minutes.
                         </p>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
@@ -149,7 +164,11 @@ function SignupForm() {
     return (
         <AuthLayout
             title={inviteToken ? "Accept Invitation" : "Create your account"}
-            subtitle={inviteToken ? "Join your team on the platform" : "Start managing productions in minutes"}
+            subtitle={
+                inviteToken
+                    ? "Join your team on the platform"
+                    : "Start managing productions in minutes"
+            }
         >
             <form onSubmit={handleSignup} className="space-y-4" noValidate>
                 {error && (
@@ -170,7 +189,10 @@ function SignupForm() {
                     icon={User}
                     placeholder="Alex Rivera"
                     value={name}
-                    onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: "" })); }}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                        setFieldErrors((p) => ({ ...p, name: "" }));
+                    }}
                     autoComplete="name"
                     error={fieldErrors.name}
                     required
@@ -184,7 +206,10 @@ function SignupForm() {
                     icon={Mail}
                     placeholder="you@company.com"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setFieldErrors((p) => ({ ...p, email: "" }));
+                    }}
                     autoComplete="email"
                     error={fieldErrors.email}
                     required
@@ -193,13 +218,19 @@ function SignupForm() {
 
                 <div className="space-y-2">
                     <label htmlFor="signup-password" className="text-sm font-medium leading-none">
-                        Password <span className="text-destructive ml-1" aria-hidden="true">*</span>
+                        Password{" "}
+                        <span className="text-destructive ml-1" aria-hidden="true">
+                            *
+                        </span>
                     </label>
                     <PasswordInput
                         id="signup-password"
                         placeholder="••••••••"
                         value={password}
-                        onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                        onChange={(e) => {
+                            setPassword(e.target.value);
+                            setFieldErrors((p) => ({ ...p, password: "" }));
+                        }}
                         autoComplete="new-password"
                         showStrengthMeter
                         error={fieldErrors.password}
@@ -207,7 +238,9 @@ function SignupForm() {
                         disabled={loading}
                     />
                     {fieldErrors.password && (
-                        <p className="text-xs text-destructive" role="alert">{fieldErrors.password}</p>
+                        <p className="text-xs text-destructive" role="alert">
+                            {fieldErrors.password}
+                        </p>
                     )}
                 </div>
 
@@ -232,12 +265,7 @@ function SignupForm() {
                     action="signup"
                 />
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                    aria-busy={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -249,11 +277,7 @@ function SignupForm() {
                 </Button>
             </form>
 
-            <OAuthButtons
-                onOAuth={handleOAuthLogin}
-                loading={oauthLoading}
-                disabled={loading}
-            />
+            <OAuthButtons onOAuth={handleOAuthLogin} loading={oauthLoading} disabled={loading} />
 
             <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
@@ -267,11 +291,13 @@ function SignupForm() {
 
 export default function SignupPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            }
+        >
             <SignupForm />
         </Suspense>
     );

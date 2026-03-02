@@ -7,18 +7,19 @@ import { EntityLink } from "./entity-link";
 import { Badge } from "@/components/ui/badge";
 import type { EntityType } from "@/types/production";
 import type { FieldCategory } from "@/config/production-config";
-import { User, Calendar, MapPin, HelpCircle, Cog, GitBranch, Link2 } from "lucide-react";
+import { Calendar, Cog, GitBranch, HelpCircle, Link2, MapPin, User } from "lucide-react";
 
-const CATEGORY_CONFIG: Record<FieldCategory, { label: string; icon: typeof User; color: string }> = {
-    who: { label: "Who", icon: User, color: "text-info" },
-    what: { label: "What", icon: HelpCircle, color: "text-primary" },
-    when: { label: "When", icon: Calendar, color: "text-warning" },
-    where: { label: "Where", icon: MapPin, color: "text-success" },
-    why: { label: "Why", icon: HelpCircle, color: "text-destructive" },
-    how: { label: "How", icon: Cog, color: "text-info" },
-    if_then: { label: "If/Then", icon: GitBranch, color: "text-warning" },
-    relationships: { label: "Relationships", icon: Link2, color: "text-primary" },
-};
+const CATEGORY_CONFIG: Record<FieldCategory, { label: string; icon: typeof User; color: string }> =
+    {
+        who: { label: "Who", icon: User, color: "text-info" },
+        what: { label: "What", icon: HelpCircle, color: "text-primary" },
+        when: { label: "When", icon: Calendar, color: "text-warning" },
+        where: { label: "Where", icon: MapPin, color: "text-success" },
+        why: { label: "Why", icon: HelpCircle, color: "text-destructive" },
+        how: { label: "How", icon: Cog, color: "text-info" },
+        if_then: { label: "If/Then", icon: GitBranch, color: "text-warning" },
+        relationships: { label: "Relationships", icon: Link2, color: "text-primary" },
+    };
 
 interface FieldDisplayProps {
     label: string;
@@ -53,20 +54,18 @@ export function FieldDisplay({
         switch (type) {
             case "currency":
                 return <span className="font-medium">{formatCurrency(value as number)}</span>;
-            
+
             case "date":
                 return <span>{formatDate(value as string)}</span>;
-            
+
             case "datetime":
                 return <span>{new Date(value as string).toLocaleString()}</span>;
-            
+
             case "boolean":
                 return (
-                    <Badge variant={value ? "success" : "secondary"}>
-                        {value ? "Yes" : "No"}
-                    </Badge>
+                    <Badge variant={value ? "success" : "secondary"}>{value ? "Yes" : "No"}</Badge>
                 );
-            
+
             case "reference":
                 if (referenceEntity && referenceId && referenceName) {
                     return (
@@ -79,7 +78,7 @@ export function FieldDisplay({
                     );
                 }
                 return <span>{String(value)}</span>;
-            
+
             case "list":
                 if (Array.isArray(value)) {
                     if (value.length === 0) {
@@ -96,10 +95,10 @@ export function FieldDisplay({
                     );
                 }
                 return <span>{String(value)}</span>;
-            
+
             case "number":
                 return <span className="font-medium tabular-nums">{value.toLocaleString()}</span>;
-            
+
             default:
                 return <span>{String(value)}</span>;
         }

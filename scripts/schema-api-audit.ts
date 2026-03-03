@@ -91,7 +91,7 @@ function parseCreateTables(
     let parenDepth = 0;
 
     for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        const line = lines[i]?.trim() ?? "";
         const lineNum = i + 1;
 
         // Skip comments
@@ -101,7 +101,7 @@ function parseCreateTables(
         const createMatch = line.match(
             /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?["']?(\w+)["']?\s*\(/i
         );
-        if (createMatch) {
+        if (createMatch?.[1]) {
             const tableName = createMatch[1].toLowerCase();
             inCreateTable = true;
             parenDepth = 1;
@@ -164,7 +164,7 @@ function parseColumnLine(
 
     // Parse column definition: column_name TYPE ...
     const colMatch = trimmed.match(/^["']?(\w+)["']?\s+(\S+)/);
-    if (!colMatch) return;
+    if (!colMatch?.[1] || !colMatch[2]) return;
 
     const colName = colMatch[1].toLowerCase();
     const colType = colMatch[2].toUpperCase();
@@ -231,14 +231,14 @@ function parseAlterTableAddColumn(
     tables: Map<string, TableSchema>
 ): void {
     for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        const line = lines[i]?.trim() ?? "";
         const lineNum = i + 1;
 
         // ALTER TABLE table_name ADD COLUMN col_name TYPE ...
         const alterMatch = line.match(
             /ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:public\.)?["']?(\w+)["']?\s+ADD\s+(?:COLUMN\s+)?(?:IF\s+NOT\s+EXISTS\s+)?["']?(\w+)["']?\s+(\S+)/i
         );
-        if (alterMatch) {
+        if (alterMatch?.[1] && alterMatch[2] && alterMatch[3]) {
             const tableName = alterMatch[1].toLowerCase();
             const colName = alterMatch[2].toLowerCase();
             const colType = alterMatch[3].toUpperCase();
@@ -264,13 +264,13 @@ function parseCreateViews(
     tables: Map<string, TableSchema>
 ): void {
     for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        const line = lines[i]?.trim() ?? "";
         const lineNum = i + 1;
 
         const viewMatch = line.match(
             /CREATE\s+(?:OR\s+REPLACE\s+)?(?:MATERIALIZED\s+)?VIEW\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?["']?(\w+)["']?\s+AS/i
         );
-        if (viewMatch) {
+        if (viewMatch?.[1]) {
             const viewName = viewMatch[1].toLowerCase();
             if (!tables.has(viewName)) {
                 tables.set(viewName, {
@@ -318,7 +318,7 @@ function scanFile(filePath: string, usages: QueryUsage[]): void {
 
     let match: RegExpExecArray | null;
     while ((match = fromRegex.exec(content)) !== null) {
-        const tableName = (match[1] || match[2]).toLowerCase();
+        const tableName = (match[1] ?? match[2] ?? "").toLowerCase();
         const charIndex = match.index;
 
         // Determine line number
@@ -334,7 +334,7 @@ function scanFile(filePath: string, usages: QueryUsage[]): void {
 
         // Parse .select() columns
         const selectMatch = chainText.match(/\.select\(\s*["'`]([^"'`]*)["'`]/);
-        const rawSelect = selectMatch ? selectMatch[1] : "";
+        const rawSelect = selectMatch?.[1] ?? "";
         const { columns: selectColumns, joinTables } = parseSelectString(rawSelect);
 
         // Parse filter columns (.eq, .gte, .lte, .in, .neq, .is, .contains, etc.)
@@ -400,7 +400,7 @@ function parseSelectString(selectStr: string): {
 
         // Check for join: table_name(col1, col2) or alias:table_name(col1, col2)
         const joinMatch = part.match(/(?:(\w+):)?(\w+)\s*\(([^)]*)\)/);
-        if (joinMatch) {
+        if (joinMatch?.[2]) {
             const joinTable = joinMatch[2];
             joinTables.push(joinTable);
             continue;
@@ -408,7 +408,7 @@ function parseSelectString(selectStr: string): {
 
         // Plain column, possibly with alias: alias:column_name
         const colMatch = part.match(/(?:\w+:)?(\w+)/);
-        if (colMatch) {
+        if (colMatch?.[1]) {
             columns.push(colMatch[1]);
         }
     }
@@ -423,7 +423,7 @@ function parseFilterColumns(chain: string): string[] {
         /\.(?:eq|neq|gt|gte|lt|lte|like|ilike|in|is|contains|overlaps|match)\(\s*["'](\w+)["']/g;
     let m: RegExpExecArray | null;
     while ((m = filterRegex.exec(chain)) !== null) {
-        columns.push(m[1]);
+        if (m[1]) columns.push(m[1]);
     }
     return columns;
 }
@@ -432,12 +432,12 @@ function parseUpdateColumns(chain: string): string[] {
     const columns: string[] = [];
     // Look for .update({ col: ... }) or .insert({ col: ... }) patterns
     const updateMatch = chain.match(/\.(?:update|insert|upsert)\(\s*\{([^}]*)\}/);
-    if (updateMatch) {
+    if (updateMatch?.[1]) {
         const body = updateMatch[1];
         const keyRegex = /(\w+)\s*:/g;
         let m: RegExpExecArray | null;
         while ((m = keyRegex.exec(body)) !== null) {
-            columns.push(m[1]);
+            if (m[1]) columns.push(m[1]);
         }
     }
     return columns;

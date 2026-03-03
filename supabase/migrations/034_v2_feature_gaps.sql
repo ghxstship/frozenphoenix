@@ -151,25 +151,16 @@ CREATE INDEX IF NOT EXISTS idx_email_entity ON email_messages(entity_type, entit
 CREATE INDEX IF NOT EXISTS idx_email_thread ON email_messages(thread_id);
 CREATE INDEX IF NOT EXISTS idx_email_message_id ON email_messages(message_id);
 
--- G2: Notifications system
-CREATE TABLE IF NOT EXISTS notifications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    type TEXT NOT NULL DEFAULT 'info'
-        CHECK (type IN ('mention', 'assignment', 'approval', 'alert', 'reminder', 'info', 'automation', 'sla_breach')),
-    title TEXT NOT NULL,
-    body TEXT,
-    entity_type TEXT,
-    entity_id UUID,
-    action_url TEXT,
-    is_read BOOLEAN DEFAULT false,
-    read_at TIMESTAMPTZ,
-    channel TEXT DEFAULT 'in_app' CHECK (channel IN ('in_app', 'email', 'push')),
-    organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- G2: Notifications system — extend existing table with missing columns
+-- The notifications table already exists from an earlier migration; add new columns.
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS body TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS entity_type TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS entity_id UUID;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS channel TEXT DEFAULT 'in_app';
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE;
 
-CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read);
 CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
 
 -- G3: Notification preferences

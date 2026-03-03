@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
         if (orgError.code === "23505") {
             return ApiErrors.conflict("An organization with this name already exists");
         }
+        // eslint-disable-next-line no-console
+        console.error("[POST /api/organizations] org insert failed:", orgError);
         return ApiErrors.internalError("Failed to create organization");
     }
 
@@ -61,6 +63,8 @@ export async function POST(request: NextRequest) {
     );
 
     if (memberError) {
+        // eslint-disable-next-line no-console
+        console.error("[POST /api/organizations] membership upsert failed:", memberError);
         return ApiErrors.internalError("Organization created but membership failed");
     }
 

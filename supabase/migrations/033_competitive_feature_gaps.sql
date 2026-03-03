@@ -9,6 +9,7 @@
 
 -- A1: Budget profitability view
 -- Joins budgets + budget lines + time entries + expenses to compute live margin
+DROP VIEW IF EXISTS v_budget_profitability;
 CREATE OR REPLACE VIEW v_budget_profitability AS
 SELECT
     b.id AS budget_id,
@@ -76,7 +77,7 @@ LEFT JOIN LATERAL (
     SELECT SUM(pe.amount) AS total_expense_cost
     FROM production_expenses pe
     WHERE pe.project_id = b.project_id
-      AND pe.status IN ('approved', 'paid')
+      AND pe.status::text IN ('approved', 'reimbursed')
 ) ex ON true
 LEFT JOIN LATERAL (
     SELECT SUM(pbl.committed_amount) AS total_committed
@@ -84,8 +85,12 @@ LEFT JOIN LATERAL (
     WHERE pbl.budget_id = b.id
 ) bl ON true;
 
+-- Add capacity_hours_per_day to crew_members (needed by v_crew_utilization below)
+ALTER TABLE crew_members ADD COLUMN IF NOT EXISTS capacity_hours_per_day NUMERIC(4,2) DEFAULT 8;
+
 -- A2: Crew utilization view
 -- Joins resource_bookings + crew_availability + time_off to compute utilization
+DROP VIEW IF EXISTS v_crew_utilization;
 CREATE OR REPLACE VIEW v_crew_utilization AS
 SELECT
     cm.id AS crew_member_id,
@@ -192,9 +197,6 @@ CREATE TABLE IF NOT EXISTS budget_alerts (
 
 CREATE INDEX IF NOT EXISTS idx_budget_alerts_budget ON budget_alerts(budget_id);
 CREATE INDEX IF NOT EXISTS idx_budget_alerts_project ON budget_alerts(project_id);
-
--- Add capacity_hours_per_day to crew_members
-ALTER TABLE crew_members ADD COLUMN IF NOT EXISTS capacity_hours_per_day NUMERIC(4,2) DEFAULT 8;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- THEME C: UNIFIED TIME → INVOICE PIPELINE

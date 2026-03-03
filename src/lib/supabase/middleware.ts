@@ -127,11 +127,13 @@ export async function updateSession(request: NextRequest) {
     // Skip for onboarding pages, API, settings, and auth routes to avoid loops.
     const isOnboardingPath = request.nextUrl.pathname.startsWith("/onboarding");
     const isSettingsPath = request.nextUrl.pathname.startsWith("/settings");
+    const onboardingSkipped = request.cookies.get("fp-onboarding-skipped")?.value === "1";
     const shouldCheckOnboarding =
         user &&
         isProtectedPath &&
         !isOnboardingPath &&
         !isSettingsPath &&
+        !onboardingSkipped &&
         !request.nextUrl.pathname.startsWith("/auth/") &&
         !request.nextUrl.pathname.startsWith("/api/");
 

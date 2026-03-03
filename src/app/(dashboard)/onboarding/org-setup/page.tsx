@@ -100,6 +100,8 @@ export default function OrgSetupPage() {
     );
 
     const handleSkip = useCallback(() => {
+        // Set a session cookie so middleware stops redirecting back here
+        document.cookie = "fp-onboarding-skipped=1;path=/;max-age=86400;SameSite=Lax";
         router.push("/dashboard");
     }, [router]);
 

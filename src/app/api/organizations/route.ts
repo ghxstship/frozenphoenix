@@ -28,48 +28,42 @@ export async function POST(request: NextRequest) {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
 
-    // Create organization
-    const { data: org, error: orgError } = await supabase
-        .from("organizations")
-        .insert({
-            name: name.trim(),
-            slug: orgSlug,
-            ...(industry && { industry }),
-            ...(timezone && { default_timezone: timezone }),
-            ...(currency && { default_currency: currency }),
-        })
-        .select("*")
-        .single();
+    // Create organization via a Postgres function that returns the new ID.
+    // We cannot use .insert().select().single() because the SELECT RLS
+    // policy requires the user to already be a member, which they aren't yet.
+    // The DB function runs as SECURITY DEFINER and handles the full
+    // bootstrap: insert org → create exec membership → update profile.
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+        "create_org_and_membership" as never,
+        {
+            p_name: name.trim(),
+            p_slug: orgSlug,
+            p_industry: industry || null,
+            p_timezone: timezone || "America/New_York",
+            p_currency: currency || "USD",
+            p_user_id: user.id,
+        } as never
+    );
 
-    if (orgError) {
-        if (orgError.code === "23505") {
+    if (rpcError) {
+        if (rpcError.code === "23505") {
             return ApiErrors.conflict("An organization with this name already exists");
         }
         // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] org insert failed:", orgError);
+        console.error("[POST /api/organizations] rpc failed:", rpcError);
         return ApiErrors.internalError("Failed to create organization");
     }
 
-    // Create membership for the creator as exec
-    const { error: memberError } = await supabase.from("org_memberships").upsert(
-        {
-            user_id: user.id,
-            organization_id: org.id,
-            role: "exec",
-            status: "active",
-            is_default_org: true,
-        },
-        { onConflict: "user_id,organization_id" }
-    );
-
-    if (memberError) {
-        // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] membership upsert failed:", memberError);
-        return ApiErrors.internalError("Organization created but membership failed");
+    const orgId = (rpcResult as { id: string } | null)?.id;
+    if (!orgId) {
+        return ApiErrors.internalError("Organization created but ID not returned");
     }
 
-    // Update the user's profile org_id to the new org
-    await supabase.from("profiles").update({ organization_id: org.id }).eq("id", user.id);
+    // Read the full org (user is now a member, SELECT policy passes)
+    const { data: org } = await supabase.from("organizations").select("*").eq("id", orgId).single();
 
-    return NextResponse.json({ organization: org }, { status: 201 });
+    return NextResponse.json(
+        { organization: org ?? { id: orgId, name: name.trim(), slug: orgSlug } },
+        { status: 201 }
+    );
 }

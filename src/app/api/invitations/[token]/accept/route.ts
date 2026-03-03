@@ -12,13 +12,16 @@ export async function POST(
         return ApiErrors.serviceUnavailable();
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
         return ApiErrors.unauthorized();
     }
 
     // Find the invitation
-    const { data: invitation, error: invError } = await supabase.from("invitations")
+    const { data: invitation, error: invError } = await supabase
+        .from("invitations")
         .select("*")
         .eq("token", token)
         .single();
@@ -38,32 +41,30 @@ export async function POST(
 
     if (new Date(invitation.expires_at) < new Date()) {
         // Mark as expired
-        await supabase.from("invitations")
-            .update({ status: "expired" })
-            .eq("id", invitation.id);
+        await supabase.from("invitations").update({ status: "expired" }).eq("id", invitation.id);
 
         return ApiErrors.gone("This invitation has expired");
     }
 
     // Create org membership
-    const { error: memberError } = await supabase.from("org_memberships")
-        .upsert(
-            {
-                user_id: user.id,
-                organization_id: invitation.organization_id,
-                role: invitation.role,
-                status: "active",
-                is_default: false,
-            },
-            { onConflict: "user_id,organization_id" }
-        );
+    const { error: memberError } = await supabase.from("org_memberships").upsert(
+        {
+            user_id: user.id,
+            organization_id: invitation.organization_id,
+            role: invitation.role,
+            status: "active",
+            is_default_org: false,
+        },
+        { onConflict: "user_id,organization_id" }
+    );
 
     if (memberError) {
         return ApiErrors.internalError("Failed to join organization");
     }
 
     // Mark invitation as accepted
-    await supabase.from("invitations")
+    await supabase
+        .from("invitations")
         .update({
             status: "accepted",
             accepted_by: user.id,
@@ -102,7 +103,8 @@ export async function GET(
     }
 
     // Public endpoint — returns invitation details without requiring auth
-    const { data: invitation, error } = await supabase.from("invitations")
+    const { data: invitation, error } = await supabase
+        .from("invitations")
         .select("email, role, status, expires_at, personal_message, organizations(id, name, slug)")
         .eq("token", token)
         .single();

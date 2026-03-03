@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
             organization_id: org.id,
             role: "exec",
             status: "active",
-            is_default: true,
+            is_default_org: true,
         },
         { onConflict: "user_id,organization_id" }
     );

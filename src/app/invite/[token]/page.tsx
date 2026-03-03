@@ -95,7 +95,11 @@ export default function InviteAcceptPage() {
                 setState("accepted");
             } else {
                 const data = await res.json();
-                setError(data.error || "Failed to accept invitation");
+                const msg =
+                    typeof data.error === "string"
+                        ? data.error
+                        : data.error?.message || "Failed to accept invitation";
+                setError(msg);
             }
         } catch {
             setError("Something went wrong. Please try again.");

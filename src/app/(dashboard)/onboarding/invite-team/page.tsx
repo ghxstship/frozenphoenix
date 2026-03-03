@@ -93,7 +93,11 @@ export default function InviteTeamPage() {
 
                 if (!res.ok) {
                     const data = await res.json();
-                    setError(data.error || "Failed to send invitations.");
+                    const msg =
+                        typeof data.error === "string"
+                            ? data.error
+                            : data.error?.message || "Failed to send invitations.";
+                    setError(msg);
                     return;
                 }
 

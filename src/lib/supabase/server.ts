@@ -1,9 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "./database.types";
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
 
 export { isSupabaseConfigured };
+
+/**
+ * Service-role admin client that bypasses RLS.
+ * Use ONLY in server-side API routes for privileged operations
+ * (org creation, invitation acceptance, audit logging, admin invites).
+ * Returns null when SUPABASE_SERVICE_ROLE_KEY is not configured.
+ */
+export function createAdminClient() {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceRoleKey) {
+        return null;
+    }
+    return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+        },
+    });
+}
 
 /** Server-side typed client type (non-null). */
 export type ServerClient = NonNullable<Awaited<ReturnType<typeof createClient>>>;

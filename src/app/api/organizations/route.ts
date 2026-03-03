@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { organizationCreateSchema } from "@/lib/validation/schemas";
 
@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
         return ApiErrors.serviceUnavailable();
     }
 
+    // Auth check — session-aware client verifies the user
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -28,42 +29,59 @@ export async function POST(request: NextRequest) {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
 
-    // Create organization via a Postgres function that returns the new ID.
-    // We cannot use .insert().select().single() because the SELECT RLS
-    // policy requires the user to already be a member, which they aren't yet.
-    // The DB function runs as SECURITY DEFINER and handles the full
-    // bootstrap: insert org → create exec membership → update profile.
-    const { data: rpcResult, error: rpcError } = await supabase.rpc(
-        "create_org_and_membership" as never,
-        {
-            p_name: name.trim(),
-            p_slug: orgSlug,
-            p_industry: industry || null,
-            p_timezone: timezone || "America/New_York",
-            p_currency: currency || "USD",
-            p_user_id: user.id,
-        } as never
-    );
+    // Use the service-role admin client for the bootstrap operation.
+    // The anon-key client can't SELECT the org after INSERT because the
+    // RLS SELECT policy requires an existing membership — classic
+    // chicken-and-egg. The admin client bypasses RLS entirely.
+    const admin = createAdminClient();
+    if (!admin) {
+        // eslint-disable-next-line no-console
+        console.error("[POST /api/organizations] SUPABASE_SERVICE_ROLE_KEY not configured");
+        return ApiErrors.serviceUnavailable();
+    }
 
-    if (rpcError) {
-        if (rpcError.code === "23505") {
+    // 1. Insert organization
+    const { data: org, error: orgError } = await admin
+        .from("organizations")
+        .insert({
+            name: name.trim(),
+            slug: orgSlug,
+            ...(industry && { industry }),
+            ...(timezone && { default_timezone: timezone }),
+            ...(currency && { default_currency: currency }),
+        })
+        .select("*")
+        .single();
+
+    if (orgError) {
+        if (orgError.code === "23505") {
             return ApiErrors.conflict("An organization with this name already exists");
         }
         // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] rpc failed:", rpcError);
+        console.error("[POST /api/organizations] org insert failed:", orgError);
         return ApiErrors.internalError("Failed to create organization");
     }
 
-    const orgId = (rpcResult as { id: string } | null)?.id;
-    if (!orgId) {
-        return ApiErrors.internalError("Organization created but ID not returned");
+    // 2. Create exec membership for the creator
+    const { error: memberError } = await admin.from("org_memberships").upsert(
+        {
+            user_id: user.id,
+            organization_id: org.id,
+            role: "exec",
+            status: "active",
+            is_default_org: true,
+        },
+        { onConflict: "user_id,organization_id" }
+    );
+
+    if (memberError) {
+        // eslint-disable-next-line no-console
+        console.error("[POST /api/organizations] membership upsert failed:", memberError);
+        return ApiErrors.internalError("Organization created but membership failed");
     }
 
-    // Read the full org (user is now a member, SELECT policy passes)
-    const { data: org } = await supabase.from("organizations").select("*").eq("id", orgId).single();
+    // 3. Update the user's profile org_id to the new org
+    await admin.from("profiles").update({ organization_id: org.id }).eq("id", user.id);
 
-    return NextResponse.json(
-        { organization: org ?? { id: orgId, name: name.trim(), slug: orgSlug } },
-        { status: 201 }
-    );
+    return NextResponse.json({ organization: org }, { status: 201 });
 }

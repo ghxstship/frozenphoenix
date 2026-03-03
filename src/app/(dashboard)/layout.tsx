@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { Sidebar } from "@/components/layouts/sidebar";
 import { Topbar } from "@/components/layouts/topbar";
 import { SkipLinks } from "@/components/accessibility";
@@ -65,7 +65,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         className="p-4 lg:p-6"
                         tabIndex={-1}
                     >
-                        <ErrorBoundary level="page">{children}</ErrorBoundary>
+                        <ErrorBoundary level="page">
+                            <Suspense>{children}</Suspense>
+                        </ErrorBoundary>
                     </main>
                 </div>
             </div>

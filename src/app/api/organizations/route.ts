@@ -62,7 +62,20 @@ export async function POST(request: NextRequest) {
         return ApiErrors.internalError("Failed to create organization");
     }
 
-    // 2. Create exec membership for the creator
+    // 2. Ensure user_profiles row exists (FK target for org_memberships).
+    //    The handle_new_user trigger should have created this, but if it
+    //    failed silently the row may be missing — guard against that.
+    await admin.from("user_profiles").upsert(
+        {
+            id: user.id,
+            email: user.email ?? "",
+            display_name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "User",
+            lifecycle_status: "onboarding",
+        },
+        { onConflict: "id" }
+    );
+
+    // 3. Create exec membership for the creator
     const { error: memberError } = await admin.from("org_memberships").upsert(
         {
             user_id: user.id,
@@ -80,7 +93,7 @@ export async function POST(request: NextRequest) {
         return ApiErrors.internalError("Organization created but membership failed");
     }
 
-    // 3. Update the user's profile org_id to the new org
+    // 4. Update the user's profile org_id to the new org
     await admin.from("profiles").update({ organization_id: org.id }).eq("id", user.id);
 
     return NextResponse.json({ organization: org }, { status: 201 });

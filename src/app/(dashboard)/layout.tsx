@@ -9,6 +9,7 @@ import { SIDEBAR_WIDTH, useSidebar } from "@/hooks/use-sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { PageTransition } from "@/components/ui/page-transition";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const isCollapsed = useSidebar((state) => state.isCollapsed);
@@ -66,7 +67,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         tabIndex={-1}
                     >
                         <ErrorBoundary level="page">
-                            <Suspense>{children}</Suspense>
+                            <PageTransition>
+                                <Suspense>{children}</Suspense>
+                            </PageTransition>
                         </ErrorBoundary>
                     </main>
                 </div>

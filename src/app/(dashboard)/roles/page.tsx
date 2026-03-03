@@ -32,10 +32,21 @@ const STATIC_ROLE_META: Record<RoleKey, { label: string; description: string; co
         description: "Full platform access with manage-level permissions across all resources",
         color: "bg-primary/10 text-primary",
     },
+    director: {
+        label: "Director",
+        description: "Cross-project oversight with broad read/write access and scoped management",
+        color: "bg-primary/10 text-primary",
+    },
     pm: {
         label: "Project Manager",
         description:
             "Read/write access to projects, tasks, crew, scheduling, and production resources",
+        color: "bg-info/10 text-info",
+    },
+    member: {
+        label: "Team Member",
+        description:
+            "Task execution access with time tracking, assigned work, and limited resources",
         color: "bg-info/10 text-info",
     },
     client: {
@@ -43,9 +54,9 @@ const STATIC_ROLE_META: Record<RoleKey, { label: string; description: string; co
         description: "Read-only access to assigned projects, proposals, contracts, and approvals",
         color: "bg-success/10 text-success",
     },
-    vendor: {
-        label: "Vendor",
-        description: "Task-specific access to assigned work, schedules, and relevant documents",
+    collaborator: {
+        label: "Collaborator",
+        description: "External partner access to assigned work orders, schedules, and documents",
         color: "bg-warning/10 text-warning",
     },
 };

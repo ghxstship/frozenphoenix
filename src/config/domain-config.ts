@@ -217,10 +217,22 @@ export const STAKEHOLDER_TYPE_MAP = Object.fromEntries(
 export const PERMISSION_LEVELS: EnumConfig<PermissionLevel>[] = [
     { value: "exec", label: "Executive", variant: "default", description: "Full access" },
     {
+        value: "director",
+        label: "Director",
+        variant: "info",
+        description: "Cross-project oversight",
+    },
+    {
         value: "pm",
         label: "Project Manager",
         variant: "info",
         description: "Project-scoped access",
+    },
+    {
+        value: "member",
+        label: "Team Member",
+        variant: "secondary",
+        description: "Task execution access",
     },
     {
         value: "client",
@@ -228,7 +240,12 @@ export const PERMISSION_LEVELS: EnumConfig<PermissionLevel>[] = [
         variant: "warning",
         description: "Approved deliverables only",
     },
-    { value: "vendor", label: "Vendor", variant: "secondary", description: "Task-specific access" },
+    {
+        value: "collaborator",
+        label: "Collaborator",
+        variant: "secondary",
+        description: "External partner access",
+    },
 ];
 
 export const PERMISSION_LEVEL_MAP = Object.fromEntries(

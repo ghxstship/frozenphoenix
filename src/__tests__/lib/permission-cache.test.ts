@@ -35,9 +35,9 @@ describe("PermissionCache", () => {
 
     it("isolates entries by userId + orgId", () => {
         permissionCache.set("user-a", "org-1", { ...entry, role: "exec" });
-        permissionCache.set("user-b", "org-1", { ...entry, role: "vendor" });
+        permissionCache.set("user-b", "org-1", { ...entry, role: "collaborator" });
         expect(permissionCache.get("user-a", "org-1")?.role).toBe("exec");
-        expect(permissionCache.get("user-b", "org-1")?.role).toBe("vendor");
+        expect(permissionCache.get("user-b", "org-1")?.role).toBe("collaborator");
     });
 
     it("invalidate removes a specific user+org entry", () => {
@@ -65,7 +65,7 @@ describe("PermissionCache", () => {
 
     it("invalidateOrg removes all entries for an org", () => {
         permissionCache.set("user-a", orgId, entry);
-        permissionCache.set("user-b", orgId, { ...entry, role: "vendor" });
+        permissionCache.set("user-b", orgId, { ...entry, role: "collaborator" });
         permissionCache.set("user-a", "org-2", { ...entry, orgId: "org-2" });
         expect(permissionCache.size).toBe(3);
 

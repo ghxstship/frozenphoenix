@@ -172,7 +172,7 @@ function StarRating({ rating }: { rating: number }) {
             {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                     key={star}
-                    className={`h-3.5 w-3.5 ${star <= rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"}`}
+                    className={`h-3.5 w-3.5 ${star <= rating ? "text-star-rating fill-star-rating" : "text-muted-foreground/30"}`}
                 />
             ))}
         </div>
@@ -463,7 +463,7 @@ export default function SurveysPage() {
                                                         className="flex items-center gap-3"
                                                     >
                                                         <div className="flex items-center gap-1 w-16">
-                                                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                                            <Star className="h-3 w-3 text-star-rating fill-star-rating" />
                                                             <span className="text-sm font-medium">
                                                                 {rating}
                                                             </span>

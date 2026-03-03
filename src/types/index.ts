@@ -3,49 +3,49 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // Re-export Productive.io feature types
-export * from './productive-features';
+export * from "./productive-features";
 
 // Re-export Vendor/Contractor lifecycle types
-export * from './vendor-lifecycle';
+export * from "./vendor-lifecycle";
 
 // Re-export Unified Workforce lifecycle types
-export * from './workforce';
+export * from "./workforce";
 
 // Re-export Normalized/Consolidated types (3NF compliant)
-export * from './normalized';
+export * from "./normalized";
 
 // Re-export CRM & Revenue Pipeline types (Migration 013)
-export * from './crm-revenue';
+export * from "./crm-revenue";
 
 // Re-export Digital Asset Lifecycle types (Migration 014)
-export * from './digital-assets';
+export * from "./digital-assets";
 
 // Re-export User Lifecycle & Identity types (Migration 018)
-export * from './user-lifecycle';
+export * from "./user-lifecycle";
 
 // Re-export Creative, Brand & Campaign Lifecycle types (Migration 015)
-export * from './creative-brand';
+export * from "./creative-brand";
 
 // Re-export Legal, Compliance, Finance & Procurement types (Migration 016)
-export * from './governance';
+export * from "./governance";
 
 // Re-export Asset, Inventory, Logistics & Warehousing types (Migration 019)
-export * from './asset-logistics';
+export * from "./asset-logistics";
 
 // Re-export Live Event Operations types (Migration 020)
-export * from './live-operations';
+export * from "./live-operations";
 
 // Re-export Location Spatial Hierarchy types (Migration 017)
-export * from './spatial-hierarchy';
+export * from "./spatial-hierarchy";
 
 // Re-export Integrated Production Lifecycle types (Migration 021)
-export * from './production-lifecycle';
+export * from "./production-lifecycle";
 
 // Re-export Audit Remediation types (Migration 022)
-export * from './audit-remediation';
+export * from "./audit-remediation";
 
 // ─── Auth & RBAC ───
-export type PermissionLevel = "exec" | "pm" | "client" | "vendor";
+export type PermissionLevel = "exec" | "director" | "pm" | "member" | "client" | "collaborator";
 
 export interface User {
     id: string;
@@ -110,11 +110,46 @@ export interface CaseStudy {
 }
 
 // ─── Production ───
-export type ProjectPhase = "pre_production" | "fabrication" | "logistics" | "load_in" | "show" | "strike" | "load_out" | "discovery" | "design" | "procurement" | "rehearsal" | "wrap";
-export type ProjectStatus = "draft" | "active" | "on_hold" | "completed" | "cancelled" | "planning" | "pre_production" | "in_production" | "wrap";
-export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done" | "blocked" | "completed" | "cancelled";
+export type ProjectPhase =
+    | "pre_production"
+    | "fabrication"
+    | "logistics"
+    | "load_in"
+    | "show"
+    | "strike"
+    | "load_out"
+    | "discovery"
+    | "design"
+    | "procurement"
+    | "rehearsal"
+    | "wrap";
+export type ProjectStatus =
+    | "draft"
+    | "active"
+    | "on_hold"
+    | "completed"
+    | "cancelled"
+    | "planning"
+    | "pre_production"
+    | "in_production"
+    | "wrap";
+export type TaskStatus =
+    | "backlog"
+    | "todo"
+    | "in_progress"
+    | "review"
+    | "done"
+    | "blocked"
+    | "completed"
+    | "cancelled";
 export type TaskPriority = "critical" | "high" | "medium" | "low" | "urgent";
-export type FabricationStatus = "not_started" | "design" | "cutting" | "assembly" | "finishing" | "complete";
+export type FabricationStatus =
+    | "not_started"
+    | "design"
+    | "cutting"
+    | "assembly"
+    | "finishing"
+    | "complete";
 
 export interface Project {
     id: string;
@@ -155,7 +190,14 @@ export interface Task {
 }
 
 // ─── Crew & Labor ───
-export type CertificationType = "osha_10" | "osha_30" | "forklift" | "rigging" | "electrical" | "union_card" | "first_aid";
+export type CertificationType =
+    | "osha_10"
+    | "osha_30"
+    | "forklift"
+    | "rigging"
+    | "electrical"
+    | "union_card"
+    | "first_aid";
 
 export interface CrewMember {
     id: string;
@@ -191,7 +233,13 @@ export interface Shift {
 }
 
 // ─── Assets & Fleet ───
-export type AssetCondition = "new" | "excellent" | "good" | "fair" | "needs_repair" | "decommissioned";
+export type AssetCondition =
+    | "new"
+    | "excellent"
+    | "good"
+    | "fair"
+    | "needs_repair"
+    | "decommissioned";
 
 export interface Asset {
     id: string;
@@ -396,7 +444,15 @@ export interface TimeEntry {
 }
 
 // ─── Expenses ───
-export type ExpenseCategory = "materials" | "labor" | "travel" | "equipment_rental" | "shipping" | "permits" | "catering" | "misc";
+export type ExpenseCategory =
+    | "materials"
+    | "labor"
+    | "travel"
+    | "equipment_rental"
+    | "shipping"
+    | "permits"
+    | "catering"
+    | "misc";
 export type ExpenseStatus = "pending" | "approved" | "rejected" | "reimbursed";
 
 export interface Expense {
@@ -414,7 +470,33 @@ export interface Expense {
 }
 
 // ─── Budget ───
-export type BudgetCategory = "labor" | "materials" | "equipment" | "rentals" | "travel" | "shipping" | "permits" | "contingency" | "overhead" | "equipment_rental" | "equipment_purchase" | "fabrication" | "print" | "av" | "lighting" | "scenic" | "lodging" | "per_diem" | "trucking" | "venue" | "insurance" | "talent" | "catering" | "staffing" | "security" | "markup";
+export type BudgetCategory =
+    | "labor"
+    | "materials"
+    | "equipment"
+    | "rentals"
+    | "travel"
+    | "shipping"
+    | "permits"
+    | "contingency"
+    | "overhead"
+    | "equipment_rental"
+    | "equipment_purchase"
+    | "fabrication"
+    | "print"
+    | "av"
+    | "lighting"
+    | "scenic"
+    | "lodging"
+    | "per_diem"
+    | "trucking"
+    | "venue"
+    | "insurance"
+    | "talent"
+    | "catering"
+    | "staffing"
+    | "security"
+    | "markup";
 
 export interface BudgetLineItem {
     id: string;
@@ -446,7 +528,15 @@ export interface Milestone {
 }
 
 // ─── Comments & Activity ───
-export type ActivityAction = "created" | "updated" | "deleted" | "status_changed" | "assigned" | "commented" | "approved" | "rejected";
+export type ActivityAction =
+    | "created"
+    | "updated"
+    | "deleted"
+    | "status_changed"
+    | "assigned"
+    | "commented"
+    | "approved"
+    | "rejected";
 
 export interface Comment {
     id: string;
@@ -473,7 +563,13 @@ export interface ActivityLogEntry {
 }
 
 // ─── Reports ───
-export type ReportType = "project_summary" | "budget_variance" | "crew_utilization" | "vendor_spend" | "approval_timeline" | "pipeline_forecast";
+export type ReportType =
+    | "project_summary"
+    | "budget_variance"
+    | "crew_utilization"
+    | "vendor_spend"
+    | "approval_timeline"
+    | "pipeline_forecast";
 
 export interface ReportDefinition {
     id: string;
@@ -515,7 +611,14 @@ export interface TemplateTask {
 }
 
 // ─── Integrations ───
-export type IntegrationType = "quickbooks" | "xero" | "slack" | "google_calendar" | "dropbox" | "google_drive" | "zapier";
+export type IntegrationType =
+    | "quickbooks"
+    | "xero"
+    | "slack"
+    | "google_calendar"
+    | "dropbox"
+    | "google_drive"
+    | "zapier";
 export type IntegrationStatus = "active" | "inactive" | "error";
 
 export interface Integration {

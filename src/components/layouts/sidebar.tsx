@@ -104,9 +104,11 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                     />
                     {(!collapsed || isMobile) && (
                         <>
-                            <span className="truncate flex-1">{item.title}</span>
+                            <span className="truncate flex-1 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                                {item.title}
+                            </span>
                             {item.badge && (
-                                <span className="text-[10px] font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full">
+                                <span className="text-[10px] font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                     {item.badge}
                                 </span>
                             )}
@@ -417,11 +419,16 @@ export function Sidebar() {
                         <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
                             <Play className="h-4.5 w-4.5 text-primary-foreground fill-primary-foreground" />
                         </div>
-                        {(!collapsed || isMobile) && (
-                            <span className="text-base font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                                {brandConfig.name}
-                            </span>
-                        )}
+                        <span
+                            className={cn(
+                                "text-base font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent transition-[opacity,transform] duration-200 motion-reduce:transition-none origin-left",
+                                collapsed && !isMobile
+                                    ? "opacity-0 scale-x-0 w-0 pointer-events-none"
+                                    : "opacity-100 scale-x-100"
+                            )}
+                        >
+                            {brandConfig.name}
+                        </span>
                     </Link>
                     {isMobile ? (
                         <button
@@ -447,35 +454,41 @@ export function Sidebar() {
                 </div>
 
                 {/* Inline Search */}
-                {(!collapsed || isMobile) && (
-                    <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/30" />
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="Filter nav…"
-                                value={filterQuery}
-                                onChange={(e) => setFilterQuery(e.target.value)}
-                                className="w-full h-8 pl-8 pr-8 rounded-md bg-sidebar-accent/50 border border-sidebar-border/50 text-xs text-sidebar-foreground placeholder:text-sidebar-foreground/30 focus:outline-none focus:ring-1 focus:ring-sidebar-primary/50 transition-colors"
-                                aria-label="Filter navigation"
-                            />
-                            {filterQuery ? (
-                                <button
-                                    onClick={() => setFilterQuery("")}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 rounded-sm flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors"
-                                    aria-label="Clear filter"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            ) : (
-                                <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-sidebar-foreground/25 bg-sidebar-accent px-1 py-0.5 rounded font-mono">
-                                    /
-                                </kbd>
-                            )}
-                        </div>
+                <div
+                    className={cn(
+                        "border-b border-sidebar-border shrink-0 overflow-hidden transition-[max-height,opacity,padding] duration-200 motion-reduce:transition-none",
+                        collapsed && !isMobile
+                            ? "max-h-0 opacity-0 py-0 border-b-0"
+                            : "max-h-20 opacity-100 px-3 py-2"
+                    )}
+                >
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/30" />
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Filter nav…"
+                            value={filterQuery}
+                            onChange={(e) => setFilterQuery(e.target.value)}
+                            className="w-full h-8 pl-8 pr-8 rounded-md bg-sidebar-accent/50 border border-sidebar-border/50 text-xs text-sidebar-foreground placeholder:text-sidebar-foreground/30 focus:outline-none focus:ring-1 focus:ring-sidebar-primary/50 transition-colors"
+                            aria-label="Filter navigation"
+                            tabIndex={collapsed && !isMobile ? -1 : 0}
+                        />
+                        {filterQuery ? (
+                            <button
+                                onClick={() => setFilterQuery("")}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 rounded-sm flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors"
+                                aria-label="Clear filter"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        ) : (
+                            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-sidebar-foreground/25 bg-sidebar-accent px-1 py-0.5 rounded font-mono">
+                                /
+                            </kbd>
+                        )}
                     </div>
-                )}
+                </div>
 
                 {/* Nav Sections */}
                 <nav ref={navRef} className="flex-1 overflow-y-auto py-2 px-2 scrollbar-hide">
@@ -604,7 +617,7 @@ export function Sidebar() {
                             <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 shrink-0">
                                 {profile ? getInitials(profile.name) : "??"}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                 <p className="text-xs font-medium truncate">
                                     {authLoading ? "Loading..." : profile?.name || "Guest"}
                                 </p>

@@ -40,7 +40,8 @@ export const AUTH_STRINGS = {
         loginPrompt: "Already have an account?",
         loginLink: "Sign in",
         successTitle: "Check your email",
-        successMessage: "We sent a confirmation link to {email}. Please check your inbox (and spam folder) to verify your account.",
+        successMessage:
+            "We sent a confirmation link to {email}. Please check your inbox (and spam folder) to verify your account.",
         serviceUnavailable: "Authentication service unavailable. Please try again later.",
         genericError: "Something went wrong. Please try again.",
     },
@@ -56,7 +57,8 @@ export const AUTH_STRINGS = {
         resendButton: "Resend ({seconds}s)",
         backToLogin: "Back to sign in",
         successTitle: "Check your email",
-        successMessage: "If an account exists for {email}, you'll receive a password reset link shortly.",
+        successMessage:
+            "If an account exists for {email}, you'll receive a password reset link shortly.",
         serviceUnavailable: "Authentication service unavailable. Please try again later.",
         genericError: "Something went wrong. Please try again.",
     },
@@ -74,7 +76,8 @@ export const AUTH_STRINGS = {
         successTitle: "Password updated",
         successSubtitle: "Your account is secured with your new password",
         successHeading: "You're all set",
-        successMessage: "Your password has been successfully updated. You can now continue to your dashboard.",
+        successMessage:
+            "Your password has been successfully updated. You can now continue to your dashboard.",
         goToDashboard: "Go to Dashboard",
         serviceUnavailable: "Authentication service unavailable. Please try again later.",
         genericError: "Something went wrong. Please try again.",
@@ -117,11 +120,14 @@ export const AUTH_STRINGS = {
         loadingTitle: "Loading invitation…",
         loadingSubtitle: "Verifying your invite",
         notFoundTitle: "Invitation not found",
-        notFoundMessage: "This invitation link is invalid or has been removed. Please contact your team administrator for a new invite.",
+        notFoundMessage:
+            "This invitation link is invalid or has been removed. Please contact your team administrator for a new invite.",
         expiredTitle: "Invitation expired",
-        expiredMessage: "This invitation has expired. Please ask your team administrator to send a new invitation.",
+        expiredMessage:
+            "This invitation has expired. Please ask your team administrator to send a new invitation.",
         usedTitle: "Already accepted",
-        usedMessage: "This invitation has already been accepted. If this was you, sign in to access the organization.",
+        usedMessage:
+            "This invitation has already been accepted. If this was you, sign in to access the organization.",
         acceptedTitle: "Welcome aboard!",
         acceptedSubtitle: "You've joined the team",
         acceptedMessage: "You've joined {org}",
@@ -196,9 +202,11 @@ export const AUTH_STRINGS = {
     // ─── Roles ──────────────────────────────────────────────────
     roles: {
         exec: "Executive",
+        director: "Director",
         pm: "Project Manager",
+        member: "Team Member",
         client: "Client",
-        vendor: "Vendor",
+        collaborator: "Collaborator",
     },
 } as const;
 

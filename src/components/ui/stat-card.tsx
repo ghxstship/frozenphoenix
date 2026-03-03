@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { type LucideIcon, Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { NumberTicker } from "@/components/ui/number-ticker";
 
 interface StatCardProps {
     title: string;
@@ -30,7 +31,9 @@ export function StatCard({
             <div className="flex items-start justify-between">
                 <div className="space-y-1">
                     <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                    <p className="text-2xl font-bold tracking-tight">{value}</p>
+                    <p className="text-2xl font-bold tracking-tight tabular-nums">
+                        {typeof value === "number" ? <NumberTicker value={value} /> : value}
+                    </p>
                 </div>
                 {Icon && (
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">

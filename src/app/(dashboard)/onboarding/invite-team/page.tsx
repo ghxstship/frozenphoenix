@@ -16,10 +16,12 @@ import {
 } from "lucide-react";
 
 const ROLE_OPTIONS = [
-    { value: "pm", label: "Project Manager" },
-    { value: "client", label: "Client" },
-    { value: "vendor", label: "Vendor" },
     { value: "exec", label: "Executive" },
+    { value: "director", label: "Director" },
+    { value: "pm", label: "Project Manager" },
+    { value: "member", label: "Team Member" },
+    { value: "client", label: "Client" },
+    { value: "collaborator", label: "Collaborator" },
 ];
 
 interface InviteRow {
@@ -114,7 +116,7 @@ export default function InviteTeamPage() {
     );
 
     const handleSkip = useCallback(() => {
-        router.push("/dashboard");
+        router.push("/onboarding/billing");
     }, [router]);
 
     if (success) {
@@ -134,8 +136,9 @@ export default function InviteTeamPage() {
                     <p className="text-sm text-muted-foreground">
                         Your team members will receive an email with a link to join.
                     </p>
-                    <Button onClick={() => router.push("/dashboard")}>
-                        Go to Dashboard
+                    <p className="text-xs text-muted-foreground">One more step to go.</p>
+                    <Button onClick={() => router.push("/onboarding/billing")}>
+                        Continue
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                 </div>

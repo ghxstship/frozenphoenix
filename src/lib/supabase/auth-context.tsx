@@ -26,6 +26,7 @@ interface OrgMembership {
 interface AuthContextType {
     user: User | null;
     profile: Profile | null;
+    username: string | null;
     session: Session | null;
     loading: boolean;
     memberships: OrgMembership[];
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [memberships, setMemberships] = useState<OrgMembership[]>([]);
     const [activeOrgId, setActiveOrgId] = useState<string | null>(() => {
@@ -102,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         {
                             user_id: userId,
                             organization_id: defaultOrg.id,
-                            role: "pm",
+                            role: "member",
                             status: "active",
                             is_default_org: true,
                         },
@@ -162,12 +164,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         [supabase]
     );
 
+    const fetchUsername = useCallback(
+        async (userId: string) => {
+            if (!supabase) return;
+            // username lives on user_profiles (migration 038)
+            const { data } = await supabase
+                .from("user_profiles")
+                .select("username")
+                .eq("id", userId)
+                .single();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setUsername((data as any)?.username ?? null);
+        },
+        [supabase]
+    );
+
     const refreshProfile = useCallback(async () => {
         if (user) {
             await fetchProfile(user.id);
             await fetchMemberships(user.id);
+            await fetchUsername(user.id);
         }
-    }, [user, fetchProfile, fetchMemberships]);
+    }, [user, fetchProfile, fetchMemberships, fetchUsername]);
 
     const signOut = useCallback(async () => {
         if (!supabase) return;
@@ -198,6 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
                 await fetchProfile(session.user.id);
                 await fetchMemberships(session.user.id);
+                await fetchUsername(session.user.id);
             }
 
             setLoading(false);
@@ -214,8 +233,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
                 await fetchProfile(session.user.id);
                 await fetchMemberships(session.user.id);
+                await fetchUsername(session.user.id);
             } else {
                 setProfile(null);
+                setUsername(null);
                 setMemberships([]);
             }
 
@@ -223,13 +244,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => subscription.unsubscribe();
-    }, [supabase, fetchProfile, fetchMemberships]);
+    }, [supabase, fetchProfile, fetchMemberships, fetchUsername]);
 
     return (
         <AuthContext.Provider
             value={{
                 user,
                 profile,
+                username,
                 session,
                 loading,
                 memberships,

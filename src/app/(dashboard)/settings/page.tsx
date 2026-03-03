@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,11 @@ import { useTheme } from "@/components/theme-provider";
 import type { ColorMode } from "@/components/theme-provider";
 import type { ResolvedSetting, SettingCategory } from "@/types/settings";
 import {
+    AtSign,
     Bell,
     Building2,
+    CheckCircle2,
+    ExternalLink,
     Key,
     Loader2,
     LogOut,
@@ -35,6 +38,7 @@ import {
     Sun,
     Upload,
     User,
+    XCircle,
 } from "lucide-react";
 import { TabBar } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -275,6 +279,8 @@ export default function SettingsPage() {
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                <UsernameCard />
 
                                 {/* User Preferences from settings framework */}
                                 {!settingsLoading && (
@@ -730,15 +736,18 @@ export default function SettingsPage() {
                                             <p className="text-sm font-medium mb-3">Accent Color</p>
                                             <div className="flex gap-2">
                                                 {[
-                                                    { color: "bg-blue-500", name: "Blue" },
-                                                    { color: "bg-violet-500", name: "Violet" },
-                                                    { color: "bg-rose-500", name: "Rose" },
-                                                    { color: "bg-orange-500", name: "Orange" },
-                                                    { color: "bg-emerald-500", name: "Emerald" },
+                                                    { hsl: "220 70% 50%", name: "Blue" },
+                                                    { hsl: "262 83% 58%", name: "Violet" },
+                                                    { hsl: "347 77% 50%", name: "Rose" },
+                                                    { hsl: "31 97% 50%", name: "Orange" },
+                                                    { hsl: "152 69% 40%", name: "Emerald" },
                                                 ].map((accent) => (
                                                     <button
                                                         key={accent.name}
-                                                        className={`h-8 w-8 rounded-full ${accent.color} ring-2 ring-offset-2 ring-offset-background ring-transparent hover:ring-primary transition-all`}
+                                                        className="h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-background ring-transparent hover:ring-primary transition-all"
+                                                        style={{
+                                                            backgroundColor: `hsl(${accent.hsl})`,
+                                                        }}
                                                         title={accent.name}
                                                     />
                                                 ))}
@@ -803,5 +812,241 @@ export default function SettingsPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// ─── Username Management Card (used in Profile tab) ─────────────────
+type UsernameAvailability = "idle" | "checking" | "available" | "unavailable";
+
+function UsernameCard() {
+    const { username, refreshProfile } = useAuth();
+    const [editing, setEditing] = useState(false);
+    const [input, setInput] = useState("");
+    const [availability, setAvailability] = useState<UsernameAvailability>("idle");
+    const [reason, setReason] = useState<string | null>(null);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleInputChange = useCallback((value: string) => {
+        const normalized = value.toLowerCase().trim();
+        setInput(normalized);
+        if (normalized.length < 3) {
+            setAvailability("idle");
+            setReason(null);
+            setSuggestions([]);
+        }
+    }, []);
+
+    // Debounced availability check
+    useEffect(() => {
+        if (!editing || input.length < 3) return;
+
+        const timer = setTimeout(async () => {
+            setAvailability("checking");
+            try {
+                const res = await fetch(`/api/usernames/check?q=${encodeURIComponent(input)}`);
+                if (!res.ok) {
+                    setAvailability("idle");
+                    return;
+                }
+                const data = await res.json();
+                setAvailability(data.available ? "available" : "unavailable");
+                setReason(data.reason ?? null);
+                setSuggestions(data.suggestions ?? []);
+            } catch {
+                setAvailability("idle");
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [input, editing]);
+
+    const handleSave = useCallback(async () => {
+        if (availability !== "available" || !input) return;
+        setSaving(true);
+        setError(null);
+
+        const endpoint = username ? "/api/usernames/change" : "/api/usernames/claim";
+        const method = username ? "PATCH" : "POST";
+
+        try {
+            const res = await fetch(endpoint, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: input }),
+            });
+
+            const contentType = res.headers.get("content-type") ?? "";
+            if (!contentType.includes("application/json")) {
+                setError("Unexpected response. Please try again.");
+                setSaving(false);
+                return;
+            }
+
+            const data = await res.json();
+            if (!res.ok) {
+                const msg =
+                    typeof data.error === "string"
+                        ? data.error
+                        : (data.error?.message ?? "Failed to update username.");
+                setError(msg);
+                setSaving(false);
+                return;
+            }
+
+            try {
+                await refreshProfile();
+            } catch {
+                // best-effort
+            }
+
+            setSaving(false);
+            setEditing(false);
+            setInput("");
+            setAvailability("idle");
+        } catch {
+            setError("Something went wrong. Please try again.");
+            setSaving(false);
+        }
+    }, [input, availability, username, refreshProfile]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <AtSign className="h-4 w-4" />
+                    Username
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {!editing ? (
+                    <div className="flex items-center justify-between">
+                        <div>
+                            {username ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold">@{username}</span>
+                                    <a
+                                        href={`/u/${username}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                        View profile
+                                        <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No username set. Claim one to get a public profile.
+                                </p>
+                            )}
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setEditing(true);
+                                setInput(username ?? "");
+                                setError(null);
+                            }}
+                        >
+                            {username ? "Change" : "Claim Username"}
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {error && (
+                            <div
+                                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                role="alert"
+                            >
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label htmlFor="settings-username" className="text-sm font-medium">
+                                {username ? "New Username" : "Choose a Username"}
+                            </label>
+                            <div className="relative">
+                                <AtSign
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                    aria-hidden="true"
+                                />
+                                <Input
+                                    id="settings-username"
+                                    value={input}
+                                    onChange={(e) => handleInputChange(e.target.value)}
+                                    placeholder="your.username"
+                                    className="pl-10 pr-10"
+                                    disabled={saving}
+                                    autoComplete="off"
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    {availability === "checking" && (
+                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                    )}
+                                    {availability === "available" && (
+                                        <CheckCircle2 className="h-4 w-4 text-success" />
+                                    )}
+                                    {availability === "unavailable" && (
+                                        <XCircle className="h-4 w-4 text-destructive" />
+                                    )}
+                                </div>
+                            </div>
+                            {availability === "available" && (
+                                <p className="text-xs text-success">Username is available!</p>
+                            )}
+                            {availability === "unavailable" && reason && (
+                                <p className="text-xs text-destructive">{reason}</p>
+                            )}
+                        </div>
+
+                        {suggestions.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {suggestions.map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={() => handleInputChange(s)}
+                                        className="px-2 py-1 text-xs rounded-md border border-border hover:bg-accent/10 transition-colors"
+                                    >
+                                        @{s}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex gap-2 justify-end">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setEditing(false);
+                                    setInput("");
+                                    setError(null);
+                                    setAvailability("idle");
+                                }}
+                                disabled={saving}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={handleSave}
+                                disabled={saving || availability !== "available"}
+                            >
+                                {saving ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Save className="h-4 w-4" />
+                                )}
+                                {username ? "Change Username" : "Claim Username"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }

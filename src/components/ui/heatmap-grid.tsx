@@ -41,10 +41,10 @@ function getUtilizationColor(percent: number): string {
 
 function getHeatColor(percent: number): string {
     if (percent === 0) return "bg-muted/30";
-    if (percent < 25) return "bg-blue-500/20";
-    if (percent < 50) return "bg-blue-500/40";
-    if (percent < 75) return "bg-orange-500/40";
-    return "bg-red-500/50";
+    if (percent < 25) return "bg-info/20";
+    if (percent < 50) return "bg-info/40";
+    if (percent < 75) return "bg-warning/40";
+    return "bg-destructive/50";
 }
 
 function getDivergentColor(percent: number): string {

@@ -8,12 +8,19 @@ import { Lock, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-const DEFAULT_LEVEL: PermissionLevel = "vendor";
+const DEFAULT_LEVEL: PermissionLevel = "collaborator";
 
 function resolvePermissionLevel(profile: { role?: string | null } | null): PermissionLevel {
     if (!profile?.role) return DEFAULT_LEVEL;
     const { role } = profile;
-    if (role === "exec" || role === "pm" || role === "client" || role === "vendor") {
+    if (
+        role === "exec" ||
+        role === "director" ||
+        role === "pm" ||
+        role === "member" ||
+        role === "client" ||
+        role === "collaborator"
+    ) {
         return role;
     }
     return DEFAULT_LEVEL;

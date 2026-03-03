@@ -330,6 +330,35 @@ export const STAGGER_SCALE = {
 
 export type StaggerScaleToken = keyof typeof STAGGER_SCALE;
 
+// ─── Spring Presets (for motion library) ───
+// Named spring configurations for JS-driven animations
+export const SPRING_PRESETS = {
+    snappy: { stiffness: 500, damping: 30, mass: 1 },
+    gentle: { stiffness: 200, damping: 20, mass: 1 },
+    bouncy: { stiffness: 300, damping: 15, mass: 1 },
+    heavy: { stiffness: 150, damping: 25, mass: 2 },
+} as const;
+
+export type SpringPresetToken = keyof typeof SPRING_PRESETS;
+
+// ─── Exit Duration Scale ───
+// Exit animations should be faster than entrances (asymmetric timing)
+export const EXIT_SCALE = {
+    fast: 100,
+    normal: 150,
+    slow: 250,
+} as const;
+
+export type ExitScaleToken = keyof typeof EXIT_SCALE;
+
+// ─── Scroll Reveal Config ───
+// IntersectionObserver configuration for scroll-driven animations
+export const SCROLL_REVEAL = {
+    threshold: 0.15,
+    rootMargin: "-40px",
+    staggerInterval: 80,
+} as const;
+
 // ─── Interaction Timing ───
 // Standard debounce/throttle values for user interactions
 export const INTERACTION_TIMING = {

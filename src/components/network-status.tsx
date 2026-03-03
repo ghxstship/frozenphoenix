@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "@/lib/motion";
 import { Wifi, WifiOff } from "lucide-react";
 
 interface NetworkContextValue {
@@ -45,26 +46,39 @@ export function NetworkStatusProvider({ children }: { children: React.ReactNode 
     return (
         <NetworkContext.Provider value={{ isOnline }}>
             {children}
-            {!isOnline && (
-                <div
-                    className="fixed top-0 left-0 right-0 z-[200] bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2 animate-slide-down"
-                    role="alert"
-                    aria-live="assertive"
-                >
-                    <WifiOff className="h-4 w-4" />
-                    You are offline. Changes will not be saved until your connection is restored.
-                </div>
-            )}
-            {showReconnected && isOnline && (
-                <div
-                    className="fixed top-0 left-0 right-0 z-[200] bg-success text-success-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2 animate-slide-down"
-                    role="status"
-                    aria-live="polite"
-                >
-                    <Wifi className="h-4 w-4" />
-                    Connection restored.
-                </div>
-            )}
+            <AnimatePresence>
+                {!isOnline && (
+                    <motion.div
+                        key="offline-banner"
+                        className="fixed top-0 left-0 right-0 z-[200] bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
+                        initial={{ y: -48, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -48, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        role="alert"
+                        aria-live="assertive"
+                    >
+                        <WifiOff className="h-4 w-4" />
+                        You are offline. Changes will not be saved until your connection is
+                        restored.
+                    </motion.div>
+                )}
+                {showReconnected && isOnline && (
+                    <motion.div
+                        key="reconnected-banner"
+                        className="fixed top-0 left-0 right-0 z-[200] bg-success text-success-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
+                        initial={{ y: -48, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -48, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <Wifi className="h-4 w-4" />
+                        Connection restored.
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </NetworkContext.Provider>
     );
 }

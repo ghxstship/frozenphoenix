@@ -6,7 +6,11 @@ const optionalString = z.string().optional().default("");
 const positiveNumber = z.number().positive("Must be greater than 0");
 const nonNegativeNumber = z.number().min(0, "Must be 0 or greater");
 const emailField = z.string().email("Invalid email address");
-const phoneField = z.string().regex(/^[+]?[\d\s\-()]{7,20}$/, "Invalid phone number").optional().or(z.literal(""));
+const phoneField = z
+    .string()
+    .regex(/^[+]?[\d\s\-()]{7,20}$/, "Invalid phone number")
+    .optional()
+    .or(z.literal(""));
 const dateField = z.string().regex(/^\d{4}-\d{2}-\d{2}/, "Invalid date format");
 const optionalDate = z.string().optional().or(z.literal(""));
 const uuidField = z.string().uuid("Invalid ID");
@@ -19,7 +23,9 @@ export const dealCreateSchema = z.object({
     contact_email: emailField.optional().or(z.literal("")),
     value: nonNegativeNumber,
     probability: z.number().min(0).max(100).default(50),
-    stage: z.enum(["lead", "qualified", "proposal", "negotiation", "closed_won", "closed_lost"]).default("lead"),
+    stage: z
+        .enum(["lead", "qualified", "proposal", "negotiation", "closed_won", "closed_lost"])
+        .default("lead"),
     expected_close_date: optionalDate,
     notes: optionalString,
 });
@@ -32,8 +38,34 @@ export const dealUpdateSchema = dealCreateSchema.partial().extend({
 export const projectCreateSchema = z.object({
     name: nonEmptyString.max(200),
     description: optionalString,
-    status: z.enum(["draft", "active", "on_hold", "completed", "cancelled", "archived", "pre_production", "in_production", "post_production", "wrap"]).default("draft"),
-    phase: z.enum(["concept", "pre_production", "production", "post_production", "wrap", "closed", "discovery", "planning", "execution", "review"]).default("concept"),
+    status: z
+        .enum([
+            "draft",
+            "active",
+            "on_hold",
+            "completed",
+            "cancelled",
+            "archived",
+            "pre_production",
+            "in_production",
+            "post_production",
+            "wrap",
+        ])
+        .default("draft"),
+    phase: z
+        .enum([
+            "concept",
+            "pre_production",
+            "production",
+            "post_production",
+            "wrap",
+            "closed",
+            "discovery",
+            "planning",
+            "execution",
+            "review",
+        ])
+        .default("concept"),
     start_date: optionalDate,
     end_date: optionalDate,
     budget_planned: nonNegativeNumber.default(0),
@@ -48,9 +80,22 @@ export const projectUpdateSchema = projectCreateSchema.partial().extend({
 export const taskCreateSchema = z.object({
     title: nonEmptyString.max(300),
     description: optionalString,
-    status: z.enum(["todo", "in_progress", "in_review", "done", "blocked", "cancelled", "backlog"]).default("todo"),
+    status: z
+        .enum(["todo", "in_progress", "in_review", "done", "blocked", "cancelled", "backlog"])
+        .default("todo"),
     priority: z.enum(["low", "medium", "high", "urgent", "critical"]).default("medium"),
-    phase: z.enum(["pre_production", "production", "post_production", "wrap", "concept", "planning", "execution", "review"]).default("pre_production"),
+    phase: z
+        .enum([
+            "pre_production",
+            "production",
+            "post_production",
+            "wrap",
+            "concept",
+            "planning",
+            "execution",
+            "review",
+        ])
+        .default("pre_production"),
     project_id: uuidField.optional(),
     assigned_to: uuidField.optional(),
     due_date: optionalDate,
@@ -97,8 +142,20 @@ export const assetUpdateSchema = assetCreateSchema.partial().extend({
 export const contractCreateSchema = z.object({
     title: nonEmptyString.max(300),
     contract_number: optionalString,
-    type: z.enum(["msa", "sow", "nda", "vendor", "client", "amendment", "addendum", "other"]).default("msa"),
-    status: z.enum(["draft", "pending_review", "pending_signature", "active", "expired", "terminated", "renewed"]).default("draft"),
+    type: z
+        .enum(["msa", "sow", "nda", "vendor", "client", "amendment", "addendum", "other"])
+        .default("msa"),
+    status: z
+        .enum([
+            "draft",
+            "pending_review",
+            "pending_signature",
+            "active",
+            "expired",
+            "terminated",
+            "renewed",
+        ])
+        .default("draft"),
     value: nonNegativeNumber.default(0),
     effective_date: optionalDate,
     expiration_date: optionalDate,
@@ -148,7 +205,17 @@ export const invoiceUpdateSchema = invoiceCreateSchema.partial().extend({
 // ─── Approvals ───
 export const approvalCreateSchema = z.object({
     title: nonEmptyString.max(300),
-    type: z.enum(["budget", "creative", "production", "vendor", "change_order", "milestone", "financial"]).default("production"),
+    type: z
+        .enum([
+            "budget",
+            "creative",
+            "production",
+            "vendor",
+            "change_order",
+            "milestone",
+            "financial",
+        ])
+        .default("production"),
     project_id: uuidField.optional(),
     requested_by: uuidField.optional(),
     description: optionalString,
@@ -183,11 +250,14 @@ export const commentCreateSchema = z.object({
 // ─── Invitations ───
 const inviteeSchema = z.object({
     email: emailField,
-    role: z.enum(["exec", "pm", "client", "vendor"]).default("pm"),
+    role: z.enum(["exec", "director", "pm", "member", "client", "collaborator"]).default("member"),
 });
 
 export const invitationCreateSchema = z.object({
-    invitees: z.array(inviteeSchema).min(1, "At least one invitee is required").max(50, "Maximum 50 invitations at once"),
+    invitees: z
+        .array(inviteeSchema)
+        .min(1, "At least one invitee is required")
+        .max(50, "Maximum 50 invitations at once"),
     organization_id: uuidField,
     message: z.string().max(1000).optional(),
 });
@@ -195,10 +265,74 @@ export const invitationCreateSchema = z.object({
 // ─── Organizations ───
 export const organizationCreateSchema = z.object({
     name: z.string().min(2, "Organization name must be at least 2 characters").max(200),
-    slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens").max(100).optional(),
+    slug: z
+        .string()
+        .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens")
+        .max(100)
+        .optional(),
     industry: z.string().max(100).optional(),
     timezone: z.string().max(50).optional(),
     currency: z.string().length(3, "Currency must be a 3-letter code").optional(),
+});
+
+// ─── Usernames ───
+const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]*[a-z0-9]$/;
+const USERNAME_NO_CONSECUTIVE = /(.)\1{2,}|\.{2}|--{1}|__{1}/;
+
+export const usernameField = z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(40, "Username must be at most 40 characters")
+    .transform((v) => v.toLowerCase().trim())
+    .pipe(
+        z
+            .string()
+            .regex(
+                USERNAME_PATTERN,
+                "Username must start and end with a letter or number, and can only contain letters, numbers, dots, hyphens, and underscores"
+            )
+            .refine(
+                (v) => !USERNAME_NO_CONSECUTIVE.test(v),
+                "Username cannot contain consecutive special characters"
+            )
+    );
+
+export const usernameCheckSchema = z.object({
+    username: usernameField,
+});
+
+export const usernameClaimSchema = z.object({
+    username: usernameField,
+});
+
+export const usernameChangeSchema = z.object({
+    username: usernameField,
+});
+
+export const profileVisibilitySchema = z.object({
+    profile_visibility: z.enum(["public", "connections", "organization", "private"]),
+});
+
+export const userProfileUpdateSchema = z.object({
+    display_name: z.string().min(1).max(200).optional(),
+    headline: z.string().max(200).optional(),
+    bio: z.string().max(2000).optional(),
+    website_url: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+    linkedin_url: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+    location: z.string().max(200).optional(),
+    profile_visibility: z.enum(["public", "connections", "organization", "private"]).optional(),
+});
+
+export const orgProfileUpdateSchema = z.object({
+    tagline: z.string().max(300).optional(),
+    description: z.string().max(5000).optional(),
+    website_url: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+    linkedin_url: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+    location: z.string().max(200).optional(),
+    employee_count_range: z
+        .enum(["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"])
+        .optional(),
+    profile_visibility: z.enum(["public", "connections", "private"]).optional(),
 });
 
 // ─── Validation helper ───

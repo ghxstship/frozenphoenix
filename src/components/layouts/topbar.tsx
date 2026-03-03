@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/supabase/auth-context";
 
 import { FOCUS_RING, ICON_SIZES, LAYOUT } from "@/config/design-tokens";
+import { useReducedMotion } from "@/hooks/use-media-query";
 import { hasPermission } from "@/config/rbac";
 import {
     getContextualNavigationVisibility,
@@ -676,6 +677,25 @@ export function Topbar() {
         ];
     }, [breadcrumbs]);
 
+    // Scroll-driven topbar shrink
+    const reducedMotion = useReducedMotion();
+    const headerRef = useRef<HTMLElement>(null);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        if (reducedMotion) return;
+        const shell = document.getElementById("shell-main-content")?.parentElement;
+        const target = shell || window;
+
+        const handleScroll = () => {
+            const scrollTop = shell ? shell.scrollTop : window.scrollY;
+            setIsScrolled(scrollTop > 24);
+        };
+
+        target.addEventListener("scroll", handleScroll, { passive: true });
+        return () => target.removeEventListener("scroll", handleScroll);
+    }, [reducedMotion]);
+
     // Open command bar via Cmd+K
     const openCommandBar = useCallback(() => {
         const event = new KeyboardEvent("keydown", {
@@ -686,10 +706,16 @@ export function Topbar() {
         document.dispatchEvent(event);
     }, []);
 
+    const shrunkHeight = isScrolled && !reducedMotion ? 48 : undefined;
+
     return (
         <header
-            className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6"
-            style={{ height: LAYOUT.topbar.height }}
+            ref={headerRef}
+            className={cn(
+                "sticky top-0 z-30 flex items-center justify-between border-b bg-background/80 backdrop-blur-xl px-4 lg:px-6 transition-[height,border-color,box-shadow] duration-200 motion-reduce:transition-none",
+                isScrolled ? "border-border shadow-sm" : "border-border/60"
+            )}
+            style={{ height: shrunkHeight ?? LAYOUT.topbar.height }}
             role="banner"
         >
             {/* Left: Mobile Menu + Breadcrumbs + Env Badge */}

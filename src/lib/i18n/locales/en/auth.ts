@@ -21,7 +21,8 @@ const auth = {
         rateLimitError: "Too many attempts. Try again in {time}.",
         serviceUnavailable: "Authentication service unavailable. Please try again later.",
         genericError: "Something went wrong. Please try again.",
-        accountSuspended: "Your account has been suspended. Please contact your organization administrator.",
+        accountSuspended:
+            "Your account has been suspended. Please contact your organization administrator.",
     },
 
     // ─── Signup ────────────────────────────────────────────────
@@ -48,8 +49,10 @@ const auth = {
         confirmationTitle: "Check your email",
         confirmationSubtitle: "One more step to get started",
         confirmationHeading: "Confirmation link sent",
-        confirmationBody: "We've sent a confirmation link to {email}. Click the link in the email to activate your account.",
-        confirmationSpam: "Didn't receive it? Check your spam folder or try again in a few minutes.",
+        confirmationBody:
+            "We've sent a confirmation link to {email}. Click the link in the email to activate your account.",
+        confirmationSpam:
+            "Didn't receive it? Check your spam folder or try again in a few minutes.",
         backToSignIn: "Back to Sign In",
     },
 
@@ -64,7 +67,8 @@ const auth = {
         backToSignIn: "Back to Sign In",
         successTitle: "Check your email",
         successSubtitle: "Password reset instructions sent",
-        successBody: "We've sent password reset instructions to {email}. Click the link in the email to set a new password.",
+        successBody:
+            "We've sent password reset instructions to {email}. Click the link in the email to set a new password.",
         successSpam: "Didn't receive it? Check your spam folder or try again in a few minutes.",
         genericError: "Something went wrong. Please try again.",
     },
@@ -79,7 +83,8 @@ const auth = {
         submittingButton: "Updating…",
         passwordMismatch: "Passwords do not match.",
         successTitle: "Password updated",
-        successBody: "Your password has been updated successfully. You can now sign in with your new password.",
+        successBody:
+            "Your password has been updated successfully. You can now sign in with your new password.",
         signInButton: "Sign In",
         genericError: "Something went wrong. Please try again.",
     },
@@ -95,7 +100,8 @@ const auth = {
         verifyButton: "Verify",
         verifyingButton: "Verifying…",
         backupCodesTitle: "Save your backup codes",
-        backupCodesBody: "Store these codes somewhere safe. You can use them to sign in if you lose access to your authenticator.",
+        backupCodesBody:
+            "Store these codes somewhere safe. You can use them to sign in if you lose access to your authenticator.",
         invalidCode: "Invalid verification code. Please try again.",
         continueButton: "Continue",
     },
@@ -174,13 +180,16 @@ const auth = {
         requireMfaLabel: "Require Multi-Factor Authentication",
         requireMfaDescription: "All members must enable MFA to access the organization.",
         enforceSsoLabel: "Enforce SSO",
-        enforceSsoDescription: "Require users to authenticate via SSO. Password login will be disabled.",
+        enforceSsoDescription:
+            "Require users to authenticate via SSO. Password login will be disabled.",
         ssoDomainTitle: "SSO & Domain Restrictions",
         ssoDomainLabel: "SSO Domain",
         ssoDomainPlaceholder: "company.com",
-        ssoDomainDescription: "Users with this email domain will be auto-assigned to this org on signup.",
+        ssoDomainDescription:
+            "Users with this email domain will be auto-assigned to this org on signup.",
         allowedDomainsLabel: "Allowed Email Domains",
-        allowedDomainsDescription: "Restrict invitations to these email domains. Leave empty to allow any domain.",
+        allowedDomainsDescription:
+            "Restrict invitations to these email domains. Leave empty to allow any domain.",
         addDomainPlaceholder: "example.com",
         sessionPoliciesTitle: "Session & Invitation Policies",
         sessionTimeoutLabel: "Session Timeout (hours)",
@@ -197,9 +206,11 @@ const auth = {
     // ─── Roles ────────────────────────────────────────────────
     roles: {
         exec: "Executive",
+        director: "Director",
         pm: "Project Manager",
+        member: "Team Member",
         client: "Client",
-        vendor: "Vendor",
+        collaborator: "Collaborator",
     },
 
     // ─── Onboarding ───────────────────────────────────────────
@@ -225,7 +236,8 @@ const auth = {
     // ─── Permission Denied ────────────────────────────────────
     permissions: {
         accessDeniedTitle: "Access Denied",
-        accessDeniedBody: "You do not have permission to access this resource. Contact your administrator if you believe this is an error.",
+        accessDeniedBody:
+            "You do not have permission to access this resource. Contact your administrator if you believe this is an error.",
         goBackButton: "Go Back",
         restrictedPlaceholder: "••••",
     },

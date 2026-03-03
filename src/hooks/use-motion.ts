@@ -16,15 +16,31 @@
 
 import { useCallback, useMemo } from "react";
 import { useReducedMotion } from "@/hooks/use-media-query";
-import { MOTION_SCALE, type MotionScaleToken } from "@/config/design-tokens";
+import {
+    EXIT_SCALE,
+    type ExitScaleToken,
+    MOTION_SCALE,
+    type MotionScaleToken,
+    SPRING_PRESETS,
+    type SpringPresetToken,
+} from "@/config/design-tokens";
+
+export interface SpringConfig {
+    stiffness: number;
+    damping: number;
+    mass: number;
+}
 
 export interface MotionConfig {
     reducedMotion: boolean;
     duration: (scale: MotionScaleToken) => number;
     durationMs: (scale: MotionScaleToken) => string;
+    exitDuration: (scale: ExitScaleToken) => number;
     shouldAnimate: boolean;
     getTransition: (scale?: MotionScaleToken) => string;
+    getExitTransition: (scale?: ExitScaleToken) => string;
     getStaggerDelay: (index: number, interval?: number) => string;
+    getSpring: (preset?: SpringPresetToken) => SpringConfig | { duration: 0 };
 }
 
 export function useMotion(): MotionConfig {
@@ -53,10 +69,34 @@ export function useMotion(): MotionConfig {
         [reducedMotion]
     );
 
+    const exitDuration = useCallback(
+        (scale: ExitScaleToken): number => {
+            if (reducedMotion) return 0;
+            return EXIT_SCALE[scale];
+        },
+        [reducedMotion]
+    );
+
+    const getExitTransition = useCallback(
+        (scale: ExitScaleToken = "normal"): string => {
+            if (reducedMotion) return "none";
+            return `all ${EXIT_SCALE[scale]}ms cubic-bezier(0.4, 0, 1, 1)`;
+        },
+        [reducedMotion]
+    );
+
     const getStaggerDelay = useCallback(
         (index: number, interval: number = 50): string => {
             if (reducedMotion) return "0ms";
             return `${index * interval}ms`;
+        },
+        [reducedMotion]
+    );
+
+    const getSpring = useCallback(
+        (preset: SpringPresetToken = "snappy"): SpringConfig | { duration: 0 } => {
+            if (reducedMotion) return { duration: 0 };
+            return SPRING_PRESETS[preset];
         },
         [reducedMotion]
     );
@@ -66,11 +106,23 @@ export function useMotion(): MotionConfig {
             reducedMotion,
             duration,
             durationMs,
+            exitDuration,
             shouldAnimate: !reducedMotion,
             getTransition,
+            getExitTransition,
             getStaggerDelay,
+            getSpring,
         }),
-        [reducedMotion, duration, durationMs, getTransition, getStaggerDelay]
+        [
+            reducedMotion,
+            duration,
+            durationMs,
+            exitDuration,
+            getTransition,
+            getExitTransition,
+            getStaggerDelay,
+            getSpring,
+        ]
     );
 }
 

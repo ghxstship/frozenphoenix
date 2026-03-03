@@ -10,6 +10,7 @@ import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
 import { getActiveBrand } from "@/config/brands";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import {
     BarChart3,
     CheckCircle2,
@@ -122,7 +123,10 @@ export default function LandingPage() {
                 <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
 
-                <div className="max-w-4xl mx-auto text-center relative z-10">
+                <ScrollReveal
+                    animation="fade-up"
+                    className="max-w-4xl mx-auto text-center relative z-10"
+                >
                     <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-xs">
                         <Zap className="h-3 w-3 mr-1" /> Experiential Production, Reimagined
                     </Badge>
@@ -237,18 +241,18 @@ export default function LandingPage() {
                             </div>
                         )}
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
 
             {/* Services */}
             <section id="services" className="py-20 px-6">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
+                    <ScrollReveal animation="fade-up" className="text-center mb-14">
                         <h2 className="text-3xl font-bold mb-3">Full-Spectrum Production</h2>
                         <p className="text-muted-foreground">
                             Every phase, every detail, under one roof.
                         </p>
-                    </div>
+                    </ScrollReveal>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
                             {
@@ -301,14 +305,18 @@ export default function LandingPage() {
             {/* Case Studies */}
             <section id="work" className="py-20 px-6 bg-secondary/30">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
+                    <ScrollReveal animation="fade-up" className="text-center mb-14">
                         <h2 className="text-3xl font-bold mb-3">Selected Work</h2>
                         <p className="text-muted-foreground">
                             Auto-generated from completed productions.
                         </p>
-                    </div>
+                    </ScrollReveal>
                     {MOCK_CASE_STUDIES.map((cs) => (
-                        <div key={cs.id} className="spatial-card p-8 max-w-3xl mx-auto">
+                        <ScrollReveal
+                            key={cs.id}
+                            animation="fade-up"
+                            className="spatial-card p-8 max-w-3xl mx-auto"
+                        >
                             <Badge variant="info" className="mb-4">
                                 {cs.client}
                             </Badge>
@@ -327,7 +335,7 @@ export default function LandingPage() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </ScrollReveal>
                     ))}
                 </div>
             </section>

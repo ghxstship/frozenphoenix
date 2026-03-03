@@ -128,10 +128,22 @@ export async function GET(request: NextRequest) {
                     exportable: true,
                     apiAccessible: true,
                 },
+                director: {
+                    visibility: "VISIBLE" as Visibility,
+                    write: "write" as FieldWriteAccess,
+                    exportable: true,
+                    apiAccessible: true,
+                },
                 pm: {
                     visibility: "VISIBLE" as Visibility,
                     write: "write" as FieldWriteAccess,
                     exportable: true,
+                    apiAccessible: true,
+                },
+                member: {
+                    visibility: "VISIBLE" as Visibility,
+                    write: "write" as FieldWriteAccess,
+                    exportable: false,
                     apiAccessible: true,
                 },
                 client: {
@@ -140,7 +152,7 @@ export async function GET(request: NextRequest) {
                     exportable: false,
                     apiAccessible: true,
                 },
-                vendor: {
+                collaborator: {
                     visibility: "HIDDEN" as Visibility,
                     write: "none" as FieldWriteAccess,
                     exportable: false,

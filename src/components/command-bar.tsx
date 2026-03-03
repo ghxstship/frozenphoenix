@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "@/lib/motion";
 import { navigationConfig } from "@/config/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Clock, Command, Search, Sparkles, X } from "lucide-react";
@@ -237,149 +238,167 @@ export function CommandBar({ className }: CommandBarProps) {
         }
     };
 
-    if (!open) return null;
-
     return (
-        <>
-            {/* Backdrop */}
-            <div
-                className="fixed inset-0 z-50 bg-foreground/50 backdrop-blur-sm animate-fade-in"
-                onClick={() => setOpen(false)}
-                aria-hidden="true"
-            />
-
-            {/* Command Panel */}
-            <div
-                ref={panelRef}
-                className={cn(
-                    "fixed top-[20%] left-1/2 -translate-x-1/2 z-50",
-                    "w-[calc(100vw-2rem)] max-w-lg",
-                    "bg-popover border border-border rounded-xl shadow-2xl overflow-hidden",
-                    "animate-scale-in",
-                    className
-                )}
-                role="dialog"
-                aria-label="Command bar"
-                aria-modal="true"
-            >
-                {/* Search Input */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-                    <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    <input
-                        ref={inputRef}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Search pages, actions..."
-                        className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-                        aria-label="Search commands"
-                        role="combobox"
-                        aria-expanded="true"
-                        aria-controls="command-results"
-                        aria-activedescendant={filteredCommands[selectedIndex]?.id}
-                    />
-                    {query && (
-                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
-                            {filteredCommands.length}
-                        </span>
-                    )}
-                    <kbd className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                        esc
-                    </kbd>
-                    <button
+        <AnimatePresence>
+            {!open ? null : (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        className="fixed inset-0 z-50 bg-foreground/50 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                         onClick={() => setOpen(false)}
-                        className="text-muted-foreground hover:text-foreground sm:hidden"
-                        aria-label="Close command bar"
+                        aria-hidden="true"
+                    />
+
+                    {/* Command Panel */}
+                    <motion.div
+                        ref={panelRef}
+                        className={cn(
+                            "fixed top-[20%] left-1/2 -translate-x-1/2 z-50",
+                            "w-[calc(100vw-2rem)] max-w-lg",
+                            "bg-popover border border-border rounded-xl shadow-2xl overflow-hidden",
+                            className
+                        )}
+                        initial={{ opacity: 0, scale: 0.95, x: "-50%" }}
+                        animate={{ opacity: 1, scale: 1, x: "-50%" }}
+                        exit={{ opacity: 0, scale: 0.95, x: "-50%" }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        role="dialog"
+                        aria-label="Command bar"
+                        aria-modal="true"
                     >
-                        <X className="h-4 w-4" />
-                    </button>
-                </div>
-
-                {/* Results — grouped by section */}
-                <div
-                    ref={listRef}
-                    id="command-results"
-                    className="max-h-[320px] overflow-y-auto py-1"
-                    role="listbox"
-                    aria-label="Search results"
-                >
-                    {filteredCommands.length === 0 ? (
-                        <div className="px-4 py-10 text-center">
-                            <Sparkles className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">
-                                No results for &ldquo;{query}&rdquo;
-                            </p>
-                            <p className="text-xs text-muted-foreground/60 mt-1">
-                                Try a different search term
-                            </p>
+                        {/* Search Input */}
+                        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+                            <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                            <input
+                                ref={inputRef}
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Search pages, actions..."
+                                className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                                aria-label="Search commands"
+                                role="combobox"
+                                aria-expanded="true"
+                                aria-controls="command-results"
+                                aria-activedescendant={filteredCommands[selectedIndex]?.id}
+                            />
+                            {query && (
+                                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
+                                    {filteredCommands.length}
+                                </span>
+                            )}
+                            <kbd className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                esc
+                            </kbd>
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="text-muted-foreground hover:text-foreground sm:hidden"
+                                aria-label="Close command bar"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
                         </div>
-                    ) : (
-                        groupedResults.map((group) => (
-                            <div key={group.section} className="mb-1">
-                                <div className="flex items-center gap-2 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                                    {group.section === "Recent" && <Clock className="h-3 w-3" />}
-                                    {group.section}
-                                </div>
-                                {group.items.map(({ cmd, flatIndex }) => {
-                                    const Icon = cmd.icon;
-                                    return (
-                                        <button
-                                            key={cmd.id}
-                                            id={cmd.id}
-                                            data-selected={flatIndex === selectedIndex}
-                                            onClick={() => handleSelect(cmd)}
-                                            onMouseEnter={() => setSelectedIndex(flatIndex)}
-                                            className={cn(
-                                                "w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors",
-                                                flatIndex === selectedIndex
-                                                    ? "bg-accent text-accent-foreground"
-                                                    : "text-foreground hover:bg-accent/50"
-                                            )}
-                                            role="option"
-                                            aria-selected={flatIndex === selectedIndex}
-                                        >
-                                            <Icon
-                                                className={cn(
-                                                    "h-4 w-4 shrink-0",
-                                                    flatIndex === selectedIndex
-                                                        ? "text-primary"
-                                                        : "text-muted-foreground"
-                                                )}
-                                            />
-                                            <span className="font-medium truncate flex-1">
-                                                {cmd.title}
-                                            </span>
-                                            {flatIndex === selectedIndex && (
-                                                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ))
-                    )}
-                </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-[11px] text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1">
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑↓</kbd>{" "}
-                            navigate
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↵</kbd> open
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">esc</kbd>{" "}
-                            close
-                        </span>
-                    </div>
-                    <span className="flex items-center gap-1">
-                        <Command className="h-3 w-3" />K
-                    </span>
-                </div>
-            </div>
-        </>
+                        {/* Results — grouped by section */}
+                        <div
+                            ref={listRef}
+                            id="command-results"
+                            className="max-h-[320px] overflow-y-auto py-1"
+                            role="listbox"
+                            aria-label="Search results"
+                        >
+                            {filteredCommands.length === 0 ? (
+                                <div className="px-4 py-10 text-center">
+                                    <Sparkles className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+                                    <p className="text-sm text-muted-foreground">
+                                        No results for &ldquo;{query}&rdquo;
+                                    </p>
+                                    <p className="text-xs text-muted-foreground/60 mt-1">
+                                        Try a different search term
+                                    </p>
+                                </div>
+                            ) : (
+                                groupedResults.map((group) => (
+                                    <div key={group.section} className="mb-1">
+                                        <div className="flex items-center gap-2 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                                            {group.section === "Recent" && (
+                                                <Clock className="h-3 w-3" />
+                                            )}
+                                            {group.section}
+                                        </div>
+                                        {group.items.map(({ cmd, flatIndex }) => {
+                                            const Icon = cmd.icon;
+                                            return (
+                                                <button
+                                                    key={cmd.id}
+                                                    id={cmd.id}
+                                                    data-selected={flatIndex === selectedIndex}
+                                                    onClick={() => handleSelect(cmd)}
+                                                    onMouseEnter={() => setSelectedIndex(flatIndex)}
+                                                    className={cn(
+                                                        "w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors",
+                                                        flatIndex === selectedIndex
+                                                            ? "bg-accent text-accent-foreground"
+                                                            : "text-foreground hover:bg-accent/50"
+                                                    )}
+                                                    role="option"
+                                                    aria-selected={flatIndex === selectedIndex}
+                                                >
+                                                    <Icon
+                                                        className={cn(
+                                                            "h-4 w-4 shrink-0",
+                                                            flatIndex === selectedIndex
+                                                                ? "text-primary"
+                                                                : "text-muted-foreground"
+                                                        )}
+                                                    />
+                                                    <span className="font-medium truncate flex-1">
+                                                        {cmd.title}
+                                                    </span>
+                                                    {flatIndex === selectedIndex && (
+                                                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-3">
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                        ↑↓
+                                    </kbd>{" "}
+                                    navigate
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                        ↵
+                                    </kbd>{" "}
+                                    open
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                        esc
+                                    </kbd>{" "}
+                                    close
+                                </span>
+                            </div>
+                            <span className="flex items-center gap-1">
+                                <Command className="h-3 w-3" />K
+                            </span>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
     );
 }

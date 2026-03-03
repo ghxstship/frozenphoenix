@@ -291,24 +291,21 @@ CREATE TABLE IF NOT EXISTS custom_field_definitions (
 CREATE INDEX IF NOT EXISTS idx_cfd_org ON custom_field_definitions(organization_id);
 CREATE INDEX IF NOT EXISTS idx_cfd_entity_types ON custom_field_definitions USING GIN (entity_types);
 
-CREATE TABLE IF NOT EXISTS custom_field_values (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    field_definition_id UUID NOT NULL REFERENCES custom_field_definitions(id) ON DELETE CASCADE,
-    entity_type TEXT NOT NULL,
-    entity_id UUID NOT NULL,
-    value_text TEXT,
-    value_number NUMERIC(14,4),
-    value_date DATE,
-    value_boolean BOOLEAN,
-    value_json JSONB,
-    organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(field_definition_id, entity_type, entity_id)
-);
+-- custom_field_values was first created in 005 with (custom_field_id, entity_id).
+-- This migration extends it with new columns for the v2 custom-fields system.
+-- We use ALTER TABLE ... ADD COLUMN IF NOT EXISTS so this is safe to re-run.
+ALTER TABLE custom_field_values
+    ADD COLUMN IF NOT EXISTS field_definition_id UUID REFERENCES custom_field_definitions(id) ON DELETE CASCADE,
+    ADD COLUMN IF NOT EXISTS entity_type TEXT,
+    ADD COLUMN IF NOT EXISTS value_text TEXT,
+    ADD COLUMN IF NOT EXISTS value_number NUMERIC(14,4),
+    ADD COLUMN IF NOT EXISTS value_date DATE,
+    ADD COLUMN IF NOT EXISTS value_boolean BOOLEAN,
+    ADD COLUMN IF NOT EXISTS value_json JSONB,
+    ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE;
 
-CREATE INDEX IF NOT EXISTS idx_cfv_entity ON custom_field_values(entity_type, entity_id);
-CREATE INDEX IF NOT EXISTS idx_cfv_definition ON custom_field_values(field_definition_id);
+CREATE INDEX IF NOT EXISTS idx_cfv_entity ON custom_field_values(entity_id);
+CREATE INDEX IF NOT EXISTS idx_cfv_definition ON custom_field_values(field_definition_id) WHERE field_definition_id IS NOT NULL;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- VIEWS
@@ -346,15 +343,15 @@ SELECT
 FROM crew_members cm
 LEFT JOIN LATERAL (
     SELECT
-        SUM(CASE WHEN pte.entry_date = CURRENT_DATE
+        SUM(CASE WHEN pte.date = CURRENT_DATE
             THEN pte.regular_hours + pte.overtime_hours + pte.double_time_hours ELSE 0 END) AS hours_today,
         SUM(pte.regular_hours + pte.overtime_hours + pte.double_time_hours) AS hours_this_week,
-        COUNT(*) FILTER (WHERE pte.entry_date = CURRENT_DATE) AS entries_today,
-        COUNT(DISTINCT pte.entry_date) AS entries_this_week
+        COUNT(*) FILTER (WHERE pte.date = CURRENT_DATE) AS entries_today,
+        COUNT(DISTINCT pte.date) AS entries_this_week
     FROM production_time_entries pte
     WHERE pte.crew_member_id = cm.id
-      AND pte.entry_date >= date_trunc('week', CURRENT_DATE)::date
-      AND pte.entry_date <= CURRENT_DATE
+      AND pte.date >= date_trunc('week', CURRENT_DATE)::date
+      AND pte.date <= CURRENT_DATE
 ) te ON true
 WHERE cm.status = 'active';
 

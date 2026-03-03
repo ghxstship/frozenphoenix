@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/use-media-query";
 
 interface BurnChartPoint {
     label: string;
@@ -25,6 +26,8 @@ export function BurnChart({
     className,
     height = 200,
 }: BurnChartProps) {
+    const reducedMotion = useReducedMotion();
+
     if (data.length === 0) return null;
 
     const maxVal = Math.max(
@@ -133,6 +136,11 @@ export function BurnChart({
                     className="text-primary"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    {...(!reducedMotion && {
+                        strokeDasharray: 200,
+                        strokeDashoffset: 200,
+                        style: { animation: "chartLineDraw 1s ease-out 0.2s forwards" },
+                    })}
                 />
 
                 {/* Forecast line */}
@@ -144,6 +152,13 @@ export function BurnChart({
                         strokeWidth="0.5"
                         strokeDasharray="1.5 1.5"
                         className="text-warning/60"
+                        {...(!reducedMotion && {
+                            style: {
+                                opacity: 0,
+                                animation:
+                                    "chartLineDraw 0.8s ease-out 0.6s forwards, fadeIn 0.4s ease-out 0.6s forwards",
+                            },
+                        })}
                     />
                 )}
 

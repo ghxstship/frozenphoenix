@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "@/lib/motion";
+import { SlidingIndicator } from "@/components/ui/sliding-indicator";
 
 export interface TabBarItem {
     id: string;
@@ -96,6 +98,8 @@ export function TabBar({
         [items, value, onValueChange, orientation]
     );
 
+    const activeSelector = `[data-tab-value="${value}"]`;
+
     return (
         <div
             ref={tabListRef}
@@ -104,7 +108,7 @@ export function TabBar({
             aria-label={ariaLabel ?? "Tabs"}
             onKeyDown={handleKeyDown}
             className={cn(
-                "flex",
+                "relative flex",
                 orientation === "vertical" && "flex-col",
                 variant === "underline" &&
                     orientation === "horizontal" &&
@@ -116,6 +120,14 @@ export function TabBar({
                 className
             )}
         >
+            {variant === "pill" && (
+                <SlidingIndicator
+                    containerRef={tabListRef}
+                    activeSelector={activeSelector}
+                    layoutDirection={orientation}
+                    className="bg-background rounded-md shadow-sm z-0"
+                />
+            )}
             {items.map((item) => (
                 <button
                     key={item.id}
@@ -129,7 +141,7 @@ export function TabBar({
                     tabIndex={value === item.id ? 0 : -1}
                     onClick={() => onValueChange(item.id)}
                     className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors",
+                        "relative z-[1] inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         "disabled:pointer-events-none disabled:opacity-50",
                         size === "sm" ? "px-3 py-2 text-xs" : "px-4 py-2.5 text-sm",
@@ -150,7 +162,7 @@ export function TabBar({
                         variant === "pill" && [
                             "rounded-md",
                             value === item.id
-                                ? "bg-background text-foreground shadow-sm"
+                                ? "text-foreground"
                                 : "text-muted-foreground hover:text-foreground",
                         ]
                     )}
@@ -189,25 +201,31 @@ export function TabPanel({
     idPrefix,
     className,
     children,
-    ...props
 }: TabPanelProps) {
-    if (value !== activeValue) return null;
-
+    const isActive = value === activeValue;
     const prefix = idPrefix ? `${idPrefix}-` : "";
 
     return (
-        <div
-            role="tabpanel"
-            id={`${prefix}tabpanel-${value}`}
-            aria-labelledby={tabId ?? `${prefix}tab-${value}`}
-            tabIndex={0}
-            className={cn(
-                "mt-2 motion-safe:animate-fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                className
+        <AnimatePresence mode="wait">
+            {isActive && (
+                <motion.div
+                    key={value}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    role="tabpanel"
+                    id={`${prefix}tabpanel-${value}`}
+                    aria-labelledby={tabId ?? `${prefix}tab-${value}`}
+                    tabIndex={0}
+                    className={cn(
+                        "mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        className
+                    )}
+                >
+                    {children}
+                </motion.div>
             )}
-            {...props}
-        >
-            {children}
-        </div>
+        </AnimatePresence>
     );
 }

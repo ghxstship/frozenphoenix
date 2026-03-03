@@ -23,7 +23,7 @@ import {
     MOCK_TASKS,
 } from "@/lib/demo-data";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
-import { StaggerItem } from "@/components/ui/stagger-container";
+import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import {
@@ -175,7 +175,11 @@ export default function DashboardPage() {
                 />
 
                 {/* KPI Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StaggerContainer
+                    stagger="tight"
+                    animation="slide-up"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+                >
                     <StatCard
                         title="Pipeline Value"
                         value={formatCurrency(pipelineValue)}
@@ -212,7 +216,7 @@ export default function DashboardPage() {
                         description="vs last week"
                         icon={Users}
                     />
-                </div>
+                </StaggerContainer>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Active Projects */}

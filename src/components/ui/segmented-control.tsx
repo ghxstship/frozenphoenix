@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { SlidingIndicator } from "@/components/ui/sliding-indicator";
 
 export interface SegmentedControlOption<T extends string = string> {
     value: T;
@@ -80,6 +81,8 @@ export function SegmentedControl<T extends string = string>({
         [onValueChange, value]
     );
 
+    const activeSelector = `[data-value="${value}"]`;
+
     return (
         <div
             ref={groupRef}
@@ -87,10 +90,15 @@ export function SegmentedControl<T extends string = string>({
             aria-label={ariaLabel ?? "Selection"}
             onKeyDown={handleKeyDown}
             className={cn(
-                "inline-flex items-center rounded-lg border border-border bg-card p-0.5",
+                "relative inline-flex items-center rounded-lg border border-border bg-card p-0.5",
                 className
             )}
         >
+            <SlidingIndicator
+                containerRef={groupRef}
+                activeSelector={activeSelector}
+                className="bg-primary rounded-md z-0"
+            />
             {options.map((option) => {
                 const selected = value === option.value;
                 return (
@@ -105,12 +113,12 @@ export function SegmentedControl<T extends string = string>({
                         tabIndex={selected ? 0 : -1}
                         onClick={() => onValueChange(option.value)}
                         className={cn(
-                            "inline-flex items-center gap-1.5 rounded-md transition-colors",
+                            "relative z-[1] inline-flex items-center gap-1.5 rounded-md transition-colors",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                             "disabled:pointer-events-none disabled:opacity-50",
                             size === "sm" ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm",
                             selected
-                                ? "bg-primary text-primary-foreground"
+                                ? "text-primary-foreground"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
                     >

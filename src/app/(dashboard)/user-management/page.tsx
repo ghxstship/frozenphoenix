@@ -29,9 +29,11 @@ const LIFECYCLE_FILTERS: { value: UserLifecycleStatus | "all"; label: string }[]
 const ROLE_FILTERS: { value: PermissionLevel | "all"; label: string }[] = [
     { value: "all", label: "All Roles" },
     { value: "exec", label: "Executive" },
+    { value: "director", label: "Director" },
     { value: "pm", label: "Project Manager" },
+    { value: "member", label: "Team Member" },
     { value: "client", label: "Client" },
-    { value: "vendor", label: "Vendor" },
+    { value: "collaborator", label: "Collaborator" },
 ];
 
 function formatRelativeTime(dateStr?: string): string {

@@ -49,16 +49,31 @@ describe("hasPermission — static matrix", () => {
         expect(hasPermission("client", "projects", "write")).toBe(false);
     });
 
-    it("vendor has minimal access", () => {
-        expect(hasPermission("vendor", "tasks", "read")).toBe(true);
-        expect(hasPermission("vendor", "projects", "read")).toBe(false);
-        expect(hasPermission("vendor", "payroll", "read")).toBe(false);
+    it("director has broad access with manage on key resources", () => {
+        expect(hasPermission("director", "projects", "read")).toBe(true);
+        expect(hasPermission("director", "projects", "write")).toBe(true);
+        expect(hasPermission("director", "projects", "manage")).toBe(true);
+        expect(hasPermission("director", "budgets", "manage")).toBe(true);
+    });
+
+    it("member has task execution access but limited scope", () => {
+        expect(hasPermission("member", "tasks", "read")).toBe(true);
+        expect(hasPermission("member", "tasks", "write")).toBe(true);
+        expect(hasPermission("member", "projects", "read")).toBe(true);
+        expect(hasPermission("member", "projects", "write")).toBe(false);
+        expect(hasPermission("member", "payroll", "read")).toBe(false);
+    });
+
+    it("collaborator has minimal access", () => {
+        expect(hasPermission("collaborator", "tasks", "read")).toBe(true);
+        expect(hasPermission("collaborator", "projects", "read")).toBe(false);
+        expect(hasPermission("collaborator", "payroll", "read")).toBe(false);
     });
 
     it("unknown resource returns false for non-exec roles", () => {
         expect(hasPermission("pm", "nonexistent_resource", "read")).toBe(false);
         expect(hasPermission("client", "nonexistent_resource", "read")).toBe(false);
-        expect(hasPermission("vendor", "nonexistent_resource", "read")).toBe(false);
+        expect(hasPermission("collaborator", "nonexistent_resource", "read")).toBe(false);
     });
 
     it("exec can access unknown resources via wildcard", () => {
@@ -71,7 +86,7 @@ describe("hasPermission — static matrix", () => {
 describe("hasPermission — DB grants", () => {
     it("allows via DB grant even if static matrix denies", () => {
         const grants = [grant("payroll", "read")];
-        expect(hasPermission("vendor", "payroll", "read", { dbGrants: grants })).toBe(true);
+        expect(hasPermission("collaborator", "payroll", "read", { dbGrants: grants })).toBe(true);
     });
 
     it("deny grant overrides allow", () => {
@@ -94,9 +109,16 @@ describe("hasPermission — DB grants", () => {
 // ─── PERMISSION_MATRIX structure ────────────────────────────
 
 describe("PERMISSION_MATRIX", () => {
-    const levels: PermissionLevel[] = ["exec", "pm", "client", "vendor"];
+    const levels: PermissionLevel[] = [
+        "exec",
+        "director",
+        "pm",
+        "member",
+        "client",
+        "collaborator",
+    ];
 
-    it("defines all four permission levels", () => {
+    it("defines all six permission levels", () => {
         for (const level of levels) {
             expect(PERMISSION_MATRIX[level]).toBeDefined();
             expect(Array.isArray(PERMISSION_MATRIX[level])).toBe(true);
@@ -110,11 +132,13 @@ describe("PERMISSION_MATRIX", () => {
         expect(execPerms[0]?.actions).toContain("manage");
     });
 
-    it("permission levels decrease in scope: exec > pm > client > vendor", () => {
+    it("permission levels decrease in scope: director >= pm > member > client > collaborator", () => {
         const counts = levels.map((l) => PERMISSION_MATRIX[l].length);
-        // exec has 1 (wildcard), pm has many, client has fewer, vendor has fewest
-        expect(counts[1]).toBeGreaterThan(counts[2]!);
+        // exec has 1 (wildcard), director >= pm (director has broader actions, not necessarily more resources)
+        expect(counts[1]).toBeGreaterThanOrEqual(counts[2]!);
         expect(counts[2]).toBeGreaterThan(counts[3]!);
+        expect(counts[3]).toBeGreaterThan(counts[4]!);
+        expect(counts[4]).toBeGreaterThan(counts[5]!);
     });
 });
 
@@ -123,7 +147,7 @@ describe("PERMISSION_MATRIX", () => {
 describe("isFieldVisible", () => {
     it("unrestricted fields are visible to all roles", () => {
         expect(isFieldVisible("exec", "project_name")).toBe(true);
-        expect(isFieldVisible("vendor", "project_name")).toBe(true);
+        expect(isFieldVisible("collaborator", "project_name")).toBe(true);
     });
 
     it("exec can see all restricted fields", () => {
@@ -132,10 +156,22 @@ describe("isFieldVisible", () => {
         }
     });
 
-    it("vendor cannot see financial fields", () => {
-        expect(isFieldVisible("vendor", "hourly_rate")).toBe(false);
-        expect(isFieldVisible("vendor", "margin")).toBe(false);
-        expect(isFieldVisible("vendor", "salary")).toBe(false);
+    it("collaborator cannot see financial fields", () => {
+        expect(isFieldVisible("collaborator", "hourly_rate")).toBe(false);
+        expect(isFieldVisible("collaborator", "margin")).toBe(false);
+        expect(isFieldVisible("collaborator", "salary")).toBe(false);
+    });
+
+    it("director can see financial fields but not PII", () => {
+        expect(isFieldVisible("director", "hourly_rate")).toBe(true);
+        expect(isFieldVisible("director", "margin")).toBe(true);
+        expect(isFieldVisible("director", "salary")).toBe(false);
+    });
+
+    it("member cannot see financial or PII fields", () => {
+        expect(isFieldVisible("member", "hourly_rate")).toBe(false);
+        expect(isFieldVisible("member", "margin")).toBe(false);
+        expect(isFieldVisible("member", "salary")).toBe(false);
     });
 
     it("client cannot see internal cost fields", () => {
@@ -169,8 +205,8 @@ describe("maskSensitiveFields", () => {
         expect(result.ssn).toBe("123-45-6789");
     });
 
-    it("vendor gets sensitive fields nulled", () => {
-        const result = maskSensitiveFields(record, "vendor");
+    it("collaborator gets sensitive fields nulled", () => {
+        const result = maskSensitiveFields(record, "collaborator");
         expect(result.id).toBe("123");
         expect(result.project_name).toBe("Test Project");
         expect(result.status).toBe("active");
@@ -188,7 +224,7 @@ describe("maskSensitiveFields", () => {
 
     it("does not mutate the original object", () => {
         const original = { ...record };
-        maskSensitiveFields(record, "vendor");
+        maskSensitiveFields(record, "collaborator");
         expect(record).toEqual(original);
     });
 });
@@ -206,21 +242,31 @@ describe("shouldRevokeAccess", () => {
         expect(shouldRevokeAccess("pm", pastDate)).toBe(false);
     });
 
+    it("never revokes director access", () => {
+        const pastDate = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+        expect(shouldRevokeAccess("director", pastDate)).toBe(false);
+    });
+
+    it("never revokes member access", () => {
+        const pastDate = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+        expect(shouldRevokeAccess("member", pastDate)).toBe(false);
+    });
+
     it("does not revoke if no load-out date", () => {
         expect(shouldRevokeAccess("client", null)).toBe(false);
-        expect(shouldRevokeAccess("vendor", null)).toBe(false);
+        expect(shouldRevokeAccess("collaborator", null)).toBe(false);
     });
 
     it("does not revoke before 48 hours", () => {
         const recentDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         expect(shouldRevokeAccess("client", recentDate)).toBe(false);
-        expect(shouldRevokeAccess("vendor", recentDate)).toBe(false);
+        expect(shouldRevokeAccess("collaborator", recentDate)).toBe(false);
     });
 
-    it("revokes client/vendor access after 48 hours", () => {
+    it("revokes client/collaborator access after 48 hours", () => {
         const oldDate = new Date(Date.now() - 49 * 60 * 60 * 1000).toISOString();
         expect(shouldRevokeAccess("client", oldDate)).toBe(true);
-        expect(shouldRevokeAccess("vendor", oldDate)).toBe(true);
+        expect(shouldRevokeAccess("collaborator", oldDate)).toBe(true);
     });
 });
 

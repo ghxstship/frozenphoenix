@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, type LucideIcon, Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { useReducedMotion } from "@/hooks/use-media-query";
 
 type MetricVariant = "default" | "success" | "warning" | "danger" | "info";
 
@@ -50,6 +52,8 @@ function resolveVariant(
 }
 
 function MiniSparkline({ data, className }: { data: number[]; className?: string }) {
+    const reducedMotion = useReducedMotion();
+
     if (data.length < 2) return null;
     const max = Math.max(...data);
     const min = Math.min(...data);
@@ -70,6 +74,11 @@ function MiniSparkline({ data, className }: { data: number[]; className?: string
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="text-primary"
+                {...(!reducedMotion && {
+                    strokeDasharray: 200,
+                    strokeDashoffset: 200,
+                    style: { animation: "chartLineDraw 0.8s ease-out 0.3s forwards" },
+                })}
             />
         </svg>
     );
@@ -108,7 +117,9 @@ export function MetricCard({
                 <div className="space-y-1 min-w-0 flex-1">
                     <p className="text-sm font-medium text-muted-foreground truncate">{label}</p>
                     <div className="flex items-baseline gap-1.5">
-                        <p className="text-2xl font-bold tracking-tight tabular-nums">{value}</p>
+                        <p className="text-2xl font-bold tracking-tight tabular-nums">
+                            {typeof value === "number" ? <NumberTicker value={value} /> : value}
+                        </p>
                         {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
                     </div>
                 </div>

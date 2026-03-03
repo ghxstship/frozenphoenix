@@ -1,64 +1,53 @@
 -- Migration 030: Data Retention Policy — FIND-025 Remediation
 --
--- Defines retention periods for each data category and provides
--- a purge function callable from a cron job or admin API.
+-- Extends the data_retention_policies table (created in 018) with
+-- additional seed data and provides purge/erasure functions callable
+-- from a cron job or admin API.
 --
 -- GDPR Article 5(1)(e): Data shall be kept only as long as necessary.
 -- CCPA: Right to deletion must be technically enforceable.
 
--- ─── Retention policy table ──────────────────────────────────
-CREATE TABLE IF NOT EXISTS data_retention_policies (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    table_name TEXT NOT NULL UNIQUE,
-    retention_days INTEGER NOT NULL DEFAULT 365,
-    description TEXT,
-    purge_strategy TEXT NOT NULL DEFAULT 'soft_delete'
-        CHECK (purge_strategy IN ('soft_delete', 'hard_delete', 'anonymize', 'archive')),
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ─── Seed default retention policies ─────────────────────────
-INSERT INTO data_retention_policies (table_name, retention_days, description, purge_strategy) VALUES
-    ('login_audit_log', 90, 'Authentication audit events', 'hard_delete'),
-    ('activities', 365, 'User activity feed entries', 'hard_delete'),
-    ('automation_logs', 180, 'Workflow automation logs', 'hard_delete'),
-    ('notifications', 90, 'User notifications', 'hard_delete'),
-    ('field_usage_events', 180, 'Field access telemetry', 'hard_delete'),
-    ('user_onboarding_progress', 365, 'Onboarding step progress', 'anonymize'),
-    ('settings_change_log', 730, 'Settings audit trail (SOC2)', 'archive'),
-    ('access_audit_log', 730, 'Permission check audit trail (SOC2)', 'archive')
-ON CONFLICT (table_name) DO NOTHING;
+-- ─── Seed additional retention policies ──────────────────────
+-- The base table and initial seeds were created in migration 018.
+-- Here we add policies for tables introduced in later migrations.
+INSERT INTO data_retention_policies (entity_type, retention_days, action_on_expiry, legal_basis, description) VALUES
+    ('activities', 365, 'purge', 'Legitimate interest', 'User activity feed entries purged after 1 year'),
+    ('automation_logs', 180, 'purge', 'Legitimate interest', 'Workflow automation logs purged after 6 months'),
+    ('notifications', 90, 'purge', 'Legitimate interest', 'User notifications purged after 90 days'),
+    ('field_usage_events', 180, 'purge', 'Legitimate interest', 'Field access telemetry purged after 6 months'),
+    ('settings_change_log', 730, 'archive', 'SOC2 compliance', 'Settings audit trail archived after 2 years'),
+    ('access_audit_log', 730, 'archive', 'SOC2 compliance', 'Permission check audit trail archived after 2 years')
+ON CONFLICT (entity_type) DO NOTHING;
 
 -- ─── Purge function ──────────────────────────────────────────
--- Deletes rows older than the retention period for each active policy.
--- Call via: SELECT purge_expired_data();
+-- Deletes/archives rows older than the retention period for each active policy.
+-- Call via: SELECT * FROM purge_expired_data();
 CREATE OR REPLACE FUNCTION purge_expired_data()
-RETURNS TABLE(table_name TEXT, rows_purged BIGINT) AS $$
+RETURNS TABLE(entity TEXT, rows_purged BIGINT) AS $$
 DECLARE
     policy RECORD;
     purged BIGINT;
 BEGIN
     FOR policy IN
-        SELECT p.table_name AS tbl, p.retention_days, p.purge_strategy
+        SELECT p.entity_type AS tbl, p.retention_days, p.action_on_expiry
         FROM data_retention_policies p
         WHERE p.is_active = true
+          AND p.retention_days > 0
     LOOP
         purged := 0;
-        
-        IF policy.purge_strategy = 'hard_delete' THEN
+
+        IF policy.action_on_expiry = 'purge' THEN
             EXECUTE format(
-                'DELETE FROM %I WHERE created_at < now() - interval ''%s days'' RETURNING 1',
+                'DELETE FROM %I WHERE created_at < now() - interval ''%s days''',
                 policy.tbl, policy.retention_days
             );
             GET DIAGNOSTICS purged = ROW_COUNT;
         END IF;
-        
-        -- soft_delete, anonymize, archive strategies can be implemented
+
+        -- anonymize and archive strategies can be implemented
         -- per-table as needed. This provides the framework.
-        
-        table_name := policy.tbl;
+
+        entity := policy.tbl;
         rows_purged := purged;
         RETURN NEXT;
     END LOOP;

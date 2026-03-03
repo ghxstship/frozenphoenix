@@ -25,12 +25,15 @@ export interface FieldAccessRule {
     category: string;
     pricingTier: PricingTier;
     safetyCritical: boolean;
-    roleAccess: Record<PermissionLevel, {
-        visibility: Visibility;
-        write: FieldWriteAccess;
-        exportable: boolean;
-        apiAccessible: boolean;
-    }>;
+    roleAccess: Record<
+        PermissionLevel,
+        {
+            visibility: Visibility;
+            write: FieldWriteAccess;
+            exportable: boolean;
+            apiAccessible: boolean;
+        }
+    >;
     auditLogged: boolean;
     rlsEnforced: boolean;
     overrideAllowed: boolean;
@@ -78,20 +81,17 @@ function tierSatisfies(orgTier: PricingTier, requiredTier: PricingTier): boolean
 // ─── Role Hierarchy ──────────────────────────────────────────
 
 const ROLE_HIERARCHY: Record<PermissionLevel, number> = {
-    exec: 3,
-    pm: 2,
+    exec: 5,
+    director: 4,
+    pm: 3,
+    member: 2,
     client: 1,
-    vendor: 0,
+    collaborator: 0,
 };
 
-function effectiveRole(
-    orgRole: PermissionLevel,
-    projectRole?: PermissionLevel
-): PermissionLevel {
+function effectiveRole(orgRole: PermissionLevel, projectRole?: PermissionLevel): PermissionLevel {
     if (!projectRole) return orgRole;
-    return ROLE_HIERARCHY[projectRole] > ROLE_HIERARCHY[orgRole]
-        ? projectRole
-        : orgRole;
+    return ROLE_HIERARCHY[projectRole] > ROLE_HIERARCHY[orgRole] ? projectRole : orgRole;
 }
 
 // ─── Safety-Critical Field IDs ───────────────────────────────
@@ -150,11 +150,7 @@ export function resolveFieldAccess(
 
     // Apply field-level overrides if allowed and present
     if (rule.overrideAllowed && fieldOverrides?.length) {
-        const override = findBestOverride(
-            rule.fieldTypeId,
-            fieldOverrides,
-            context.projectId
-        );
+        const override = findBestOverride(rule.fieldTypeId, fieldOverrides, context.projectId);
 
         if (override) {
             // Overrides can only ELEVATE access, never restrict it

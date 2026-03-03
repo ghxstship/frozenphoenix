@@ -224,7 +224,7 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="p-8 bg-white dark:bg-zinc-900 rounded-lg border min-h-[600px] space-y-4">
+                                <div className="p-8 bg-card rounded-lg border min-h-[600px] space-y-4">
                                     {blocks.map((block) => {
                                         switch (block.type) {
                                             case "heading":

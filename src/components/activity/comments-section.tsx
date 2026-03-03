@@ -86,17 +86,20 @@ export function CommentsSection({
         }
     }, [newComment, onAddComment]);
 
-    const handleEdit = async (id: string) => {
-        if (!editContent.trim() || !onEditComment) return;
-        setIsSubmitting(true);
-        try {
-            await onEditComment(id, editContent.trim());
-            setEditingId(null);
-            setEditContent("");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    const handleEdit = useCallback(
+        async (id: string) => {
+            if (!editContent.trim() || !onEditComment) return;
+            setIsSubmitting(true);
+            try {
+                await onEditComment(id, editContent.trim());
+                setEditingId(null);
+                setEditContent("");
+            } finally {
+                setIsSubmitting(false);
+            }
+        },
+        [editContent, onEditComment]
+    );
 
     const handleDelete = async (id: string) => {
         if (!onDeleteComment) return;
@@ -129,8 +132,8 @@ export function CommentsSection({
                 handleEdit(id);
             }
         },
-        [editContent, onEditComment]
-    ); // eslint-disable-line react-hooks/exhaustive-deps -- handleEdit uses editContent via closure; listing editContent+onEditComment is the correct subset
+        [handleEdit]
+    );
 
     return (
         <div className={cn("space-y-4", className)}>

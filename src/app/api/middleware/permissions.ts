@@ -135,7 +135,14 @@ export async function checkPermission(
     if (!grants || grants.length === 0) {
         // No DB grants found — fall back to the static PERMISSION_MATRIX
         // This is deterministic and auditable, unlike the previous exec wildcard bypass
-        const validRoles: PermissionLevel[] = ["exec", "pm", "client", "vendor"];
+        const validRoles: PermissionLevel[] = [
+            "exec",
+            "director",
+            "pm",
+            "member",
+            "client",
+            "collaborator",
+        ];
         if (validRoles.includes(userRole as PermissionLevel)) {
             const allowed = hasStaticPermission(userRole as PermissionLevel, resource, action);
             if (allowed) {

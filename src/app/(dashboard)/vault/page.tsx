@@ -53,9 +53,11 @@ const MOCK_DOCS = [
 
 const ACCESS_LEVEL_LABELS: Record<string, string> = {
     exec: "Executive",
+    director: "Director",
     pm: "Project Manager",
+    member: "Team Member",
     client: "Client",
-    vendor: "Vendor",
+    collaborator: "Collaborator",
 };
 
 const categoryIcons: Record<string, typeof FileText> = {

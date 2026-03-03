@@ -159,7 +159,7 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
                     <p className="text-sm font-medium truncate">{definition.label}</p>
                     {is_locked && (
                         <span
-                            className="inline-flex items-center gap-1 text-xs text-amber-500"
+                            className="inline-flex items-center gap-1 text-xs text-warning"
                             title="Locked by admin"
                         >
                             <Lock className="h-3 w-3" />

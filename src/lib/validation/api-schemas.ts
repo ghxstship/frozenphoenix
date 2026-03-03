@@ -48,7 +48,9 @@ export const orgSecurityPatchSchema = z
         session_timeout_hours: z.number().int().min(1).max(8760).optional(),
         max_sessions_per_user: z.number().int().min(1).max(50).optional(),
         invitation_expiry_days: z.number().int().min(1).max(90).optional(),
-        default_role: z.enum(["exec", "pm", "client", "vendor"]).optional(),
+        default_role: z
+            .enum(["exec", "director", "pm", "member", "client", "collaborator"])
+            .optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field must be provided",

@@ -73,7 +73,7 @@ describe("invitationCreateSchema", () => {
         });
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data.invitees[0]!.role).toBe("pm");
+            expect(result.data.invitees[0]!.role).toBe("member");
         }
     });
 
@@ -82,7 +82,7 @@ describe("invitationCreateSchema", () => {
             invitees: [
                 { email: "pm@example.com", role: "pm" },
                 { email: "client@example.com", role: "client" },
-                { email: "vendor@example.com", role: "vendor" },
+                { email: "collaborator@example.com", role: "collaborator" },
             ],
             organization_id: "550e8400-e29b-41d4-a716-446655440000",
         });

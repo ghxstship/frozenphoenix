@@ -73,17 +73,38 @@ export default function OrgSetupPage() {
                     }),
                 });
 
+                // Guard against non-JSON responses (e.g. middleware HTML redirect)
+                const contentType = res.headers.get("content-type") ?? "";
+                if (!contentType.includes("application/json")) {
+                    setError(
+                        res.status === 401
+                            ? "Your session has expired. Please log in again."
+                            : `Unexpected response (${res.status}). Please try again.`
+                    );
+                    setLoading(false);
+                    return;
+                }
+
+                const data = await res.json();
+
                 if (!res.ok) {
-                    const data = await res.json();
                     const msg =
                         typeof data.error === "string"
                             ? data.error
                             : data.error?.message || "Failed to create organization.";
                     setError(msg);
+                    setLoading(false);
                     return;
                 }
 
-                await refreshProfile();
+                // Profile refresh is best-effort — don't let it block success
+                try {
+                    await refreshProfile();
+                } catch {
+                    // Swallow — the org was created; profile will sync on next load
+                }
+
+                setLoading(false);
                 setSuccess(true);
 
                 // Auto-advance after a short delay
@@ -92,7 +113,6 @@ export default function OrgSetupPage() {
                 }, 1500);
             } catch {
                 setError("Something went wrong. Please try again.");
-            } finally {
                 setLoading(false);
             }
         },

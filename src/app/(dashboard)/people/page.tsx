@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MOCK_STAKEHOLDERS } from "@/lib/demo-data";
-import { isSupabaseConfigured, usePeople } from "@/lib/supabase/hooks-pages";
+import { usePeople } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { Building2, Loader2, Mail, Phone, Plus, UserCircle, Users, Wrench } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -26,10 +26,7 @@ const typeConfig: Record<
 
 export default function PeoplePage() {
     const { data: sbPeople, isLoading } = usePeople();
-    const stakeholders =
-        isSupabaseConfigured && sbPeople
-            ? (sbPeople as unknown as typeof MOCK_STAKEHOLDERS)
-            : MOCK_STAKEHOLDERS;
+    const stakeholders = (sbPeople ?? []) as typeof MOCK_STAKEHOLDERS;
 
     const grouped = {
         internal: stakeholders.filter((s) => s.type === "internal"),
@@ -38,7 +35,7 @@ export default function PeoplePage() {
         subcontractor: stakeholders.filter((s) => s.type === "subcontractor"),
     };
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -20,11 +20,8 @@ import {
     ShieldCheck,
     XCircle,
 } from "lucide-react";
-import {
-    MOCK_COMPLIANCE_REQUIREMENTS,
-    MOCK_VENDOR_COMPLIANCE_DOCS,
-} from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
+import { MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/demo-data-vendor-lifecycle";
+import { useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceDocStatus, VendorComplianceDoc } from "@/types/vendor-lifecycle";
 
@@ -72,26 +69,23 @@ export default function VendorCompliancePage() {
 
     const { data: sbDocs, isLoading } = useVendorComplianceDocs();
 
-    const docs: VendorComplianceDoc[] =
-        isSupabaseConfigured && sbDocs
-            ? sbDocs.map(
-                  (d: Record<string, unknown>) =>
-                      ({
-                          id: (d.id as string) ?? "",
-                          vendorId: (d.vendor_id as string) ?? "",
-                          docType: (d.doc_type as string) ?? "other",
-                          docName: (d.doc_name as string) ?? "",
-                          status: ((d.status as string) ?? "not_submitted") as ComplianceDocStatus,
-                          expiryDate: (d.expiry_date as string) ?? undefined,
-                          submittedAt: (d.submitted_at as string) ?? "",
-                          coverageAmount: (d.coverage_amount as number) ?? undefined,
-                          carrierName: (d.carrier_name as string) ?? undefined,
-                      }) as VendorComplianceDoc
-              )
-            : MOCK_VENDOR_COMPLIANCE_DOCS;
+    const docs: VendorComplianceDoc[] = (sbDocs ?? []).map(
+        (d: Record<string, unknown>) =>
+            ({
+                id: (d.id as string) ?? "",
+                vendorId: (d.vendor_id as string) ?? "",
+                docType: (d.doc_type as string) ?? "other",
+                docName: (d.doc_name as string) ?? "",
+                status: ((d.status as string) ?? "not_submitted") as ComplianceDocStatus,
+                expiryDate: (d.expiry_date as string) ?? undefined,
+                submittedAt: (d.submitted_at as string) ?? "",
+                coverageAmount: (d.coverage_amount as number) ?? undefined,
+                carrierName: (d.carrier_name as string) ?? undefined,
+            }) as VendorComplianceDoc
+    );
     const requirements = MOCK_COMPLIANCE_REQUIREMENTS;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

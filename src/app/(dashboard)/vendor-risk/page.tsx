@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
 import { MOCK_VENDOR_RISK_SCORES } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, useRiskAssessments } from "@/lib/supabase/hooks-pages";
+import { useRiskAssessments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -48,10 +48,7 @@ export default function VendorRiskPage() {
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbScores, isLoading } = useRiskAssessments();
 
-    const scores =
-        isSupabaseConfigured && sbScores
-            ? (sbScores as unknown as typeof MOCK_VENDOR_RISK_SCORES)
-            : MOCK_VENDOR_RISK_SCORES;
+    const scores = (sbScores ?? []) as typeof MOCK_VENDOR_RISK_SCORES;
 
     const filtered = scores.filter((s) => {
         const vendorName = vendorNames[s.vendor_id] || s.vendor_id;
@@ -66,7 +63,7 @@ export default function VendorRiskPage() {
         (s) => s.risk_level === "high" || s.risk_level === "critical"
     ).length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

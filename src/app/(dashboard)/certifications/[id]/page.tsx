@@ -11,8 +11,9 @@ import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { CERT_TYPE_LABELS, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
-import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
-import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText, Loader2 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useCertification } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "documents" | "chatter";
 const TAB_VALUES = ["details", "documents", "chatter"] as const;
@@ -24,10 +25,28 @@ export default function CertificationDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const cert = MOCK_ASSET_CERTIFICATIONS[0]!;
-    const assetName = cert.asset_id;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: cert, isLoading } = useCertification(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!cert) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
+    const assetName = cert.asset_id;
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,

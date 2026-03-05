@@ -15,7 +15,7 @@ import {
     MOCK_BRAND_GUIDELINE_SECTIONS,
     MOCK_BRAND_GUIDELINES,
 } from "@/lib/demo-data-creative-brand";
-import { isSupabaseConfigured, useBrandGuidelines } from "@/lib/supabase/hooks-pages";
+import { useBrandGuidelines } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { BrandGuideline, BrandGuidelineSection, BrandLevel } from "@/types";
 import {
@@ -71,10 +71,9 @@ export default function BrandGuidelinesPage() {
     const [expandedGuideline, setExpandedGuideline] = useState<string | null>("bg-1");
     const { data: sbGuidelines, isLoading } = useBrandGuidelines();
 
-    const guidelines =
-        isSupabaseConfigured && sbGuidelines
-            ? (sbGuidelines as unknown as BrandGuideline[])
-            : MOCK_BRAND_GUIDELINES;
+    const guidelines = sbGuidelines
+        ? (sbGuidelines as unknown as BrandGuideline[])
+        : MOCK_BRAND_GUIDELINES;
     const sections = MOCK_BRAND_GUIDELINE_SECTIONS;
 
     const filtered = useMemo(() => {
@@ -100,7 +99,7 @@ export default function BrandGuidelinesPage() {
 
     const rootGuidelines = filtered.filter((g) => g.parent_id === null);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

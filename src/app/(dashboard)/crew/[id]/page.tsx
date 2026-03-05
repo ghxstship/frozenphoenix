@@ -20,9 +20,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { MOCK_CREW, MOCK_PROJECTS } from "@/lib/demo-data";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
-import { isSupabaseConfigured, useCrewMembers, useUpdateCrewMember } from "@/lib/supabase/hooks";
+import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase/hooks";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -69,30 +68,29 @@ export default function CrewDetailPage() {
     };
     const updateCrewMember = useUpdateCrewMember();
     const { data: sbCrew } = useCrewMembers();
+    const { data: sbProjects } = useProjects();
 
     const sbMember = sbCrew?.find((c) => c.id === crewId);
-    const crewMember =
-        isSupabaseConfigured && sbMember
-            ? {
-                  id: sbMember.id,
-                  name: sbMember.name,
-                  email: sbMember.email,
-                  phone: sbMember.phone ?? "",
-                  role: sbMember.role,
-                  hourlyRate: sbMember.hourly_rate ?? 0,
-                  status: sbMember.status as string,
-                  certifications: [] as {
-                      id: string;
-                      type: string;
-                      label: string;
-                      expiryDate: string;
-                      isValid: boolean;
-                  }[],
-              }
-            : MOCK_CREW.find((c) => c.id === crewId);
+    const crewMember = sbMember
+        ? {
+              id: sbMember.id,
+              name: sbMember.name,
+              email: sbMember.email,
+              phone: sbMember.phone ?? "",
+              role: sbMember.role,
+              hourlyRate: sbMember.hourly_rate ?? 0,
+              status: sbMember.status as string,
+              certifications: [] as {
+                  id: string;
+                  type: string;
+                  label: string;
+                  expiryDate: string;
+                  isValid: boolean;
+              }[],
+          }
+        : null;
 
     const handleDeactivate = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateCrewMember.mutateAsync({
                 id: crewId,
@@ -104,7 +102,7 @@ export default function CrewDetailPage() {
     };
 
     const handleAssignToProject = async () => {
-        if (!assignProjectId.trim() || !isSupabaseConfigured) return;
+        if (!assignProjectId.trim()) return;
         // In production, this would create a project_members record
         // For now, we log and close the dialog
         logger.info("Assigning crew member", { crewId, projectId: assignProjectId });
@@ -113,7 +111,7 @@ export default function CrewDetailPage() {
     };
 
     const handleAddCertification = async () => {
-        if (!certName.trim() || !isSupabaseConfigured) return;
+        if (!certName.trim()) return;
         // In production, this would insert into a certifications table
         logger.info("Adding certification", { certName, certExpiry, crewId });
         setCertOpen(false);
@@ -134,7 +132,10 @@ export default function CrewDetailPage() {
 
     const expiredCerts = crewMember.certifications.filter((c) => !c.isValid);
     const validCerts = crewMember.certifications.filter((c) => c.isValid);
-    const assignedProjects = MOCK_PROJECTS.filter((p) => p.teamIds.includes(crewId));
+    const assignedProjects = (sbProjects ?? []).filter((p: Record<string, unknown>) => {
+        const teamIds = (p.team_ids ?? p.teamIds) as string[] | undefined;
+        return Array.isArray(teamIds) ? teamIds.includes(crewId) : false;
+    });
 
     const tabs = [
         { id: "overview" as const, label: "Overview" },

@@ -12,7 +12,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusBgColor, getStatusLabel } from "@/config/ui-variants";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLeadPipelineStats, useLeads } from "@/lib/supabase/hooks-crm";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks";
 import { formatRelativeTime } from "@/lib/utils";
 import {
     Building2,
@@ -97,7 +96,7 @@ export default function LeadsPage() {
     );
     const { data: pipelineStats } = useLeadPipelineStats();
 
-    const leads = isSupabaseConfigured && sbLeads ? sbLeads : DEMO_LEADS;
+    const leads = sbLeads ?? DEMO_LEADS;
 
     const filteredLeads = leads.filter((lead) => {
         const fullName = `${lead.first_name} ${lead.last_name || ""}`.toLowerCase();
@@ -186,31 +185,38 @@ export default function LeadsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex gap-4">
-                                {pipelineStats.map((stat) => {
-                                    return (
-                                        <div
-                                            key={stat.status}
-                                            className="flex-1 p-3 rounded-lg bg-secondary/30"
-                                        >
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <div
-                                                    className={`h-2 w-2 rounded-full ${stat.status ? getStatusBgColor(stat.status) : "bg-muted"}`}
-                                                />
-                                                <span className="text-xs font-medium">
-                                                    {stat.status
-                                                        ? getStatusLabel(stat.status)
-                                                        : "Unknown"}
-                                                </span>
+                                {pipelineStats.map(
+                                    (stat: {
+                                        status: string;
+                                        count: number;
+                                        new_this_week: number;
+                                        new_this_month: number;
+                                    }) => {
+                                        return (
+                                            <div
+                                                key={stat.status}
+                                                className="flex-1 p-3 rounded-lg bg-secondary/30"
+                                            >
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div
+                                                        className={`h-2 w-2 rounded-full ${stat.status ? getStatusBgColor(stat.status) : "bg-muted"}`}
+                                                    />
+                                                    <span className="text-xs font-medium">
+                                                        {stat.status
+                                                            ? getStatusLabel(stat.status)
+                                                            : "Unknown"}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xl font-bold">{stat.count}</p>
+                                                {(stat.new_this_week ?? 0) > 0 && (
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        +{stat.new_this_week} this week
+                                                    </p>
+                                                )}
                                             </div>
-                                            <p className="text-xl font-bold">{stat.count}</p>
-                                            {(stat.new_this_week ?? 0) > 0 && (
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    +{stat.new_this_week} this week
-                                                </p>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    }
+                                )}
                             </div>
                         </CardContent>
                     </Card>

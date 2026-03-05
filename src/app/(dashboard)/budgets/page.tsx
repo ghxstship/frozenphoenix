@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_BUDGET_LINES, MOCK_BUDGETS } from "@/lib/demo-data-production";
+import { MOCK_BUDGET_LINES } from "@/lib/demo-data-production";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
-import { isSupabaseConfigured, useBudgets } from "@/lib/supabase/hooks";
+import { useBudgets } from "@/lib/supabase/hooks";
 import {
     useAcknowledgeBudgetAlert,
     useBudgetAlerts,
@@ -66,21 +66,18 @@ export default function BudgetsPage() {
     const { data: alertsData } = useBudgetAlerts();
     const acknowledgeMutation = useAcknowledgeBudgetAlert();
 
-    const budgets =
-        isSupabaseConfigured && sbBudgets
-            ? sbBudgets.map((b: Record<string, unknown>) => ({
-                  id: String(b.id),
-                  projectId: String(b.project_id || ""),
-                  version: Number(b.version || 1),
-                  status: String(b.status || "draft"),
-                  totalBudget: Number(b.total_budget || 0),
-                  totalActual: Number(b.total_actual || 0),
-                  contingencyPercent: Number(b.contingency_percent || 0),
-                  markupPercent: Number(b.markup_percent || 0),
-              }))
-            : MOCK_BUDGETS;
+    const budgets = (sbBudgets ?? []).map((b: Record<string, unknown>) => ({
+        id: String(b.id),
+        projectId: String(b.project_id || ""),
+        version: Number(b.version || 1),
+        status: String(b.status || "draft"),
+        totalBudget: Number(b.total_budget || 0),
+        totalActual: Number(b.total_actual || 0),
+        contingencyPercent: Number(b.contingency_percent || 0),
+        markupPercent: Number(b.markup_percent || 0),
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

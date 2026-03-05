@@ -12,7 +12,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import { CheckCircle2, Clock, FileText, Loader2, UserPlus, Users } from "lucide-react";
 import type { OnboardingStatus } from "@/types/vendor-lifecycle";
-import { isSupabaseConfigured, useVendorOnboarding } from "@/lib/supabase/hooks-pages";
+import { useVendorOnboarding } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
@@ -56,121 +56,6 @@ const STATUS_BADGE: Record<
     archived: { label: "Archived", variant: "default" },
 };
 
-const mockOnboardingVendors: OnboardingVendor[] = [
-    {
-        id: "v10",
-        name: "Apex Rigging Co",
-        type: "subcontractor",
-        contactName: "Tom Rigger",
-        email: "tom@apexrigging.com",
-        status: "invited",
-        invitedAt: "2026-02-24T10:00:00Z",
-        docsSubmitted: 0,
-        docsRequired: 5,
-        docsApproved: 0,
-        categories: ["rigging", "technical"],
-        lastActivity: "2026-02-24T10:00:00Z",
-    },
-    {
-        id: "v11",
-        name: "Scenic Arts Studio",
-        type: "vendor",
-        contactName: "Maria Scenic",
-        email: "maria@scenicarts.com",
-        status: "application_submitted",
-        invitedAt: "2026-02-20T10:00:00Z",
-        docsSubmitted: 2,
-        docsRequired: 4,
-        docsApproved: 0,
-        categories: ["scenic", "fabrication"],
-        lastActivity: "2026-02-22T14:00:00Z",
-    },
-    {
-        id: "v12",
-        name: "ColorWorks Graphics",
-        type: "vendor",
-        contactName: "James Color",
-        email: "james@colorworks.com",
-        status: "documents_pending",
-        invitedAt: "2026-02-15T10:00:00Z",
-        docsSubmitted: 3,
-        docsRequired: 4,
-        docsApproved: 2,
-        categories: ["print", "graphics"],
-        lastActivity: "2026-02-21T09:00:00Z",
-    },
-    {
-        id: "v13",
-        name: "PowerLine Electrical",
-        type: "subcontractor",
-        contactName: "Sarah Watts",
-        email: "sarah@powerline.com",
-        status: "documents_received",
-        invitedAt: "2026-02-10T10:00:00Z",
-        docsSubmitted: 5,
-        docsRequired: 5,
-        docsApproved: 3,
-        categories: ["electrical", "technical"],
-        lastActivity: "2026-02-23T11:00:00Z",
-    },
-    {
-        id: "v14",
-        name: "Momentum Staffing",
-        type: "agency",
-        contactName: "Chris Staff",
-        email: "chris@momentum.com",
-        status: "under_review",
-        invitedAt: "2026-02-05T10:00:00Z",
-        docsSubmitted: 4,
-        docsRequired: 4,
-        docsApproved: 4,
-        categories: ["staffing"],
-        lastActivity: "2026-02-24T08:00:00Z",
-    },
-    {
-        id: "v15",
-        name: "SecureGuard Services",
-        type: "vendor",
-        contactName: "Pat Guard",
-        email: "pat@secureguard.com",
-        status: "background_check",
-        invitedAt: "2026-01-28T10:00:00Z",
-        docsSubmitted: 5,
-        docsRequired: 5,
-        docsApproved: 5,
-        categories: ["security"],
-        lastActivity: "2026-02-22T16:00:00Z",
-    },
-    {
-        id: "v16",
-        name: "BlueSky AV Rentals",
-        type: "vendor",
-        contactName: "Lisa Sky",
-        email: "lisa@blueskyav.com",
-        status: "approved",
-        invitedAt: "2026-01-15T10:00:00Z",
-        docsSubmitted: 4,
-        docsRequired: 4,
-        docsApproved: 4,
-        categories: ["av", "technical"],
-        lastActivity: "2026-02-01T10:00:00Z",
-    },
-    {
-        id: "v17",
-        name: "FastTrack Couriers",
-        type: "supplier",
-        contactName: "Dave Fast",
-        email: "dave@fasttrack.com",
-        status: "approved",
-        invitedAt: "2026-01-10T10:00:00Z",
-        docsSubmitted: 3,
-        docsRequired: 3,
-        docsApproved: 3,
-        categories: ["logistics"],
-        lastActivity: "2026-01-25T10:00:00Z",
-    },
-];
-
 export default function VendorOnboardingPage() {
     const [search, setSearch] = useState("");
     const VIEW_MODES = ["pipeline", "list"] as const;
@@ -182,25 +67,22 @@ export default function VendorOnboardingPage() {
 
     const { data: sbVendors, isLoading } = useVendorOnboarding();
 
-    const vendors: OnboardingVendor[] =
-        isSupabaseConfigured && sbVendors
-            ? sbVendors.map((v: Record<string, unknown>) => ({
-                  id: (v.id as string) ?? "",
-                  name: (v.name as string) ?? "",
-                  type: (v.type as string) ?? "",
-                  contactName: (v.contact_name as string) ?? "",
-                  email: (v.email as string) ?? "",
-                  status: ((v.status as string) ?? "invited") as OnboardingStatus,
-                  invitedAt: (v.invited_at as string) ?? "",
-                  docsSubmitted: (v.docs_submitted as number) ?? 0,
-                  docsRequired: (v.docs_required as number) ?? 0,
-                  docsApproved: (v.docs_approved as number) ?? 0,
-                  categories: (v.categories as string[]) ?? [],
-                  lastActivity: (v.last_activity as string) ?? "",
-              }))
-            : mockOnboardingVendors;
+    const vendors: OnboardingVendor[] = (sbVendors ?? []).map((v: Record<string, unknown>) => ({
+        id: (v.id as string) ?? "",
+        name: (v.name as string) ?? "",
+        type: (v.type as string) ?? "",
+        contactName: (v.contact_name as string) ?? "",
+        email: (v.email as string) ?? "",
+        status: ((v.status as string) ?? "invited") as OnboardingStatus,
+        invitedAt: (v.invited_at as string) ?? "",
+        docsSubmitted: (v.docs_submitted as number) ?? 0,
+        docsRequired: (v.docs_required as number) ?? 0,
+        docsApproved: (v.docs_approved as number) ?? 0,
+        categories: (v.categories as string[]) ?? [],
+        lastActivity: (v.last_activity as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

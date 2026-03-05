@@ -275,8 +275,9 @@ export function useUpsertNotificationPreference() {
 // ═══════════════════════════════════════════════════════════════
 
 export function useEmailMessages(entityType?: string, entityId?: string) {
+    const filtered = !!entityType && !!entityId;
     return useQuery({
-        queryKey: ["email_messages", entityType, entityId],
+        queryKey: ["email_messages", entityType ?? "all", entityId ?? "all"],
         queryFn: async () => {
             let q = fromTable("email_messages")
                 .select("*")
@@ -287,7 +288,7 @@ export function useEmailMessages(entityType?: string, entityId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: !!entityType && !!entityId,
+        enabled: filtered || (!entityType && !entityId),
     });
 }
 

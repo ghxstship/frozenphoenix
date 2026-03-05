@@ -20,14 +20,8 @@ import { ConditionBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { MOCK_ASSETS } from "@/lib/demo-data";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
-import {
-    isSupabaseConfigured,
-    useAssets,
-    useCreateAssetAssignment,
-    useUpdateAsset,
-} from "@/lib/supabase/hooks";
+import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase/hooks";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -76,30 +70,28 @@ export default function AssetDetailPage() {
     const { data: sbAssets } = useAssets();
 
     const sbAsset = sbAssets?.find((a) => a.id === assetId);
-    const asset =
-        isSupabaseConfigured && sbAsset
-            ? {
-                  id: sbAsset.id,
-                  name: sbAsset.name,
-                  category: sbAsset.category,
-                  barcode: sbAsset.barcode ?? "",
-                  location: sbAsset.location ?? "",
-                  condition: sbAsset.condition as "excellent" | "good" | "fair" | "needs_repair",
-                  ownedOrRental: sbAsset.owned_or_rental as "owned" | "rental",
-                  purchasePrice: sbAsset.purchase_price ?? 0,
-                  dailyRentalCost: (sbAsset as Record<string, unknown>).daily_rental_cost as
-                      | number
-                      | undefined,
-                  rentalReturnDate: (sbAsset as Record<string, unknown>).rental_return_date as
-                      | string
-                      | undefined,
-                  notes: sbAsset.notes ?? "",
-                  status: ((sbAsset as Record<string, unknown>).status as string) ?? "available",
-              }
-            : MOCK_ASSETS.find((a) => a.id === assetId);
+    const asset = sbAsset
+        ? {
+              id: sbAsset.id,
+              name: sbAsset.name,
+              category: sbAsset.category,
+              barcode: sbAsset.barcode ?? "",
+              location: sbAsset.location ?? "",
+              condition: sbAsset.condition as "excellent" | "good" | "fair" | "needs_repair",
+              ownedOrRental: sbAsset.owned_or_rental as "owned" | "rental",
+              purchasePrice: sbAsset.purchase_price ?? 0,
+              dailyRentalCost: (sbAsset as Record<string, unknown>).daily_rental_cost as
+                  | number
+                  | undefined,
+              rentalReturnDate: (sbAsset as Record<string, unknown>).rental_return_date as
+                  | string
+                  | undefined,
+              notes: sbAsset.notes ?? "",
+              status: ((sbAsset as Record<string, unknown>).status as string) ?? "available",
+          }
+        : null;
 
     const handleCheckOut = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await createAssignment.mutateAsync({
                 asset_id: assetId,
@@ -118,7 +110,6 @@ export default function AssetDetailPage() {
     };
 
     const handleLogMaintenance = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateAsset.mutateAsync({
                 id: assetId,
@@ -133,7 +124,6 @@ export default function AssetDetailPage() {
     };
 
     const handleDecommission = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateAsset.mutateAsync({
                 id: assetId,

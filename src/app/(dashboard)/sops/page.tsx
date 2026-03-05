@@ -5,71 +5,29 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { isSupabaseConfigured, useSOPs } from "@/lib/supabase/hooks";
+import { useSOPs } from "@/lib/supabase/hooks";
 import { BookOpen, CheckCircle2, Clock, Loader2, Plus, User } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { PermissionGate } from "@/components/permission-guard";
 
-const MOCK_SOPS = [
-    {
-        id: "sop1",
-        title: "Load-In Safety Protocol",
-        role: "Lead Fabricator",
-        version: "2.1",
-        lastUpdated: "2026-02-10",
-        acknowledged: 4,
-        total: 5,
-    },
-    {
-        id: "sop2",
-        title: "Forklift Operation Procedure",
-        role: "General Labor",
-        version: "1.3",
-        lastUpdated: "2026-01-15",
-        acknowledged: 3,
-        total: 3,
-    },
-    {
-        id: "sop3",
-        title: "Electrical Rigging Checklist",
-        role: "Electrician",
-        version: "3.0",
-        lastUpdated: "2026-02-01",
-        acknowledged: 1,
-        total: 2,
-    },
-    {
-        id: "sop4",
-        title: "Client Site Access Protocol",
-        role: "All Roles",
-        version: "1.0",
-        lastUpdated: "2026-02-20",
-        acknowledged: 8,
-        total: 12,
-    },
-];
-
 export default function SOPsPage() {
     const { data: sbSOPs, isLoading } = useSOPs();
 
-    const sops =
-        isSupabaseConfigured && sbSOPs
-            ? sbSOPs.map((sop) => ({
-                  id: sop.id,
-                  title: sop.title,
-                  role: sop.role,
-                  version: sop.version,
-                  lastUpdated: sop.updated_at,
-                  acknowledged: (
-                      (sop as unknown as { sop_acknowledgments?: { user_id: string }[] })
-                          .sop_acknowledgments || []
-                  ).length,
-                  total: 5, // Would need a separate query for total users per role
-              }))
-            : MOCK_SOPS;
+    const sops = (sbSOPs ?? []).map((sop) => ({
+        id: sop.id,
+        title: sop.title,
+        role: sop.role,
+        version: sop.version,
+        lastUpdated: sop.updated_at,
+        acknowledged: (
+            (sop as unknown as { sop_acknowledgments?: { user_id: string }[] })
+                .sop_acknowledgments || []
+        ).length,
+        total: 5, // Would need a separate query for total users per role
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

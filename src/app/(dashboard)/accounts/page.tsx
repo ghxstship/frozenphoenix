@@ -12,7 +12,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { OverlineText } from "@/components/ui/overline-text";
 import { SearchInput } from "@/components/ui/search-input";
 import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
-import { isSupabaseConfigured, useAccounts } from "@/lib/supabase/hooks-pages";
+import { useAccounts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { AccountHealthScore } from "@/types";
 import {
@@ -67,10 +67,10 @@ export default function AccountsPage() {
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbAccounts, isLoading } = useAccounts();
 
-    const accounts =
-        isSupabaseConfigured && sbAccounts
-            ? (sbAccounts as unknown as typeof MOCK_ACCOUNT_HEALTH_SCORES)
-            : MOCK_ACCOUNT_HEALTH_SCORES;
+    const accounts = useMemo(
+        () => (sbAccounts ?? []) as typeof MOCK_ACCOUNT_HEALTH_SCORES,
+        [sbAccounts]
+    );
 
     const filtered = useMemo(() => {
         let result = accounts;
@@ -95,7 +95,7 @@ export default function AccountsPage() {
         return { totalRevenue, avgHealth, atRisk, totalOpps };
     }, [accounts]);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

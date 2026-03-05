@@ -16,12 +16,9 @@ import {
     TrendingUp,
     Users,
 } from "lucide-react";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 // TODO: Wire to Supabase when forecasting tables are available
-void isSupabaseConfigured;
-
 type ForecastView = "revenue" | "utilization" | "budget" | "hiring";
 
 interface RevenueMonth {

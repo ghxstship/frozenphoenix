@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useAssets, useVehicles } from "@/lib/supabase/hooks";
-import { MOCK_ASSETS, MOCK_VEHICLES } from "@/lib/demo-data";
+import { useAssets, useVehicles } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
 import {
     AlertTriangle,
@@ -231,40 +230,34 @@ export default function AssetsPage() {
     const { data: sbAssets, isLoading: loadingAssets } = useAssets();
     const { data: sbVehicles, isLoading: loadingVehicles } = useVehicles();
 
-    const assets: Asset[] =
-        isSupabaseConfigured && sbAssets
-            ? sbAssets.map((a) => ({
-                  id: a.id,
-                  name: a.name,
-                  category: a.category,
-                  barcode: a.barcode,
-                  condition: a.condition as AssetCondition,
-                  location: a.location,
-                  ownedOrRental: a.owned_or_rental as "owned" | "rental",
-                  rentalReturnDate: a.rental_return_date ?? undefined,
-                  dailyRentalCost: a.daily_rental_cost ?? undefined,
-                  purchasePrice: a.purchase_price ?? undefined,
-                  imageUrl: a.image_url ?? undefined,
-                  notes: a.notes ?? undefined,
-              }))
-            : MOCK_ASSETS;
+    const assets: Asset[] = (sbAssets ?? []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        category: a.category,
+        barcode: a.barcode,
+        condition: a.condition as AssetCondition,
+        location: a.location,
+        ownedOrRental: a.owned_or_rental as "owned" | "rental",
+        rentalReturnDate: a.rental_return_date ?? undefined,
+        dailyRentalCost: a.daily_rental_cost ?? undefined,
+        purchasePrice: a.purchase_price ?? undefined,
+        imageUrl: a.image_url ?? undefined,
+        notes: a.notes ?? undefined,
+    }));
 
-    const vehicles: Vehicle[] =
-        isSupabaseConfigured && sbVehicles
-            ? sbVehicles.map((v) => ({
-                  id: v.id,
-                  name: v.name,
-                  type: v.type,
-                  licensePlate: v.license_plate,
-                  dockHeight: v.dock_height,
-                  driverName: v.driver_name,
-                  driverPhone: v.driver_phone,
-                  gpsEnabled: v.gps_enabled,
-                  status: v.status as "available" | "in_transit" | "loading" | "maintenance",
-              }))
-            : MOCK_VEHICLES;
+    const vehicles: Vehicle[] = (sbVehicles ?? []).map((v) => ({
+        id: v.id,
+        name: v.name,
+        type: v.type,
+        licensePlate: v.license_plate,
+        dockHeight: v.dock_height,
+        driverName: v.driver_name,
+        driverPhone: v.driver_phone,
+        gpsEnabled: v.gps_enabled,
+        status: v.status as "available" | "in_transit" | "loading" | "maintenance",
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingAssets || loadingVehicles);
+    const isLoading = loadingAssets || loadingVehicles;
 
     if (isLoading) {
         return (

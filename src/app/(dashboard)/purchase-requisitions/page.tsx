@@ -10,10 +10,9 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, ClipboardList, Clock, Loader2, Plus } from "lucide-react";
-import { MOCK_PURCHASE_REQUISITIONS } from "@/lib/demo-data-governance";
 import { formatCurrency } from "@/lib/utils";
 import type { PurchaseRequisition, RequisitionStatus } from "@/types/governance";
-import { isSupabaseConfigured, usePurchaseRequisitions } from "@/lib/supabase/hooks-pages";
+import { usePurchaseRequisitions } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const REQ_STATUSES: RequisitionStatus[] = [
@@ -38,28 +37,25 @@ export default function PurchaseRequisitionsPage() {
 
     const { data: sbReqs, isLoading } = usePurchaseRequisitions();
 
-    const reqs: PurchaseRequisition[] =
-        isSupabaseConfigured && sbReqs
-            ? sbReqs.map((r: Record<string, unknown>) => ({
-                  id: (r.id as string) ?? "",
-                  project_id: (r.project_id as string) ?? "",
-                  number: (r.number as string) ?? "",
-                  title: (r.title as string) ?? "",
-                  status: ((r.status as string) ?? "draft") as RequisitionStatus,
-                  urgency: ((r.urgency as string) ?? "normal") as PurchaseRequisition["urgency"],
-                  estimated_cost: (r.estimated_cost as number) ?? 0,
-                  justification: (r.justification as string) ?? "",
-                  needed_by: (r.needed_by as string) ?? undefined,
-                  line_items: (r.line_items as unknown[]) ?? [],
-                  requester_id: (r.requester_id as string) ?? "",
-                  department: (r.department as string) ?? "",
-                  organization_id: (r.organization_id as string) ?? "",
-                  created_at: (r.created_at as string) ?? "",
-                  updated_at: (r.updated_at as string) ?? "",
-              }))
-            : MOCK_PURCHASE_REQUISITIONS;
+    const reqs: PurchaseRequisition[] = (sbReqs ?? []).map((r: Record<string, unknown>) => ({
+        id: (r.id as string) ?? "",
+        project_id: (r.project_id as string) ?? "",
+        number: (r.number as string) ?? "",
+        title: (r.title as string) ?? "",
+        status: ((r.status as string) ?? "draft") as RequisitionStatus,
+        urgency: ((r.urgency as string) ?? "normal") as PurchaseRequisition["urgency"],
+        estimated_cost: (r.estimated_cost as number) ?? 0,
+        justification: (r.justification as string) ?? "",
+        needed_by: (r.needed_by as string) ?? undefined,
+        line_items: (r.line_items as unknown[]) ?? [],
+        requester_id: (r.requester_id as string) ?? "",
+        department: (r.department as string) ?? "",
+        organization_id: (r.organization_id as string) ?? "",
+        created_at: (r.created_at as string) ?? "",
+        updated_at: (r.updated_at as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

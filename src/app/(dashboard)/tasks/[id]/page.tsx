@@ -13,11 +13,20 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
-import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/demo-data";
+import { useDeleteTask, useProjects, useTasks, useUpdateTask } from "@/lib/supabase/hooks";
+import { useTask } from "@/lib/supabase/hooks-pages";
 import { FABRICATION_STATUS_MAP, PROJECT_PHASE_MAP } from "@/config/domain-config";
-import { isSupabaseConfigured, useDeleteTask, useUpdateTask } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { CheckSquare, Clock, DollarSign, Edit, Link2, MessageSquare, User } from "lucide-react";
+import {
+    CheckSquare,
+    Clock,
+    DollarSign,
+    Edit,
+    Link2,
+    Loader2,
+    MessageSquare,
+    User,
+} from "lucide-react";
 
 type TabId = "overview" | "subtasks" | "comments" | "chatter";
 const TAB_VALUES = ["overview", "subtasks", "comments", "chatter"] as const;
@@ -47,11 +56,16 @@ export default function TaskDetailPage() {
     const updateTask = useUpdateTask();
     const deleteTask = useDeleteTask();
 
-    const task = MOCK_TASKS.find((t) => t.id === taskId);
-    const project = task ? MOCK_PROJECTS.find((p) => p.id === task.projectId) : null;
+    const { data: task, isLoading } = useTask(taskId);
+    const { data: sbProjects } = useProjects();
+    const { data: sbTasks } = useTasks();
+    const project = task
+        ? (sbProjects ?? []).find(
+              (p: Record<string, unknown>) => p.id === (task as Record<string, unknown>).project_id
+          )
+        : null;
 
     const handleMarkComplete = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateTask.mutateAsync({ id: taskId, status: "done" } as unknown as Parameters<
                 typeof updateTask.mutateAsync
@@ -62,7 +76,6 @@ export default function TaskDetailPage() {
     };
 
     const handleDeleteTask = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await deleteTask.mutateAsync(taskId);
             router.push("/tasks");
@@ -70,6 +83,14 @@ export default function TaskDetailPage() {
             logger.error("Failed to delete task", { error });
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!task) {
         return (
@@ -82,9 +103,9 @@ export default function TaskDetailPage() {
         );
     }
 
-    const phaseConfig = PROJECT_PHASE_MAP[task.phase];
+    const phaseConfig = PROJECT_PHASE_MAP[task.phase as keyof typeof PROJECT_PHASE_MAP];
     const fabConfig = task.fabricationStatus
-        ? FABRICATION_STATUS_MAP[task.fabricationStatus]
+        ? FABRICATION_STATUS_MAP[task.fabricationStatus as keyof typeof FABRICATION_STATUS_MAP]
         : null;
 
     const tabs = [
@@ -261,8 +282,10 @@ export default function TaskDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {task.dependencies.map((depId) => {
-                                        const depTask = MOCK_TASKS.find((t) => t.id === depId);
+                                    {task.dependencies.map((depId: string) => {
+                                        const depTask = (sbTasks ?? []).find(
+                                            (t: Record<string, unknown>) => t.id === depId
+                                        );
                                         if (!depTask) return null;
                                         return (
                                             <div

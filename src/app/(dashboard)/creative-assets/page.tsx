@@ -20,7 +20,7 @@ import {
     MOCK_CAMPAIGNS,
     MOCK_CREATIVE_REVIEWS,
 } from "@/lib/demo-data-creative-brand";
-import { isSupabaseConfigured, useCreativeAssets } from "@/lib/supabase/hooks-pages";
+import { useCreativeAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
 import { CheckCircle2, Clock, Filter, Globe, Layers, Loader2, Plus, Shield } from "lucide-react";
@@ -54,10 +54,7 @@ export default function CreativeAssetsPage() {
     });
     const { data: sbAssets, isLoading } = useCreativeAssets();
 
-    const assets =
-        isSupabaseConfigured && sbAssets
-            ? (sbAssets as unknown as CampaignAsset[])
-            : MOCK_CAMPAIGN_ASSETS;
+    const assets = sbAssets ? (sbAssets as unknown as CampaignAsset[]) : MOCK_CAMPAIGN_ASSETS;
     const reviews = MOCK_CREATIVE_REVIEWS;
     const campaigns = MOCK_CAMPAIGNS;
 
@@ -92,7 +89,7 @@ export default function CreativeAssetsPage() {
             : 0;
     })();
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -25,7 +25,7 @@ import {
     Plus,
     Zap,
 } from "lucide-react";
-import { isSupabaseConfigured, useAutomations } from "@/lib/supabase/hooks-pages";
+import { useAutomations } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -215,97 +215,6 @@ interface AutomationListItem {
     createdBy: string;
 }
 
-const mockAutomations: AutomationListItem[] = [
-    {
-        id: "1",
-        name: "New Deal → Notify Sales Manager",
-        description:
-            "When a new deal is created, notify the assigned sales manager via email and in-app notification",
-        entityType: "deal",
-        trigger: "created",
-        actions: ["send_notification", "send_email"],
-        status: "active",
-        executionCount: 156,
-        lastExecuted: "2026-02-25",
-        createdBy: "Sarah Chen",
-    },
-    {
-        id: "2",
-        name: "Task Overdue → Escalate to PM",
-        description:
-            "When a task becomes overdue, create an escalation task and notify the project manager",
-        entityType: "task",
-        trigger: "overdue",
-        actions: ["create_task", "send_notification"],
-        status: "active",
-        executionCount: 43,
-        lastExecuted: "2026-02-24",
-        createdBy: "System",
-    },
-    {
-        id: "3",
-        name: "Proposal Accepted → Create Project",
-        description:
-            "When a proposal is accepted, automatically create a project from the proposal details",
-        entityType: "proposal",
-        trigger: "status_changed",
-        actions: ["create_task", "assign_user"],
-        status: "active",
-        executionCount: 12,
-        lastExecuted: "2026-02-20",
-        createdBy: "Sarah Chen",
-    },
-    {
-        id: "4",
-        name: "Invoice Overdue → Send Reminder",
-        description:
-            "When an invoice is overdue by 7 days, automatically send a payment reminder email",
-        entityType: "invoice",
-        trigger: "overdue",
-        actions: ["send_email"],
-        status: "active",
-        executionCount: 28,
-        lastExecuted: "2026-02-23",
-        createdBy: "Finance Team",
-    },
-    {
-        id: "5",
-        name: "Budget Threshold → Alert Finance",
-        description: "When project budget reaches 80% utilization, notify finance team",
-        entityType: "project",
-        trigger: "updated",
-        actions: ["send_notification"],
-        status: "paused",
-        executionCount: 8,
-        lastExecuted: "2026-02-10",
-        createdBy: "Finance Team",
-    },
-    {
-        id: "6",
-        name: "Daily Standup Reminder",
-        description: "Send daily standup reminder to all active project teams at 9:00 AM",
-        entityType: "project",
-        trigger: "scheduled",
-        actions: ["send_notification"],
-        status: "active",
-        executionCount: 340,
-        lastExecuted: "2026-02-25",
-        createdBy: "System",
-    },
-    {
-        id: "7",
-        name: "Contract Expiry Warning",
-        description: "30 days before contract expiry, notify account manager and legal team",
-        entityType: "contract",
-        trigger: "due_date_approaching",
-        actions: ["send_email", "send_notification", "create_task"],
-        status: "draft",
-        executionCount: 0,
-        lastExecuted: "",
-        createdBy: "Legal Team",
-    },
-];
-
 function formatDateTime(dateStr: string): string {
     return formatLocaleDateTime(dateStr);
 }
@@ -324,23 +233,22 @@ export default function AutomationsPage() {
 
     const { data: sbAutomations, isLoading } = useAutomations();
 
-    const automations: AutomationListItem[] =
-        isSupabaseConfigured && sbAutomations
-            ? sbAutomations.map((a: Record<string, unknown>) => ({
-                  id: (a.id as string) ?? "",
-                  name: (a.name as string) ?? "",
-                  description: (a.description as string) ?? "",
-                  entityType: (a.entity_type as string) ?? "",
-                  trigger: ((a.trigger_type as string) ?? "created") as TriggerType,
-                  actions: ((a.actions as string[]) ?? []) as ActionType[],
-                  status: ((a.status as string) ?? "draft") as WorkflowStatusType,
-                  executionCount: (a.execution_count as number) ?? 0,
-                  lastExecuted: (a.last_executed_at as string) ?? "",
-                  createdBy: (a.created_by as string) ?? "",
-              }))
-            : mockAutomations;
+    const automations: AutomationListItem[] = (sbAutomations ?? []).map(
+        (a: Record<string, unknown>) => ({
+            id: (a.id as string) ?? "",
+            name: (a.name as string) ?? "",
+            description: (a.description as string) ?? "",
+            entityType: (a.entity_type as string) ?? "",
+            trigger: ((a.trigger_type as string) ?? "created") as TriggerType,
+            actions: ((a.actions as string[]) ?? []) as ActionType[],
+            status: ((a.status as string) ?? "draft") as WorkflowStatusType,
+            executionCount: (a.execution_count as number) ?? 0,
+            lastExecuted: (a.last_executed_at as string) ?? "",
+            createdBy: (a.created_by as string) ?? "",
+        })
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

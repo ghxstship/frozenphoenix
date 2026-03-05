@@ -13,11 +13,19 @@ import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { MOCK_BUDGET_LINES, MOCK_BUDGETS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useBudget, useBudgetLines } from "@/lib/supabase/hooks-pages";
+import { useProjects } from "@/lib/supabase/hooks";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { CheckCircle, DollarSign, Edit, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import {
+    CheckCircle,
+    DollarSign,
+    Edit,
+    FileText,
+    Loader2,
+    TrendingDown,
+    TrendingUp,
+} from "lucide-react";
 
 type TabId = "overview" | "line-items" | "approvals" | "chatter";
 const TAB_VALUES = ["overview", "line-items", "approvals", "chatter"] as const;
@@ -70,9 +78,39 @@ export default function BudgetDetailPage() {
     });
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
 
-    const budget = MOCK_BUDGETS.find((b) => b.id === budgetId);
-    const lineItems = MOCK_BUDGET_LINES.filter((l) => l.budgetId === budgetId);
-    const project = budget ? MOCK_PROJECTS.find((p) => p.id === budget.projectId) : null;
+    const { data: budget, isLoading } = useBudget(budgetId);
+    const { data: sbLines } = useBudgetLines(budgetId);
+    const { data: sbProjects } = useProjects();
+    type BudgetLineView = {
+        id: string;
+        category: string;
+        description: string;
+        budgetedAmount: number;
+        actualAmount: number;
+        variance: number;
+    };
+    const lineItems: BudgetLineView[] = (sbLines ?? []).map((li: Record<string, unknown>) => ({
+        id: li.id as string,
+        category: (li.category ?? "") as string,
+        description: (li.description ?? "") as string,
+        budgetedAmount: Number(li.estimated_amount ?? li.unit_cost ?? 0),
+        actualAmount: Number(li.actual_amount ?? 0),
+        variance: Number(li.variance ?? 0),
+    }));
+    const project = budget
+        ? (sbProjects ?? []).find(
+              (p: Record<string, unknown>) =>
+                  p.id === (budget as Record<string, unknown>).project_id
+          )
+        : null;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!budget) {
         return (

@@ -13,8 +13,9 @@ import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
-import { Calendar, CheckCircle2, Clock, DollarSign, FileEdit, User } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, DollarSign, FileEdit, Loader2, User } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useChangeOrder } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "scope" | "chatter";
 const TAB_VALUES = ["details", "scope", "chatter"] as const;
@@ -26,9 +27,27 @@ export default function ChangeOrderDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const co = MOCK_CHANGE_ORDERS[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: co, isLoading } = useChangeOrder(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!co) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -130,7 +149,7 @@ export default function ChangeOrderDetailPage() {
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
                         {co.tags.length > 0 ? (
-                            co.tags.map((t) => (
+                            co.tags.map((t: string) => (
                                 <Chip key={t} size="sm">
                                     {t}
                                 </Chip>
@@ -360,14 +379,18 @@ export default function ChangeOrderDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {co.deliverablesAdded.map((d, i) => (
-                                        <div
-                                            key={i}
-                                            className="p-3 rounded-lg bg-success/5 border border-success/20"
-                                        >
-                                            <p className="text-sm font-mono">{JSON.stringify(d)}</p>
-                                        </div>
-                                    ))}
+                                    {co.deliverablesAdded.map(
+                                        (d: Record<string, unknown>, i: number) => (
+                                            <div
+                                                key={i}
+                                                className="p-3 rounded-lg bg-success/5 border border-success/20"
+                                            >
+                                                <p className="text-sm font-mono">
+                                                    {JSON.stringify(d)}
+                                                </p>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -381,14 +404,18 @@ export default function ChangeOrderDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {co.deliverablesRemoved.map((d, i) => (
-                                        <div
-                                            key={i}
-                                            className="p-3 rounded-lg bg-destructive/5 border border-destructive/20"
-                                        >
-                                            <p className="text-sm font-mono">{JSON.stringify(d)}</p>
-                                        </div>
-                                    ))}
+                                    {co.deliverablesRemoved.map(
+                                        (d: Record<string, unknown>, i: number) => (
+                                            <div
+                                                key={i}
+                                                className="p-3 rounded-lg bg-destructive/5 border border-destructive/20"
+                                            >
+                                                <p className="text-sm font-mono">
+                                                    {JSON.stringify(d)}
+                                                </p>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>

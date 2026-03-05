@@ -7,7 +7,7 @@ import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput, DatePicker, FormField, Select } from "@/components/ui/form";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
-import { isSupabaseConfigured, useCreateProject } from "@/lib/supabase/hooks";
+import { useCreateProject } from "@/lib/supabase/hooks";
 
 export default function NewProjectPage() {
     const router = useRouter();
@@ -27,20 +27,18 @@ export default function NewProjectPage() {
         e.preventDefault();
 
         try {
-            if (isSupabaseConfigured) {
-                const projectData = {
-                    name: formData.name,
-                    client: formData.client,
-                    status: formData.status,
-                    current_phase: formData.currentPhase,
-                    start_date: formData.startDate || null,
-                    end_date: formData.endDate || null,
-                    budget_planned: formData.budgetPlanned || null,
-                };
-                await createProject.mutateAsync(
-                    projectData as unknown as Parameters<typeof createProject.mutateAsync>[0]
-                );
-            }
+            const projectData = {
+                name: formData.name,
+                client: formData.client,
+                status: formData.status,
+                current_phase: formData.currentPhase,
+                start_date: formData.startDate || null,
+                end_date: formData.endDate || null,
+                budget_planned: formData.budgetPlanned || null,
+            };
+            await createProject.mutateAsync(
+                projectData as unknown as Parameters<typeof createProject.mutateAsync>[0]
+            );
             router.push("/projects");
         } catch (error) {
             logger.error("Failed to create project", { error });

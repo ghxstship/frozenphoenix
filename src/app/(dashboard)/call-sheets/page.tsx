@@ -23,7 +23,7 @@ import {
     Sun,
     Users,
 } from "lucide-react";
-import { isSupabaseConfigured, useCallSheets } from "@/lib/supabase/hooks-pages";
+import { useCallSheets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface CallSheetListItem {
@@ -41,104 +41,30 @@ interface CallSheetListItem {
     weatherTemp: string;
 }
 
-const mockCallSheets: CallSheetListItem[] = [
-    {
-        id: "1",
-        title: "Nike Air Max Launch — Day 1",
-        callSheetNumber: "CS-2026-0001",
-        projectName: "Nike Air Max Launch",
-        date: "2026-03-15",
-        venueName: "Barclays Center, Brooklyn",
-        generalCallTime: "06:00",
-        wrapTime: "22:00",
-        crewCount: 45,
-        status: "distributed",
-        weatherForecast: "Partly Cloudy",
-        weatherTemp: "58°F",
-    },
-    {
-        id: "2",
-        title: "Nike Air Max Launch — Day 2",
-        callSheetNumber: "CS-2026-0002",
-        projectName: "Nike Air Max Launch",
-        date: "2026-03-16",
-        venueName: "Barclays Center, Brooklyn",
-        generalCallTime: "07:00",
-        wrapTime: "20:00",
-        crewCount: 38,
-        status: "published",
-        weatherForecast: "Sunny",
-        weatherTemp: "62°F",
-    },
-    {
-        id: "3",
-        title: "Red Bull Festival — Load In",
-        callSheetNumber: "CS-2026-0003",
-        projectName: "Red Bull Festival Activation",
-        date: "2026-04-10",
-        venueName: "Randalls Island Park",
-        generalCallTime: "05:00",
-        wrapTime: "18:00",
-        crewCount: 60,
-        status: "draft",
-        weatherForecast: "Clear",
-        weatherTemp: "55°F",
-    },
-    {
-        id: "4",
-        title: "Coachella Stage Build — Week 1",
-        callSheetNumber: "CS-2026-0004",
-        projectName: "Coachella Brand Experience",
-        date: "2026-04-01",
-        venueName: "Empire Polo Club, Indio",
-        generalCallTime: "06:00",
-        wrapTime: "19:00",
-        crewCount: 85,
-        status: "draft",
-        weatherForecast: "Hot & Dry",
-        weatherTemp: "92°F",
-    },
-    {
-        id: "5",
-        title: "TechStart Launch — Setup",
-        callSheetNumber: "CS-2026-0005",
-        projectName: "TechStart Product Launch",
-        date: "2026-03-20",
-        venueName: "Javits Center, NYC",
-        generalCallTime: "08:00",
-        wrapTime: "17:00",
-        crewCount: 22,
-        status: "acknowledged",
-        weatherForecast: "Rain",
-        weatherTemp: "48°F",
-    },
-];
-
 export default function CallSheetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbCallSheets, isLoading } = useCallSheets();
 
-    const callSheets: CallSheetListItem[] =
-        isSupabaseConfigured && sbCallSheets
-            ? sbCallSheets.map((cs: Record<string, unknown>) => ({
-                  id: (cs.id as string) ?? "",
-                  title: (cs.title as string) ?? "",
-                  callSheetNumber: (cs.call_sheet_number as string) ?? "",
-                  projectName: (cs.project_name as string) ?? "",
-                  date: (cs.date as string) ?? "",
-                  venueName: (cs.venue_name as string) ?? "",
-                  generalCallTime: (cs.general_call_time as string) ?? "",
-                  wrapTime: (cs.wrap_time as string) ?? "",
-                  crewCount: (cs.crew_count as number) ?? 0,
-                  status: ((cs.status as string) ?? "draft") as CallSheetStatusType,
-                  weatherForecast: (cs.weather_forecast as string) ?? "",
-                  weatherTemp: (cs.weather_temp as string) ?? "",
-              }))
-            : mockCallSheets;
+    const callSheets: CallSheetListItem[] = (sbCallSheets ?? []).map(
+        (cs: Record<string, unknown>) => ({
+            id: (cs.id as string) ?? "",
+            title: (cs.title as string) ?? "",
+            callSheetNumber: (cs.call_sheet_number as string) ?? "",
+            projectName: (cs.project_name as string) ?? "",
+            date: (cs.date as string) ?? "",
+            venueName: (cs.venue_name as string) ?? "",
+            generalCallTime: (cs.general_call_time as string) ?? "",
+            wrapTime: (cs.wrap_time as string) ?? "",
+            crewCount: (cs.crew_count as number) ?? 0,
+            status: ((cs.status as string) ?? "draft") as CallSheetStatusType,
+            weatherForecast: (cs.weather_forecast as string) ?? "",
+            weatherTemp: (cs.weather_temp as string) ?? "",
+        })
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

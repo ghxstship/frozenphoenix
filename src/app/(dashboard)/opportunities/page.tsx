@@ -14,9 +14,12 @@ import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/demo-data-crm-revenue";
-import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
-import { isSupabaseConfigured, useOpportunities } from "@/lib/supabase/hooks-pages";
+import { MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
+import {
+    OPPORTUNITY_STAGES_KANBAN as OPPORTUNITY_STAGES,
+    OPPORTUNITY_TYPE_MAP,
+} from "@/config/domain-config";
+import { useOpportunities } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Opportunity, OpportunityStage } from "@/types";
 import {
@@ -138,8 +141,7 @@ export default function OpportunitiesPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbOpps, isLoading } = useOpportunities();
 
-    const opportunities =
-        isSupabaseConfigured && sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
+    const opportunities = sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
 
     const filtered = useMemo(() => {
         let result = opportunities;
@@ -172,7 +174,7 @@ export default function OpportunitiesPage() {
 
     const boardStages = OPPORTUNITY_STAGES.filter((s) => s.id !== "won" && s.id !== "lost");
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

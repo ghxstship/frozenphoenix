@@ -10,7 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { AlertTriangle, BarChart3, Loader2, MapPin, Package, Plus, Tag } from "lucide-react";
-import { isSupabaseConfigured, useInventoryItems } from "@/lib/supabase/hooks-pages";
+import { useInventoryItems } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "on_order";
@@ -28,129 +28,6 @@ interface InventoryItem {
     lastRestocked: string;
 }
 
-const mockInventory: InventoryItem[] = [
-    {
-        id: "1",
-        name: 'Black Gaffer Tape (2")',
-        sku: "CON-GT-BLK-2",
-        category: "Consumables",
-        quantity: 240,
-        minQuantity: 50,
-        location: "Brooklyn Main",
-        status: "in_stock",
-        unitCost: 12.5,
-        lastRestocked: "2026-02-15",
-    },
-    {
-        id: "2",
-        name: "XLR Cable 50ft",
-        sku: "AUD-XLR-50",
-        category: "Audio",
-        quantity: 85,
-        minQuantity: 30,
-        location: "Brooklyn Main",
-        status: "in_stock",
-        unitCost: 28,
-        lastRestocked: "2026-02-01",
-    },
-    {
-        id: "3",
-        name: "LED Panel Bracket (Universal)",
-        sku: "VID-BRK-UNI",
-        category: "Video",
-        quantity: 12,
-        minQuantity: 20,
-        location: "LA Hub",
-        status: "low_stock",
-        unitCost: 45,
-        lastRestocked: "2026-01-20",
-    },
-    {
-        id: "4",
-        name: "Safety Harness (Full Body)",
-        sku: "SAF-HRN-FB",
-        category: "Safety",
-        quantity: 0,
-        minQuantity: 10,
-        location: "Brooklyn Main",
-        status: "out_of_stock",
-        unitCost: 150,
-        lastRestocked: "2025-12-15",
-    },
-    {
-        id: "5",
-        name: "Edison Bulb 60W (Warm)",
-        sku: "LIT-EDI-60W",
-        category: "Lighting",
-        quantity: 500,
-        minQuantity: 100,
-        location: "Brooklyn Main",
-        status: "in_stock",
-        unitCost: 3.5,
-        lastRestocked: "2026-02-10",
-    },
-    {
-        id: "6",
-        name: 'Zip Ties 12" (1000pk)',
-        sku: "CON-ZT-12",
-        category: "Consumables",
-        quantity: 8,
-        minQuantity: 15,
-        location: "Chicago",
-        status: "low_stock",
-        unitCost: 18,
-        lastRestocked: "2026-01-28",
-    },
-    {
-        id: "7",
-        name: "Truss Pin (Conical)",
-        sku: "RIG-PIN-CON",
-        category: "Rigging",
-        quantity: 0,
-        minQuantity: 50,
-        location: "LA Hub",
-        status: "on_order",
-        unitCost: 2.5,
-        lastRestocked: "2026-01-05",
-    },
-    {
-        id: "8",
-        name: "Cat6 Ethernet 100ft",
-        sku: "NET-CAT6-100",
-        category: "Network",
-        quantity: 45,
-        minQuantity: 20,
-        location: "Brooklyn Main",
-        status: "in_stock",
-        unitCost: 22,
-        lastRestocked: "2026-02-12",
-    },
-    {
-        id: "9",
-        name: "Haze Fluid (Gallon)",
-        sku: "FX-HAZE-GAL",
-        category: "Effects",
-        quantity: 6,
-        minQuantity: 10,
-        location: "LA Hub",
-        status: "low_stock",
-        unitCost: 35,
-        lastRestocked: "2026-02-05",
-    },
-    {
-        id: "10",
-        name: "Pipe & Drape Set (8ft)",
-        sku: "SCN-PD-8FT",
-        category: "Scenic",
-        quantity: 30,
-        minQuantity: 10,
-        location: "Brooklyn Main",
-        status: "in_stock",
-        unitCost: 85,
-        lastRestocked: "2026-02-18",
-    },
-];
-
 export default function InventoryPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -158,23 +35,20 @@ export default function InventoryPage() {
 
     const { data: sbItems, isLoading } = useInventoryItems();
 
-    const items: InventoryItem[] =
-        isSupabaseConfigured && sbItems
-            ? sbItems.map((i: Record<string, unknown>) => ({
-                  id: (i.id as string) ?? "",
-                  name: (i.name as string) ?? "",
-                  sku: (i.sku as string) ?? "",
-                  category: (i.category as string) ?? "",
-                  quantity: (i.quantity as number) ?? 0,
-                  minQuantity: (i.min_quantity as number) ?? 0,
-                  location: (i.location as string) ?? "",
-                  status: ((i.status as string) ?? "in_stock") as StockStatus,
-                  unitCost: (i.unit_cost as number) ?? 0,
-                  lastRestocked: (i.last_restocked as string) ?? "",
-              }))
-            : mockInventory;
+    const items: InventoryItem[] = (sbItems ?? []).map((i: Record<string, unknown>) => ({
+        id: (i.id as string) ?? "",
+        name: (i.name as string) ?? "",
+        sku: (i.sku as string) ?? "",
+        category: (i.category as string) ?? "",
+        quantity: (i.quantity as number) ?? 0,
+        minQuantity: (i.min_quantity as number) ?? 0,
+        location: (i.location as string) ?? "",
+        status: ((i.status as string) ?? "in_stock") as StockStatus,
+        unitCost: (i.unit_cost as number) ?? 0,
+        lastRestocked: (i.last_restocked as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

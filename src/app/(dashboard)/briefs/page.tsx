@@ -16,7 +16,7 @@ import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_BRIEF_TEMPLATES, MOCK_CREATIVE_BRIEFS } from "@/lib/demo-data-creative-brand";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
-import { isSupabaseConfigured, useBriefs } from "@/lib/supabase/hooks-pages";
+import { useBriefs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CreativeBrief, CreativeBriefStatus, CreativeBriefType } from "@/types";
 import {
@@ -59,10 +59,7 @@ export default function BriefsPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbBriefs, isLoading } = useBriefs();
 
-    const briefs =
-        isSupabaseConfigured && sbBriefs
-            ? (sbBriefs as unknown as CreativeBrief[])
-            : MOCK_CREATIVE_BRIEFS;
+    const briefs = sbBriefs ? (sbBriefs as unknown as CreativeBrief[]) : MOCK_CREATIVE_BRIEFS;
     const templates = MOCK_BRIEF_TEMPLATES;
 
     const filtered = useMemo(() => {
@@ -91,7 +88,7 @@ export default function BriefsPage() {
         return idx >= 0 ? Math.round(((idx + 1) / STATUS_ORDER.length) * 100) : 0;
     }
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

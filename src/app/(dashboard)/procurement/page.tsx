@@ -12,13 +12,11 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { CheckCircle2, Clock, FileText, Plus, ShoppingCart, Truck } from "lucide-react";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import type { BadgeVariant } from "@/config/ui-variants";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 
 // TODO: Wire to Supabase when procurement_requests table is available
-void isSupabaseConfigured;
 
 interface ProcurementRequest {
     id: string;

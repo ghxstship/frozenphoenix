@@ -88,6 +88,7 @@
     "stylelint-config-standard": "^40.0.0",
     "supabase": "^2.76.14",
     "tailwindcss": "^4",
+    "ts-morph": "^27.0.2",
     "typescript": "^5",
     "vitest": "^4.0.18",
     "vitest-axe": "^0.1.0"

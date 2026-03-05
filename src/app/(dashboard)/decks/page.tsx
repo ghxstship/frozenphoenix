@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { isSupabaseConfigured, useDecks, useProjects } from "@/lib/supabase/hooks";
+import { useDecks, useProjects } from "@/lib/supabase/hooks";
 import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
@@ -102,44 +102,36 @@ export default function DecksPage() {
     const { data: sbDecks, isLoading: loadingDecks } = useDecks();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const decks: Deck[] =
-        isSupabaseConfigured && sbDecks
-            ? sbDecks.map((d) => ({
-                  id: d.id,
-                  projectId: d.project_id,
-                  type: d.type as DeckType,
-                  title: d.title,
-                  status: d.status as DeckStatus,
-                  slideCount: ((d as unknown as { deck_slides?: unknown[] }).deck_slides || [])
-                      .length,
-                  lastUpdated: (d.updated_at ?? new Date().toISOString()).split("T")[0] ?? "",
-                  presentedAt:
-                      (d as unknown as { presented_at?: string }).presented_at?.split("T")[0] ??
-                      undefined,
-              }))
-            : MOCK_DECKS;
+    const decks: Deck[] = (sbDecks ?? []).map((d) => ({
+        id: d.id,
+        projectId: d.project_id,
+        type: d.type as DeckType,
+        title: d.title,
+        status: d.status as DeckStatus,
+        slideCount: ((d as unknown as { deck_slides?: unknown[] }).deck_slides || []).length,
+        lastUpdated: (d.updated_at ?? new Date().toISOString()).split("T")[0] ?? "",
+        presentedAt:
+            (d as unknown as { presented_at?: string }).presented_at?.split("T")[0] ?? undefined,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingDecks || loadingProjects);
+    const isLoading = loadingDecks || loadingProjects;
 
     if (isLoading) {
         return (

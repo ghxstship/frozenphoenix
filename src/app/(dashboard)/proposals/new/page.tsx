@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { PermissionGate } from "@/components/permission-guard";
-import { isSupabaseConfigured, useCreateProposal } from "@/lib/supabase/hooks-pages";
+import { useCreateProposal } from "@/lib/supabase/hooks-pages";
 import { formatCurrency } from "@/lib/utils";
 import {
     ArrowLeft,
@@ -351,18 +351,16 @@ export default function NewProposalPage() {
     async function handleSubmit() {
         setIsSubmitting(true);
         try {
-            if (isSupabaseConfigured) {
-                await createProposal.mutateAsync({
-                    title,
-                    deal_id: selectedDeal || null,
-                    status: "draft",
-                    currency,
-                    valid_until: validUntil,
-                    notes,
-                    terms,
-                    total: grandTotal,
-                });
-            }
+            await createProposal.mutateAsync({
+                title,
+                deal_id: selectedDeal || null,
+                status: "draft",
+                currency,
+                valid_until: validUntil,
+                notes,
+                terms,
+                total: grandTotal,
+            });
             router.push("/proposals");
         } catch (error) {
             logger.error("Failed to create proposal", { error });

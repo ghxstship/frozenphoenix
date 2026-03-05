@@ -7,7 +7,7 @@ import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { isSupabaseConfigured, useCreateDeal } from "@/lib/supabase/hooks";
+import { useCreateDeal } from "@/lib/supabase/hooks";
 import {
     ArrowLeft,
     Building2,
@@ -63,28 +63,26 @@ export default function NewDealPage() {
         e.preventDefault();
 
         try {
-            if (isSupabaseConfigured) {
-                const dealData = {
-                    title: formData.name,
-                    company: formData.company || "Unknown",
-                    contact_name: formData.contactName || "Unknown",
-                    contact_email: formData.contactEmail || "unknown@example.com",
-                    value: formData.value ? parseFloat(formData.value) : 0,
-                    stage: formData.stage as
-                        | "lead"
-                        | "qualified"
-                        | "proposal"
-                        | "negotiation"
-                        | "won"
-                        | "lost",
-                    probability: parseInt(formData.probability),
-                    expected_close_date: formData.expectedCloseDate || null,
-                    notes: formData.description || null,
-                };
-                await createDeal.mutateAsync(
-                    dealData as unknown as Parameters<typeof createDeal.mutateAsync>[0]
-                );
-            }
+            const dealData = {
+                title: formData.name,
+                company: formData.company || "Unknown",
+                contact_name: formData.contactName || "Unknown",
+                contact_email: formData.contactEmail || "unknown@example.com",
+                value: formData.value ? parseFloat(formData.value) : 0,
+                stage: formData.stage as
+                    | "lead"
+                    | "qualified"
+                    | "proposal"
+                    | "negotiation"
+                    | "won"
+                    | "lost",
+                probability: parseInt(formData.probability),
+                expected_close_date: formData.expectedCloseDate || null,
+                notes: formData.description || null,
+            };
+            await createDeal.mutateAsync(
+                dealData as unknown as Parameters<typeof createDeal.mutateAsync>[0]
+            );
             router.push("/pipeline");
         } catch (error) {
             logger.error("Failed to create deal", { error });

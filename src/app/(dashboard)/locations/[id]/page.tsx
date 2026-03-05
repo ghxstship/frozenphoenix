@@ -12,15 +12,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_ACTIVATIONS, MOCK_EVENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
-import {
-    isSupabaseConfigured,
-    useActivations,
-    useEvents,
-    useLocation,
-    useProjects,
-} from "@/lib/supabase/hooks";
+import { useActivations, useEvents, useLocation, useProjects } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
@@ -75,102 +67,96 @@ export default function LocationDetailPage() {
 
     const isLoading = loadingLocation || loadingActivations || loadingEvents;
 
-    const location =
-        isSupabaseConfigured && sbLocation
-            ? {
-                  id: sbLocation.id,
-                  projectId: sbLocation.project_id,
-                  name: sbLocation.name,
-                  type: sbLocation.type,
-                  address: (
+    const location = sbLocation
+        ? {
+              id: sbLocation.id,
+              projectId: sbLocation.project_id,
+              name: sbLocation.name,
+              type: sbLocation.type,
+              address: (
+                  sbLocation as unknown as {
+                      address?: {
+                          street1: string;
+                          street2?: string;
+                          city: string;
+                          state: string;
+                          postalCode: string;
+                      };
+                  }
+              ).address,
+              capacity: sbLocation.capacity ?? undefined,
+              squareFootage: sbLocation.square_footage ?? undefined,
+              dailyRate: sbLocation.daily_rate ?? undefined,
+              totalCost: sbLocation.total_cost ?? undefined,
+              contactName: sbLocation.contact_name ?? undefined,
+              contactEmail: sbLocation.contact_email ?? undefined,
+              contactPhone: sbLocation.contact_phone ?? undefined,
+              accessStartDate: sbLocation.access_start_date ?? undefined,
+              accessEndDate: sbLocation.access_end_date ?? undefined,
+              powerAvailable: sbLocation.power_available ?? undefined,
+              internetAvailable: sbLocation.internet_available ?? false,
+              insuranceRequired: sbLocation.insurance_required ?? false,
+              permitsRequired:
+                  (sbLocation as unknown as { permits_required?: string[] }).permits_required ?? [],
+              amenities: (sbLocation as unknown as { amenities?: string[] }).amenities ?? [],
+              restrictions:
+                  (sbLocation as unknown as { restrictions?: string[] }).restrictions ?? [],
+              loadInWindows:
+                  (
                       sbLocation as unknown as {
-                          address?: {
-                              street1: string;
-                              street2?: string;
-                              city: string;
-                              state: string;
-                              postalCode: string;
-                          };
+                          load_in_windows?: {
+                              date: string;
+                              startTime: string;
+                              endTime: string;
+                          }[];
                       }
-                  ).address,
-                  capacity: sbLocation.capacity ?? undefined,
-                  squareFootage: sbLocation.square_footage ?? undefined,
-                  dailyRate: sbLocation.daily_rate ?? undefined,
-                  totalCost: sbLocation.total_cost ?? undefined,
-                  contactName: sbLocation.contact_name ?? undefined,
-                  contactEmail: sbLocation.contact_email ?? undefined,
-                  contactPhone: sbLocation.contact_phone ?? undefined,
-                  accessStartDate: sbLocation.access_start_date ?? undefined,
-                  accessEndDate: sbLocation.access_end_date ?? undefined,
-                  powerAvailable: sbLocation.power_available ?? undefined,
-                  internetAvailable: sbLocation.internet_available ?? false,
-                  insuranceRequired: sbLocation.insurance_required ?? false,
-                  permitsRequired:
-                      (sbLocation as unknown as { permits_required?: string[] }).permits_required ??
-                      [],
-                  amenities: (sbLocation as unknown as { amenities?: string[] }).amenities ?? [],
-                  restrictions:
-                      (sbLocation as unknown as { restrictions?: string[] }).restrictions ?? [],
-                  loadInWindows:
-                      (
-                          sbLocation as unknown as {
-                              load_in_windows?: {
-                                  date: string;
-                                  startTime: string;
-                                  endTime: string;
-                              }[];
-                          }
-                      ).load_in_windows ?? [],
-                  loadOutWindows:
-                      (
-                          sbLocation as unknown as {
-                              load_out_windows?: {
-                                  date: string;
-                                  startTime: string;
-                                  endTime: string;
-                              }[];
-                          }
-                      ).load_out_windows ?? [],
-              }
-            : MOCK_LOCATIONS.find((l) => l.id === locationId);
+                  ).load_in_windows ?? [],
+              loadOutWindows:
+                  (
+                      sbLocation as unknown as {
+                          load_out_windows?: {
+                              date: string;
+                              startTime: string;
+                              endTime: string;
+                          }[];
+                      }
+                  ).load_out_windows ?? [],
+          }
+        : null;
 
     const project =
-        isSupabaseConfigured && sbProjects && location
+        sbProjects && location
             ? (sbProjects.find((p) => p.id === location.projectId) ?? null)
-            : location
-              ? (MOCK_PROJECTS.find((p) => p.id === location.projectId) ?? null)
-              : null;
+            : null;
 
-    const activations =
-        isSupabaseConfigured && sbActivations
-            ? sbActivations
-                  .filter((a) => a.location_id === locationId)
-                  .map((a) => ({
-                      id: a.id,
-                      name: a.name,
-                      type: a.type,
-                      status: a.status,
-                      zone: a.zone ?? undefined,
-                      locationId: a.location_id ?? undefined,
-                  }))
-            : MOCK_ACTIVATIONS.filter((a) => a.locationId === locationId);
+    const activations = sbActivations
+        ? sbActivations
+              .filter((a) => a.location_id === locationId)
+              .map((a) => ({
+                  id: a.id,
+                  name: a.name,
+                  type: a.type,
+                  status: a.status,
+                  zone: a.zone ?? undefined,
+                  locationId: a.location_id ?? undefined,
+              }))
+        : [];
 
-    const events =
-        isSupabaseConfigured && sbEvents
-            ? sbEvents
-                  .filter((e) => e.location_id === locationId)
-                  .map((e) => ({
-                      id: e.id,
-                      name: e.name,
-                      status: e.status,
-                      date: e.date ?? "",
-                      startTime: e.start_time ?? "",
-                      endTime: e.end_time ?? "",
-                      locationId: e.location_id ?? undefined,
-                  }))
-            : MOCK_EVENTS.filter((e) => e.locationId === locationId);
+    const events = sbEvents
+        ? sbEvents
+              .filter((e) => e.location_id === locationId)
+              .map((e) => ({
+                  id: e.id,
+                  name: e.name,
+                  status: e.status,
+                  date: e.date ?? "",
+                  startTime: e.start_time ?? "",
+                  endTime: e.end_time ?? "",
+                  locationId: e.location_id ?? undefined,
+              }))
+        : [];
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

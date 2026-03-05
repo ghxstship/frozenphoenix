@@ -34,7 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatCard } from "@/components/ui/stat-card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Loader2 } from "lucide-react";
-import { isSupabaseConfigured, useCompanies } from "@/lib/supabase/hooks-pages";
+import { useCompanies } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
@@ -58,88 +58,6 @@ interface Company {
     totalRevenue: number;
     tags: string[];
 }
-
-const mockCompanies: Company[] = [
-    {
-        id: "1",
-        name: "Nike",
-        legalName: "Nike, Inc.",
-        industry: "Sportswear",
-        website: "https://nike.com",
-        phone: "+1 503-671-6453",
-        email: "partnerships@nike.com",
-        companyType: "brand",
-        status: "active",
-        accountManagerName: "Sarah Chen",
-        logoUrl: "/brands/nike-logo.png",
-        city: "Beaverton",
-        state: "OR",
-        projectCount: 12,
-        totalRevenue: 2450000,
-        tags: ["tier-1", "experiential", "sports"],
-    },
-    {
-        id: "2",
-        name: "Red Bull",
-        legalName: "Red Bull GmbH",
-        industry: "Beverages",
-        website: "https://redbull.com",
-        phone: "+1 310-393-4647",
-        email: "events@redbull.com",
-        companyType: "brand",
-        status: "active",
-        accountManagerName: "Mike Torres",
-        logoUrl: "/brands/redbull-logo.png",
-        city: "Santa Monica",
-        state: "CA",
-        projectCount: 8,
-        totalRevenue: 1850000,
-        tags: ["tier-1", "festivals", "extreme-sports"],
-    },
-    {
-        id: "3",
-        name: "Momentum Worldwide",
-        industry: "Marketing Agency",
-        website: "https://momentumww.com",
-        phone: "+1 212-367-4500",
-        email: "newbusiness@momentumww.com",
-        companyType: "agency",
-        status: "active",
-        accountManagerName: "Sarah Chen",
-        city: "New York",
-        state: "NY",
-        projectCount: 5,
-        totalRevenue: 890000,
-        tags: ["agency-partner"],
-    },
-    {
-        id: "4",
-        name: "Coachella Valley Music",
-        industry: "Entertainment",
-        website: "https://coachella.com",
-        companyType: "client",
-        status: "active",
-        accountManagerName: "Mike Torres",
-        city: "Indio",
-        state: "CA",
-        projectCount: 3,
-        totalRevenue: 1200000,
-        tags: ["festivals", "annual"],
-    },
-    {
-        id: "5",
-        name: "TechStart Inc",
-        industry: "Technology",
-        website: "https://techstart.io",
-        companyType: "client",
-        status: "prospect",
-        city: "Austin",
-        state: "TX",
-        projectCount: 0,
-        totalRevenue: 0,
-        tags: ["prospect", "tech"],
-    },
-];
 
 const statusVariants: Record<CompanyStatus, "info" | "success" | "ghost" | "destructive"> = {
     prospect: "info",
@@ -172,29 +90,26 @@ export default function CompaniesPage() {
 
     const { data: sbCompanies, isLoading } = useCompanies();
 
-    const companies: Company[] =
-        isSupabaseConfigured && sbCompanies
-            ? sbCompanies.map((c: Record<string, unknown>) => ({
-                  id: (c.id as string) ?? "",
-                  name: (c.name as string) ?? "",
-                  legalName: (c.legal_name as string) ?? undefined,
-                  industry: (c.industry as string) ?? undefined,
-                  website: (c.website as string) ?? undefined,
-                  phone: (c.phone as string) ?? undefined,
-                  email: (c.email as string) ?? undefined,
-                  companyType: ((c.company_type as string) ?? "client") as CompanyType,
-                  status: ((c.status as string) ?? "prospect") as CompanyStatus,
-                  accountManagerName: (c.account_manager_name as string) ?? undefined,
-                  logoUrl: (c.logo_url as string) ?? undefined,
-                  city: (c.city as string) ?? undefined,
-                  state: (c.state as string) ?? undefined,
-                  projectCount: (c.project_count as number) ?? 0,
-                  totalRevenue: (c.total_revenue as number) ?? 0,
-                  tags: (c.tags as string[]) ?? [],
-              }))
-            : mockCompanies;
+    const companies: Company[] = (sbCompanies ?? []).map((c: Record<string, unknown>) => ({
+        id: (c.id as string) ?? "",
+        name: (c.name as string) ?? "",
+        legalName: (c.legal_name as string) ?? undefined,
+        industry: (c.industry as string) ?? undefined,
+        website: (c.website as string) ?? undefined,
+        phone: (c.phone as string) ?? undefined,
+        email: (c.email as string) ?? undefined,
+        companyType: ((c.company_type as string) ?? "client") as CompanyType,
+        status: ((c.status as string) ?? "prospect") as CompanyStatus,
+        accountManagerName: (c.account_manager_name as string) ?? undefined,
+        logoUrl: (c.logo_url as string) ?? undefined,
+        city: (c.city as string) ?? undefined,
+        state: (c.state as string) ?? undefined,
+        projectCount: (c.project_count as number) ?? 0,
+        totalRevenue: (c.total_revenue as number) ?? 0,
+        tags: (c.tags as string[]) ?? [],
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowDownRight, ArrowUpRight, Banknote, Loader2, Plus, TrendingUp } from "lucide-react";
-import { isSupabaseConfigured, usePayments } from "@/lib/supabase/hooks-pages";
+import { usePayments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type PaymentMethod = "bank_transfer" | "credit_card" | "check" | "ach" | "wire" | "other";
@@ -39,81 +39,6 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
     other: "Other",
 };
 
-const mockPayments: Payment[] = [
-    {
-        id: "1",
-        direction: "incoming",
-        invoiceNumber: "INV-2026-001",
-        counterparty: "Nike",
-        amount: 130950,
-        method: "wire",
-        date: "2026-02-20",
-        reference: "WR-29481",
-        project: "Nike Air Max Launch",
-        notes: "Milestone 1 payment",
-    },
-    {
-        id: "2",
-        direction: "incoming",
-        invoiceNumber: "INV-2026-005",
-        counterparty: "Glossier",
-        amount: 67500,
-        method: "ach",
-        date: "2026-02-10",
-        reference: "ACH-8837",
-        project: "Glossier Pop-Up",
-        notes: "Final invoice payment",
-    },
-    {
-        id: "3",
-        direction: "outgoing",
-        invoiceNumber: "PO-2026-012",
-        counterparty: "AV Solutions Inc",
-        amount: 45000,
-        method: "bank_transfer",
-        date: "2026-02-18",
-        reference: "BT-11294",
-        project: "Red Bull Festival",
-        notes: "AV equipment deposit",
-    },
-    {
-        id: "4",
-        direction: "outgoing",
-        invoiceNumber: "PO-2026-015",
-        counterparty: "Custom Fab Works",
-        amount: 28000,
-        method: "check",
-        date: "2026-02-22",
-        reference: "CHK-4412",
-        project: "Nike Air Max Launch",
-        notes: "Fabrication progress payment",
-    },
-    {
-        id: "5",
-        direction: "incoming",
-        invoiceNumber: "INV-2025-089",
-        counterparty: "TechStart",
-        amount: 25000,
-        method: "credit_card",
-        date: "2026-02-05",
-        reference: "CC-7721",
-        project: "TechStart Launch",
-        notes: "Deposit payment",
-    },
-    {
-        id: "6",
-        direction: "outgoing",
-        invoiceNumber: "PO-2026-018",
-        counterparty: "StageCraft Rentals",
-        amount: 18500,
-        method: "ach",
-        date: "2026-02-24",
-        reference: "ACH-9012",
-        project: "Coachella Experience",
-        notes: "Stage rental deposit",
-    },
-];
-
 export default function PaymentsPage() {
     const [search, setSearch] = useState("");
     const DIR_FILTERS = ["all", "incoming", "outgoing"] as const;
@@ -125,23 +50,20 @@ export default function PaymentsPage() {
 
     const { data: sbPayments, isLoading } = usePayments();
 
-    const payments: Payment[] =
-        isSupabaseConfigured && sbPayments
-            ? sbPayments.map((p: Record<string, unknown>) => ({
-                  id: (p.id as string) ?? "",
-                  direction: ((p.direction as string) ?? "incoming") as PaymentDirection,
-                  invoiceNumber: (p.invoice_number as string) ?? "",
-                  counterparty: (p.counterparty as string) ?? "",
-                  amount: (p.amount as number) ?? 0,
-                  method: ((p.method as string) ?? "other") as PaymentMethod,
-                  date: (p.payment_date as string) ?? (p.date as string) ?? "",
-                  reference: (p.reference as string) ?? "",
-                  project: (p.project_name as string) ?? "",
-                  notes: (p.notes as string) ?? "",
-              }))
-            : mockPayments;
+    const payments: Payment[] = (sbPayments ?? []).map((p: Record<string, unknown>) => ({
+        id: (p.id as string) ?? "",
+        direction: ((p.direction as string) ?? "incoming") as PaymentDirection,
+        invoiceNumber: (p.invoice_number as string) ?? "",
+        counterparty: (p.counterparty as string) ?? "",
+        amount: (p.amount as number) ?? 0,
+        method: ((p.method as string) ?? "other") as PaymentMethod,
+        date: (p.payment_date as string) ?? (p.date as string) ?? "",
+        reference: (p.reference as string) ?? "",
+        project: (p.project_name as string) ?? "",
+        notes: (p.notes as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

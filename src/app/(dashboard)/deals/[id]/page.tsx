@@ -20,15 +20,8 @@ import {
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { MOCK_DEALS } from "@/lib/demo-data";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
-import {
-    isSupabaseConfigured,
-    useCreateComment,
-    useCreateProject,
-    useDeals,
-    useUpdateDeal,
-} from "@/lib/supabase/hooks";
+import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase/hooks";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -87,27 +80,25 @@ export default function DealDetailPage() {
     const { data: sbDeals } = useDeals();
 
     const sbDeal = sbDeals?.find((d) => d.id === dealId);
-    const deal =
-        isSupabaseConfigured && sbDeal
-            ? {
-                  id: sbDeal.id,
-                  title: sbDeal.title,
-                  company: sbDeal.company,
-                  contactName: sbDeal.contact_name,
-                  contactEmail: sbDeal.contact_email,
-                  value: sbDeal.value,
-                  stage: sbDeal.stage,
-                  probability: sbDeal.probability,
-                  expectedCloseDate: sbDeal.expected_close_date,
-                  assignedTo: sbDeal.assigned_to ?? "",
-                  notes: sbDeal.notes ?? "",
-                  createdAt: sbDeal.created_at ?? "",
-                  updatedAt: sbDeal.updated_at ?? "",
-              }
-            : MOCK_DEALS.find((d) => d.id === dealId);
+    const deal = sbDeal
+        ? {
+              id: sbDeal.id,
+              title: sbDeal.title,
+              company: sbDeal.company,
+              contactName: sbDeal.contact_name,
+              contactEmail: sbDeal.contact_email,
+              value: sbDeal.value,
+              stage: sbDeal.stage,
+              probability: sbDeal.probability,
+              expectedCloseDate: sbDeal.expected_close_date,
+              assignedTo: sbDeal.assigned_to ?? "",
+              notes: sbDeal.notes ?? "",
+              createdAt: sbDeal.created_at ?? "",
+              updatedAt: sbDeal.updated_at ?? "",
+          }
+        : null;
 
     const handleMarkWon = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateDeal.mutateAsync({
                 id: dealId,
@@ -119,7 +110,6 @@ export default function DealDetailPage() {
     };
 
     const handleMarkLost = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateDeal.mutateAsync({
                 id: dealId,
@@ -139,11 +129,6 @@ export default function DealDetailPage() {
 
     const handleConvertToProject = async () => {
         if (!deal) return;
-        if (!isSupabaseConfigured) {
-            setConvertDialogOpen(false);
-            router.push("/projects");
-            return;
-        }
         try {
             const projectData = {
                 name: convertProjectName || deal.title,
@@ -166,7 +151,7 @@ export default function DealDetailPage() {
     };
 
     const handleAddNote = async () => {
-        if (!noteText.trim() || !isSupabaseConfigured) return;
+        if (!noteText.trim()) return;
         try {
             await createComment.mutateAsync({
                 entity_type: "deal",

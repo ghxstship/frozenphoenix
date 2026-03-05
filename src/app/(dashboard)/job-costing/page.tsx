@@ -10,9 +10,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { BarChart3, Calculator, DollarSign, Loader2, TrendingDown, TrendingUp } from "lucide-react";
-import { MOCK_JOB_COST_ENTRIES } from "@/lib/demo-data-vendor-lifecycle";
 import type { JobCostEntry, JobCostType } from "@/types/vendor-lifecycle";
-import { isSupabaseConfigured, useJobCostEntries } from "@/lib/supabase/hooks-pages";
+import { useJobCostEntries } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const COST_TYPE_CONFIG: Record<JobCostType, { label: string; color: string }> = {
@@ -31,30 +30,27 @@ export default function JobCostingPage() {
 
     const { data: sbEntries, isLoading } = useJobCostEntries();
 
-    const entries: JobCostEntry[] =
-        isSupabaseConfigured && sbEntries
-            ? sbEntries.map(
-                  (e: Record<string, unknown>) =>
-                      ({
-                          id: (e.id as string) ?? "",
-                          projectId: (e.project_id as string) ?? "",
-                          projectName: (e.project_name as string) ?? "",
-                          costType: ((e.cost_type as string) ?? "expense") as JobCostType,
-                          description: (e.description as string) ?? "",
-                          vendorName: (e.vendor_name as string) ?? undefined,
-                          crewMemberName: (e.crew_member_name as string) ?? undefined,
-                          quantity: (e.quantity as number) ?? 0,
-                          unit: (e.unit as string) ?? "",
-                          unitCost: (e.unit_cost as number) ?? 0,
-                          totalCost: (e.total_cost as number) ?? 0,
-                          budgetedAmount: (e.budgeted_amount as number) ?? undefined,
-                          billable: (e.billable as boolean) ?? false,
-                          costDate: (e.cost_date as string) ?? "",
-                      }) as JobCostEntry
-              )
-            : MOCK_JOB_COST_ENTRIES;
+    const entries: JobCostEntry[] = (sbEntries ?? []).map(
+        (e: Record<string, unknown>) =>
+            ({
+                id: (e.id as string) ?? "",
+                projectId: (e.project_id as string) ?? "",
+                projectName: (e.project_name as string) ?? "",
+                costType: ((e.cost_type as string) ?? "expense") as JobCostType,
+                description: (e.description as string) ?? "",
+                vendorName: (e.vendor_name as string) ?? undefined,
+                crewMemberName: (e.crew_member_name as string) ?? undefined,
+                quantity: (e.quantity as number) ?? 0,
+                unit: (e.unit as string) ?? "",
+                unitCost: (e.unit_cost as number) ?? 0,
+                totalCost: (e.total_cost as number) ?? 0,
+                budgetedAmount: (e.budgeted_amount as number) ?? undefined,
+                billable: (e.billable as boolean) ?? false,
+                costDate: (e.cost_date as string) ?? "",
+            }) as JobCostEntry
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

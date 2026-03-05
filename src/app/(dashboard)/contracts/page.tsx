@@ -14,7 +14,7 @@ import {
     type ContractStatusType,
     type ContractType,
 } from "@/config/domain-config";
-import { isSupabaseConfigured, useContracts } from "@/lib/supabase/hooks";
+import { useContracts } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -45,100 +45,6 @@ interface ContractListItem {
     daysUntilExpiry: number;
 }
 
-const mockContracts: ContractListItem[] = [
-    {
-        id: "1",
-        title: "Nike Master Services Agreement",
-        contractNumber: "CTR-2026-0001",
-        type: "msa",
-        status: "active",
-        clientName: "Nike",
-        value: 2500000,
-        effectiveDate: "2025-06-01",
-        expirationDate: "2027-05-31",
-        autoRenew: true,
-        daysUntilExpiry: 460,
-    },
-    {
-        id: "2",
-        title: "AV Vendor Services — Pulse Productions",
-        contractNumber: "CTR-2026-0002",
-        type: "vendor",
-        status: "active",
-        vendorName: "Pulse Productions",
-        value: 185000,
-        effectiveDate: "2026-01-15",
-        expirationDate: "2026-12-31",
-        autoRenew: false,
-        daysUntilExpiry: 309,
-    },
-    {
-        id: "3",
-        title: "Red Bull NDA",
-        contractNumber: "CTR-2026-0003",
-        type: "nda",
-        status: "active",
-        clientName: "Red Bull",
-        value: 0,
-        effectiveDate: "2026-02-01",
-        expirationDate: "2028-01-31",
-        autoRenew: false,
-        daysUntilExpiry: 705,
-    },
-    {
-        id: "4",
-        title: "Coachella SOW — Stage Design",
-        contractNumber: "CTR-2026-0004",
-        type: "sow",
-        status: "pending_signature",
-        clientName: "Coachella Valley Music",
-        value: 750000,
-        effectiveDate: "2026-03-01",
-        expirationDate: "2026-06-30",
-        autoRenew: false,
-        daysUntilExpiry: 125,
-    },
-    {
-        id: "5",
-        title: "Fabrication Vendor — SteelCraft",
-        contractNumber: "CTR-2026-0005",
-        type: "vendor",
-        status: "expired",
-        vendorName: "SteelCraft Industries",
-        value: 95000,
-        effectiveDate: "2025-01-01",
-        expirationDate: "2025-12-31",
-        autoRenew: false,
-        daysUntilExpiry: -56,
-    },
-    {
-        id: "6",
-        title: "Amendment #1 — Nike Scope Extension",
-        contractNumber: "CTR-2026-0006",
-        type: "amendment",
-        status: "pending_review",
-        clientName: "Nike",
-        value: 350000,
-        effectiveDate: "2026-04-01",
-        expirationDate: "2027-05-31",
-        autoRenew: false,
-        daysUntilExpiry: 460,
-    },
-    {
-        id: "7",
-        title: "Client Agreement — TechStart Launch",
-        contractNumber: "CTR-2026-0007",
-        type: "client",
-        status: "draft",
-        clientName: "TechStart Inc",
-        value: 125000,
-        effectiveDate: "2026-03-15",
-        expirationDate: "2026-09-15",
-        autoRenew: false,
-        daysUntilExpiry: 202,
-    },
-];
-
 export default function ContractsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -146,36 +52,30 @@ export default function ContractsPage() {
     const { data: sbContracts, isLoading } = useContracts();
 
     const now = new Date();
-    const contracts: ContractListItem[] =
-        isSupabaseConfigured && sbContracts
-            ? sbContracts.map((c) => {
-                  const raw = c as unknown as Record<string, unknown>;
-                  const contractNumber = String(raw.contract_number || "");
-                  const effectiveDate = String(raw.effective_date || "");
-                  const expirationDate = String(raw.expiration_date || "");
-                  return {
-                      id: c.id,
-                      title: String(raw.title || contractNumber || "Untitled"),
-                      contractNumber,
-                      type: String(raw.type || "msa") as ContractType,
-                      status: String(raw.status || "draft") as ContractStatusType,
-                      vendorName:
-                          (c as unknown as { vendors?: { name: string } }).vendors?.name ||
-                          undefined,
-                      clientName: undefined,
-                      value: Number(raw.value || 0),
-                      effectiveDate,
-                      expirationDate,
-                      autoRenew: Boolean(raw.auto_renew),
-                      daysUntilExpiry: Math.ceil(
-                          (new Date(expirationDate).getTime() - now.getTime()) /
-                              (1000 * 60 * 60 * 24)
-                      ),
-                  };
-              })
-            : mockContracts;
+    const contracts: ContractListItem[] = (sbContracts ?? []).map((c) => {
+        const raw = c as unknown as Record<string, unknown>;
+        const contractNumber = String(raw.contract_number || "");
+        const effectiveDate = String(raw.effective_date || "");
+        const expirationDate = String(raw.expiration_date || "");
+        return {
+            id: c.id,
+            title: String(raw.title || contractNumber || "Untitled"),
+            contractNumber,
+            type: String(raw.type || "msa") as ContractType,
+            status: String(raw.status || "draft") as ContractStatusType,
+            vendorName: (c as unknown as { vendors?: { name: string } }).vendors?.name || undefined,
+            clientName: undefined,
+            value: Number(raw.value || 0),
+            effectiveDate,
+            expirationDate,
+            autoRenew: Boolean(raw.auto_renew),
+            daysUntilExpiry: Math.ceil(
+                (new Date(expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            ),
+        };
+    });
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

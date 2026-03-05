@@ -12,16 +12,11 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import {
-    MOCK_ACTIVATIONS,
-    MOCK_CREW_SHIFTS,
-    MOCK_EVENTS,
-    MOCK_LOCATIONS,
-} from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useEvent } from "@/lib/supabase/hooks-pages";
+import { useActivations, useCrewShifts, useLocations, useProjects } from "@/lib/supabase/hooks";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, Clock, DollarSign, Edit, MapPin, Play, Users } from "lucide-react";
+import { Calendar, Clock, DollarSign, Edit, Loader2, MapPin, Play, Users } from "lucide-react";
 
 type TabId = "overview" | "run-of-show" | "crew" | "logistics" | "chatter";
 const TAB_VALUES = ["overview", "run-of-show", "crew", "logistics", "chatter"] as const;
@@ -66,13 +61,32 @@ export default function EventDetailPage() {
     });
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
 
-    const event = MOCK_EVENTS.find((e) => e.id === eventId);
-    const location = event ? MOCK_LOCATIONS.find((l) => l.id === event.locationId) : null;
-    const project = event ? MOCK_PROJECTS.find((p) => p.id === event.projectId) : null;
-    const activation = event?.activationId
-        ? MOCK_ACTIVATIONS.find((a) => a.id === event.activationId)
+    const { data: event, isLoading } = useEvent(eventId);
+    const { data: sbLocations } = useLocations();
+    const { data: sbProjects } = useProjects();
+    const { data: sbActivations } = useActivations();
+    const { data: sbShifts } = useCrewShifts();
+    const ev = event as Record<string, unknown> | null;
+    const location = ev
+        ? (sbLocations ?? []).find((l: Record<string, unknown>) => l.id === ev.location_id)
         : null;
-    const eventShifts = event ? MOCK_CREW_SHIFTS.filter((s) => s.eventId === eventId) : [];
+    const project = ev
+        ? (sbProjects ?? []).find((p: Record<string, unknown>) => p.id === ev.project_id)
+        : null;
+    const activation = ev?.activation_id
+        ? (sbActivations ?? []).find((a: Record<string, unknown>) => a.id === ev.activation_id)
+        : null;
+    const eventShifts = event
+        ? (sbShifts ?? []).filter((s: Record<string, unknown>) => s.event_id === eventId)
+        : [];
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!event) {
         return (
@@ -365,17 +379,32 @@ export default function EventDetailPage() {
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
-                                                {shift.crewMemberName
+                                                {String(
+                                                    (shift as Record<string, unknown>)
+                                                        .crew_member_name ?? ""
+                                                )
                                                     .split(" ")
-                                                    .map((n) => n[0])
+                                                    .map((n: string) => n[0])
                                                     .join("")}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium">
-                                                    {shift.crewMemberName}
+                                                    {String(
+                                                        (shift as Record<string, unknown>)
+                                                            .crew_member_name ?? ""
+                                                    )}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {shift.role} · {shift.callTime}–{shift.endTime}
+                                                    {shift.role} ·{" "}
+                                                    {String(
+                                                        (shift as Record<string, unknown>)
+                                                            .call_time ?? ""
+                                                    )}
+                                                    –
+                                                    {String(
+                                                        (shift as Record<string, unknown>)
+                                                            .end_time ?? ""
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
@@ -401,10 +430,26 @@ export default function EventDetailPage() {
                                         <MapPin className="h-4 w-4 text-muted-foreground" />
                                         <span className="font-medium">{location.name}</span>
                                     </div>
-                                    {location.address && (
+                                    {(location as Record<string, unknown>).address_street && (
                                         <p className="text-muted-foreground ml-6">
-                                            {location.address.street1}, {location.address.city},{" "}
-                                            {location.address.state} {location.address.postalCode}
+                                            {String(
+                                                (location as Record<string, unknown>)
+                                                    .address_street ?? ""
+                                            )}
+                                            ,{" "}
+                                            {String(
+                                                (location as Record<string, unknown>)
+                                                    .address_city ?? ""
+                                            )}
+                                            ,{" "}
+                                            {String(
+                                                (location as Record<string, unknown>)
+                                                    .address_state ?? ""
+                                            )}{" "}
+                                            {String(
+                                                (location as Record<string, unknown>)
+                                                    .address_postal_code ?? ""
+                                            )}
                                         </p>
                                     )}
                                 </>

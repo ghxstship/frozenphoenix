@@ -26,7 +26,7 @@ import {
     Plus,
     Send,
 } from "lucide-react";
-import { isSupabaseConfigured, useClientInvoices } from "@/lib/supabase/hooks-pages";
+import { useClientInvoices } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface InvoiceListItem {
@@ -43,111 +43,27 @@ interface InvoiceListItem {
     daysOverdue: number;
 }
 
-const mockInvoices: InvoiceListItem[] = [
-    {
-        id: "1",
-        invoiceNumber: "INV-2026-0001",
-        companyName: "Nike",
-        projectName: "Air Max Launch",
-        amount: 125000,
-        currency: "USD",
-        status: "paid",
-        issueDate: "2026-01-15",
-        dueDate: "2026-02-14",
-        paidAmount: 125000,
-        daysOverdue: 0,
-    },
-    {
-        id: "2",
-        invoiceNumber: "INV-2026-0002",
-        companyName: "Red Bull",
-        projectName: "Festival Activation",
-        amount: 85000,
-        currency: "USD",
-        status: "sent",
-        issueDate: "2026-02-10",
-        dueDate: "2026-03-12",
-        paidAmount: 0,
-        daysOverdue: 0,
-    },
-    {
-        id: "3",
-        invoiceNumber: "INV-2026-0003",
-        companyName: "Nike",
-        projectName: "Air Max Launch — Phase 2",
-        amount: 195000,
-        currency: "USD",
-        status: "overdue",
-        issueDate: "2026-01-01",
-        dueDate: "2026-01-31",
-        paidAmount: 0,
-        daysOverdue: 25,
-    },
-    {
-        id: "4",
-        invoiceNumber: "INV-2026-0004",
-        companyName: "Coachella Valley Music",
-        projectName: "Stage Design",
-        amount: 375000,
-        currency: "USD",
-        status: "draft",
-        issueDate: "2026-02-24",
-        dueDate: "2026-03-26",
-        paidAmount: 0,
-        daysOverdue: 0,
-    },
-    {
-        id: "5",
-        invoiceNumber: "INV-2026-0005",
-        companyName: "TechStart Inc",
-        projectName: "Product Launch",
-        amount: 62500,
-        currency: "USD",
-        status: "viewed",
-        issueDate: "2026-02-18",
-        dueDate: "2026-03-20",
-        paidAmount: 0,
-        daysOverdue: 0,
-    },
-    {
-        id: "6",
-        invoiceNumber: "INV-2026-0006",
-        companyName: "Momentum Worldwide",
-        projectName: "Partnership Retainer",
-        amount: 25000,
-        currency: "USD",
-        status: "disputed",
-        issueDate: "2026-02-01",
-        dueDate: "2026-03-03",
-        paidAmount: 0,
-        daysOverdue: 0,
-    },
-];
-
 export default function InvoicesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbInvoices, isLoading } = useClientInvoices();
 
-    const invoices: InvoiceListItem[] =
-        isSupabaseConfigured && sbInvoices
-            ? sbInvoices.map((inv: Record<string, unknown>) => ({
-                  id: (inv.id as string) ?? "",
-                  invoiceNumber: (inv.invoice_number as string) ?? "",
-                  companyName: (inv.company_name as string) ?? "",
-                  projectName: (inv.project_name as string) ?? "",
-                  amount: (inv.total_amount as number) ?? 0,
-                  currency: (inv.currency as string) ?? "USD",
-                  status: ((inv.status as string) ?? "draft") as InvoiceDeliveryStatusType,
-                  issueDate: (inv.issue_date as string) ?? "",
-                  dueDate: (inv.due_date as string) ?? "",
-                  paidAmount: (inv.paid_amount as number) ?? 0,
-                  daysOverdue: (inv.days_overdue as number) ?? 0,
-              }))
-            : mockInvoices;
+    const invoices: InvoiceListItem[] = (sbInvoices ?? []).map((inv: Record<string, unknown>) => ({
+        id: (inv.id as string) ?? "",
+        invoiceNumber: (inv.invoice_number as string) ?? "",
+        companyName: (inv.company_name as string) ?? "",
+        projectName: (inv.project_name as string) ?? "",
+        amount: (inv.total_amount as number) ?? 0,
+        currency: (inv.currency as string) ?? "USD",
+        status: ((inv.status as string) ?? "draft") as InvoiceDeliveryStatusType,
+        issueDate: (inv.issue_date as string) ?? "",
+        dueDate: (inv.due_date as string) ?? "",
+        paidAmount: (inv.paid_amount as number) ?? 0,
+        daysOverdue: (inv.days_overdue as number) ?? 0,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

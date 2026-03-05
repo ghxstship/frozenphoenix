@@ -8,7 +8,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { Copy, CreditCard, DollarSign, Loader2, Pencil, Plus, Users } from "lucide-react";
-import { isSupabaseConfigured, useRateCards } from "@/lib/supabase/hooks-pages";
+import { useRateCards } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface RateCardItem {
@@ -30,76 +30,24 @@ interface RateCard {
     updatedAt: string;
 }
 
-const mockRateCards: RateCard[] = [
-    {
-        id: "1",
-        name: "Standard Rate Card",
-        description: "Default rates for all new clients",
-        currency: "USD",
-        isDefault: true,
-        clientCount: 12,
-        updatedAt: "2026-02-15",
-        items: [
-            { id: "a1", role: "Creative Director", rate: 225, unit: "hour", costRate: 95 },
-            { id: "a2", role: "Senior Producer", rate: 185, unit: "hour", costRate: 80 },
-            { id: "a3", role: "Production Manager", rate: 150, unit: "hour", costRate: 65 },
-            { id: "a4", role: "Technical Director", rate: 200, unit: "hour", costRate: 90 },
-            { id: "a5", role: "Junior Designer", rate: 95, unit: "hour", costRate: 40 },
-            { id: "a6", role: "Project Coordinator", rate: 110, unit: "hour", costRate: 45 },
-        ],
-    },
-    {
-        id: "2",
-        name: "Nike Preferred Rates",
-        description: "Negotiated rates for Nike account",
-        currency: "USD",
-        isDefault: false,
-        clientCount: 1,
-        updatedAt: "2026-01-20",
-        items: [
-            { id: "b1", role: "Creative Director", rate: 200, unit: "hour", costRate: 95 },
-            { id: "b2", role: "Senior Producer", rate: 170, unit: "hour", costRate: 80 },
-            { id: "b3", role: "Production Manager", rate: 140, unit: "hour", costRate: 65 },
-            { id: "b4", role: "Technical Director", rate: 185, unit: "hour", costRate: 90 },
-        ],
-    },
-    {
-        id: "3",
-        name: "Retainer Rates",
-        description: "Discounted rates for retainer clients",
-        currency: "USD",
-        isDefault: false,
-        clientCount: 4,
-        updatedAt: "2026-02-01",
-        items: [
-            { id: "c1", role: "Creative Director", rate: 195, unit: "hour", costRate: 95 },
-            { id: "c2", role: "Senior Producer", rate: 160, unit: "hour", costRate: 80 },
-            { id: "c3", role: "Production Manager", rate: 130, unit: "hour", costRate: 65 },
-        ],
-    },
-];
-
 export default function RateCardsPage() {
     const [search, setSearch] = useState("");
     const [expandedCard, setExpandedCard] = useState<string | null>("1");
 
     const { data: sbCards, isLoading } = useRateCards();
 
-    const rateCards: RateCard[] =
-        isSupabaseConfigured && sbCards
-            ? sbCards.map((rc: Record<string, unknown>) => ({
-                  id: (rc.id as string) ?? "",
-                  name: (rc.name as string) ?? "",
-                  description: (rc.description as string) ?? "",
-                  currency: (rc.currency as string) ?? "USD",
-                  isDefault: (rc.is_default as boolean) ?? false,
-                  clientCount: (rc.client_count as number) ?? 0,
-                  items: (rc.items as RateCardItem[]) ?? [],
-                  updatedAt: (rc.updated_at as string) ?? "",
-              }))
-            : mockRateCards;
+    const rateCards: RateCard[] = (sbCards ?? []).map((rc: Record<string, unknown>) => ({
+        id: (rc.id as string) ?? "",
+        name: (rc.name as string) ?? "",
+        description: (rc.description as string) ?? "",
+        currency: (rc.currency as string) ?? "USD",
+        isDefault: (rc.is_default as boolean) ?? false,
+        clientCount: (rc.client_count as number) ?? 0,
+        items: (rc.items as RateCardItem[]) ?? [],
+        updatedAt: (rc.updated_at as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

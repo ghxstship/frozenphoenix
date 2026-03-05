@@ -15,7 +15,7 @@ import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
-import { isSupabaseConfigured, useChangeOrders } from "@/lib/supabase/hooks-pages";
+import { useChangeOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ChangeOrder } from "@/types";
 import {
@@ -137,10 +137,9 @@ export default function ChangeOrdersPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbChangeOrders, isLoading } = useChangeOrders();
 
-    const changeOrders =
-        isSupabaseConfigured && sbChangeOrders
-            ? (sbChangeOrders as unknown as ChangeOrder[])
-            : MOCK_CHANGE_ORDERS;
+    const changeOrders = sbChangeOrders
+        ? (sbChangeOrders as unknown as ChangeOrder[])
+        : MOCK_CHANGE_ORDERS;
 
     const filtered = useMemo(() => {
         let result = changeOrders;
@@ -173,7 +172,7 @@ export default function ChangeOrdersPage() {
         return { totalImpact, approvedImpact, pendingCount, totalScheduleImpact };
     }, [changeOrders]);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

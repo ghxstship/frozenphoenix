@@ -8,9 +8,8 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { isSupabaseConfigured, useProjects } from "@/lib/supabase/hooks";
+import { useProjects } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -171,30 +170,27 @@ export default function ProjectsPage() {
     });
     const { data: sbProjects, isLoading } = useProjects();
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds:
-                      (p as { project_members?: { profile_id: string }[] }).project_members?.map(
-                          (m: { profile_id: string }) => m.profile_id
-                      ) || [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds:
+            (p as { project_members?: { profile_id: string }[] }).project_members?.map(
+                (m: { profile_id: string }) => m.profile_id
+            ) || [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

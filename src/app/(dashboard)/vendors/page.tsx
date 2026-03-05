@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useVendors } from "@/lib/supabase/hooks";
+import { useVendors } from "@/lib/supabase/hooks";
 import { MOCK_VENDORS } from "@/lib/demo-data";
 import {
     FileText,
@@ -123,28 +123,25 @@ export default function VendorsPage() {
     const { data: supabaseVendors, isLoading } = useVendors();
 
     // Use Supabase data if configured and available, otherwise fall back to mock data
-    const vendors =
-        isSupabaseConfigured && supabaseVendors
-            ? supabaseVendors.map((v) => ({
-                  id: v.id,
-                  name: v.name,
-                  contactName: v.contact_name,
-                  email: v.email,
-                  phone: v.phone,
-                  specialty: v.specialty,
-                  coiExpiryDate: v.coi_expiry_date ?? undefined,
-                  coiValid: v.coi_expiry_date ? new Date(v.coi_expiry_date) > new Date() : false,
-                  ndaSigned: v.nda_signed,
-                  w9Uploaded: v.w9_uploaded,
-                  rating: v.rating,
-                  status: v.status as Vendor["status"],
-              }))
-            : MOCK_VENDORS;
+    const vendors = (supabaseVendors ?? []).map((v) => ({
+        id: v.id,
+        name: v.name,
+        contactName: v.contact_name,
+        email: v.email,
+        phone: v.phone,
+        specialty: v.specialty,
+        coiExpiryDate: v.coi_expiry_date ?? undefined,
+        coiValid: v.coi_expiry_date ? new Date(v.coi_expiry_date) > new Date() : false,
+        ndaSigned: v.nda_signed,
+        w9Uploaded: v.w9_uploaded,
+        rating: v.rating,
+        status: v.status as Vendor["status"],
+    }));
 
     const activeVendors = vendors.filter((v) => v.status === "active");
     const expiredCOIs = vendors.filter((v) => !v.coiValid);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

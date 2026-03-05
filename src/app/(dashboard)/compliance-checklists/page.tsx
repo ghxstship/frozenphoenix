@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus } from "lucide-react";
 import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, useComplianceChecklists } from "@/lib/supabase/hooks-pages";
+import { useComplianceChecklists } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceChecklistStatus } from "@/types/governance";
 
@@ -45,10 +45,7 @@ export default function ComplianceChecklistsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbChecklists, isLoading } = useComplianceChecklists();
 
-    const checklists =
-        isSupabaseConfigured && sbChecklists
-            ? (sbChecklists as unknown as typeof MOCK_COMPLIANCE_CHECKLISTS)
-            : MOCK_COMPLIANCE_CHECKLISTS;
+    const checklists = (sbChecklists ?? []) as typeof MOCK_COMPLIANCE_CHECKLISTS;
 
     const filtered = checklists.filter((c) => {
         const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
@@ -62,7 +59,7 @@ export default function ComplianceChecklistsPage() {
         (c) => c.status === "not_started" || c.status === "failed"
     ).length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

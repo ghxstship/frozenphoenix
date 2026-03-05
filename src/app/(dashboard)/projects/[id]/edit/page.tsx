@@ -7,44 +7,34 @@ import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput, DatePicker, FormField, Select } from "@/components/ui/form";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
-import { isSupabaseConfigured, useProject, useUpdateProject } from "@/lib/supabase/hooks";
-import { FolderKanban } from "lucide-react";
+import { useProject, useUpdateProject } from "@/lib/supabase/hooks";
+import { FolderKanban, Loader2 } from "lucide-react";
 
 export default function EditProjectPage() {
     const params = useParams();
     const router = useRouter();
     const projectId = params.id as string;
     const updateProject = useUpdateProject();
-    const { data: supabaseProject } = useProject(projectId);
-
-    const project =
-        isSupabaseConfigured && supabaseProject
-            ? supabaseProject
-            : MOCK_PROJECTS.find((p) => p.id === projectId);
+    const { data: project, isLoading } = useProject(projectId);
 
     const [formData, setFormData] = useState({
         name: project?.name || "",
         client: project?.client || "",
         status: project?.status || "draft",
-        currentPhase:
-            ((project as Record<string, unknown>)?.currentPhase as string) ||
-            ((project as Record<string, unknown>)?.current_phase as string) ||
-            "pre_production",
-        startDate:
-            ((project as Record<string, unknown>)?.startDate as string) ||
-            ((project as Record<string, unknown>)?.start_date as string) ||
-            "",
-        endDate:
-            ((project as Record<string, unknown>)?.endDate as string) ||
-            ((project as Record<string, unknown>)?.end_date as string) ||
-            "",
-        budgetPlanned:
-            ((project as Record<string, unknown>)?.budgetPlanned as number) ||
-            ((project as Record<string, unknown>)?.budget_planned as number) ||
-            0,
+        currentPhase: (project?.current_phase as string) || "pre_production",
+        startDate: (project?.start_date as string) || "",
+        endDate: (project?.end_date as string) || "",
+        budgetPlanned: (project?.budget_planned as number) || 0,
     });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!project) {
         return (
@@ -61,21 +51,19 @@ export default function EditProjectPage() {
         e.preventDefault();
 
         try {
-            if (isSupabaseConfigured) {
-                const updateData = {
-                    id: projectId,
-                    name: formData.name,
-                    client: formData.client,
-                    status: formData.status,
-                    current_phase: formData.currentPhase,
-                    start_date: formData.startDate || null,
-                    end_date: formData.endDate || null,
-                    budget_planned: formData.budgetPlanned || null,
-                };
-                await updateProject.mutateAsync(
-                    updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]
-                );
-            }
+            const updateData = {
+                id: projectId,
+                name: formData.name,
+                client: formData.client,
+                status: formData.status,
+                current_phase: formData.currentPhase,
+                start_date: formData.startDate || null,
+                end_date: formData.endDate || null,
+                budget_planned: formData.budgetPlanned || null,
+            };
+            await updateProject.mutateAsync(
+                updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]
+            );
             router.push(`/projects/${projectId}`);
         } catch (error) {
             logger.error("Failed to update project", { error });

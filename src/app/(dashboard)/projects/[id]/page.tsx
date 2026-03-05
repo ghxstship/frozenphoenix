@@ -22,12 +22,14 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { MOCK_APPROVALS, MOCK_PROJECTS, MOCK_STAKEHOLDERS, MOCK_TASKS } from "@/lib/demo-data";
 import { PROJECT_PHASE_MAP } from "@/config/domain-config";
 import {
-    isSupabaseConfigured,
+    useApprovals,
     useCreateTask,
     useDeleteProject,
+    useProject,
+    useStakeholders,
+    useTasks,
     useUpdateProject,
 } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -150,10 +152,9 @@ export default function ProjectDetailPage() {
     const deleteProject = useDeleteProject();
     const createTask = useCreateTask();
 
-    const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+    const { data: project, isLoading } = useProject(projectId);
 
     const handleArchive = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateProject.mutateAsync({
                 id: projectId,
@@ -165,7 +166,6 @@ export default function ProjectDetailPage() {
     };
 
     const handleDelete = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await deleteProject.mutateAsync(projectId);
             router.push("/projects");
@@ -175,7 +175,7 @@ export default function ProjectDetailPage() {
     };
 
     const handleAddTask = async () => {
-        if (!taskTitle.trim() || !isSupabaseConfigured) return;
+        if (!taskTitle.trim()) return;
         try {
             await createTask.mutateAsync({
                 project_id: projectId,
@@ -190,9 +190,25 @@ export default function ProjectDetailPage() {
             logger.error("Failed to add task", { error });
         }
     };
-    const projectTasks = MOCK_TASKS.filter((t) => t.projectId === projectId);
-    const projectApprovals = MOCK_APPROVALS.filter((a) => a.projectId === projectId);
-    const projectStakeholders = MOCK_STAKEHOLDERS.filter((s) => s.projectIds.includes(projectId));
+    const { data: sbTasks } = useTasks(projectId);
+    const { data: sbApprovals } = useApprovals();
+    const { data: sbStakeholders } = useStakeholders();
+    const projectTasks = sbTasks ?? [];
+    const projectApprovals = (sbApprovals ?? []).filter(
+        (a: Record<string, unknown>) => a.project_id === projectId
+    );
+    const projectStakeholders = (sbStakeholders ?? []).filter((s: Record<string, unknown>) => {
+        const pIds = s.project_ids ?? s.projectIds;
+        return Array.isArray(pIds) ? pIds.includes(projectId) : false;
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!project) {
         return (
@@ -205,10 +221,10 @@ export default function ProjectDetailPage() {
         );
     }
 
-    const phaseConfig = PROJECT_PHASE_MAP[project.currentPhase];
+    const phaseConfig = PROJECT_PHASE_MAP[project.current_phase as keyof typeof PROJECT_PHASE_MAP];
     const budgetUtilization =
-        project.budgetPlanned > 0
-            ? Math.round((project.budgetActual / project.budgetPlanned) * 100)
+        project.budget_planned > 0
+            ? Math.round((project.budget_actual / project.budget_planned) * 100)
             : 0;
     const pendingApprovals = projectApprovals.filter(
         (a) => a.status === "pending" || a.status === "overdue"
@@ -252,11 +268,11 @@ export default function ProjectDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Start Date</span>
-                        <span>{formatDate(project.startDate)}</span>
+                        <span>{formatDate(project.start_date)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">End Date</span>
-                        <span>{formatDate(project.endDate)}</span>
+                        <span>{formatDate(project.end_date)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Progress</span>
@@ -329,7 +345,7 @@ export default function ProjectDetailPage() {
                                         <span className="text-xs">Budget</span>
                                     </div>
                                     <p className="text-xl font-bold">
-                                        {formatCurrency(project.budgetPlanned)}
+                                        {formatCurrency(project.budget_planned)}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {budgetUtilization}% utilized
@@ -394,8 +410,8 @@ export default function ProjectDetailPage() {
                                                         {task.title}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {task.dueDate &&
-                                                            `Due ${formatDate(task.dueDate)}`}
+                                                        {task.due_date &&
+                                                            `Due ${formatDate(task.due_date)}`}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2">
@@ -452,9 +468,13 @@ export default function ProjectDetailPage() {
                                                         {task.title}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {PROJECT_PHASE_MAP[task.phase]?.label}
-                                                        {task.dueDate &&
-                                                            ` · Due ${formatDate(task.dueDate)}`}
+                                                        {
+                                                            PROJECT_PHASE_MAP[
+                                                                task.phase as keyof typeof PROJECT_PHASE_MAP
+                                                            ]?.label
+                                                        }
+                                                        {task.due_date &&
+                                                            ` · Due ${formatDate(task.due_date)}`}
                                                     </p>
                                                 </div>
                                             </div>
@@ -540,15 +560,17 @@ export default function ProjectDetailPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <StatCard
                                 title="Planned Budget"
-                                value={formatCurrency(project.budgetPlanned)}
+                                value={formatCurrency(project.budget_planned)}
                             />
                             <StatCard
                                 title="Actual Spend"
-                                value={formatCurrency(project.budgetActual)}
+                                value={formatCurrency(project.budget_actual)}
                             />
                             <StatCard
                                 title="Remaining"
-                                value={formatCurrency(project.budgetPlanned - project.budgetActual)}
+                                value={formatCurrency(
+                                    project.budget_planned - project.budget_actual
+                                )}
                             />
                         </div>
 
@@ -587,11 +609,18 @@ export default function ProjectDetailPage() {
                                         >
                                             <div>
                                                 <p className="text-sm font-medium">
-                                                    {approval.milestoneName}
+                                                    {
+                                                        (approval as Record<string, unknown>)
+                                                            .milestone_name as string
+                                                    }
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">
                                                     Deadline: {formatDate(approval.deadline)} ·
-                                                    Approver: {approval.approverName}
+                                                    Approver:{" "}
+                                                    {String(
+                                                        (approval as Record<string, unknown>)
+                                                            .approver_name ?? ""
+                                                    )}
                                                 </p>
                                             </div>
                                             <StatusBadge status={approval.status} />

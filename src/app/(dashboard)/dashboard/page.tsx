@@ -6,7 +6,6 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-    isSupabaseConfigured,
     useApprovals,
     useCrewMembers,
     useDeals,
@@ -14,14 +13,6 @@ import {
     useProjects,
     useTasks,
 } from "@/lib/supabase/hooks";
-import {
-    MOCK_APPROVALS,
-    MOCK_CREW,
-    MOCK_DEALS,
-    MOCK_NOTIFICATIONS,
-    MOCK_PROJECTS,
-    MOCK_TASKS,
-} from "@/lib/demo-data";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -48,106 +39,90 @@ export default function DashboardPage() {
     const { data: sbTasks } = useTasks();
     const { data: sbCrew } = useCrewMembers();
 
-    const isLoading = isSupabaseConfigured && (loadingProjects || loadingDeals);
+    const isLoading = loadingProjects || loadingDeals;
 
     // Transform Supabase data or fall back to mock data
-    const projects =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo,
-                  status: p.status,
-                  currentPhase: p.current_phase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds:
-                      (p as { project_members?: { profile_id: string }[] }).project_members?.map(
-                          (m: { profile_id: string }) => m.profile_id
-                      ) || [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo,
+        status: p.status,
+        currentPhase: p.current_phase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds:
+            (p as { project_members?: { profile_id: string }[] }).project_members?.map(
+                (m: { profile_id: string }) => m.profile_id
+            ) || [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const deals =
-        isSupabaseConfigured && sbDeals
-            ? sbDeals.map((d) => ({
-                  id: d.id,
-                  title: d.title,
-                  company: d.company,
-                  contactName: d.contact_name,
-                  contactEmail: d.contact_email,
-                  value: d.value,
-                  stage: d.stage,
-                  probability: d.probability,
-                  expectedCloseDate: d.expected_close_date,
-                  assignedTo: d.assigned_to,
-                  notes: d.notes,
-                  createdAt: d.created_at,
-                  updatedAt: d.updated_at,
-              }))
-            : MOCK_DEALS;
+    const deals = (sbDeals ?? []).map((d) => ({
+        id: d.id,
+        title: d.title,
+        company: d.company,
+        contactName: d.contact_name,
+        contactEmail: d.contact_email,
+        value: d.value,
+        stage: d.stage,
+        probability: d.probability,
+        expectedCloseDate: d.expected_close_date,
+        assignedTo: d.assigned_to,
+        notes: d.notes,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at,
+    }));
 
-    const notifications =
-        isSupabaseConfigured && sbNotifications
-            ? sbNotifications.map((n) => ({
-                  id: n.id,
-                  title: n.title,
-                  message: n.message,
-                  type: n.type,
-                  read: n.read,
-                  actionUrl: n.action_url,
-                  createdAt: n.created_at,
-              }))
-            : MOCK_NOTIFICATIONS;
+    const notifications = (sbNotifications ?? []).map((n) => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        read: n.read,
+        actionUrl: n.action_url,
+        createdAt: n.created_at,
+    }));
 
-    const approvals =
-        isSupabaseConfigured && sbApprovals
-            ? sbApprovals.map((a) => ({
-                  id: a.id,
-                  projectId: a.project_id,
-                  milestoneId: a.milestone_id,
-                  milestoneName: a.milestone_name,
-                  status: a.status,
-                  requestedAt: a.requested_at,
-                  deadline: a.deadline,
-                  approvedAt: a.approved_at,
-                  approverName: (a as { profiles?: { name: string } }).profiles?.name || "",
-                  deliverableUrl: a.deliverable_url,
-                  timelineImpactDays: a.timeline_impact_days,
-              }))
-            : MOCK_APPROVALS;
+    const approvals = (sbApprovals ?? []).map((a) => ({
+        id: a.id,
+        projectId: a.project_id,
+        milestoneId: a.milestone_id,
+        milestoneName: a.milestone_name,
+        status: a.status,
+        requestedAt: a.requested_at,
+        deadline: a.deadline,
+        approvedAt: a.approved_at,
+        approverName: (a as { profiles?: { name: string } }).profiles?.name || "",
+        deliverableUrl: a.deliverable_url,
+        timelineImpactDays: a.timeline_impact_days,
+    }));
 
-    const tasks =
-        isSupabaseConfigured && sbTasks
-            ? sbTasks.map((t) => ({
-                  id: t.id,
-                  projectId: t.project_id,
-                  parentId: t.parent_id,
-                  title: t.title,
-                  description: t.description,
-                  status: t.status,
-                  priority: t.priority,
-                  assigneeId: t.assignee_id,
-                  phase: t.phase,
-                  fabricationStatus: t.fabrication_status,
-                  materialCost: t.material_cost,
-                  startDate: t.start_date,
-                  dueDate: t.due_date,
-                  completedAt: t.completed_at,
-                  dependencies:
-                      (
-                          t as { task_dependencies?: { depends_on_id: string }[] }
-                      ).task_dependencies?.map((d: { depends_on_id: string }) => d.depends_on_id) ||
-                      [],
-                  createdAt: t.created_at,
-              }))
-            : MOCK_TASKS;
+    const tasks = (sbTasks ?? []).map((t) => ({
+        id: t.id,
+        projectId: t.project_id,
+        parentId: t.parent_id,
+        title: t.title,
+        description: t.description,
+        status: t.status,
+        priority: t.priority,
+        assigneeId: t.assignee_id,
+        phase: t.phase,
+        fabricationStatus: t.fabrication_status,
+        materialCost: t.material_cost,
+        startDate: t.start_date,
+        dueDate: t.due_date,
+        completedAt: t.completed_at,
+        dependencies:
+            (t as { task_dependencies?: { depends_on_id: string }[] }).task_dependencies?.map(
+                (d: { depends_on_id: string }) => d.depends_on_id
+            ) || [],
+        createdAt: t.created_at,
+    }));
 
     const activeProjects = projects.filter((p) => p.status === "active");
     const pipelineValue = deals
@@ -205,11 +180,9 @@ export default function DashboardPage() {
                     <StatCard
                         title="Active Crew"
                         value={
-                            isSupabaseConfigured && sbCrew
-                                ? sbCrew.filter(
-                                      (c) => c.status === "active" || c.status === "on_project"
-                                  ).length
-                                : MOCK_CREW.filter((c) => c.status === "available").length
+                            (sbCrew ?? []).filter(
+                                (c) => c.status === "active" || c.status === "on_project"
+                            ).length
                         }
                         change={-1}
                         changeSuffix=""

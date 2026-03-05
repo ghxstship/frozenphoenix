@@ -16,9 +16,8 @@ import {
     Package,
     Plus,
 } from "lucide-react";
-import { MOCK_GOODS_RECEIPTS } from "@/lib/demo-data-governance";
 import type { GoodsReceipt, GoodsReceiptStatus } from "@/types/governance";
-import { isSupabaseConfigured, useGoodsReceipts } from "@/lib/supabase/hooks-pages";
+import { useGoodsReceipts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const GR_STATUSES: GoodsReceiptStatus[] = [
@@ -35,25 +34,22 @@ export default function GoodsReceiptsPage() {
 
     const { data: sbReceipts, isLoading } = useGoodsReceipts();
 
-    const receipts: GoodsReceipt[] =
-        isSupabaseConfigured && sbReceipts
-            ? sbReceipts.map((r: Record<string, unknown>) => ({
-                  id: (r.id as string) ?? "",
-                  purchase_order_id: (r.purchase_order_id as string) ?? "",
-                  receipt_number: (r.receipt_number as string) ?? "",
-                  received_by: (r.received_by as string) ?? "",
-                  received_at: (r.received_at as string) ?? "",
-                  line_items: (r.line_items as unknown[]) ?? [],
-                  status: ((r.status as string) ?? "pending") as GoodsReceiptStatus,
-                  delivery_location: (r.delivery_location as string) ?? undefined,
-                  discrepancies: (r.discrepancies as string) ?? undefined,
-                  organization_id: (r.organization_id as string) ?? "",
-                  created_at: (r.created_at as string) ?? "",
-                  updated_at: (r.updated_at as string) ?? "",
-              }))
-            : MOCK_GOODS_RECEIPTS;
+    const receipts: GoodsReceipt[] = (sbReceipts ?? []).map((r: Record<string, unknown>) => ({
+        id: (r.id as string) ?? "",
+        purchase_order_id: (r.purchase_order_id as string) ?? "",
+        receipt_number: (r.receipt_number as string) ?? "",
+        received_by: (r.received_by as string) ?? "",
+        received_at: (r.received_at as string) ?? "",
+        line_items: (r.line_items as unknown[]) ?? [],
+        status: ((r.status as string) ?? "pending") as GoodsReceiptStatus,
+        delivery_location: (r.delivery_location as string) ?? undefined,
+        discrepancies: (r.discrepancies as string) ?? undefined,
+        organization_id: (r.organization_id as string) ?? "",
+        created_at: (r.created_at as string) ?? "",
+        updated_at: (r.updated_at as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

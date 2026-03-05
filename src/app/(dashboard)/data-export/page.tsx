@@ -16,11 +16,9 @@ import {
     User,
 } from "lucide-react";
 import type { DataExportStatus } from "@/types";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 // TODO: Wire to Supabase when data_exports table is available
-void isSupabaseConfigured;
 
 interface ExportRequest {
     id: string;

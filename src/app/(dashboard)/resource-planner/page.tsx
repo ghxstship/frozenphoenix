@@ -14,12 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 // TODO: Wire to Supabase when resource_bookings queries are available
-void isSupabaseConfigured;
-
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
 

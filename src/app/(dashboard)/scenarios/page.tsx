@@ -26,12 +26,9 @@ import {
     TrendingUp,
     X,
 } from "lucide-react";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 // TODO: Wire to Supabase when scenarios table is available
-void isSupabaseConfigured;
-
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
 

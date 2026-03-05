@@ -11,7 +11,6 @@ import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { MOCK_REVENUE_SCHEDULES } from "@/lib/demo-data-crm-revenue";
 // REVENUE_SCHEDULE_STATUS_MAP available for drill-down views
 import type { RevenueSchedule } from "@/types";
 import {
@@ -23,7 +22,7 @@ import {
     Receipt,
     TrendingUp,
 } from "lucide-react";
-import { isSupabaseConfigured, useRevenueSchedules } from "@/lib/supabase/hooks-pages";
+import { useRevenueSchedules } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const tableColumns: ColumnDef<RevenueSchedule>[] = [
@@ -145,28 +144,25 @@ export default function RevenuePage() {
 
     const { data: sbSchedules, isLoading } = useRevenueSchedules();
 
-    const schedules: RevenueSchedule[] =
-        isSupabaseConfigured && sbSchedules
-            ? sbSchedules.map(
-                  (r: Record<string, unknown>) =>
-                      ({
-                          id: (r.id as string) ?? "",
-                          dealId: (r.deal_id as string) ?? "",
-                          dealTitle: (r.deal_title as string) ?? "",
-                          projectId: (r.project_id as string) ?? undefined,
-                          projectName: (r.project_name as string) ?? undefined,
-                          description: (r.description as string) ?? "",
-                          type: (r.type as string) ?? "milestone",
-                          status: (r.status as string) ?? "scheduled",
-                          contractedAmount: (r.contracted_amount as number) ?? 0,
-                          invoicedAmount: (r.invoiced_amount as number) ?? 0,
-                          recognizedAmount: (r.recognized_amount as number) ?? 0,
-                          scheduledDate: (r.scheduled_date as string) ?? "",
-                          recognizedAt: (r.recognized_at as string) ?? undefined,
-                          currency: (r.currency as string) ?? "USD",
-                      }) as RevenueSchedule
-              )
-            : MOCK_REVENUE_SCHEDULES;
+    const schedules: RevenueSchedule[] = (sbSchedules ?? []).map(
+        (r: Record<string, unknown>) =>
+            ({
+                id: (r.id as string) ?? "",
+                dealId: (r.deal_id as string) ?? "",
+                dealTitle: (r.deal_title as string) ?? "",
+                projectId: (r.project_id as string) ?? undefined,
+                projectName: (r.project_name as string) ?? undefined,
+                description: (r.description as string) ?? "",
+                type: (r.type as string) ?? "milestone",
+                status: (r.status as string) ?? "scheduled",
+                contractedAmount: (r.contracted_amount as number) ?? 0,
+                invoicedAmount: (r.invoiced_amount as number) ?? 0,
+                recognizedAmount: (r.recognized_amount as number) ?? 0,
+                scheduledDate: (r.scheduled_date as string) ?? "",
+                recognizedAt: (r.recognized_at as string) ?? undefined,
+                currency: (r.currency as string) ?? "USD",
+            }) as RevenueSchedule
+    );
 
     const filtered = useMemo(() => {
         let result = schedules;
@@ -191,7 +187,7 @@ export default function RevenuePage() {
         return { totalContracted, totalInvoiced, totalRecognized, backlog };
     }, [schedules]);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { getStatusLabel } from "@/config/ui-variants";
 import { CheckCircle2, Clock, DollarSign, FileText, Loader2, Plus } from "lucide-react";
-import { isSupabaseConfigured, useScopesOfWork } from "@/lib/supabase/hooks-pages";
+import { useScopesOfWork } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type SOWStatus =
@@ -43,93 +43,6 @@ interface SOWItem {
     billingType: string;
 }
 
-const mockSOWs: SOWItem[] = [
-    {
-        id: "1",
-        number: "SOW-2026-001",
-        title: "Nike Air Max Launch — Full Production",
-        project: "Nike Air Max Launch",
-        client: "Nike",
-        status: "active",
-        totalValue: 485000,
-        invoiced: 242500,
-        deliverableCount: 8,
-        completedDeliverables: 4,
-        effectiveDate: "2026-01-15",
-        billingType: "fixed_price",
-    },
-    {
-        id: "2",
-        number: "SOW-2026-002",
-        title: "Red Bull Festival — Stage & AV Package",
-        project: "Red Bull Festival",
-        client: "Red Bull",
-        status: "active",
-        totalValue: 320000,
-        invoiced: 160000,
-        deliverableCount: 6,
-        completedDeliverables: 2,
-        effectiveDate: "2026-02-01",
-        billingType: "time_and_materials",
-    },
-    {
-        id: "3",
-        number: "SOW-2026-003",
-        title: "Coachella Experience Zone",
-        project: "Coachella Experience",
-        client: "Goldenvoice",
-        status: "approved",
-        totalValue: 750000,
-        invoiced: 0,
-        deliverableCount: 12,
-        completedDeliverables: 0,
-        effectiveDate: "2026-03-01",
-        billingType: "fixed_price",
-    },
-    {
-        id: "4",
-        number: "SOW-2026-004",
-        title: "Glossier Pop-Up — Fabrication & Install",
-        project: "Glossier Pop-Up",
-        client: "Glossier",
-        status: "completed",
-        totalValue: 125000,
-        invoiced: 125000,
-        deliverableCount: 4,
-        completedDeliverables: 4,
-        effectiveDate: "2025-12-01",
-        billingType: "fixed_price",
-    },
-    {
-        id: "5",
-        number: "SOW-2026-005",
-        title: "TechStart Launch Event",
-        project: "TechStart Launch",
-        client: "TechStart",
-        status: "draft",
-        totalValue: 200000,
-        invoiced: 0,
-        deliverableCount: 5,
-        completedDeliverables: 0,
-        effectiveDate: "2026-04-01",
-        billingType: "retainer",
-    },
-    {
-        id: "6",
-        number: "SOW-2026-006",
-        title: "Nike — Ongoing Retainer Q2",
-        project: "Nike Air Max Launch",
-        client: "Nike",
-        status: "pending_approval",
-        totalValue: 150000,
-        invoiced: 0,
-        deliverableCount: 3,
-        completedDeliverables: 0,
-        effectiveDate: "2026-04-01",
-        billingType: "retainer",
-    },
-];
-
 export default function ScopesOfWorkPage() {
     const [search, setSearch] = useState("");
     const STATUS_FILTERS = ["all", "active", "draft", "pending_approval", "completed"] as const;
@@ -141,25 +54,22 @@ export default function ScopesOfWorkPage() {
 
     const { data: sbSOWs, isLoading } = useScopesOfWork();
 
-    const sows: SOWItem[] =
-        isSupabaseConfigured && sbSOWs
-            ? sbSOWs.map((s: Record<string, unknown>) => ({
-                  id: (s.id as string) ?? "",
-                  number: (s.sow_number as string) ?? "",
-                  title: (s.title as string) ?? "",
-                  project: (s.project_name as string) ?? "",
-                  client: (s.client_name as string) ?? "",
-                  status: ((s.status as string) ?? "draft") as SOWStatus,
-                  totalValue: (s.total_value as number) ?? 0,
-                  invoiced: (s.invoiced_amount as number) ?? 0,
-                  deliverableCount: (s.deliverable_count as number) ?? 0,
-                  completedDeliverables: (s.completed_deliverables as number) ?? 0,
-                  effectiveDate: (s.effective_date as string) ?? "",
-                  billingType: (s.billing_type as string) ?? "fixed_price",
-              }))
-            : mockSOWs;
+    const sows: SOWItem[] = (sbSOWs ?? []).map((s: Record<string, unknown>) => ({
+        id: (s.id as string) ?? "",
+        number: (s.sow_number as string) ?? "",
+        title: (s.title as string) ?? "",
+        project: (s.project_name as string) ?? "",
+        client: (s.client_name as string) ?? "",
+        status: ((s.status as string) ?? "draft") as SOWStatus,
+        totalValue: (s.total_value as number) ?? 0,
+        invoiced: (s.invoiced_amount as number) ?? 0,
+        deliverableCount: (s.deliverable_count as number) ?? 0,
+        completedDeliverables: (s.completed_deliverables as number) ?? 0,
+        effectiveDate: (s.effective_date as string) ?? "",
+        billingType: (s.billing_type as string) ?? "fixed_price",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -10,14 +10,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import {
-    isSupabaseConfigured,
-    useLocations,
-    useProjects,
-    useShipments,
-} from "@/lib/supabase/hooks";
-import { MOCK_LOCATIONS, MOCK_SHIPMENTS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useLocations, useProjects, useShipments } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { SHIPMENT_STATUS_CONFIG, SHIPMENT_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
@@ -42,59 +35,48 @@ export default function ShipmentsPage() {
     const { data: sbLocations, isLoading: loadingLocations } = useLocations();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const shipments =
-        isSupabaseConfigured && sbShipments
-            ? sbShipments.map((s) => ({
-                  id: s.id,
-                  projectId: s.project_id,
-                  number: s.number,
-                  description: s.description ?? "",
-                  type: s.type,
-                  status: s.status,
-                  priority: s.priority,
-                  carrierName: s.carrier_name ?? "Unknown",
-                  originLocationId: s.origin_location_id ?? undefined,
-                  destinationLocationId: s.destination_location_id ?? undefined,
-                  originAddress: (s as unknown as { origin_address?: { city?: string } })
-                      .origin_address,
-                  destinationAddress: (s as unknown as { destination_address?: { city?: string } })
-                      .destination_address,
-                  pickupDate: s.pickup_date,
-                  totalPieces: s.total_pieces ?? 0,
-                  cost: s.cost ?? undefined,
-              }))
-            : MOCK_SHIPMENTS;
+    const shipments = (sbShipments ?? []).map((s) => ({
+        id: s.id,
+        projectId: s.project_id,
+        number: s.number,
+        description: s.description ?? "",
+        type: s.type,
+        status: s.status,
+        priority: s.priority,
+        carrierName: s.carrier_name ?? "Unknown",
+        originLocationId: s.origin_location_id ?? undefined,
+        destinationLocationId: s.destination_location_id ?? undefined,
+        originAddress: (s as unknown as { origin_address?: { city?: string } }).origin_address,
+        destinationAddress: (s as unknown as { destination_address?: { city?: string } })
+            .destination_address,
+        pickupDate: s.pickup_date,
+        totalPieces: s.total_pieces ?? 0,
+        cost: s.cost ?? undefined,
+    }));
 
-    const locations =
-        isSupabaseConfigured && sbLocations
-            ? sbLocations.map((l) => ({
-                  id: l.id,
-                  name: l.name,
-              }))
-            : MOCK_LOCATIONS;
+    const locations = (sbLocations ?? []).map((l) => ({
+        id: l.id,
+        name: l.name,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading =
-        isSupabaseConfigured && (loadingShipments || loadingLocations || loadingProjects);
+    const isLoading = loadingShipments || loadingLocations || loadingProjects;
 
     if (isLoading) {
         return (

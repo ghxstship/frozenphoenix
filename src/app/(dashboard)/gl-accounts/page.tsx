@@ -8,9 +8,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CircleDollarSign, Loader2, Plus } from "lucide-react";
-import { MOCK_GL_ACCOUNTS } from "@/lib/demo-data-governance";
 import type { GLAccount } from "@/types/governance";
-import { isSupabaseConfigured, useGlAccounts } from "@/lib/supabase/hooks-pages";
+import { useGlAccounts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
@@ -35,24 +34,21 @@ export default function GLAccountsPage() {
 
     const { data: sbAccounts, isLoading } = useGlAccounts();
 
-    const accounts: GLAccount[] =
-        isSupabaseConfigured && sbAccounts
-            ? sbAccounts.map(
-                  (a: Record<string, unknown>) =>
-                      ({
-                          id: (a.id as string) ?? "",
-                          code: (a.code as string) ?? (a.account_code as string) ?? "",
-                          name: (a.name as string) ?? "",
-                          account_type: (a.account_type as string) ?? "expense",
-                          description: (a.description as string) ?? undefined,
-                          department: (a.department as string) ?? undefined,
-                          capex_opex: (a.capex_opex as string) ?? undefined,
-                          is_active: (a.is_active as boolean) ?? true,
-                      }) as GLAccount
-              )
-            : MOCK_GL_ACCOUNTS;
+    const accounts: GLAccount[] = (sbAccounts ?? []).map(
+        (a: Record<string, unknown>) =>
+            ({
+                id: (a.id as string) ?? "",
+                code: (a.code as string) ?? (a.account_code as string) ?? "",
+                name: (a.name as string) ?? "",
+                account_type: (a.account_type as string) ?? "expense",
+                description: (a.description as string) ?? undefined,
+                department: (a.department as string) ?? undefined,
+                capex_opex: (a.capex_opex as string) ?? undefined,
+                is_active: (a.is_active as boolean) ?? true,
+            }) as GLAccount
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

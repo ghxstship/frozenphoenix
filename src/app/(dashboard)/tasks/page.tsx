@@ -6,8 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
-import { isSupabaseConfigured, useProjects, useTasks } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/demo-data";
+import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { LayoutGrid, List, Loader2, Plus, Table2 } from "lucide-react";
 import {
@@ -180,53 +179,46 @@ export default function TasksPage() {
     const { data: sbTasks, isLoading: loadingTasks } = useTasks();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const allTasks =
-        isSupabaseConfigured && sbTasks
-            ? sbTasks.map((t) => ({
-                  id: t.id,
-                  projectId: t.project_id,
-                  parentId: t.parent_id ?? undefined,
-                  title: t.title,
-                  description: t.description ?? undefined,
-                  status: t.status as TaskStatus,
-                  priority: t.priority as TaskPriority,
-                  assigneeId: t.assignee_id ?? undefined,
-                  phase: t.phase as ProjectPhase,
-                  fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
-                  materialCost: t.material_cost ?? undefined,
-                  startDate: t.start_date ?? undefined,
-                  dueDate: t.due_date ?? undefined,
-                  completedAt: t.completed_at ?? undefined,
-                  dependencies:
-                      (
-                          t as { task_dependencies?: { depends_on_id: string }[] }
-                      ).task_dependencies?.map((d: { depends_on_id: string }) => d.depends_on_id) ||
-                      [],
-                  createdAt: t.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_TASKS;
+    const allTasks = (sbTasks ?? []).map((t) => ({
+        id: t.id,
+        projectId: t.project_id,
+        parentId: t.parent_id ?? undefined,
+        title: t.title,
+        description: t.description ?? undefined,
+        status: t.status as TaskStatus,
+        priority: t.priority as TaskPriority,
+        assigneeId: t.assignee_id ?? undefined,
+        phase: t.phase as ProjectPhase,
+        fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
+        materialCost: t.material_cost ?? undefined,
+        startDate: t.start_date ?? undefined,
+        dueDate: t.due_date ?? undefined,
+        completedAt: t.completed_at ?? undefined,
+        dependencies:
+            (t as { task_dependencies?: { depends_on_id: string }[] }).task_dependencies?.map(
+                (d: { depends_on_id: string }) => d.depends_on_id
+            ) || [],
+        createdAt: t.created_at ?? new Date().toISOString(),
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingTasks || loadingProjects);
+    const isLoading = loadingTasks || loadingProjects;
 
     if (isLoading) {
         return (

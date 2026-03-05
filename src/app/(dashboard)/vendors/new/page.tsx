@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { FormField, Select, Textarea } from "@/components/ui/form";
-import { isSupabaseConfigured, useCreateVendor } from "@/lib/supabase/hooks";
+import { useCreateVendor } from "@/lib/supabase/hooks";
 
 const SPECIALTY_OPTIONS = [
     { value: "Fabrication", label: "Fabrication" },
@@ -45,20 +45,18 @@ export default function NewVendorPage() {
         e.preventDefault();
 
         try {
-            if (isSupabaseConfigured) {
-                const vendorData = {
-                    name: formData.name,
-                    contact_name: formData.contactName || null,
-                    email: formData.email,
-                    phone: formData.phone || null,
-                    specialty: formData.specialty,
-                    status: formData.status,
-                    notes: formData.notes || null,
-                };
-                await createVendor.mutateAsync(
-                    vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]
-                );
-            }
+            const vendorData = {
+                name: formData.name,
+                contact_name: formData.contactName || null,
+                email: formData.email,
+                phone: formData.phone || null,
+                specialty: formData.specialty,
+                status: formData.status,
+                notes: formData.notes || null,
+            };
+            await createVendor.mutateAsync(
+                vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]
+            );
             router.push("/vendors");
         } catch (error) {
             logger.error("Failed to create vendor", { error });

@@ -12,7 +12,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { Chip } from "@/components/ui/chip";
 import { formatDate } from "@/lib/utils";
 import { Clock, Copy, FileText, LayoutTemplate, Loader2, Plus, Star, Tag } from "lucide-react";
-import { isSupabaseConfigured, useTemplates } from "@/lib/supabase/hooks-pages";
+import { useTemplates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TemplateCategory =
@@ -51,125 +51,25 @@ const CATEGORY_CONFIG: Record<
     email: { label: "Email", variant: "ghost" },
 };
 
-const mockTemplates: TemplateListItem[] = [
-    {
-        id: "1",
-        name: "Standard Client Proposal",
-        category: "proposal",
-        description:
-            "Full-service experiential marketing proposal with scope, timeline, and budget sections",
-        lastUsed: "2026-02-20",
-        usageCount: 34,
-        isDefault: true,
-        tags: ["client", "full-service"],
-        createdBy: "Sarah Chen",
-    },
-    {
-        id: "2",
-        name: "Master Services Agreement",
-        category: "contract",
-        description: "Standard MSA template with all required legal clauses and signature blocks",
-        lastUsed: "2026-02-15",
-        usageCount: 18,
-        isDefault: true,
-        tags: ["legal", "msa"],
-        createdBy: "Legal Team",
-    },
-    {
-        id: "3",
-        name: "Project Invoice — Time & Materials",
-        category: "invoice",
-        description:
-            "Invoice template for T&M projects with detailed time entries and expense line items",
-        lastUsed: "2026-02-22",
-        usageCount: 52,
-        isDefault: false,
-        tags: ["billing", "t&m"],
-        createdBy: "Finance Team",
-    },
-    {
-        id: "4",
-        name: "Event Call Sheet",
-        category: "call_sheet",
-        description:
-            "Standard call sheet with crew schedule, venue details, catering, and emergency info",
-        lastUsed: "2026-03-14",
-        usageCount: 87,
-        isDefault: true,
-        tags: ["production", "crew"],
-        createdBy: "Production Team",
-    },
-    {
-        id: "5",
-        name: "Venue Tech Rider",
-        category: "tech_sheet",
-        description:
-            "Technical rider covering power, rigging, AV, network requirements and safety protocols",
-        lastUsed: "2026-03-10",
-        usageCount: 29,
-        isDefault: true,
-        tags: ["technical", "venue"],
-        createdBy: "Technical Director",
-    },
-    {
-        id: "6",
-        name: "Statement of Work — Fixed Price",
-        category: "sow",
-        description:
-            "Fixed-price SOW template with deliverables matrix, milestones, and acceptance criteria",
-        lastUsed: "2026-01-30",
-        usageCount: 12,
-        isDefault: false,
-        tags: ["legal", "fixed-price"],
-        createdBy: "Legal Team",
-    },
-    {
-        id: "7",
-        name: "Post-Event Report",
-        category: "report",
-        description:
-            "Comprehensive post-event report with KPIs, photos, budget reconciliation, and lessons learned",
-        lastUsed: "2026-02-28",
-        usageCount: 23,
-        isDefault: true,
-        tags: ["reporting", "post-event"],
-        createdBy: "PM Team",
-    },
-    {
-        id: "8",
-        name: "Vendor NDA",
-        category: "contract",
-        description: "Non-disclosure agreement for vendors and subcontractors",
-        lastUsed: "2026-02-05",
-        usageCount: 41,
-        isDefault: false,
-        tags: ["legal", "nda", "vendor"],
-        createdBy: "Legal Team",
-    },
-];
-
 export default function TemplatesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
     const { data: sbTemplates, isLoading } = useTemplates();
 
-    const templates: TemplateListItem[] =
-        isSupabaseConfigured && sbTemplates
-            ? sbTemplates.map((t: Record<string, unknown>) => ({
-                  id: (t.id as string) ?? "",
-                  name: (t.name as string) ?? "",
-                  category: ((t.category as string) ?? "report") as TemplateCategory,
-                  description: (t.description as string) ?? "",
-                  lastUsed: (t.last_used as string) ?? (t.updated_at as string) ?? "",
-                  usageCount: (t.usage_count as number) ?? 0,
-                  isDefault: (t.is_default as boolean) ?? false,
-                  tags: (t.tags as string[]) ?? [],
-                  createdBy: (t.created_by as string) ?? "",
-              }))
-            : mockTemplates;
+    const templates: TemplateListItem[] = (sbTemplates ?? []).map((t: Record<string, unknown>) => ({
+        id: (t.id as string) ?? "",
+        name: (t.name as string) ?? "",
+        category: ((t.category as string) ?? "report") as TemplateCategory,
+        description: (t.description as string) ?? "",
+        lastUsed: (t.last_used as string) ?? (t.updated_at as string) ?? "",
+        usageCount: (t.usage_count as number) ?? 0,
+        isDefault: (t.is_default as boolean) ?? false,
+        tags: (t.tags as string[]) ?? [],
+        createdBy: (t.created_by as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

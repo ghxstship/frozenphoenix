@@ -12,11 +12,11 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { MOCK_ACTIVATIONS, MOCK_EVENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useActivation } from "@/lib/supabase/hooks-pages";
+import { useEvents, useLocations, useProjects } from "@/lib/supabase/hooks";
 import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, DollarSign, Edit, Package, Sparkles, Users } from "lucide-react";
+import { Calendar, DollarSign, Edit, Loader2, Package, Sparkles, Users } from "lucide-react";
 
 type TabId = "overview" | "components" | "events" | "timeline" | "chatter";
 const TAB_VALUES = ["overview", "components", "events", "timeline", "chatter"] as const;
@@ -62,12 +62,28 @@ export default function ActivationDetailPage() {
     });
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
 
-    const activation = MOCK_ACTIVATIONS.find((a) => a.id === activationId);
-    const location = activation ? MOCK_LOCATIONS.find((l) => l.id === activation.locationId) : null;
-    const project = activation ? MOCK_PROJECTS.find((p) => p.id === activation.projectId) : null;
+    const { data: activation, isLoading } = useActivation(activationId);
+    const { data: sbLocations } = useLocations();
+    const { data: sbProjects } = useProjects();
+    const { data: sbEvents } = useEvents();
+    const a = activation as Record<string, unknown> | null;
+    const location = a
+        ? (sbLocations ?? []).find((l: Record<string, unknown>) => l.id === a.location_id)
+        : null;
+    const project = a
+        ? (sbProjects ?? []).find((p: Record<string, unknown>) => p.id === a.project_id)
+        : null;
     const activationEvents = activation
-        ? MOCK_EVENTS.filter((e) => e.activationId === activationId)
+        ? (sbEvents ?? []).filter((e: Record<string, unknown>) => e.activation_id === activationId)
         : [];
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!activation) {
         return (
@@ -363,8 +379,16 @@ export default function ActivationDetailPage() {
                                                 entityName={evt.name}
                                             />
                                             <p className="text-xs text-muted-foreground">
-                                                {formatDate(evt.date)} · {evt.startTime}–
-                                                {evt.endTime}
+                                                {formatDate(evt.date)} ·{" "}
+                                                {
+                                                    (evt as Record<string, unknown>)
+                                                        .start_time as string
+                                                }
+                                                –
+                                                {
+                                                    (evt as Record<string, unknown>)
+                                                        .end_time as string
+                                                }
                                             </p>
                                         </div>
                                         <StatusBadge status={evt.status} />

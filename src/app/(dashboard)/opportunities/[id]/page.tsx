@@ -10,8 +10,10 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
-import { MOCK_OPPORTUNITIES, OPPORTUNITY_STAGES } from "@/lib/demo-data-crm-revenue";
-import { OPPORTUNITY_TYPE_MAP } from "@/config/domain-config";
+import {
+    OPPORTUNITY_STAGES_KANBAN as OPPORTUNITY_STAGES,
+    OPPORTUNITY_TYPE_MAP,
+} from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Building2,
@@ -19,12 +21,15 @@ import {
     CheckCircle2,
     DollarSign,
     FileText,
+    Loader2,
     Mail,
     Phone,
     Target,
     TrendingUp,
     User,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useOpportunity } from "@/lib/supabase/hooks-pages";
 
 type TabId = "overview" | "activity" | "chatter";
 const TAB_VALUES = ["overview", "activity", "chatter"] as const;
@@ -74,22 +79,41 @@ export default function OpportunityDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const opp = MOCK_OPPORTUNITIES[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: opp, isLoading } = useOpportunity(entityId);
+
+    const expectedClose = opp?.expectedCloseDate ?? null;
+    const daysToClose = useMemo(() => {
+        if (!expectedClose) return null;
+        const now = new Date();
+        return Math.ceil(
+            (new Date(expectedClose).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
+    }, [expectedClose]);
+
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!opp) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
     const stageCfg = OPPORTUNITY_STAGES.find((s) => s.id === opp.stage);
     const typeCfg = OPPORTUNITY_TYPE_MAP[opp.type as keyof typeof OPPORTUNITY_TYPE_MAP];
     const stageIndex = OPPORTUNITY_STAGES.findIndex((s) => s.id === opp.stage);
     const stageProgress =
         stageIndex >= 0 ? Math.round(((stageIndex + 1) / OPPORTUNITY_STAGES.length) * 100) : 0;
-
-    const daysToClose = useMemo(() => {
-        if (!opp.expectedCloseDate) return null;
-        const now = new Date();
-        return Math.ceil(
-            (new Date(opp.expectedCloseDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-        );
-    }, [opp.expectedCloseDate]);
-
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,

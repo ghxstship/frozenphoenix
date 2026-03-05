@@ -13,15 +13,17 @@ import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_PERMITS } from "@/lib/demo-data-governance";
 import {
     AlertTriangle,
     Calendar,
     CheckCircle2,
     DollarSign,
+    Loader2,
     MapPin,
     ScrollText,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { usePermit } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "inspections" | "chatter";
 const TAB_VALUES = ["details", "inspections", "chatter"] as const;
@@ -33,9 +35,27 @@ export default function PermitDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const permit = MOCK_PERMITS[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: permit, isLoading } = usePermit(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!permit) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -156,7 +176,7 @@ export default function PermitDetailPage() {
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
                         {permit.tags.length > 0 ? (
-                            permit.tags.map((t) => (
+                            permit.tags.map((t: string) => (
                                 <Chip key={t} size="sm">
                                     {t}
                                 </Chip>

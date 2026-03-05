@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useBrandKits, useProjects } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useBrandKits, useProjects } from "@/lib/supabase/hooks";
+
 import { Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
@@ -28,60 +28,6 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-interface BrandKit {
-    id: string;
-    clientId: string;
-    clientName: string;
-    primaryColor: string;
-    secondaryColor: string;
-    accentColor: string;
-    fontFamily: string;
-    logoUrl?: string;
-    guidelines?: string;
-}
-
-const MOCK_BRAND_KITS: BrandKit[] = [
-    {
-        id: "bk-rilla",
-        clientId: "rilla",
-        clientName: "Rilla",
-        primaryColor: "#8B5CF6",
-        secondaryColor: "#1E1033",
-        accentColor: "#FF7849",
-        fontFamily: "Inter",
-        logoUrl: "/brands/rilla/logo-icon.svg",
-        guidelines:
-            "AI-powered sales coaching platform. 'The End of Ridealongs'. Premium purple aesthetic with coral accents.",
-    },
-    {
-        id: "bk1",
-        clientId: "coachella",
-        clientName: "Coachella",
-        primaryColor: "#FF6B35",
-        secondaryColor: "#1A1A2E",
-        accentColor: "#FFD93D",
-        fontFamily: "Helvetica Neue",
-    },
-    {
-        id: "bk2",
-        clientId: "glossier",
-        clientName: "Glossier",
-        primaryColor: "#F5C6CB",
-        secondaryColor: "#FFFFFF",
-        accentColor: "#000000",
-        fontFamily: "Apercu",
-    },
-    {
-        id: "bk3",
-        clientId: "nike",
-        clientName: "Nike",
-        primaryColor: "#000000",
-        secondaryColor: "#FFFFFF",
-        accentColor: "#FF6B00",
-        fontFamily: "Futura",
-    },
-];
-
 export default function BrandKitPage() {
     const [copiedColor, setCopiedColor] = React.useState<string | null>(null);
     const [showWizard, setShowWizard] = useState(false);
@@ -96,42 +42,36 @@ export default function BrandKitPage() {
     const { data: sbBrandKits, isLoading: loadingKits } = useBrandKits();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const brandKits =
-        isSupabaseConfigured && sbBrandKits
-            ? sbBrandKits.map((kit) => ({
-                  id: kit.id,
-                  clientId: kit.client_name.toLowerCase().replace(/\s+/g, "-"),
-                  clientName: kit.client_name,
-                  primaryColor: kit.primary_color,
-                  secondaryColor: kit.secondary_color,
-                  accentColor: kit.accent_color ?? "#000000",
-                  fontFamily: kit.font_family,
-                  logoUrl: kit.logo_url ?? undefined,
-                  guidelines: kit.guidelines ?? undefined,
-              }))
-            : MOCK_BRAND_KITS;
+    const brandKits = (sbBrandKits ?? []).map((kit) => ({
+        id: kit.id,
+        clientId: kit.client_name.toLowerCase().replace(/\s+/g, "-"),
+        clientName: kit.client_name,
+        primaryColor: kit.primary_color,
+        secondaryColor: kit.secondary_color,
+        accentColor: kit.accent_color ?? "#000000",
+        fontFamily: kit.font_family,
+        logoUrl: kit.logo_url ?? undefined,
+        guidelines: kit.guidelines ?? undefined,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingKits || loadingProjects);
+    const isLoading = loadingKits || loadingProjects;
 
     if (isLoading) {
         return (

@@ -11,17 +11,19 @@ import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getPriorityVariant, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
 import {
     Building2,
     Calendar,
     ClipboardList,
     Clock,
     DollarSign,
+    Loader2,
     MapPin,
     Play,
     User,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useWorkOrder } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "bids" | "chatter";
 const TAB_VALUES = ["details", "bids", "chatter"] as const;
@@ -57,7 +59,9 @@ export default function WorkOrderDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const wo = MOCK_WORK_ORDERS[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: wo, isLoading } = useWorkOrder(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
@@ -72,6 +76,22 @@ export default function WorkOrderDetailPage() {
             },
         ]);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!wo) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
 
     const tabs = [
         { id: "details" as const, label: "Details" },

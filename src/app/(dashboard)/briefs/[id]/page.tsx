@@ -15,8 +15,9 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_CREATIVE_BRIEFS } from "@/lib/demo-data-creative-brand";
-import { Calendar, CheckCircle2, DollarSign, FileText, Send, Target } from "lucide-react";
+import { Calendar, CheckCircle2, DollarSign, FileText, Loader2, Send, Target } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useBrief } from "@/lib/supabase/hooks-pages";
 
 type TabId = "overview" | "deliverables" | "budget" | "chatter";
 const TAB_VALUES = ["overview", "deliverables", "budget", "chatter"] as const;
@@ -38,13 +39,32 @@ export default function BriefDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const brief = MOCK_CREATIVE_BRIEFS[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: brief, isLoading } = useBrief(entityId);
+
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!brief) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
     const typeCfg =
         CREATIVE_BRIEF_TYPE_MAP[brief.brief_type as keyof typeof CREATIVE_BRIEF_TYPE_MAP];
     const typeIcon = BRIEF_TYPE_ICONS[brief.brief_type] ?? "📄";
 
     const completedKpis = brief.kpi_definitions.length;
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -124,7 +144,7 @@ export default function BriefDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground mb-1.5">Channels</p>
                             <div className="flex flex-wrap gap-1.5">
-                                {brief.channels.map((ch) => (
+                                {brief.channels.map((ch: string) => (
                                     <Chip key={ch} size="sm">
                                         {ch}
                                     </Chip>
@@ -136,7 +156,7 @@ export default function BriefDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground mb-1.5">Markets</p>
                             <div className="flex flex-wrap gap-1.5">
-                                {brief.markets.map((m) => (
+                                {brief.markets.map((m: string) => (
                                     <Chip key={m} size="sm">
                                         {m}
                                     </Chip>
@@ -258,7 +278,7 @@ export default function BriefDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <ul className="space-y-1.5">
-                                    {brief.business_objectives.map((obj, i) => (
+                                    {brief.business_objectives.map((obj: string, i: number) => (
                                         <li
                                             key={i}
                                             className="text-sm text-muted-foreground flex items-start gap-2"
@@ -279,7 +299,7 @@ export default function BriefDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <ul className="space-y-1.5">
-                                    {brief.success_criteria.map((criterion, i) => (
+                                    {brief.success_criteria.map((criterion: string, i: number) => (
                                         <li
                                             key={i}
                                             className="text-sm text-muted-foreground flex items-start gap-2"
@@ -325,17 +345,21 @@ export default function BriefDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {brief.milestone_dates.map((ms, i) => (
-                                        <div
-                                            key={i}
-                                            className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20"
-                                        >
-                                            <span className="text-sm font-medium">{ms.label}</span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {formatDate(ms.date, "compact")}
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {brief.milestone_dates.map(
+                                        (ms: { label: string; date: string }, i: number) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20"
+                                            >
+                                                <span className="text-sm font-medium">
+                                                    {ms.label}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatDate(ms.date, "compact")}
+                                                </span>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -352,25 +376,40 @@ export default function BriefDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {brief.deliverable_manifest.map((del, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div>
-                                        <p className="text-sm font-semibold capitalize">
-                                            {del.type.replace(/_/g, " ")}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">{del.specs}</p>
-                                        {del.channel && (
-                                            <Badge variant="outline" className="mt-1 text-[10px]">
-                                                {del.channel}
-                                            </Badge>
-                                        )}
+                            {brief.deliverable_manifest.map(
+                                (
+                                    del: {
+                                        type: string;
+                                        quantity: number;
+                                        specs: string;
+                                        channel?: string;
+                                    },
+                                    i: number
+                                ) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-semibold capitalize">
+                                                {del.type.replace(/_/g, " ")}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {del.specs}
+                                            </p>
+                                            {del.channel && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="mt-1 text-[10px]"
+                                                >
+                                                    {del.channel}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <Badge variant="ghost">×{del.quantity}</Badge>
                                     </div>
-                                    <Badge variant="ghost">×{del.quantity}</Badge>
-                                </div>
-                            ))}
+                                )
+                            )}
                             {brief.deliverable_manifest.length === 0 && (
                                 <p className="text-sm text-muted-foreground text-center py-8">
                                     No deliverables defined yet
@@ -394,28 +433,30 @@ export default function BriefDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {brief.budget_breakdown.map((item, i) => {
-                                const pct =
-                                    brief.total_budget > 0
-                                        ? Math.round((item.amount / brief.total_budget) * 100)
-                                        : 0;
-                                return (
-                                    <div key={i} className="p-3 rounded-lg bg-secondary/20">
-                                        <div className="flex justify-between text-sm mb-2">
-                                            <span className="font-medium capitalize">
-                                                {item.category.replace(/_/g, " ")}
-                                            </span>
-                                            <span className="font-bold">
-                                                {formatCurrency(item.amount)}
-                                            </span>
+                            {brief.budget_breakdown.map(
+                                (item: { category: string; amount: number }, i: number) => {
+                                    const pct =
+                                        brief.total_budget > 0
+                                            ? Math.round((item.amount / brief.total_budget) * 100)
+                                            : 0;
+                                    return (
+                                        <div key={i} className="p-3 rounded-lg bg-secondary/20">
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="font-medium capitalize">
+                                                    {item.category.replace(/_/g, " ")}
+                                                </span>
+                                                <span className="font-bold">
+                                                    {formatCurrency(item.amount)}
+                                                </span>
+                                            </div>
+                                            <ProgressBar value={pct} size="sm" />
+                                            <p className="text-[10px] text-muted-foreground mt-1">
+                                                {pct}% of total budget
+                                            </p>
                                         </div>
-                                        <ProgressBar value={pct} size="sm" />
-                                        <p className="text-[10px] text-muted-foreground mt-1">
-                                            {pct}% of total budget
-                                        </p>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                }
+                            )}
                             {brief.budget_breakdown.length === 0 && (
                                 <p className="text-sm text-muted-foreground text-center py-8">
                                     No budget breakdown defined yet

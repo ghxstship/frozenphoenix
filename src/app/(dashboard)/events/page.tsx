@@ -10,15 +10,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import {
-    isSupabaseConfigured,
-    useActivations,
-    useEvents,
-    useLocations,
-    useProjects,
-} from "@/lib/supabase/hooks";
-import { MOCK_ACTIVATIONS, MOCK_EVENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useActivations, useEvents, useLocations, useProjects } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
@@ -44,63 +36,49 @@ export default function EventsPage() {
     const { data: sbActivations, isLoading: loadingActivations } = useActivations();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const events =
-        isSupabaseConfigured && sbEvents
-            ? sbEvents.map((e) => ({
-                  id: e.id,
-                  projectId: e.project_id,
-                  activationId: e.activation_id ?? undefined,
-                  locationId: e.location_id ?? undefined,
-                  name: e.name,
-                  type: e.type,
-                  status: e.status,
-                  date: e.date,
-                  startTime: e.start_time,
-                  endTime: e.end_time,
-                  attendeeCount: e.attendee_count ?? undefined,
-                  vipCount: e.vip_count ?? undefined,
-              }))
-            : MOCK_EVENTS;
+    const events = (sbEvents ?? []).map((e) => ({
+        id: e.id,
+        projectId: e.project_id,
+        activationId: e.activation_id ?? undefined,
+        locationId: e.location_id ?? undefined,
+        name: e.name,
+        type: e.type,
+        status: e.status,
+        date: e.date,
+        startTime: e.start_time,
+        endTime: e.end_time,
+        attendeeCount: e.attendee_count ?? undefined,
+        vipCount: e.vip_count ?? undefined,
+    }));
 
-    const locations =
-        isSupabaseConfigured && sbLocations
-            ? sbLocations.map((l) => ({
-                  id: l.id,
-                  name: l.name,
-              }))
-            : MOCK_LOCATIONS;
+    const locations = (sbLocations ?? []).map((l) => ({
+        id: l.id,
+        name: l.name,
+    }));
 
-    const activations =
-        isSupabaseConfigured && sbActivations
-            ? sbActivations.map((a) => ({
-                  id: a.id,
-                  name: a.name,
-              }))
-            : MOCK_ACTIVATIONS;
+    const activations = (sbActivations ?? []).map((a) => ({
+        id: a.id,
+        name: a.name,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading =
-        isSupabaseConfigured &&
-        (loadingEvents || loadingLocations || loadingActivations || loadingProjects);
+    const isLoading = loadingEvents || loadingLocations || loadingActivations || loadingProjects;
 
     if (isLoading) {
         return (

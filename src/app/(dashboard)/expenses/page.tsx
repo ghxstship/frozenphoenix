@@ -22,7 +22,7 @@ import {
     Upload,
     User,
 } from "lucide-react";
-import { isSupabaseConfigured, useExpenses } from "@/lib/supabase/hooks-pages";
+import { useExpenses } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type ExpenseStatus = "pending" | "approved" | "rejected" | "reimbursed";
@@ -57,111 +57,25 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
     miscellaneous: "Misc",
 };
 
-const mockExpenses: ExpenseItem[] = [
-    {
-        id: "1",
-        description: "Flight to NYC — site visit",
-        category: "travel",
-        amount: 485,
-        date: "2026-02-20",
-        submittedBy: "Sarah Chen",
-        projectName: "Nike Air Max Launch",
-        status: "reimbursed",
-    },
-    {
-        id: "2",
-        description: "LED test panel rental",
-        category: "equipment",
-        amount: 1200,
-        date: "2026-02-18",
-        submittedBy: "Mike Johnson",
-        projectName: "Nike Air Max Launch",
-        status: "approved",
-    },
-    {
-        id: "3",
-        description: "Client dinner — Red Bull team",
-        category: "meals",
-        amount: 342,
-        date: "2026-02-22",
-        submittedBy: "Sarah Chen",
-        projectName: "Red Bull Festival",
-        status: "pending",
-    },
-    {
-        id: "4",
-        description: "Gaffer tape, zip ties, cable (bulk)",
-        category: "materials",
-        amount: 189,
-        date: "2026-02-19",
-        submittedBy: "David Kim",
-        projectName: "Nike Air Max Launch",
-        status: "reimbursed",
-    },
-    {
-        id: "5",
-        description: "Van rental — equipment transport",
-        category: "transport",
-        amount: 275,
-        date: "2026-02-21",
-        submittedBy: "Tom Harris",
-        projectName: "Glossier Pop-Up",
-        status: "pending",
-    },
-    {
-        id: "6",
-        description: "Figma annual subscription",
-        category: "software",
-        amount: 144,
-        date: "2026-02-01",
-        submittedBy: "Lisa Wang",
-        projectName: "General",
-        status: "approved",
-    },
-    {
-        id: "7",
-        description: "Uber rides — Brooklyn site visits (x4)",
-        category: "transport",
-        amount: 96,
-        date: "2026-02-15",
-        submittedBy: "Sarah Chen",
-        projectName: "Nike Air Max Launch",
-        status: "rejected",
-    },
-    {
-        id: "8",
-        description: "Safety harnesses (3x)",
-        category: "equipment",
-        amount: 450,
-        date: "2026-02-17",
-        submittedBy: "David Kim",
-        projectName: "Nike Air Max Launch",
-        status: "reimbursed",
-    },
-];
-
 export default function ExpensesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbExpenses, isLoading } = useExpenses();
 
-    const expenses: ExpenseItem[] =
-        isSupabaseConfigured && sbExpenses
-            ? sbExpenses.map((e: Record<string, unknown>) => ({
-                  id: (e.id as string) ?? "",
-                  description: (e.description as string) ?? "",
-                  category: ((e.category as string) ?? "miscellaneous") as ExpenseCategory,
-                  amount: (e.amount as number) ?? 0,
-                  date: (e.date as string) ?? "",
-                  submittedBy: (e.submitted_by as string) ?? "",
-                  projectName: (e.project_name as string) ?? "",
-                  status: ((e.status as string) ?? "pending") as ExpenseStatus,
-                  receiptUrl: (e.receipt_url as string) ?? undefined,
-              }))
-            : mockExpenses;
+    const expenses: ExpenseItem[] = (sbExpenses ?? []).map((e: Record<string, unknown>) => ({
+        id: (e.id as string) ?? "",
+        description: (e.description as string) ?? "",
+        category: ((e.category as string) ?? "miscellaneous") as ExpenseCategory,
+        amount: (e.amount as number) ?? 0,
+        date: (e.date as string) ?? "",
+        submittedBy: (e.submitted_by as string) ?? "",
+        projectName: (e.project_name as string) ?? "",
+        status: ((e.status as string) ?? "pending") as ExpenseStatus,
+        receiptUrl: (e.receipt_url as string) ?? undefined,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

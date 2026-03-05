@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { isSupabaseConfigured, useApprovals, useProjects, useTasks } from "@/lib/supabase/hooks";
-import { MOCK_APPROVALS, MOCK_PROJECTS, MOCK_TASKS } from "@/lib/demo-data";
+import { useApprovals, useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Loader2 } from "lucide-react";
@@ -65,67 +64,57 @@ export default function CalendarPage() {
     const { data: sbTasks, isLoading: loadingTasks } = useTasks();
     const { data: sbApprovals, isLoading: loadingApprovals } = useApprovals();
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const allTasks: Task[] =
-        isSupabaseConfigured && sbTasks
-            ? sbTasks.map((t) => ({
-                  id: t.id,
-                  projectId: t.project_id,
-                  parentId: t.parent_id ?? undefined,
-                  title: t.title,
-                  description: t.description ?? undefined,
-                  status: t.status as TaskStatus,
-                  priority: t.priority as TaskPriority,
-                  assigneeId: t.assignee_id ?? undefined,
-                  phase: t.phase as ProjectPhase,
-                  fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
-                  materialCost: t.material_cost ?? undefined,
-                  startDate: t.start_date ?? undefined,
-                  dueDate: t.due_date ?? undefined,
-                  completedAt: t.completed_at ?? undefined,
-                  dependencies: [],
-                  createdAt: t.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_TASKS;
+    const allTasks: Task[] = (sbTasks ?? []).map((t) => ({
+        id: t.id,
+        projectId: t.project_id,
+        parentId: t.parent_id ?? undefined,
+        title: t.title,
+        description: t.description ?? undefined,
+        status: t.status as TaskStatus,
+        priority: t.priority as TaskPriority,
+        assigneeId: t.assignee_id ?? undefined,
+        phase: t.phase as ProjectPhase,
+        fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
+        materialCost: t.material_cost ?? undefined,
+        startDate: t.start_date ?? undefined,
+        dueDate: t.due_date ?? undefined,
+        completedAt: t.completed_at ?? undefined,
+        dependencies: [],
+        createdAt: t.created_at ?? new Date().toISOString(),
+    }));
 
-    const approvals: Approval[] =
-        isSupabaseConfigured && sbApprovals
-            ? sbApprovals.map((a) => ({
-                  id: a.id,
-                  projectId: a.project_id,
-                  milestoneId: a.milestone_id,
-                  milestoneName: a.milestone_name,
-                  status: a.status as Approval["status"],
-                  requestedAt: a.requested_at,
-                  deadline: a.deadline,
-                  approvedAt: a.approved_at ?? undefined,
-                  approverName:
-                      (a as unknown as { profiles?: { name: string } }).profiles?.name || "",
-                  deliverableUrl: a.deliverable_url ?? undefined,
-                  timelineImpactDays: a.timeline_impact_days ?? undefined,
-              }))
-            : MOCK_APPROVALS;
+    const approvals: Approval[] = (sbApprovals ?? []).map((a) => ({
+        id: a.id,
+        projectId: a.project_id,
+        milestoneId: a.milestone_id,
+        milestoneName: a.milestone_name,
+        status: a.status as Approval["status"],
+        requestedAt: a.requested_at,
+        deadline: a.deadline,
+        approvedAt: a.approved_at ?? undefined,
+        approverName: (a as unknown as { profiles?: { name: string } }).profiles?.name || "",
+        deliverableUrl: a.deliverable_url ?? undefined,
+        timelineImpactDays: a.timeline_impact_days ?? undefined,
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingProjects || loadingTasks || loadingApprovals);
+    const isLoading = loadingProjects || loadingTasks || loadingApprovals;
 
     if (isLoading) {
         return (

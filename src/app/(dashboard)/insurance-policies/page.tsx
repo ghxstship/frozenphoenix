@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Shield, XCircle } from "lucide-react";
 import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, useInsurancePolicies } from "@/lib/supabase/hooks-pages";
+import { useInsurancePolicies } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { InsurancePolicyStatus } from "@/types/governance";
 
@@ -54,10 +54,7 @@ export default function InsurancePoliciesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbPolicies, isLoading } = useInsurancePolicies();
 
-    const policies =
-        isSupabaseConfigured && sbPolicies
-            ? (sbPolicies as unknown as typeof MOCK_INSURANCE_POLICIES)
-            : MOCK_INSURANCE_POLICIES;
+    const policies = (sbPolicies ?? []) as typeof MOCK_INSURANCE_POLICIES;
 
     const filtered = policies.filter((p) => {
         const holderName = holderNames[p.holder_id] || p.holder_id;
@@ -76,7 +73,7 @@ export default function InsurancePoliciesPage() {
         .filter((p) => p.status === "active")
         .reduce((sum, p) => sum + p.coverage_amount, 0);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

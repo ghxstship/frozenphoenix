@@ -20,10 +20,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { MOCK_INVOICES, MOCK_POS, MOCK_VENDORS } from "@/lib/demo-data";
+import { useVendor } from "@/lib/supabase/hooks-pages";
 import {
-    isSupabaseConfigured,
     useCreatePurchaseOrder,
+    useInvoices,
+    usePurchaseOrders,
     useUpdateVendor,
 } from "@/lib/supabase/hooks";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
@@ -71,11 +72,9 @@ export default function VendorDetailPage() {
     };
     const updateVendor = useUpdateVendor();
     const createPO = useCreatePurchaseOrder();
-
-    const vendor = MOCK_VENDORS.find((v) => v.id === vendorId);
+    const { data: vendor, isLoading } = useVendor(vendorId);
 
     const handleSuspendVendor = async () => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateVendor.mutateAsync({
                 id: vendorId,
@@ -87,7 +86,7 @@ export default function VendorDetailPage() {
     };
 
     const handleCreatePO = async () => {
-        if (!poDescription.trim() || !isSupabaseConfigured) return;
+        if (!poDescription.trim()) return;
         try {
             await createPO.mutateAsync({
                 vendor_id: vendorId,
@@ -102,8 +101,22 @@ export default function VendorDetailPage() {
             logger.error("Failed to create PO", { error });
         }
     };
-    const vendorPOs = MOCK_POS.filter((po) => po.vendorId === vendorId);
-    const vendorInvoices = MOCK_INVOICES.filter((inv) => inv.vendorId === vendorId);
+    const { data: sbPOs } = usePurchaseOrders();
+    const { data: sbInvoices } = useInvoices();
+    const vendorPOs = (sbPOs ?? []).filter(
+        (po: Record<string, unknown>) => po.vendor_id === vendorId
+    );
+    const vendorInvoices = (sbInvoices ?? []).filter(
+        (inv: Record<string, unknown>) => inv.vendor_id === vendorId
+    );
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!vendor) {
         return (
@@ -116,7 +129,10 @@ export default function VendorDetailPage() {
         );
     }
 
-    const totalPOValue = vendorPOs.reduce((sum, po) => sum + po.totalAmount, 0);
+    const totalPOValue = vendorPOs.reduce(
+        (sum: number, po: Record<string, unknown>) => sum + Number(po.total_amount ?? 0),
+        0
+    );
     const totalInvoiced = vendorInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
     const tabs = [
@@ -292,12 +308,21 @@ export default function VendorDetailPage() {
                                                         PO #{po.id}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        Issued: {formatDate(po.issuedDate)}
+                                                        Issued:{" "}
+                                                        {formatDate(
+                                                            (po as Record<string, unknown>)
+                                                                .issued_date as string
+                                                        )}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-sm font-medium">
-                                                        {formatCurrency(po.totalAmount)}
+                                                        {formatCurrency(
+                                                            Number(
+                                                                (po as Record<string, unknown>)
+                                                                    .total_amount ?? 0
+                                                            )
+                                                        )}
                                                     </span>
                                                     <StatusBadge status={po.status} />
                                                 </div>
@@ -339,13 +364,21 @@ export default function VendorDetailPage() {
                                             <div>
                                                 <p className="text-sm font-medium">PO #{po.id}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {po.items.length} items · Issued{" "}
-                                                    {formatDate(po.issuedDate)}
+                                                    Issued{" "}
+                                                    {formatDate(
+                                                        (po as Record<string, unknown>)
+                                                            .issued_date as string
+                                                    )}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-sm font-medium">
-                                                    {formatCurrency(po.totalAmount)}
+                                                    {formatCurrency(
+                                                        Number(
+                                                            (po as Record<string, unknown>)
+                                                                .total_amount ?? 0
+                                                        )
+                                                    )}
                                                 </span>
                                                 <StatusBadge status={po.status} />
                                             </div>
@@ -381,7 +414,11 @@ export default function VendorDetailPage() {
                                                     Invoice #{inv.id}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Due: {formatDate(inv.dueDate)}
+                                                    Due:{" "}
+                                                    {formatDate(
+                                                        (inv as Record<string, unknown>)
+                                                            .due_date as string
+                                                    )}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3">

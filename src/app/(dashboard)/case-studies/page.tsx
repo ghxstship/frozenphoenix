@@ -5,8 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
-import { isSupabaseConfigured, useCaseStudies } from "@/lib/supabase/hooks";
-import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
+import { useCaseStudies } from "@/lib/supabase/hooks";
 import { Award, ExternalLink, Globe, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -15,31 +14,28 @@ import { PermissionGate } from "@/components/permission-guard";
 export default function CaseStudiesPage() {
     const { data: sbCaseStudies, isLoading } = useCaseStudies();
 
-    const caseStudies =
-        isSupabaseConfigured && sbCaseStudies
-            ? sbCaseStudies.map((cs) => ({
-                  id: cs.id,
-                  projectId: cs.project_id,
-                  title: cs.title,
-                  client: cs.client,
-                  summary: cs.summary,
-                  status: cs.status as "draft" | "published",
-                  metrics: (
-                      (
-                          cs as unknown as {
-                              case_study_metrics?: Array<{ label: string; value: string }>;
-                          }
-                      ).case_study_metrics || []
-                  ).map((m) => ({
-                      label: m.label,
-                      value: m.value,
-                  })),
-                  publishedAt: cs.published_at ?? undefined,
-                  createdAt: cs.created_at,
-              }))
-            : MOCK_CASE_STUDIES;
+    const caseStudies = (sbCaseStudies ?? []).map((cs) => ({
+        id: cs.id,
+        projectId: cs.project_id,
+        title: cs.title,
+        client: cs.client,
+        summary: cs.summary,
+        status: cs.status as "draft" | "published",
+        metrics: (
+            (
+                cs as unknown as {
+                    case_study_metrics?: Array<{ label: string; value: string }>;
+                }
+            ).case_study_metrics || []
+        ).map((m) => ({
+            label: m.label,
+            value: m.value,
+        })),
+        publishedAt: cs.published_at ?? undefined,
+        createdAt: cs.created_at,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

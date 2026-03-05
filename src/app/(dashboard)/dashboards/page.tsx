@@ -17,11 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { isSupabaseConfigured } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 // TODO: Wire to Supabase when dashboard aggregation queries are available
-void isSupabaseConfigured;
 
 interface DashboardWidget {
     id: string;

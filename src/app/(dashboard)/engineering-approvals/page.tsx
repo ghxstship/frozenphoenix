@@ -9,9 +9,8 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Wrench } from "lucide-react";
-import { MOCK_ENGINEERING_APPROVALS } from "@/lib/demo-data-governance";
 import type { EngineeringApproval, EngineeringApprovalStatus } from "@/types/governance";
-import { isSupabaseConfigured, useEngineeringApprovals } from "@/lib/supabase/hooks-pages";
+import { useEngineeringApprovals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const APPROVAL_STATUSES: EngineeringApprovalStatus[] = [
@@ -41,27 +40,23 @@ export default function EngineeringApprovalsPage() {
 
     const { data: sbApprovals, isLoading } = useEngineeringApprovals();
 
-    const approvals: EngineeringApproval[] =
-        isSupabaseConfigured && sbApprovals
-            ? sbApprovals.map(
-                  (a: Record<string, unknown>) =>
-                      ({
-                          id: (a.id as string) ?? "",
-                          entity_type: (a.entity_type as string) ?? "",
-                          entity_id: (a.entity_id as string) ?? "",
-                          approval_type: (a.approval_type as string) ?? "structural",
-                          engineer_name: (a.engineer_name as string) ?? "",
-                          engineering_firm: (a.engineering_firm as string) ?? undefined,
-                          engineer_license_number:
-                              (a.engineer_license_number as string) ?? undefined,
-                          status: ((a.status as string) ?? "pending") as EngineeringApprovalStatus,
-                          valid_until: (a.valid_until as string) ?? undefined,
-                          conditions: (a.conditions as string) ?? undefined,
-                      }) as EngineeringApproval
-              )
-            : MOCK_ENGINEERING_APPROVALS;
+    const approvals: EngineeringApproval[] = (sbApprovals ?? []).map(
+        (a: Record<string, unknown>) =>
+            ({
+                id: (a.id as string) ?? "",
+                entity_type: (a.entity_type as string) ?? "",
+                entity_id: (a.entity_id as string) ?? "",
+                approval_type: (a.approval_type as string) ?? "structural",
+                engineer_name: (a.engineer_name as string) ?? "",
+                engineering_firm: (a.engineering_firm as string) ?? undefined,
+                engineer_license_number: (a.engineer_license_number as string) ?? undefined,
+                status: ((a.status as string) ?? "pending") as EngineeringApprovalStatus,
+                valid_until: (a.valid_until as string) ?? undefined,
+                conditions: (a.conditions as string) ?? undefined,
+            }) as EngineeringApproval
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

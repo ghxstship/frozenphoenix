@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Loader2, Plus, Star, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
 import { MOCK_VENDOR_REVIEWS } from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useVendorReviews } from "@/lib/supabase/hooks-pages";
+import { useVendorReviews } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { VendorReviewType } from "@/types/vendor-lifecycle";
 
@@ -43,10 +43,7 @@ export default function VendorReviewsPage() {
     const [search, setSearch] = useState("");
     const { data: sbReviews, isLoading } = useVendorReviews();
 
-    const reviews =
-        isSupabaseConfigured && sbReviews
-            ? (sbReviews as unknown as typeof MOCK_VENDOR_REVIEWS)
-            : MOCK_VENDOR_REVIEWS;
+    const reviews = (sbReviews ?? []) as typeof MOCK_VENDOR_REVIEWS;
     const filtered = reviews.filter(
         (r) =>
             !search ||
@@ -61,7 +58,7 @@ export default function VendorReviewsPage() {
     const wouldRehireCount = reviews.filter((r) => r.wouldRehire).length;
     const wouldNotRehireCount = reviews.filter((r) => r.wouldRehire === false).length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

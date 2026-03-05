@@ -8,9 +8,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookLock, Loader2, Plus } from "lucide-react";
-import { MOCK_CONTRACT_CLAUSES } from "@/lib/demo-data-governance";
 import type { ClauseRiskLevel, ContractClause } from "@/types/governance";
-import { isSupabaseConfigured, useClauseLibrary } from "@/lib/supabase/hooks-pages";
+import { useClauseLibrary } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const CLAUSE_TYPE_LABELS: Record<string, string> = {
@@ -45,24 +44,21 @@ export default function ClauseLibraryPage() {
 
     const { data: sbClauses, isLoading } = useClauseLibrary();
 
-    const clauses: ContractClause[] =
-        isSupabaseConfigured && sbClauses
-            ? sbClauses.map(
-                  (c: Record<string, unknown>) =>
-                      ({
-                          id: (c.id as string) ?? "",
-                          clause_type: (c.clause_type as string) ?? "other",
-                          title: (c.title as string) ?? "",
-                          body: (c.body as string) ?? "",
-                          risk_level: ((c.risk_level as string) ?? "low") as ClauseRiskLevel,
-                          is_template: (c.is_template as boolean) ?? false,
-                          is_standard: (c.is_standard as boolean) ?? false,
-                          negotiable: (c.negotiable as boolean) ?? true,
-                      }) as ContractClause
-              )
-            : MOCK_CONTRACT_CLAUSES;
+    const clauses: ContractClause[] = (sbClauses ?? []).map(
+        (c: Record<string, unknown>) =>
+            ({
+                id: (c.id as string) ?? "",
+                clause_type: (c.clause_type as string) ?? "other",
+                title: (c.title as string) ?? "",
+                body: (c.body as string) ?? "",
+                risk_level: ((c.risk_level as string) ?? "low") as ClauseRiskLevel,
+                is_template: (c.is_template as boolean) ?? false,
+                is_standard: (c.is_standard as boolean) ?? false,
+                negotiable: (c.negotiable as boolean) ?? true,
+            }) as ContractClause
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

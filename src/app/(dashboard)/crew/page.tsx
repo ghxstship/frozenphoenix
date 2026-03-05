@@ -9,8 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Avatar } from "@/components/ui/avatar";
-import { isSupabaseConfigured, useCrewMembers } from "@/lib/supabase/hooks";
-import { MOCK_CREW } from "@/lib/demo-data";
+import { useCrewMembers } from "@/lib/supabase/hooks";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     AlertTriangle,
@@ -185,43 +184,40 @@ export default function CrewPage() {
     });
     const { data: sbCrew, isLoading } = useCrewMembers();
 
-    const crew: CrewMember[] =
-        isSupabaseConfigured && sbCrew
-            ? sbCrew.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                  email: c.email,
-                  phone: c.phone,
-                  role: c.role,
-                  avatar: c.avatar_url ?? undefined,
-                  hourlyRate: c.hourly_rate,
-                  status: c.status as "available" | "assigned" | "unavailable",
-                  certifications: (
-                      (
-                          c as unknown as {
-                              certifications?: Array<{
-                                  id: string;
-                                  type: string;
-                                  label: string;
-                                  issued_date: string;
-                                  expiry_date: string;
-                                  document_url: string | null;
-                              }>;
-                          }
-                      ).certifications || []
-                  ).map((cert) => ({
-                      id: cert.id,
-                      type: cert.type as CertificationType,
-                      label: cert.label,
-                      issuedDate: cert.issued_date,
-                      expiryDate: cert.expiry_date,
-                      isValid: new Date(cert.expiry_date) > new Date(),
-                      documentUrl: cert.document_url ?? undefined,
-                  })),
-              }))
-            : MOCK_CREW;
+    const crew: CrewMember[] = (sbCrew ?? []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        role: c.role,
+        avatar: c.avatar_url ?? undefined,
+        hourlyRate: c.hourly_rate,
+        status: c.status as "available" | "assigned" | "unavailable",
+        certifications: (
+            (
+                c as unknown as {
+                    certifications?: Array<{
+                        id: string;
+                        type: string;
+                        label: string;
+                        issued_date: string;
+                        expiry_date: string;
+                        document_url: string | null;
+                    }>;
+                }
+            ).certifications || []
+        ).map((cert) => ({
+            id: cert.id,
+            type: cert.type as CertificationType,
+            label: cert.label,
+            issuedDate: cert.issued_date,
+            expiryDate: cert.expiry_date,
+            isValid: new Date(cert.expiry_date) > new Date(),
+            documentUrl: cert.document_url ?? undefined,
+        })),
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

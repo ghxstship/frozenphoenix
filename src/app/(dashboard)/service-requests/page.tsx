@@ -27,13 +27,12 @@ import {
     Plus,
     User,
 } from "lucide-react";
-import { MOCK_SERVICE_REQUESTS } from "@/lib/demo-data-vendor-lifecycle";
 import type {
     ServiceRequest,
     ServiceRequestPriority,
     ServiceRequestStatus,
 } from "@/types/vendor-lifecycle";
-import { isSupabaseConfigured, useServiceRequests } from "@/lib/supabase/hooks-pages";
+import { useServiceRequests } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const SERVICE_REQUEST_STATUSES: ServiceRequestStatus[] = [
@@ -82,35 +81,32 @@ export default function ServiceRequestsPage() {
 
     const { data: sbRequests, isLoading } = useServiceRequests();
 
-    const requests: ServiceRequest[] =
-        isSupabaseConfigured && sbRequests
-            ? sbRequests.map(
-                  (r: Record<string, unknown>) =>
-                      ({
-                          id: (r.id as string) ?? "",
-                          title: (r.title as string) ?? "",
-                          description: (r.description as string) ?? "",
-                          status: ((r.status as string) ?? "new") as ServiceRequestStatus,
-                          priority: ((r.priority as string) ?? "normal") as ServiceRequestPriority,
-                          source: (r.source as string) ?? "email",
-                          category: (r.category as string) ?? "",
-                          serviceType: (r.service_type as string) ?? "",
-                          companyName: (r.company_name as string) ?? "",
-                          contactName: (r.contact_name as string) ?? "",
-                          requesterName: (r.requester_name as string) ?? "",
-                          requesterEmail: (r.requester_email as string) ?? "",
-                          preferredDate: (r.preferred_date as string) ?? "",
-                          isFlexible: (r.is_flexible as boolean) ?? false,
-                          requiresAssessment: (r.requires_assessment as boolean) ?? false,
-                          assignedToName: (r.assigned_to_name as string) ?? "",
-                          convertedToType: (r.converted_to_type as string) ?? undefined,
-                          attachmentUrls: (r.attachment_urls as string[]) ?? [],
-                          createdAt: (r.created_at as string) ?? "",
-                      }) as ServiceRequest
-              )
-            : MOCK_SERVICE_REQUESTS;
+    const requests: ServiceRequest[] = (sbRequests ?? []).map(
+        (r: Record<string, unknown>) =>
+            ({
+                id: (r.id as string) ?? "",
+                title: (r.title as string) ?? "",
+                description: (r.description as string) ?? "",
+                status: ((r.status as string) ?? "new") as ServiceRequestStatus,
+                priority: ((r.priority as string) ?? "normal") as ServiceRequestPriority,
+                source: (r.source as string) ?? "email",
+                category: (r.category as string) ?? "",
+                serviceType: (r.service_type as string) ?? "",
+                companyName: (r.company_name as string) ?? "",
+                contactName: (r.contact_name as string) ?? "",
+                requesterName: (r.requester_name as string) ?? "",
+                requesterEmail: (r.requester_email as string) ?? "",
+                preferredDate: (r.preferred_date as string) ?? "",
+                isFlexible: (r.is_flexible as boolean) ?? false,
+                requiresAssessment: (r.requires_assessment as boolean) ?? false,
+                assignedToName: (r.assigned_to_name as string) ?? "",
+                convertedToType: (r.converted_to_type as string) ?? undefined,
+                attachmentUrls: (r.attachment_urls as string[]) ?? [],
+                createdAt: (r.created_at as string) ?? "",
+            }) as ServiceRequest
+    );
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

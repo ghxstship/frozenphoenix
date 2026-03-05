@@ -27,7 +27,7 @@ import {
     Users,
 } from "lucide-react";
 import { MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useWorkOrders } from "@/lib/supabase/hooks-pages";
+import { useWorkOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { WorkOrderPriority, WorkOrderStatus } from "@/types/vendor-lifecycle";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -69,10 +69,7 @@ export default function WorkOrdersPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbWOs, isLoading } = useWorkOrders();
 
-    const workOrders =
-        isSupabaseConfigured && sbWOs
-            ? (sbWOs as unknown as typeof MOCK_WORK_ORDERS)
-            : MOCK_WORK_ORDERS;
+    const workOrders = (sbWOs ?? []) as typeof MOCK_WORK_ORDERS;
     const filtered = workOrders.filter((wo) => {
         const matchesSearch =
             !search ||
@@ -92,7 +89,7 @@ export default function WorkOrdersPage() {
     );
     const totalEstimated = workOrders.reduce((sum, wo) => sum + (wo.estimatedCost || 0), 0);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

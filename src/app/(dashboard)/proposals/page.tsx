@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { isSupabaseConfigured, useProposals } from "@/lib/supabase/hooks-pages";
+import { useProposals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import {
     Building2,
@@ -43,81 +43,6 @@ interface Proposal {
     version: number;
 }
 
-const mockProposals: Proposal[] = [
-    {
-        id: "1",
-        number: "PROP-2026-0001",
-        title: "Nike Air Max Launch Experience",
-        companyName: "Nike",
-        contactName: "John Smith",
-        total: 485000,
-        currency: "USD",
-        status: "accepted",
-        validUntil: "2026-03-15",
-        sentAt: "2026-02-10",
-        viewedAt: "2026-02-11",
-        createdAt: "2026-02-08",
-        version: 2,
-    },
-    {
-        id: "2",
-        number: "PROP-2026-0002",
-        title: "Red Bull Festival Activation",
-        companyName: "Red Bull",
-        contactName: "Maria Garcia",
-        total: 320000,
-        currency: "USD",
-        status: "viewed",
-        validUntil: "2026-03-20",
-        sentAt: "2026-02-18",
-        viewedAt: "2026-02-19",
-        createdAt: "2026-02-15",
-        version: 1,
-    },
-    {
-        id: "3",
-        number: "PROP-2026-0003",
-        title: "Coachella Brand Experience",
-        companyName: "Coachella Valley Music",
-        contactName: "Alex Johnson",
-        total: 750000,
-        currency: "USD",
-        status: "sent",
-        validUntil: "2026-03-25",
-        sentAt: "2026-02-22",
-        createdAt: "2026-02-20",
-        version: 1,
-    },
-    {
-        id: "4",
-        number: "PROP-2026-0004",
-        title: "TechStart Product Launch",
-        companyName: "TechStart Inc",
-        contactName: "Sam Wilson",
-        total: 125000,
-        currency: "USD",
-        status: "draft",
-        validUntil: "2026-04-01",
-        createdAt: "2026-02-24",
-        version: 1,
-    },
-    {
-        id: "5",
-        number: "PROP-2026-0005",
-        title: "Momentum Agency Partnership",
-        companyName: "Momentum Worldwide",
-        contactName: "Chris Lee",
-        total: 95000,
-        currency: "USD",
-        status: "rejected",
-        validUntil: "2026-02-28",
-        sentAt: "2026-02-01",
-        viewedAt: "2026-02-02",
-        createdAt: "2026-01-28",
-        version: 1,
-    },
-];
-
 const statusConfig: Record<
     ProposalStatus,
     { label: string; variant: BadgeVariant; icon: React.ElementType }
@@ -137,26 +62,23 @@ export default function ProposalsPage() {
         statusFilter !== "all" ? statusFilter : undefined
     );
 
-    const proposals: Proposal[] =
-        isSupabaseConfigured && sbProposals
-            ? sbProposals.map((p: Record<string, unknown>) => ({
-                  id: String(p.id),
-                  number: String(p.number || ""),
-                  title: String(p.title || "Untitled"),
-                  companyName: String((p.deals as Record<string, unknown>)?.company_name || ""),
-                  contactName: String((p.deals as Record<string, unknown>)?.title || ""),
-                  total: Number(p.total || 0),
-                  currency: String(p.currency || "USD"),
-                  status: String(p.status || "draft") as ProposalStatus,
-                  validUntil: String(p.valid_until || ""),
-                  sentAt: p.sent_at ? String(p.sent_at) : undefined,
-                  viewedAt: p.viewed_at ? String(p.viewed_at) : undefined,
-                  createdAt: String(p.created_at || ""),
-                  version: Number(p.version || 1),
-              }))
-            : mockProposals;
+    const proposals: Proposal[] = (sbProposals ?? []).map((p: Record<string, unknown>) => ({
+        id: String(p.id),
+        number: String(p.number || ""),
+        title: String(p.title || "Untitled"),
+        companyName: String((p.deals as Record<string, unknown>)?.company_name || ""),
+        contactName: String((p.deals as Record<string, unknown>)?.title || ""),
+        total: Number(p.total || 0),
+        currency: String(p.currency || "USD"),
+        status: String(p.status || "draft") as ProposalStatus,
+        validUntil: String(p.valid_until || ""),
+        sentAt: p.sent_at ? String(p.sent_at) : undefined,
+        viewedAt: p.viewed_at ? String(p.viewed_at) : undefined,
+        createdAt: String(p.created_at || ""),
+        version: Number(p.version || 1),
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

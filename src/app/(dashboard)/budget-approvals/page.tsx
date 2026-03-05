@@ -9,7 +9,7 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { CheckCircle2, Clock, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import { MOCK_BUDGET_APPROVALS } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, useBudgetApprovals } from "@/lib/supabase/hooks-pages";
+import { useBudgetApprovals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus } from "@/types/governance";
@@ -29,10 +29,7 @@ export default function BudgetApprovalsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbApprovals, isLoading } = useBudgetApprovals();
 
-    const approvals =
-        isSupabaseConfigured && sbApprovals
-            ? (sbApprovals as unknown as typeof MOCK_BUDGET_APPROVALS)
-            : MOCK_BUDGET_APPROVALS;
+    const approvals = (sbApprovals ?? []) as typeof MOCK_BUDGET_APPROVALS;
 
     const filtered = approvals.filter((a) => {
         const matchesSearch =
@@ -50,7 +47,7 @@ export default function BudgetApprovalsPage() {
         .filter((a) => a.status === "approved")
         .reduce((sum, a) => sum + a.amount, 0);
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

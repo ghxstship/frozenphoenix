@@ -7,15 +7,7 @@ import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_CREW, MOCK_DEALS, MOCK_PROJECTS, MOCK_TASKS, MOCK_VENDORS } from "@/lib/demo-data";
-import {
-    isSupabaseConfigured,
-    useCrewMembers,
-    useDeals,
-    useProjects,
-    useTasks,
-    useVendors,
-} from "@/lib/supabase/hooks";
+import { useCrewMembers, useDeals, useProjects, useTasks, useVendors } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -108,30 +100,32 @@ export default function ReportsPage() {
     const { data: sbCrew, isLoading: crewLoading } = useCrewMembers();
     const { data: sbVendors, isLoading: vendorsLoading } = useVendors();
 
-    const deals = isSupabaseConfigured && sbDeals ? sbDeals : MOCK_DEALS;
-    const projects = isSupabaseConfigured && sbProjects ? sbProjects : MOCK_PROJECTS;
-    const tasks = isSupabaseConfigured && sbTasks ? sbTasks : MOCK_TASKS;
-    const crew = isSupabaseConfigured && sbCrew ? sbCrew : MOCK_CREW;
-    const vendors = isSupabaseConfigured && sbVendors ? sbVendors : MOCK_VENDORS;
+    const deals = sbDeals ?? [];
+    const projects = sbProjects ?? [];
+    const tasks = sbTasks ?? [];
+    const crew = sbCrew ?? [];
+    const vendors = sbVendors ?? [];
     const isLoading =
-        isSupabaseConfigured &&
-        (dealsLoading || projectsLoading || tasksLoading || crewLoading || vendorsLoading);
+        dealsLoading || projectsLoading || tasksLoading || crewLoading || vendorsLoading;
 
     // Calculate summary stats
-    const totalPipelineValue = (deals as typeof MOCK_DEALS).reduce(
-        (sum, d) => sum + d.value * (d.probability / 100),
+    const totalPipelineValue = deals.reduce(
+        (sum: number, d: Record<string, unknown>) =>
+            sum + ((d.value as number) ?? 0) * (((d.probability as number) ?? 0) / 100),
         0
     );
-    const totalBudget = (projects as typeof MOCK_PROJECTS).reduce(
-        (sum, p) => sum + p.budgetPlanned,
+    const totalBudget = projects.reduce(
+        (sum: number, p: Record<string, unknown>) =>
+            sum + ((p.budget_planned as number) ?? (p.budgetPlanned as number) ?? 0),
         0
     );
-    const totalActual = (projects as typeof MOCK_PROJECTS).reduce(
-        (sum, p) => sum + p.budgetActual,
+    const totalActual = projects.reduce(
+        (sum: number, p: Record<string, unknown>) =>
+            sum + ((p.budget_actual as number) ?? (p.budgetActual as number) ?? 0),
         0
     );
-    const completedTasks = (tasks as typeof MOCK_TASKS).filter((t) => t.status === "done").length;
-    const availableCrew = (crew as typeof MOCK_CREW).filter((c) => c.status === "available").length;
+    const completedTasks = tasks.filter((t) => t.status === "done").length;
+    const availableCrew = crew.filter((c) => c.status === "available").length;
 
     if (isLoading) {
         return (
@@ -191,14 +185,11 @@ export default function ReportsPage() {
                                 <span className="text-xs">Tasks Completed</span>
                             </div>
                             <p className="text-xl font-bold">
-                                {completedTasks}/{(tasks as typeof MOCK_TASKS).length}
+                                {completedTasks}/{tasks.length}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                {(tasks as typeof MOCK_TASKS).length > 0
-                                    ? Math.round(
-                                          (completedTasks / (tasks as typeof MOCK_TASKS).length) *
-                                              100
-                                      )
+                                {tasks.length > 0
+                                    ? Math.round((completedTasks / tasks.length) * 100)
                                     : 0}
                                 % done
                             </p>
@@ -211,7 +202,7 @@ export default function ReportsPage() {
                                 <span className="text-xs">Crew Available</span>
                             </div>
                             <p className="text-xl font-bold">
-                                {availableCrew}/{(crew as typeof MOCK_CREW).length}
+                                {availableCrew}/{crew.length}
                             </p>
                             <p className="text-xs text-muted-foreground">ready to assign</p>
                         </CardContent>
@@ -223,11 +214,7 @@ export default function ReportsPage() {
                                 <span className="text-xs">Active Vendors</span>
                             </div>
                             <p className="text-xl font-bold">
-                                {
-                                    (vendors as typeof MOCK_VENDORS).filter(
-                                        (v) => v.status === "active"
-                                    ).length
-                                }
+                                {vendors.filter((v) => v.status === "active").length}
                             </p>
                             <p className="text-xs text-muted-foreground">vendors</p>
                         </CardContent>
@@ -306,16 +293,12 @@ export default function ReportsPage() {
                         <CardContent>
                             <div className="space-y-3">
                                 {["active", "draft", "completed", "on_hold"].map((status) => {
-                                    const count = (projects as typeof MOCK_PROJECTS).filter(
+                                    const count = projects.filter(
                                         (p) => p.status === status
                                     ).length;
                                     const percentage =
-                                        (projects as typeof MOCK_PROJECTS).length > 0
-                                            ? Math.round(
-                                                  (count /
-                                                      (projects as typeof MOCK_PROJECTS).length) *
-                                                      100
-                                              )
+                                        projects.length > 0
+                                            ? Math.round((count / projects.length) * 100)
                                             : 0;
                                     return (
                                         <div key={status} className="flex items-center gap-3">
@@ -348,9 +331,7 @@ export default function ReportsPage() {
                             <div className="space-y-3">
                                 {["lead", "qualified", "proposal", "negotiation", "won"].map(
                                     (stage) => {
-                                        const stageDeals = (deals as typeof MOCK_DEALS).filter(
-                                            (d) => d.stage === stage
-                                        );
+                                        const stageDeals = deals.filter((d) => d.stage === stage);
                                         const value = stageDeals.reduce(
                                             (sum, d) => sum + d.value,
                                             0
@@ -363,9 +344,13 @@ export default function ReportsPage() {
                                                 "negotiation",
                                                 "won",
                                             ].map((s) =>
-                                                (deals as typeof MOCK_DEALS)
+                                                deals
                                                     .filter((d) => d.stage === s)
-                                                    .reduce((sum, d) => sum + d.value, 0)
+                                                    .reduce(
+                                                        (sum: number, d: Record<string, unknown>) =>
+                                                            sum + ((d.value as number) ?? 0),
+                                                        0
+                                                    )
                                             )
                                         );
                                         const percentage =

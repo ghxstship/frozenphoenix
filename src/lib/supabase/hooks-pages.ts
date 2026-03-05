@@ -1250,3 +1250,295 @@ export function useClauseLibrary() {
         },
     });
 }
+
+// ═══════════════════════════════════════════════════════════════
+// SINGLE-RECORD HOOKS (detail [id] pages)
+// ═══════════════════════════════════════════════════════════════
+
+export function useActivation(id: string) {
+    return useQuery({
+        queryKey: ["activation", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("activations")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useShipment(id: string) {
+    return useQuery({
+        queryKey: ["shipment", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("shipments").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useVendor(id: string) {
+    return useQuery({
+        queryKey: ["vendor", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("vendors").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useWorkOrder(id: string) {
+    return useQuery({
+        queryKey: ["work_order", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("work_orders")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useTask(id: string) {
+    return useQuery({
+        queryKey: ["task", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("tasks").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useOpportunity(id: string) {
+    return useQuery({
+        queryKey: ["opportunity", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("opportunities")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useInsurancePolicy(id: string) {
+    return useQuery({
+        queryKey: ["insurance_policy", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("insurance_policies")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useEstimate(id: string) {
+    return useQuery({
+        queryKey: ["estimate", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("estimates").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function usePermit(id: string) {
+    return useQuery({
+        queryKey: ["permit", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("permits").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useChangeOrder(id: string) {
+    return useQuery({
+        queryKey: ["change_order", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("change_orders")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useBrief(id: string) {
+    return useQuery({
+        queryKey: ["brief", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("briefs").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useServiceRequest(id: string) {
+    return useQuery({
+        queryKey: ["service_request", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("service_requests")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useBudget(id: string) {
+    return useQuery({
+        queryKey: ["budget", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("budgets").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCampaign(id: string) {
+    return useQuery({
+        queryKey: ["campaign", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("campaigns").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useIncident(id: string) {
+    return useQuery({
+        queryKey: ["incident", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("incidents").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCertification(id: string) {
+    return useQuery({
+        queryKey: ["certification", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("certifications")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUDGET LINE ITEMS
+// ═══════════════════════════════════════════════════════════════
+
+export function useBudgetLines(budgetId?: string) {
+    return useQuery({
+        queryKey: ["production_budget_lines", budgetId],
+        queryFn: async () => {
+            let query = fromTable("production_budget_lines").select("*").order("created_at");
+            if (budgetId) query = query.eq("budget_id", budgetId);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CAMPAIGN SUB-ENTITIES
+// ═══════════════════════════════════════════════════════════════
+
+export function useCampaignChannels(campaignId?: string) {
+    return useQuery({
+        queryKey: ["campaign_channels", campaignId],
+        queryFn: async () => {
+            let query = fromTable("campaign_channels").select("*").order("created_at");
+            if (campaignId) query = query.eq("campaign_id", campaignId);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!campaignId,
+    });
+}
+
+export function useCampaignAssets(campaignId?: string) {
+    return useQuery({
+        queryKey: ["campaign_assets", campaignId],
+        queryFn: async () => {
+            let query = fromTable("campaign_assets").select("*").order("created_at");
+            if (campaignId) query = query.eq("campaign_id", campaignId);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!campaignId,
+    });
+}
+
+export function useCampaignKpis(campaignId?: string) {
+    return useQuery({
+        queryKey: ["campaign_kpis", campaignId],
+        queryFn: async () => {
+            let query = fromTable("campaign_kpis").select("*").order("created_at");
+            if (campaignId) query = query.eq("campaign_id", campaignId);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!campaignId,
+    });
+}
+
+export function useEvent(id: string) {
+    return useQuery({
+        queryKey: ["event", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("events").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}

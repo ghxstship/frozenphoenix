@@ -22,7 +22,7 @@ import {
     Wifi,
     Zap,
 } from "lucide-react";
-import { isSupabaseConfigured, useTechSheets } from "@/lib/supabase/hooks-pages";
+import { useTechSheets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface TechSheetListItem {
@@ -40,104 +40,28 @@ interface TechSheetListItem {
     createdAt: string;
 }
 
-const mockTechSheets: TechSheetListItem[] = [
-    {
-        id: "1",
-        title: "Nike Air Max — Barclays Center Tech Rider",
-        techSheetNumber: "TS-2026-0001",
-        projectName: "Nike Air Max Launch",
-        venueName: "Barclays Center, Brooklyn",
-        version: 3,
-        status: "approved",
-        totalAmperage: 400,
-        generatorRequired: false,
-        internetRequired: true,
-        equipmentCount: 48,
-        createdAt: "2026-02-10",
-    },
-    {
-        id: "2",
-        title: "Red Bull Festival — Main Stage",
-        techSheetNumber: "TS-2026-0002",
-        projectName: "Red Bull Festival Activation",
-        venueName: "Randalls Island Park",
-        version: 2,
-        status: "reviewed",
-        totalAmperage: 800,
-        generatorRequired: true,
-        internetRequired: true,
-        equipmentCount: 92,
-        createdAt: "2026-03-01",
-    },
-    {
-        id: "3",
-        title: "Coachella — Brand Experience Pavilion",
-        techSheetNumber: "TS-2026-0003",
-        projectName: "Coachella Brand Experience",
-        venueName: "Empire Polo Club, Indio",
-        version: 1,
-        status: "draft",
-        totalAmperage: 1200,
-        generatorRequired: true,
-        internetRequired: true,
-        equipmentCount: 156,
-        createdAt: "2026-02-28",
-    },
-    {
-        id: "4",
-        title: "TechStart — Javits Center Booth",
-        techSheetNumber: "TS-2026-0004",
-        projectName: "TechStart Product Launch",
-        venueName: "Javits Center, NYC",
-        version: 1,
-        status: "distributed",
-        totalAmperage: 200,
-        generatorRequired: false,
-        internetRequired: true,
-        equipmentCount: 24,
-        createdAt: "2026-03-05",
-    },
-    {
-        id: "5",
-        title: "Corporate Gala — Lighting Package",
-        techSheetNumber: "TS-2026-0005",
-        projectName: "Momentum Corporate Gala",
-        venueName: "The Plaza, NYC",
-        version: 2,
-        status: "approved",
-        totalAmperage: 300,
-        generatorRequired: false,
-        internetRequired: false,
-        equipmentCount: 35,
-        createdAt: "2026-01-20",
-    },
-];
-
 export default function TechSheetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbSheets, isLoading } = useTechSheets();
 
-    const techSheets: TechSheetListItem[] =
-        isSupabaseConfigured && sbSheets
-            ? sbSheets.map((ts: Record<string, unknown>) => ({
-                  id: (ts.id as string) ?? "",
-                  title: (ts.title as string) ?? "",
-                  techSheetNumber: (ts.tech_sheet_number as string) ?? "",
-                  projectName: (ts.project_name as string) ?? "",
-                  venueName: (ts.venue_name as string) ?? "",
-                  version: (ts.version as number) ?? 1,
-                  status: ((ts.status as string) ?? "draft") as TechSheetStatusType,
-                  totalAmperage: (ts.total_amperage as number) ?? 0,
-                  generatorRequired: (ts.generator_required as boolean) ?? false,
-                  internetRequired: (ts.internet_required as boolean) ?? false,
-                  equipmentCount: (ts.equipment_count as number) ?? 0,
-                  createdAt: (ts.created_at as string) ?? "",
-              }))
-            : mockTechSheets;
+    const techSheets: TechSheetListItem[] = (sbSheets ?? []).map((ts: Record<string, unknown>) => ({
+        id: (ts.id as string) ?? "",
+        title: (ts.title as string) ?? "",
+        techSheetNumber: (ts.tech_sheet_number as string) ?? "",
+        projectName: (ts.project_name as string) ?? "",
+        venueName: (ts.venue_name as string) ?? "",
+        version: (ts.version as number) ?? 1,
+        status: ((ts.status as string) ?? "draft") as TechSheetStatusType,
+        totalAmperage: (ts.total_amperage as number) ?? 0,
+        generatorRequired: (ts.generator_required as boolean) ?? false,
+        internetRequired: (ts.internet_required as boolean) ?? false,
+        equipmentCount: (ts.equipment_count as number) ?? 0,
+        createdAt: (ts.created_at as string) ?? "",
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

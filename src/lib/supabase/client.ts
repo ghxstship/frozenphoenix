@@ -5,27 +5,131 @@ import { logger } from "@/lib/logger";
 
 export { isSupabaseConfigured };
 
+// ─── No-op query builder (returned when Supabase is not configured) ───
+
+/**
+ * A chainable no-op that mimics the Supabase PostgREST query builder.
+ * Every method call returns `this`; awaiting resolves to `{ data: null, error: null }`.
+ * This allows every hook across every file to call the full chain
+ * (.select, .eq, .order, .limit, .single, etc.) without throwing.
+ *
+ * Read queries get `{ data: null, error: null }` — hooks return `undefined`
+ * and pages use `data ?? []`.
+ *
+ * Write mutations get a descriptive error so callers know writes are no-ops.
+ */
+const NO_OP_READ_RESULT = { data: null, error: null, count: null, status: 200, statusText: "OK" };
+const NO_OP_WRITE_RESULT = {
+    data: null,
+    error: { message: "Supabase not configured", details: "", hint: "", code: "NOT_CONFIGURED" },
+    count: null,
+    status: 503,
+    statusText: "Service Unavailable",
+};
+
+function createNoOpQueryBuilder(isWrite: boolean) {
+    const result = isWrite ? NO_OP_WRITE_RESULT : NO_OP_READ_RESULT;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler: ProxyHandler<any> = {
+        get(_target, prop) {
+            if (prop === "then") {
+                return (resolve: (v: typeof result) => void) => resolve(result);
+            }
+            // Every chained method (.select, .eq, .order, etc.) returns the proxy
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+            return (..._args: any[]) => new Proxy(() => {}, handler);
+        },
+    };
+
+    return new Proxy(() => {}, handler);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createNoOpClient(): any {
+    let warnedOnce = false;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler: ProxyHandler<any> = {
+        get(_target, prop) {
+            if (prop === "from") {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                return (_table: any) => {
+                    if (!warnedOnce) {
+                        logger.warn("Supabase not configured — queries return empty results.", {
+                            hint: "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local",
+                        });
+                        warnedOnce = true;
+                    }
+
+                    // Return an object whose .select() is a read, .insert/.update/.delete/.upsert are writes
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const tableHandler: ProxyHandler<any> = {
+                        get(_t, method) {
+                            const isWrite =
+                                method === "insert" ||
+                                method === "update" ||
+                                method === "delete" ||
+                                method === "upsert";
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                            return (..._a: any[]) => createNoOpQueryBuilder(isWrite);
+                        },
+                    };
+                    return new Proxy(() => {}, tableHandler);
+                };
+            }
+
+            if (prop === "rpc") {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                return (..._args: any[]) => createNoOpQueryBuilder(false);
+            }
+
+            if (
+                prop === "auth" ||
+                prop === "storage" ||
+                prop === "realtime" ||
+                prop === "channel"
+            ) {
+                return new Proxy(() => {}, handler);
+            }
+
+            // Fallback: return a no-op function for any unknown property
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+            return (..._args: any[]) => new Proxy(() => {}, handler);
+        },
+    };
+
+    return new Proxy(() => {}, handler);
+}
+
+// ─── Singleton no-op client (created once, reused) ───
+let noOpClient: ReturnType<typeof createNoOpClient> | null = null;
+
+function getNoOpClient() {
+    if (!noOpClient) noOpClient = createNoOpClient();
+    return noOpClient;
+}
+
+// ─── Public API ───
+
 export function createClient() {
     if (!supabaseUrl || !supabaseAnonKey) {
-        logger.warn("Supabase credentials not configured. Running in mock data mode.", {
-            hint: "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local",
-        });
         return null;
     }
     return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 }
 
-// ─── Shared helpers (SSOT — previously duplicated across 12+ hook files) ───
-
-/** Guarded client accessor. Throws when Supabase is not configured. */
+/**
+ * Client accessor. Returns a real Supabase client when configured,
+ * or a no-op proxy when not. Never throws.
+ *
+ * Read queries resolve to `{ data: null, error: null }` (hooks return undefined).
+ * Write mutations resolve to `{ data: null, error: { message: "..." } }`.
+ */
 export function getSupabase() {
     const client = createClient();
-    if (!client) {
-        throw new Error(
-            "Supabase client not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
-        );
-    }
-    return client;
+    if (client) return client;
+    return getNoOpClient();
 }
 
 /**

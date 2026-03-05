@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, CheckCircle2, Clock, Loader2, Plus, XCircle } from "lucide-react";
 import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, useCertifications } from "@/lib/supabase/hooks-pages";
+import { useCertifications } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { AssetCertificationStatus } from "@/types/governance";
 
@@ -28,10 +28,7 @@ export default function CertificationsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbCerts, isLoading } = useCertifications();
 
-    const certs =
-        isSupabaseConfigured && sbCerts
-            ? (sbCerts as unknown as typeof MOCK_ASSET_CERTIFICATIONS)
-            : MOCK_ASSET_CERTIFICATIONS;
+    const certs = (sbCerts ?? []) as typeof MOCK_ASSET_CERTIFICATIONS;
 
     const filtered = certs.filter((c) => {
         const matchesSearch =
@@ -46,7 +43,7 @@ export default function CertificationsPage() {
     const expiringSoon = certs.filter((c) => c.status === "expiring_soon").length;
     const expired = certs.filter((c) => c.status === "expired" || c.status === "failed").length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

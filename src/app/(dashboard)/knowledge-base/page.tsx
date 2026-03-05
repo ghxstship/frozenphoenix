@@ -21,96 +21,8 @@ import {
     Shield,
     Users,
 } from "lucide-react";
-import { isSupabaseConfigured, useKnowledgeBaseArticles } from "@/lib/supabase/hooks-pages";
+import { useKnowledgeBaseArticles } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-
-const MOCK_KB_ARTICLES = [
-    {
-        id: "kb-1",
-        category: "sop",
-        department: "production",
-        title: "Load-In Safety Procedures",
-        summary: "Standard operating procedures for safe load-in operations at venues",
-        tags: ["safety", "load-in", "venue"],
-        status: "published",
-        version: 3,
-        authorName: "Marcus Johnson",
-        publishedAt: "2024-01-15T10:00:00Z",
-        requiresAcknowledgment: true,
-        acknowledgmentCount: 12,
-        totalRequired: 15,
-    },
-    {
-        id: "kb-2",
-        category: "checklist",
-        department: "technical",
-        title: "AV System Pre-Show Checklist",
-        summary: "Complete checklist for verifying all AV systems before show start",
-        tags: ["av", "checklist", "pre-show"],
-        status: "published",
-        version: 2,
-        authorName: "David Kim",
-        publishedAt: "2024-02-01T10:00:00Z",
-        requiresAcknowledgment: false,
-    },
-    {
-        id: "kb-3",
-        category: "template",
-        department: "production",
-        title: "Run of Show Template",
-        summary: "Standard template for creating run of show documents",
-        tags: ["template", "run-of-show", "planning"],
-        status: "published",
-        version: 1,
-        authorName: "Sarah Chen",
-        publishedAt: "2024-01-20T10:00:00Z",
-        requiresAcknowledgment: false,
-    },
-    {
-        id: "kb-4",
-        category: "guide",
-        department: "logistics",
-        title: "Shipping & Receiving Guide",
-        summary: "Comprehensive guide for handling inbound and outbound shipments",
-        tags: ["shipping", "logistics", "receiving"],
-        status: "published",
-        version: 4,
-        authorName: "Tom Bradley",
-        publishedAt: "2024-02-10T10:00:00Z",
-        requiresAcknowledgment: true,
-        acknowledgmentCount: 8,
-        totalRequired: 10,
-    },
-    {
-        id: "kb-5",
-        category: "policy",
-        title: "Expense Reimbursement Policy",
-        summary: "Company policy for expense submissions and reimbursements",
-        tags: ["policy", "expenses", "finance"],
-        status: "published",
-        version: 2,
-        authorName: "Finance Team",
-        publishedAt: "2024-01-01T10:00:00Z",
-        requiresAcknowledgment: true,
-        acknowledgmentCount: 45,
-        totalRequired: 50,
-    },
-    {
-        id: "kb-6",
-        category: "training",
-        department: "rigging",
-        title: "Rigging Safety Training",
-        summary: "Required training materials for all rigging personnel",
-        tags: ["training", "rigging", "safety", "certification"],
-        status: "published",
-        version: 1,
-        authorName: "Safety Team",
-        publishedAt: "2024-02-15T10:00:00Z",
-        requiresAcknowledgment: true,
-        acknowledgmentCount: 5,
-        totalRequired: 8,
-    },
-];
 
 const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     sop: FileText,
@@ -145,26 +57,23 @@ export default function KnowledgeBasePage() {
 
     const { data: sbArticles, isLoading } = useKnowledgeBaseArticles();
 
-    const articles: KBArticle[] =
-        isSupabaseConfigured && sbArticles
-            ? sbArticles.map((a: Record<string, unknown>) => ({
-                  id: (a.id as string) ?? "",
-                  category: (a.category as string) ?? "guide",
-                  department: (a.department as string) ?? undefined,
-                  title: (a.title as string) ?? "",
-                  summary: (a.summary as string) ?? "",
-                  tags: (a.tags as string[]) ?? [],
-                  status: (a.status as string) ?? "published",
-                  version: (a.version as number) ?? 1,
-                  authorName: (a.author_name as string) ?? "",
-                  publishedAt: (a.published_at as string) ?? "",
-                  requiresAcknowledgment: (a.requires_acknowledgment as boolean) ?? false,
-                  acknowledgmentCount: (a.acknowledgment_count as number) ?? undefined,
-                  totalRequired: (a.total_required as number) ?? undefined,
-              }))
-            : MOCK_KB_ARTICLES;
+    const articles: KBArticle[] = (sbArticles ?? []).map((a: Record<string, unknown>) => ({
+        id: (a.id as string) ?? "",
+        category: (a.category as string) ?? "guide",
+        department: (a.department as string) ?? undefined,
+        title: (a.title as string) ?? "",
+        summary: (a.summary as string) ?? "",
+        tags: (a.tags as string[]) ?? [],
+        status: (a.status as string) ?? "published",
+        version: (a.version as number) ?? 1,
+        authorName: (a.author_name as string) ?? "",
+        publishedAt: (a.published_at as string) ?? "",
+        requiresAcknowledgment: (a.requires_acknowledgment as boolean) ?? false,
+        acknowledgmentCount: (a.acknowledgment_count as number) ?? undefined,
+        totalRequired: (a.total_required as number) ?? undefined,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Chip } from "@/components/ui/chip";
 import { FileText, Film, Image, Loader2, Lock, Music } from "lucide-react";
-import { isSupabaseConfigured, useDigitalAssets } from "@/lib/supabase/hooks-pages";
+import { useDigitalAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 interface MockDigitalAsset {
@@ -27,118 +27,6 @@ interface MockDigitalAsset {
     isLocked: boolean;
 }
 
-const mockAssets: MockDigitalAsset[] = [
-    {
-        id: "1",
-        name: "Main Stage Hero Render v3",
-        assetClass: "image",
-        status: "approved",
-        version: 3,
-        mimeType: "image/png",
-        fileSize: "24.5 MB",
-        uploadedBy: "Alex Torres",
-        uploadedAt: "2026-02-20",
-        projectName: "Acme Summit 2026",
-        tags: ["hero", "render", "3d"],
-        isLocked: false,
-    },
-    {
-        id: "2",
-        name: "Event Promo Video — 30s Cut",
-        assetClass: "video",
-        status: "in_review",
-        version: 2,
-        mimeType: "video/mp4",
-        fileSize: "156 MB",
-        uploadedBy: "Morgan Blake",
-        uploadedAt: "2026-02-22",
-        projectName: "Acme Summit 2026",
-        tags: ["promo", "social", "video"],
-        isLocked: false,
-    },
-    {
-        id: "3",
-        name: "Brand Guidelines — Acme Corp",
-        assetClass: "document",
-        status: "approved",
-        version: 1,
-        mimeType: "application/pdf",
-        fileSize: "8.2 MB",
-        uploadedBy: "Creative Director",
-        uploadedAt: "2026-01-15",
-        projectName: "Acme Summit 2026",
-        tags: ["brand", "guidelines"],
-        isLocked: true,
-    },
-    {
-        id: "4",
-        name: "Walk-in Music Playlist",
-        assetClass: "audio",
-        status: "approved",
-        version: 1,
-        mimeType: "audio/mp3",
-        fileSize: "42 MB",
-        uploadedBy: "Sam Chen",
-        uploadedAt: "2026-02-18",
-        projectName: "Acme Summit 2026",
-        tags: ["audio", "playlist", "walk-in"],
-        isLocked: false,
-    },
-    {
-        id: "5",
-        name: "Floor Plan — Convention Center L1",
-        assetClass: "document",
-        status: "approved",
-        version: 5,
-        mimeType: "application/pdf",
-        fileSize: "3.1 MB",
-        uploadedBy: "Pat Davis",
-        uploadedAt: "2026-02-21",
-        tags: ["floorplan", "venue", "cad"],
-        isLocked: false,
-    },
-    {
-        id: "6",
-        name: "LED Wall Content — Sponsor Loop",
-        assetClass: "video",
-        status: "processing",
-        version: 1,
-        mimeType: "video/mp4",
-        fileSize: "890 MB",
-        uploadedBy: "Morgan Blake",
-        uploadedAt: "2026-02-24",
-        projectName: "Acme Summit 2026",
-        tags: ["led", "sponsor", "loop"],
-        isLocked: false,
-    },
-    {
-        id: "7",
-        name: "Social Media Photo Pack",
-        assetClass: "image",
-        status: "draft",
-        version: 1,
-        mimeType: "application/zip",
-        fileSize: "245 MB",
-        uploadedBy: "Creative Team",
-        uploadedAt: "2026-02-23",
-        tags: ["social", "photo", "pack"],
-        isLocked: false,
-    },
-    {
-        id: "8",
-        name: "NDA — Vendor Confidential",
-        assetClass: "document",
-        status: "locked",
-        version: 2,
-        mimeType: "application/pdf",
-        fileSize: "1.2 MB",
-        uploadedBy: "Legal",
-        uploadedAt: "2026-01-10",
-        tags: ["legal", "nda", "confidential"],
-        isLocked: true,
-    },
-];
-
 const CLASS_ICONS: Record<string, typeof Image> = {
     image: Image,
     video: Film,
@@ -151,25 +39,22 @@ export default function DigitalAssetsPage() {
 
     const { data: sbAssets, isLoading } = useDigitalAssets();
 
-    const assets: MockDigitalAsset[] =
-        isSupabaseConfigured && sbAssets
-            ? sbAssets.map((a: Record<string, unknown>) => ({
-                  id: (a.id as string) ?? "",
-                  name: (a.name as string) ?? "",
-                  assetClass: (a.asset_class as string) ?? "document",
-                  status: (a.status as string) ?? "draft",
-                  version: (a.version as number) ?? 1,
-                  mimeType: (a.mime_type as string) ?? "",
-                  fileSize: (a.file_size as string) ?? "0 B",
-                  uploadedBy: (a.uploaded_by as string) ?? "",
-                  uploadedAt: (a.uploaded_at as string) ?? "",
-                  projectName: (a.project_name as string) ?? undefined,
-                  tags: (a.tags as string[]) ?? [],
-                  isLocked: (a.is_locked as boolean) ?? false,
-              }))
-            : mockAssets;
+    const assets: MockDigitalAsset[] = (sbAssets ?? []).map((a: Record<string, unknown>) => ({
+        id: (a.id as string) ?? "",
+        name: (a.name as string) ?? "",
+        assetClass: (a.asset_class as string) ?? "document",
+        status: (a.status as string) ?? "draft",
+        version: (a.version as number) ?? 1,
+        mimeType: (a.mime_type as string) ?? "",
+        fileSize: (a.file_size as string) ?? "0 B",
+        uploadedBy: (a.uploaded_by as string) ?? "",
+        uploadedAt: (a.uploaded_at as string) ?? "",
+        projectName: (a.project_name as string) ?? undefined,
+        tags: (a.tags as string[]) ?? [],
+        isLocked: (a.is_locked as boolean) ?? false,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

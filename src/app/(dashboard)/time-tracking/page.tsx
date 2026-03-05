@@ -31,7 +31,7 @@ import {
     Square,
     Timer,
 } from "lucide-react";
-import { isSupabaseConfigured, useTimeEntries } from "@/lib/supabase/hooks-pages";
+import { useTimeEntries } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TimeEntryStatus = "draft" | "submitted" | "approved" | "rejected";
@@ -48,97 +48,6 @@ interface TimeEntry {
     status: TimeEntryStatus;
     rate: number;
 }
-
-const mockEntries: TimeEntry[] = [
-    {
-        id: "1",
-        date: "2026-02-25",
-        project: "Nike Air Max Launch",
-        task: "Stage design revisions",
-        hours: 4.5,
-        description: "Updated 3D renders for client review",
-        billable: true,
-        status: "draft",
-        rate: 150,
-    },
-    {
-        id: "2",
-        date: "2026-02-25",
-        project: "Red Bull Festival",
-        task: "Vendor coordination",
-        hours: 2.0,
-        description: "Calls with AV and lighting vendors",
-        billable: true,
-        status: "draft",
-        rate: 125,
-    },
-    {
-        id: "3",
-        date: "2026-02-25",
-        project: "Internal",
-        task: "Team standup",
-        hours: 0.5,
-        description: "Daily sync",
-        billable: false,
-        status: "draft",
-        rate: 0,
-    },
-    {
-        id: "4",
-        date: "2026-02-24",
-        project: "Nike Air Max Launch",
-        task: "Site survey",
-        hours: 6.0,
-        description: "On-site measurements and photos",
-        billable: true,
-        status: "submitted",
-        rate: 150,
-    },
-    {
-        id: "5",
-        date: "2026-02-24",
-        project: "Glossier Pop-Up",
-        task: "Fabrication oversight",
-        hours: 3.0,
-        description: "Checked progress on custom fixtures",
-        billable: true,
-        status: "approved",
-        rate: 150,
-    },
-    {
-        id: "6",
-        date: "2026-02-23",
-        project: "Red Bull Festival",
-        task: "Budget reconciliation",
-        hours: 2.5,
-        description: "Updated expense tracking",
-        billable: true,
-        status: "approved",
-        rate: 125,
-    },
-    {
-        id: "7",
-        date: "2026-02-23",
-        project: "Nike Air Max Launch",
-        task: "CAD drawings",
-        hours: 5.0,
-        description: "Floor plan and elevation drawings",
-        billable: true,
-        status: "approved",
-        rate: 150,
-    },
-    {
-        id: "8",
-        date: "2026-02-22",
-        project: "Internal",
-        task: "Training",
-        hours: 2.0,
-        description: "Safety certification renewal",
-        billable: false,
-        status: "approved",
-        rate: 0,
-    },
-];
 
 const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const weekDates = ["Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25"];
@@ -404,22 +313,19 @@ export default function TimeTrackingPage() {
 
     const { data: sbEntries, isLoading } = useTimeEntries();
 
-    const entries: TimeEntry[] =
-        isSupabaseConfigured && sbEntries
-            ? sbEntries.map((e: Record<string, unknown>) => ({
-                  id: (e.id as string) ?? "",
-                  date: (e.entry_date as string) ?? "",
-                  project: (e.project_name as string) ?? "",
-                  task: (e.task as string) ?? "",
-                  hours: (e.hours as number) ?? 0,
-                  description: (e.description as string) ?? "",
-                  billable: (e.billable as boolean) ?? false,
-                  status: ((e.status as string) ?? "draft") as TimeEntryStatus,
-                  rate: (e.rate as number) ?? 0,
-              }))
-            : mockEntries;
+    const entries: TimeEntry[] = (sbEntries ?? []).map((e: Record<string, unknown>) => ({
+        id: (e.id as string) ?? "",
+        date: (e.entry_date as string) ?? "",
+        project: (e.project_name as string) ?? "",
+        task: (e.task as string) ?? "",
+        hours: (e.hours as number) ?? 0,
+        description: (e.description as string) ?? "",
+        billable: (e.billable as boolean) ?? false,
+        status: ((e.status as string) ?? "draft") as TimeEntryStatus,
+        rate: (e.rate as number) ?? 0,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

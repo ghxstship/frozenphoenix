@@ -11,8 +11,8 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { MOCK_INCIDENTS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useIncident } from "@/lib/supabase/hooks-pages";
+import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     AlertTriangle,
@@ -20,6 +20,7 @@ import {
     DollarSign,
     Edit,
     FileText,
+    Loader2,
     MapPin,
     Shield,
     Users,
@@ -76,15 +77,33 @@ export default function IncidentDetailPage() {
     });
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
 
-    const incident = MOCK_INCIDENTS.find((i) => i.id === incidentId);
-    const location = incident ? MOCK_LOCATIONS.find((l) => l.id === incident.locationId) : null;
-    const project = incident ? MOCK_PROJECTS.find((p) => p.id === incident.projectId) : null;
-    const [daysSince] = useState(() => {
-        const found = MOCK_INCIDENTS.find((i) => i.id === incidentId);
-        return found
-            ? Math.ceil((Date.now() - new Date(found.occurredAt).getTime()) / 86400000)
-            : 0;
-    });
+    const { data: incident, isLoading } = useIncident(incidentId);
+    const { data: sbLocations } = useLocations();
+    const { data: sbProjects } = useProjects();
+    const location = incident
+        ? (sbLocations ?? []).find(
+              (l: Record<string, unknown>) =>
+                  l.id === (incident as Record<string, unknown>).location_id
+          )
+        : null;
+    const project = incident
+        ? (sbProjects ?? []).find(
+              (p: Record<string, unknown>) =>
+                  p.id === (incident as Record<string, unknown>).project_id
+          )
+        : null;
+    const [now] = useState(() => Date.now());
+    const daysSince = incident?.occurredAt
+        ? Math.ceil((now - new Date(incident.occurredAt).getTime()) / 86400000)
+        : 0;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!incident) {
         return (

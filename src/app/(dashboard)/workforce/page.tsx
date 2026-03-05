@@ -25,7 +25,7 @@ import {
     UserX,
 } from "lucide-react";
 import { MOCK_WORKER_PROFILES } from "@/lib/demo-data-workforce";
-import { isSupabaseConfigured, useWorkerProfiles } from "@/lib/supabase/hooks-pages";
+import { useWorkerProfiles } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { WorkerClassification, WorkerLifecycleStatus } from "@/types/workforce";
 
@@ -82,10 +82,7 @@ export default function WorkforcePage() {
     const [classFilter, setClassFilter] = useState<string>("all");
     const { data: sbWorkers, isLoading } = useWorkerProfiles();
 
-    const workers =
-        isSupabaseConfigured && sbWorkers
-            ? (sbWorkers as unknown as typeof MOCK_WORKER_PROFILES)
-            : MOCK_WORKER_PROFILES;
+    const workers = (sbWorkers ?? []) as typeof MOCK_WORKER_PROFILES;
     const filtered = workers.filter((w) => {
         const matchesSearch =
             !search ||
@@ -105,7 +102,7 @@ export default function WorkforcePage() {
     ).length;
     const suspendedCount = workers.filter((w) => w.lifecycleStatus === "suspended").length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

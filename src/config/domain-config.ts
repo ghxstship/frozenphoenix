@@ -96,6 +96,13 @@ export const DEAL_STAGE_MAP = Object.fromEntries(DEAL_STAGES.map((s) => [s.value
     EnumConfig<DealStage>
 >;
 
+export const DEAL_STAGES_KANBAN: { id: DealStage; label: string; color: string }[] =
+    DEAL_STAGES.map((stage) => ({
+        id: stage.value,
+        label: stage.label,
+        color: `var(--color-${stage.variant === "default" ? "primary" : stage.variant})`,
+    }));
+
 // ─── Project Phases ───
 export const PROJECT_PHASES: EnumConfig<ProjectPhase>[] = [
     { value: "pre_production", label: "Pre-Production", variant: "ghost" },
@@ -614,6 +621,13 @@ export const OPPORTUNITY_STAGES: EnumConfig<OpportunityStageType>[] = [
 export const OPPORTUNITY_STAGE_MAP = Object.fromEntries(
     OPPORTUNITY_STAGES.map((s) => [s.value, s])
 ) as Record<OpportunityStageType, EnumConfig<OpportunityStageType>>;
+
+export const OPPORTUNITY_STAGES_KANBAN: { id: string; label: string; color: string }[] =
+    OPPORTUNITY_STAGES.map((stage) => ({
+        id: stage.value,
+        label: stage.label,
+        color: `var(--color-${stage.variant === "default" ? "primary" : stage.variant})`,
+    }));
 
 // ─── Opportunity Types ───
 export type OpportunityTypeConfig = "new_business" | "expansion" | "renewal" | "upsell";

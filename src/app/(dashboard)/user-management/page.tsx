@@ -10,11 +10,10 @@ import { StatCard } from "@/components/ui/stat-card";
 import { DataTable } from "@/components/data-view/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_USER_DIRECTORY } from "@/lib/demo-data-user-lifecycle";
 import { Clock, Loader2, Shield, UserCheck, UserPlus, Users, UserX } from "lucide-react";
 import type { PermissionLevel, UserLifecycleStatus } from "@/types";
 import type { UserDirectoryEntry } from "@/types/user-lifecycle";
-import { isSupabaseConfigured, useUserDirectory } from "@/lib/supabase/hooks-pages";
+import { useUserDirectory } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const LIFECYCLE_FILTERS: { value: UserLifecycleStatus | "all"; label: string }[] = [
@@ -55,23 +54,19 @@ export default function UserManagementPage() {
 
     const { data: sbUsers, isLoading } = useUserDirectory();
 
-    const users: UserDirectoryEntry[] =
-        isSupabaseConfigured && sbUsers
-            ? sbUsers.map((u: Record<string, unknown>) => ({
-                  id: (u.id as string) ?? "",
-                  displayName: (u.display_name as string) ?? (u.full_name as string) ?? "",
-                  email: (u.email as string) ?? "",
-                  avatarUrl: (u.avatar_url as string) ?? undefined,
-                  jobTitle: (u.job_title as string) ?? undefined,
-                  lifecycleStatus: ((u.lifecycle_status as string) ??
-                      "active") as UserLifecycleStatus,
-                  role: ((u.role as string) ?? "vendor") as PermissionLevel,
-                  organizationName: (u.organization_name as string) ?? "",
-                  lastActiveAt: (u.last_active_at as string) ?? undefined,
-                  onboardingCompletedAt: (u.onboarding_completed_at as string) ?? undefined,
-                  createdAt: (u.created_at as string) ?? "",
-              }))
-            : MOCK_USER_DIRECTORY;
+    const users: UserDirectoryEntry[] = (sbUsers ?? []).map((u: Record<string, unknown>) => ({
+        id: (u.id as string) ?? "",
+        displayName: (u.display_name as string) ?? (u.full_name as string) ?? "",
+        email: (u.email as string) ?? "",
+        avatarUrl: (u.avatar_url as string) ?? undefined,
+        jobTitle: (u.job_title as string) ?? undefined,
+        lifecycleStatus: ((u.lifecycle_status as string) ?? "active") as UserLifecycleStatus,
+        role: ((u.role as string) ?? "vendor") as PermissionLevel,
+        organizationName: (u.organization_name as string) ?? "",
+        lastActiveAt: (u.last_active_at as string) ?? undefined,
+        onboardingCompletedAt: (u.onboarding_completed_at as string) ?? undefined,
+        createdAt: (u.created_at as string) ?? "",
+    }));
 
     const filtered = useMemo(() => {
         return users.filter((u) => {
@@ -92,7 +87,7 @@ export default function UserManagementPage() {
         (u) => u.lifecycleStatus === "deactivated" || u.lifecycleStatus === "pending_deletion"
     ).length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

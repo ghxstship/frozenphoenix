@@ -23,7 +23,7 @@ import {
     MOCK_CAMPAIGN_KPIS,
     MOCK_CAMPAIGNS,
 } from "@/lib/demo-data-creative-brand";
-import { isSupabaseConfigured, useCampaigns } from "@/lib/supabase/hooks-pages";
+import { useCampaigns } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
@@ -62,10 +62,7 @@ export default function CampaignsPage() {
     });
     const { data: sbCampaigns, isLoading } = useCampaigns();
 
-    const campaigns =
-        isSupabaseConfigured && sbCampaigns
-            ? (sbCampaigns as unknown as Campaign[])
-            : MOCK_CAMPAIGNS;
+    const campaigns = sbCampaigns ? (sbCampaigns as unknown as Campaign[]) : MOCK_CAMPAIGNS;
     const channels = MOCK_CAMPAIGN_CHANNELS;
     const assets = MOCK_CAMPAIGN_ASSETS;
     const kpis = MOCK_CAMPAIGN_KPIS;
@@ -91,7 +88,7 @@ export default function CampaignsPage() {
             : "—";
     })();
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

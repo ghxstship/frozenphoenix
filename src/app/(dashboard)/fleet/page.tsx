@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useVehicles } from "@/lib/supabase/hooks";
-import { MOCK_VEHICLES } from "@/lib/demo-data";
+import { useVehicles } from "@/lib/supabase/hooks";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     AlertTriangle,
@@ -28,22 +27,19 @@ import { PermissionGate } from "@/components/permission-guard";
 export default function FleetPage() {
     const { data: sbVehicles, isLoading } = useVehicles();
 
-    const vehicles: Vehicle[] =
-        isSupabaseConfigured && sbVehicles
-            ? sbVehicles.map((v) => ({
-                  id: v.id,
-                  name: v.name,
-                  type: v.type,
-                  licensePlate: v.license_plate,
-                  dockHeight: v.dock_height,
-                  driverName: v.driver_name,
-                  driverPhone: v.driver_phone,
-                  gpsEnabled: v.gps_enabled,
-                  status: v.status as Vehicle["status"],
-              }))
-            : MOCK_VEHICLES;
+    const vehicles: Vehicle[] = (sbVehicles ?? []).map((v) => ({
+        id: v.id,
+        name: v.name,
+        type: v.type,
+        licensePlate: v.license_plate,
+        dockHeight: v.dock_height,
+        driverName: v.driver_name,
+        driverPhone: v.driver_phone,
+        gpsEnabled: v.gps_enabled,
+        status: v.status as Vehicle["status"],
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

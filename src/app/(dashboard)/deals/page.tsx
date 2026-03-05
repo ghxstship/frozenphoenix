@@ -12,9 +12,8 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import type { DealStage } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { isSupabaseConfigured, useDeals } from "@/lib/supabase/hooks";
+import { useDeals } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
-import { MOCK_DEALS } from "@/lib/demo-data";
 import { ArrowRight, Building2, Calendar, DollarSign, Plus, TrendingUp, User } from "lucide-react";
 
 interface DealListItem {
@@ -34,30 +33,17 @@ export default function DealsPage() {
     const [stageFilter, setStageFilter] = useState<string>("all");
     const { data: sbDeals } = useDeals();
 
-    const deals: DealListItem[] =
-        isSupabaseConfigured && sbDeals
-            ? sbDeals.map((d) => ({
-                  id: d.id,
-                  title: d.title,
-                  company: d.company ?? "",
-                  value: d.value ?? 0,
-                  stage: d.stage as DealStage,
-                  probability: d.probability ?? 0,
-                  owner: d.assigned_to ?? "",
-                  expectedClose: d.expected_close_date ?? "",
-                  lastActivity: d.updated_at ?? d.created_at ?? "",
-              }))
-            : MOCK_DEALS.map((d) => ({
-                  id: d.id,
-                  title: d.title,
-                  company: d.company ?? "",
-                  value: d.value ?? 0,
-                  stage: d.stage,
-                  probability: d.probability ?? 0,
-                  owner: d.assignedTo ?? "",
-                  expectedClose: d.expectedCloseDate ?? "",
-                  lastActivity: d.updatedAt ?? d.createdAt ?? "",
-              }));
+    const deals: DealListItem[] = (sbDeals ?? []).map((d) => ({
+        id: d.id,
+        title: d.title,
+        company: d.company ?? "",
+        value: d.value ?? 0,
+        stage: d.stage as DealStage,
+        probability: d.probability ?? 0,
+        owner: d.assigned_to ?? "",
+        expectedClose: d.expected_close_date ?? "",
+        lastActivity: d.updated_at ?? d.created_at ?? "",
+    }));
 
     const filtered = deals.filter((d) => {
         const matchesSearch =

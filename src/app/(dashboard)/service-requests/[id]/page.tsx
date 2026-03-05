@@ -11,8 +11,17 @@ import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
-import { MOCK_SERVICE_REQUESTS } from "@/lib/demo-data-vendor-lifecycle";
-import { ArrowRightLeft, Calendar, CheckCircle2, Headphones, MapPin, User } from "lucide-react";
+import {
+    ArrowRightLeft,
+    Calendar,
+    CheckCircle2,
+    Headphones,
+    Loader2,
+    MapPin,
+    User,
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useServiceRequest } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "assessment" | "chatter";
 const TAB_VALUES = ["details", "assessment", "chatter"] as const;
@@ -24,7 +33,9 @@ export default function ServiceRequestDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const sr = MOCK_SERVICE_REQUESTS[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: sr, isLoading } = useServiceRequest(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
@@ -39,6 +50,22 @@ export default function ServiceRequestDetailPage() {
             },
         ]);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!sr) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
 
     const tabs = [
         { id: "details" as const, label: "Details" },
@@ -315,7 +342,7 @@ export default function ServiceRequestDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {sr.attachmentUrls.map((url, i) => (
+                                    {sr.attachmentUrls.map((url: string, i: number) => (
                                         <div
                                             key={i}
                                             className="flex items-center gap-2 p-2 rounded bg-secondary/20"

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CONTRACT_TYPES, type ContractType } from "@/config/domain-config";
-import { isSupabaseConfigured, useCreateContract } from "@/lib/supabase/hooks";
+import { useCreateContract } from "@/lib/supabase/hooks";
 import {
     ArrowLeft,
     ArrowRight,
@@ -315,24 +315,22 @@ export default function NewContractPage() {
                         disabled={!canNext || createContract.isPending}
                         onClick={async () => {
                             try {
-                                if (isSupabaseConfigured) {
-                                    const contractData = {
-                                        title: formData.title,
-                                        type: selectedType,
-                                        counterparty_name: formData.counterpartyName || null,
-                                        value: formData.value ? Number(formData.value) : null,
-                                        effective_date: formData.effectiveDate || null,
-                                        expiration_date: formData.expirationDate || null,
-                                        auto_renew: formData.autoRenew,
-                                        description: formData.description || null,
-                                        status: "draft",
-                                    };
-                                    await createContract.mutateAsync(
-                                        contractData as unknown as Parameters<
-                                            typeof createContract.mutateAsync
-                                        >[0]
-                                    );
-                                }
+                                const contractData = {
+                                    title: formData.title,
+                                    type: selectedType,
+                                    counterparty_name: formData.counterpartyName || null,
+                                    value: formData.value ? Number(formData.value) : null,
+                                    effective_date: formData.effectiveDate || null,
+                                    expiration_date: formData.expirationDate || null,
+                                    auto_renew: formData.autoRenew,
+                                    description: formData.description || null,
+                                    status: "draft",
+                                };
+                                await createContract.mutateAsync(
+                                    contractData as unknown as Parameters<
+                                        typeof createContract.mutateAsync
+                                    >[0]
+                                );
                                 router.push("/contracts");
                             } catch (error) {
                                 logger.error("Failed to create contract", { error });

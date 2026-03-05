@@ -20,7 +20,7 @@ import {
     XCircle,
 } from "lucide-react";
 import { MOCK_PERMITS } from "@/lib/demo-data-governance";
-import { isSupabaseConfigured, usePermits } from "@/lib/supabase/hooks-pages";
+import { usePermits } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { PermitStatus } from "@/types/governance";
 
@@ -65,10 +65,7 @@ export default function PermitsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbPermits, isLoading } = usePermits();
 
-    const permits =
-        isSupabaseConfigured && sbPermits
-            ? (sbPermits as unknown as typeof MOCK_PERMITS)
-            : MOCK_PERMITS;
+    const permits = (sbPermits ?? []) as typeof MOCK_PERMITS;
 
     const filtered = permits.filter((p) => {
         const matchesSearch =
@@ -88,7 +85,7 @@ export default function PermitsPage() {
     ).length;
     const expired = permits.filter((p) => p.status === "expired" || p.status === "revoked").length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

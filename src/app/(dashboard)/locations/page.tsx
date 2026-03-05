@@ -9,9 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { isSupabaseConfigured, useLocations, useProjects } from "@/lib/supabase/hooks";
-import { MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
@@ -25,52 +23,46 @@ export default function LocationsPage() {
     const { data: sbLocations, isLoading: loadingLocations } = useLocations();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const locations =
-        isSupabaseConfigured && sbLocations
-            ? sbLocations.map((l) => ({
-                  id: l.id,
-                  projectId: l.project_id,
-                  name: l.name,
-                  type: l.type,
-                  address: (
-                      l as unknown as {
-                          address?: {
-                              street?: string;
-                              city?: string;
-                              state?: string;
-                              zip?: string;
-                              country?: string;
-                          };
-                      }
-                  ).address,
-                  capacity: l.capacity ?? undefined,
-                  squareFootage: l.square_footage ?? undefined,
-                  dailyRate: l.daily_rate ?? undefined,
-                  totalCost: l.total_cost ?? undefined,
-              }))
-            : MOCK_LOCATIONS;
+    const locations = (sbLocations ?? []).map((l) => ({
+        id: l.id,
+        projectId: l.project_id,
+        name: l.name,
+        type: l.type,
+        address: (
+            l as unknown as {
+                address?: {
+                    street?: string;
+                    city?: string;
+                    state?: string;
+                    zip?: string;
+                    country?: string;
+                };
+            }
+        ).address,
+        capacity: l.capacity ?? undefined,
+        squareFootage: l.square_footage ?? undefined,
+        dailyRate: l.daily_rate ?? undefined,
+        totalCost: l.total_cost ?? undefined,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingLocations || loadingProjects);
+    const isLoading = loadingLocations || loadingProjects;
 
     if (isLoading) {
         return (

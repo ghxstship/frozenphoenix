@@ -5,8 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useInvoices, usePurchaseOrders } from "@/lib/supabase/hooks";
-import { MOCK_INVOICES, MOCK_POS } from "@/lib/demo-data";
+import { useInvoices, usePurchaseOrders } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, DollarSign, Loader2, Receipt } from "lucide-react";
 import type { Invoice, PurchaseOrder } from "@/types";
@@ -153,52 +152,46 @@ export default function FinancePage() {
     const { data: sbPOs, isLoading: loadingPOs } = usePurchaseOrders();
     const { data: sbInvoices, isLoading: loadingInvoices } = useInvoices();
 
-    const pos: PurchaseOrder[] =
-        isSupabaseConfigured && sbPOs
-            ? sbPOs.map((po) => ({
-                  id: po.id,
-                  projectId: po.project_id,
-                  vendorId: po.vendor_id,
-                  vendorName: (po as { vendors?: { name: string } }).vendors?.name || "",
-                  totalAmount: po.total_amount,
-                  status: po.status as PurchaseOrder["status"],
-                  issuedDate: po.issued_date,
-                  items: (
-                      (
-                          po as {
-                              purchase_order_items?: Array<{
-                                  description: string;
-                                  quantity: number;
-                                  unit_price: number;
-                                  total: number;
-                              }>;
-                          }
-                      ).purchase_order_items || []
-                  ).map((item) => ({
-                      description: item.description,
-                      quantity: item.quantity,
-                      unitPrice: item.unit_price,
-                      total: item.total,
-                  })),
-              }))
-            : MOCK_POS;
+    const pos: PurchaseOrder[] = (sbPOs ?? []).map((po) => ({
+        id: po.id,
+        projectId: po.project_id,
+        vendorId: po.vendor_id,
+        vendorName: (po as { vendors?: { name: string } }).vendors?.name || "",
+        totalAmount: po.total_amount,
+        status: po.status as PurchaseOrder["status"],
+        issuedDate: po.issued_date,
+        items: (
+            (
+                po as {
+                    purchase_order_items?: Array<{
+                        description: string;
+                        quantity: number;
+                        unit_price: number;
+                        total: number;
+                    }>;
+                }
+            ).purchase_order_items || []
+        ).map((item) => ({
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unit_price,
+            total: item.total,
+        })),
+    }));
 
-    const invoices: Invoice[] =
-        isSupabaseConfigured && sbInvoices
-            ? sbInvoices.map((inv) => ({
-                  id: inv.id,
-                  vendorId: inv.vendor_id,
-                  vendorName: (inv as { vendors?: { name: string } }).vendors?.name || "",
-                  purchaseOrderId: inv.purchase_order_id ?? undefined,
-                  amount: inv.amount,
-                  status: inv.status as Invoice["status"],
-                  invoiceDate: inv.invoice_date,
-                  dueDate: inv.due_date,
-                  variance: inv.variance ?? undefined,
-              }))
-            : MOCK_INVOICES;
+    const invoices: Invoice[] = (sbInvoices ?? []).map((inv) => ({
+        id: inv.id,
+        vendorId: inv.vendor_id,
+        vendorName: (inv as { vendors?: { name: string } }).vendors?.name || "",
+        purchaseOrderId: inv.purchase_order_id ?? undefined,
+        amount: inv.amount,
+        status: inv.status as Invoice["status"],
+        invoiceDate: inv.invoice_date,
+        dueDate: inv.due_date,
+        variance: inv.variance ?? undefined,
+    }));
 
-    const isLoading = isSupabaseConfigured && (loadingPOs || loadingInvoices);
+    const isLoading = loadingPOs || loadingInvoices;
 
     if (isLoading) {
         return (

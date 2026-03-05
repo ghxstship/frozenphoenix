@@ -5,51 +5,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { isSupabaseConfigured, useVaultDocuments } from "@/lib/supabase/hooks";
+import { useVaultDocuments } from "@/lib/supabase/hooks";
 import { Clock, Eye, FileText, Link, Loader2, Lock, Plus, Shield } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { PermissionGate } from "@/components/permission-guard";
-
-const MOCK_DOCS = [
-    {
-        id: "doc1",
-        name: "Coachella Site Map — Restricted Zone",
-        category: "site_map",
-        accessLevel: "pm",
-        uploadedBy: "Alex Rivera",
-        uploadedAt: "2026-02-10",
-        hasExpLink: true,
-        expLinkExpiry: "2026-03-01",
-    },
-    {
-        id: "doc2",
-        name: "Artist NDA — Headliner TBD",
-        category: "nda",
-        accessLevel: "exec",
-        uploadedBy: "Jordan Park",
-        uploadedAt: "2026-02-15",
-        hasExpLink: false,
-    },
-    {
-        id: "doc3",
-        name: "Fire Marshal Permit — DTLA",
-        category: "permit",
-        accessLevel: "pm",
-        uploadedBy: "Alex Rivera",
-        uploadedAt: "2026-02-20",
-        hasExpLink: true,
-        expLinkExpiry: "2026-02-28",
-    },
-    {
-        id: "doc4",
-        name: "Venue Blueprint — Grand Ballroom",
-        category: "blueprint",
-        accessLevel: "pm",
-        uploadedBy: "Jordan Park",
-        uploadedAt: "2026-01-25",
-        hasExpLink: false,
-    },
-];
 
 const ACCESS_LEVEL_LABELS: Record<string, string> = {
     exec: "Executive",
@@ -72,26 +31,20 @@ const categoryIcons: Record<string, typeof FileText> = {
 export default function VaultPage() {
     const { data: sbDocs, isLoading } = useVaultDocuments();
 
-    const docs =
-        isSupabaseConfigured && sbDocs
-            ? sbDocs.map((doc) => ({
-                  id: doc.id,
-                  name: doc.name,
-                  category: doc.category,
-                  accessLevel: doc.access_level,
-                  uploadedBy:
-                      (doc as unknown as { profiles?: { name: string } }).profiles?.name ||
-                      "Unknown",
-                  uploadedAt: (doc.created_at ?? new Date().toISOString()).split("T")[0],
-                  hasExpLink: !!(doc as unknown as { expiring_link_token?: string })
-                      .expiring_link_token,
-                  expLinkExpiry:
-                      (doc as unknown as { expiring_link_expires_at?: string })
-                          .expiring_link_expires_at ?? undefined,
-              }))
-            : MOCK_DOCS;
+    const docs = (sbDocs ?? []).map((doc) => ({
+        id: doc.id,
+        name: doc.name,
+        category: doc.category,
+        accessLevel: doc.access_level,
+        uploadedBy: (doc as unknown as { profiles?: { name: string } }).profiles?.name || "Unknown",
+        uploadedAt: (doc.created_at ?? new Date().toISOString()).split("T")[0],
+        hasExpLink: !!(doc as unknown as { expiring_link_token?: string }).expiring_link_token,
+        expLinkExpiry:
+            (doc as unknown as { expiring_link_expires_at?: string }).expiring_link_expires_at ??
+            undefined,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

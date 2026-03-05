@@ -24,7 +24,7 @@ import {
     Table2,
 } from "lucide-react";
 import { MOCK_ESTIMATES } from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useEstimates } from "@/lib/supabase/hooks-pages";
+import { useEstimates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { Loader2 } from "lucide-react";
 import type { EstimateStatus } from "@/types/vendor-lifecycle";
@@ -53,10 +53,7 @@ export default function EstimatesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbEstimates, isLoading } = useEstimates();
 
-    const estimates =
-        isSupabaseConfigured && sbEstimates
-            ? (sbEstimates as unknown as typeof MOCK_ESTIMATES)
-            : MOCK_ESTIMATES;
+    const estimates = (sbEstimates ?? []) as typeof MOCK_ESTIMATES;
     const filtered = estimates.filter((est) => {
         const matchesSearch =
             !search ||
@@ -73,7 +70,7 @@ export default function EstimatesPage() {
         .reduce((s, e) => s + e.total, 0);
     const pendingCount = estimates.filter((e) => ["sent", "viewed"].includes(e.status)).length;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

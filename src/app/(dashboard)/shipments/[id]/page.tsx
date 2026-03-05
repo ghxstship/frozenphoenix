@@ -11,14 +11,15 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { MOCK_LOCATIONS, MOCK_SHIPMENTS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useShipment } from "@/lib/supabase/hooks-pages";
+import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     AlertCircle,
     Calendar,
     DollarSign,
     Edit,
+    Loader2,
     MapPin,
     Package,
     Truck,
@@ -68,14 +69,28 @@ export default function ShipmentDetailPage() {
     });
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
 
-    const shipment = MOCK_SHIPMENTS.find((s) => s.id === shipmentId);
-    const project = shipment ? MOCK_PROJECTS.find((p) => p.id === shipment.projectId) : null;
-    const originLoc = shipment
-        ? MOCK_LOCATIONS.find((l) => l.id === shipment.originLocationId)
+    const { data: shipment, isLoading } = useShipment(shipmentId);
+    const { data: sbLocations } = useLocations();
+    const { data: sbProjects } = useProjects();
+    const s = shipment as Record<string, unknown> | null;
+    const locs = sbLocations ?? [];
+    const project = s
+        ? (sbProjects ?? []).find((p: Record<string, unknown>) => p.id === s.project_id)
         : null;
-    const destLoc = shipment
-        ? MOCK_LOCATIONS.find((l) => l.id === shipment.destinationLocationId)
+    const originLoc = s
+        ? locs.find((l: Record<string, unknown>) => l.id === s.origin_location_id)
         : null;
+    const destLoc = s
+        ? locs.find((l: Record<string, unknown>) => l.id === s.destination_location_id)
+        : null;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (!shipment) {
         return (

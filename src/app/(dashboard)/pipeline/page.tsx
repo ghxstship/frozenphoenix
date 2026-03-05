@@ -6,8 +6,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
-import { isSupabaseConfigured, useDeals } from "@/lib/supabase/hooks";
-import { DEAL_STAGES, MOCK_DEALS } from "@/lib/demo-data";
+import { useDeals } from "@/lib/supabase/hooks";
+import { DEAL_STAGES_KANBAN as DEAL_STAGES } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -106,26 +106,23 @@ export default function PipelinePage() {
     });
     const { data: sbDeals, isLoading } = useDeals();
 
-    const deals: Deal[] =
-        isSupabaseConfigured && sbDeals
-            ? sbDeals.map((d) => ({
-                  id: d.id,
-                  title: d.title,
-                  company: d.company,
-                  contactName: d.contact_name,
-                  contactEmail: d.contact_email,
-                  value: d.value,
-                  stage: d.stage as DealStage,
-                  probability: d.probability,
-                  expectedCloseDate: d.expected_close_date,
-                  assignedTo: d.assigned_to ?? "",
-                  notes: d.notes ?? undefined,
-                  createdAt: d.created_at ?? new Date().toISOString(),
-                  updatedAt: d.updated_at ?? new Date().toISOString(),
-              }))
-            : MOCK_DEALS;
+    const deals: Deal[] = (sbDeals ?? []).map((d) => ({
+        id: d.id,
+        title: d.title,
+        company: d.company,
+        contactName: d.contact_name,
+        contactEmail: d.contact_email,
+        value: d.value,
+        stage: d.stage as DealStage,
+        probability: d.probability,
+        expectedCloseDate: d.expected_close_date,
+        assignedTo: d.assigned_to ?? "",
+        notes: d.notes ?? undefined,
+        createdAt: d.created_at ?? new Date().toISOString(),
+        updatedAt: d.updated_at ?? new Date().toISOString(),
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

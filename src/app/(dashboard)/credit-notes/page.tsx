@@ -9,7 +9,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ArrowDownRight, DollarSign, FileText, Loader2, Plus, ReceiptText } from "lucide-react";
-import { isSupabaseConfigured, useCreditNotes } from "@/lib/supabase/hooks-pages";
+import { useCreditNotes } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type CreditNoteStatus = "draft" | "issued" | "applied" | "void";
@@ -27,79 +27,25 @@ interface CreditNote {
     appliedDate: string | null;
 }
 
-const mockCreditNotes: CreditNote[] = [
-    {
-        id: "1",
-        number: "CN-2026-001",
-        invoiceNumber: "INV-2026-003",
-        client: "Red Bull",
-        project: "Red Bull Festival",
-        reason: "Scope reduction — removed 2 LED walls",
-        amount: 12000,
-        status: "applied",
-        issuedDate: "2026-02-18",
-        appliedDate: "2026-02-20",
-    },
-    {
-        id: "2",
-        number: "CN-2026-002",
-        invoiceNumber: "INV-2025-089",
-        client: "TechStart",
-        project: "TechStart Launch",
-        reason: "Early payment discount (2%)",
-        amount: 500,
-        status: "issued",
-        issuedDate: "2026-02-22",
-        appliedDate: null,
-    },
-    {
-        id: "3",
-        number: "CN-2026-003",
-        invoiceNumber: "INV-2026-001",
-        client: "Nike",
-        project: "Nike Air Max Launch",
-        reason: "Overcharge on labor hours",
-        amount: 3750,
-        status: "applied",
-        issuedDate: "2026-02-10",
-        appliedDate: "2026-02-12",
-    },
-    {
-        id: "4",
-        number: "CN-2026-004",
-        invoiceNumber: "INV-2026-002",
-        client: "Nike",
-        project: "Nike Air Max Launch",
-        reason: "Material substitution credit",
-        amount: 8200,
-        status: "draft",
-        issuedDate: "2026-02-25",
-        appliedDate: null,
-    },
-];
-
 export default function CreditNotesPage() {
     const [search, setSearch] = useState("");
 
     const { data: sbCreditNotes, isLoading } = useCreditNotes();
 
-    const creditNotes: CreditNote[] =
-        isSupabaseConfigured && sbCreditNotes
-            ? sbCreditNotes.map((cn: Record<string, unknown>) => ({
-                  id: (cn.id as string) ?? "",
-                  number: (cn.credit_note_number as string) ?? "",
-                  invoiceNumber: (cn.invoice_number as string) ?? "",
-                  client: (cn.client_name as string) ?? "",
-                  project: (cn.project_name as string) ?? "",
-                  reason: (cn.reason as string) ?? "",
-                  amount: (cn.amount as number) ?? 0,
-                  status: ((cn.status as string) ?? "draft") as CreditNoteStatus,
-                  issuedDate: (cn.issued_date as string) ?? "",
-                  appliedDate: (cn.applied_date as string) ?? null,
-              }))
-            : mockCreditNotes;
+    const creditNotes: CreditNote[] = (sbCreditNotes ?? []).map((cn: Record<string, unknown>) => ({
+        id: (cn.id as string) ?? "",
+        number: (cn.credit_note_number as string) ?? "",
+        invoiceNumber: (cn.invoice_number as string) ?? "",
+        client: (cn.client_name as string) ?? "",
+        project: (cn.project_name as string) ?? "",
+        reason: (cn.reason as string) ?? "",
+        amount: (cn.amount as number) ?? 0,
+        status: ((cn.status as string) ?? "draft") as CreditNoteStatus,
+        issuedDate: (cn.issued_date as string) ?? "",
+        appliedDate: (cn.applied_date as string) ?? null,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

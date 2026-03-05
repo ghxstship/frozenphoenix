@@ -10,15 +10,8 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import {
-    isSupabaseConfigured,
-    useActivations,
-    useLocations,
-    useProjects,
-} from "@/lib/supabase/hooks";
+import { useActivations, useLocations, useProjects } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
-import { MOCK_ACTIVATIONS, MOCK_LOCATIONS } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
@@ -43,61 +36,51 @@ export default function ActivationsPage() {
     const { data: sbLocations, isLoading: loadingLocations } = useLocations();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const activations =
-        isSupabaseConfigured && sbActivations
-            ? sbActivations.map((a) => ({
-                  id: a.id,
-                  projectId: a.project_id,
-                  locationId: a.location_id ?? undefined,
-                  name: a.name,
-                  type: a.type,
-                  status: a.status,
-                  zone: a.zone ?? undefined,
-                  dimensions: (
-                      a as unknown as {
-                          dimensions?: {
-                              width?: number;
-                              depth?: number;
-                              height?: number;
-                              unit?: string;
-                          };
-                      }
-                  ).dimensions,
-                  expectedFootfall: a.expected_footfall ?? undefined,
-                  budget: a.budget ?? undefined,
-              }))
-            : MOCK_ACTIVATIONS;
+    const activations = (sbActivations ?? []).map((a) => ({
+        id: a.id,
+        projectId: a.project_id,
+        locationId: a.location_id ?? undefined,
+        name: a.name,
+        type: a.type,
+        status: a.status,
+        zone: a.zone ?? undefined,
+        dimensions: (
+            a as unknown as {
+                dimensions?: {
+                    width?: number;
+                    depth?: number;
+                    height?: number;
+                    unit?: string;
+                };
+            }
+        ).dimensions,
+        expectedFootfall: a.expected_footfall ?? undefined,
+        budget: a.budget ?? undefined,
+    }));
 
-    const locations =
-        isSupabaseConfigured && sbLocations
-            ? sbLocations.map((l) => ({
-                  id: l.id,
-                  name: l.name,
-              }))
-            : MOCK_LOCATIONS;
+    const locations = (sbLocations ?? []).map((l) => ({
+        id: l.id,
+        name: l.name,
+    }));
 
-    const projects: Project[] =
-        isSupabaseConfigured && sbProjects
-            ? sbProjects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  client: p.client,
-                  clientLogo: p.client_logo ?? undefined,
-                  status: p.status as ProjectStatus,
-                  currentPhase: p.current_phase as ProjectPhase,
-                  startDate: p.start_date,
-                  endDate: p.end_date,
-                  budgetPlanned: p.budget_planned,
-                  budgetActual: p.budget_actual,
-                  progress: p.progress,
-                  managerId: p.manager_id ?? "",
-                  teamIds: [],
-                  createdAt: p.created_at ?? new Date().toISOString(),
-              }))
-            : MOCK_PROJECTS;
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
 
-    const isLoading =
-        isSupabaseConfigured && (loadingActivations || loadingLocations || loadingProjects);
+    const isLoading = loadingActivations || loadingLocations || loadingProjects;
 
     if (isLoading) {
         return (

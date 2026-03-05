@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormLayout, FormSection } from "@/components/layouts/form-layout";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput, FormField, Select, Textarea } from "@/components/ui/form";
-import { isSupabaseConfigured, useCreateAsset } from "@/lib/supabase/hooks";
+import { useCreateAsset } from "@/lib/supabase/hooks";
 
 const CATEGORY_OPTIONS = [
     { value: "Tools", label: "Tools" },
@@ -52,22 +52,20 @@ export default function NewAssetPage() {
         e.preventDefault();
 
         try {
-            if (isSupabaseConfigured) {
-                const assetData = {
-                    name: formData.name,
-                    category: formData.category,
-                    barcode: formData.barcode || null,
-                    location: formData.location || null,
-                    condition: formData.condition,
-                    owned_or_rental: formData.ownedOrRental,
-                    purchase_price: formData.purchasePrice || null,
-                    notes: formData.notes || null,
-                    status: "available",
-                };
-                await createAsset.mutateAsync(
-                    assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]
-                );
-            }
+            const assetData = {
+                name: formData.name,
+                category: formData.category,
+                barcode: formData.barcode || null,
+                location: formData.location || null,
+                condition: formData.condition,
+                owned_or_rental: formData.ownedOrRental,
+                purchase_price: formData.purchasePrice || null,
+                notes: formData.notes || null,
+                status: "available",
+            };
+            await createAsset.mutateAsync(
+                assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]
+            );
             router.push("/assets");
         } catch (error) {
             logger.error("Failed to create asset", { error });

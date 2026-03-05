@@ -13,8 +13,9 @@ import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_INSURANCE_POLICIES } from "@/lib/demo-data-governance";
-import { Calendar, CheckCircle2, DollarSign, FileText, Shield } from "lucide-react";
+import { Calendar, CheckCircle2, DollarSign, FileText, Loader2, Shield } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useInsurancePolicy } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "documents" | "chatter";
 const TAB_VALUES = ["details", "documents", "chatter"] as const;
@@ -26,9 +27,27 @@ export default function InsurancePolicyDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const policy = MOCK_INSURANCE_POLICIES[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: policy, isLoading } = useInsurancePolicy(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!policy) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -142,7 +161,7 @@ export default function InsurancePolicyDetailPage() {
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
                         {policy.tags.length > 0 ? (
-                            policy.tags.map((t) => (
+                            policy.tags.map((t: string) => (
                                 <Chip key={t} size="sm">
                                     {t}
                                 </Chip>
@@ -250,7 +269,7 @@ export default function InsurancePolicyDetailPage() {
                             </div>
                             {policy.additional_insured && policy.additional_insured.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 pt-1">
-                                    {policy.additional_insured.map((name) => (
+                                    {policy.additional_insured.map((name: string) => (
                                         <Chip key={name} size="sm">
                                             {name}
                                         </Chip>

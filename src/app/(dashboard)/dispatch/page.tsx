@@ -12,7 +12,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { CheckCircle2, Clock, Loader2, MapPin, Navigation, Plus, Truck, Users } from "lucide-react";
 import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useDispatch } from "@/lib/supabase/hooks-pages";
+import { useDispatch } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { DispatchStatus } from "@/types/vendor-lifecycle";
 
@@ -33,10 +33,7 @@ export default function DispatchPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbDispatch, isLoading } = useDispatch();
 
-    const dispatches =
-        isSupabaseConfigured && sbDispatch
-            ? (sbDispatch as unknown as typeof MOCK_DISPATCH_ENTRIES)
-            : MOCK_DISPATCH_ENTRIES;
+    const dispatches = (sbDispatch ?? []) as typeof MOCK_DISPATCH_ENTRIES;
     const filtered = dispatches.filter((d) => {
         const matchesSearch =
             !search ||
@@ -58,7 +55,7 @@ export default function DispatchPage() {
         return wo ? `${wo.number} — ${wo.title}` : woId;
     };
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

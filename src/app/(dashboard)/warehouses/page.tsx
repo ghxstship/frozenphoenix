@@ -19,7 +19,7 @@ import {
     Truck,
     Warehouse,
 } from "lucide-react";
-import { isSupabaseConfigured, useWarehouses } from "@/lib/supabase/hooks-pages";
+import { useWarehouses } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type WarehouseStatus = "active" | "maintenance" | "full" | "inactive";
@@ -38,84 +38,26 @@ interface WarehouseItem {
     activeShipments: number;
 }
 
-const mockWarehouses: WarehouseItem[] = [
-    {
-        id: "1",
-        name: "Brooklyn Main Depot",
-        address: "450 Industrial Ave",
-        city: "Brooklyn, NY",
-        status: "active",
-        capacity: 25000,
-        utilized: 18500,
-        climate: "Climate-controlled",
-        securityLevel: "24/7 monitored",
-        manager: "Tom Harris",
-        activeShipments: 3,
-    },
-    {
-        id: "2",
-        name: "LA Production Hub",
-        address: "8800 Sunset Blvd",
-        city: "Los Angeles, CA",
-        status: "active",
-        capacity: 40000,
-        utilized: 32000,
-        climate: "Standard",
-        securityLevel: "24/7 monitored",
-        manager: "Ana Petrova",
-        activeShipments: 5,
-    },
-    {
-        id: "3",
-        name: "Chicago Staging",
-        address: "1200 W Fulton St",
-        city: "Chicago, IL",
-        status: "maintenance",
-        capacity: 15000,
-        utilized: 8000,
-        climate: "Heated",
-        securityLevel: "Alarm system",
-        manager: "James Brown",
-        activeShipments: 0,
-    },
-    {
-        id: "4",
-        name: "Miami Overflow",
-        address: "2200 NW 2nd Ave",
-        city: "Miami, FL",
-        status: "full",
-        capacity: 10000,
-        utilized: 10000,
-        climate: "Climate-controlled",
-        securityLevel: "24/7 monitored",
-        manager: "Rachel Green",
-        activeShipments: 2,
-    },
-];
-
 export default function WarehousesPage() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const { data: sbWarehouses, isLoading } = useWarehouses();
 
-    const warehouses: WarehouseItem[] =
-        isSupabaseConfigured && sbWarehouses
-            ? sbWarehouses.map((w: Record<string, unknown>) => ({
-                  id: (w.id as string) ?? "",
-                  name: (w.name as string) ?? "",
-                  address: (w.address as string) ?? "",
-                  city: (w.city as string) ?? "",
-                  status: ((w.status as string) ?? "active") as WarehouseStatus,
-                  capacity: (w.capacity as number) ?? 0,
-                  utilized: (w.utilized as number) ?? 0,
-                  climate: (w.climate as string) ?? "",
-                  securityLevel: (w.security_level as string) ?? "",
-                  manager: (w.manager as string) ?? "",
-                  activeShipments: (w.active_shipments as number) ?? 0,
-              }))
-            : mockWarehouses;
+    const warehouses: WarehouseItem[] = (sbWarehouses ?? []).map((w: Record<string, unknown>) => ({
+        id: (w.id as string) ?? "",
+        name: (w.name as string) ?? "",
+        address: (w.address as string) ?? "",
+        city: (w.city as string) ?? "",
+        status: ((w.status as string) ?? "active") as WarehouseStatus,
+        capacity: (w.capacity as number) ?? 0,
+        utilized: (w.utilized as number) ?? 0,
+        climate: (w.climate as string) ?? "",
+        securityLevel: (w.security_level as string) ?? "",
+        manager: (w.manager as string) ?? "",
+        activeShipments: (w.active_shipments as number) ?? 0,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -10,8 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { isSupabaseConfigured, useApprovals, useUpdateApproval } from "@/lib/supabase/hooks";
-import { MOCK_APPROVALS } from "@/lib/demo-data";
+import { useApprovals, useUpdateApproval } from "@/lib/supabase/hooks";
 import { LIFECYCLE_STAGES, type LifecycleStage } from "@/config/domain-config";
 import {
     AlertTriangle,
@@ -150,7 +149,6 @@ export default function ApprovalsPage() {
     const updateApproval = useUpdateApproval();
 
     const handleApprove = async (approvalId: string) => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateApproval.mutateAsync({
                 id: approvalId,
@@ -163,7 +161,6 @@ export default function ApprovalsPage() {
     };
 
     const handleReject = async (approvalId: string) => {
-        if (!isSupabaseConfigured) return;
         try {
             await updateApproval.mutateAsync({
                 id: approvalId,
@@ -174,25 +171,21 @@ export default function ApprovalsPage() {
         }
     };
 
-    const approvals: Approval[] =
-        isSupabaseConfigured && sbApprovals
-            ? sbApprovals.map((a) => ({
-                  id: a.id,
-                  projectId: a.project_id,
-                  milestoneId: a.milestone_id,
-                  milestoneName: a.milestone_name,
-                  status: a.status as Approval["status"],
-                  requestedAt: a.requested_at,
-                  deadline: a.deadline,
-                  approvedAt: a.approved_at ?? undefined,
-                  approverName:
-                      (a as unknown as { profiles?: { name: string } }).profiles?.name || "",
-                  deliverableUrl: a.deliverable_url ?? undefined,
-                  timelineImpactDays: a.timeline_impact_days ?? undefined,
-              }))
-            : MOCK_APPROVALS;
+    const approvals: Approval[] = (sbApprovals ?? []).map((a) => ({
+        id: a.id,
+        projectId: a.project_id,
+        milestoneId: a.milestone_id,
+        milestoneName: a.milestone_name,
+        status: a.status as Approval["status"],
+        requestedAt: a.requested_at,
+        deadline: a.deadline,
+        approvedAt: a.approved_at ?? undefined,
+        approverName: (a as unknown as { profiles?: { name: string } }).profiles?.name || "",
+        deliverableUrl: a.deliverable_url ?? undefined,
+        timelineImpactDays: a.timeline_impact_days ?? undefined,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

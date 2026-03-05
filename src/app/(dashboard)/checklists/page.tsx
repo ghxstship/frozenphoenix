@@ -12,8 +12,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { CheckCircle2, Circle, Clock, ListChecks, Loader2, Percent, Plus } from "lucide-react";
-import { MOCK_CHECKLIST_TEMPLATES, MOCK_JOB_CHECKLISTS } from "@/lib/demo-data-vendor-lifecycle";
-import { isSupabaseConfigured, useChecklists } from "@/lib/supabase/hooks-pages";
+import { MOCK_CHECKLIST_TEMPLATES } from "@/lib/demo-data-vendor-lifecycle";
+import { useChecklists } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar } from "@/components/ui/tab-bar";
 
@@ -49,28 +49,25 @@ export default function ChecklistsPage() {
 
     const { data: sbChecklists, isLoading } = useChecklists();
 
-    const checklists: ChecklistEntry[] =
-        isSupabaseConfigured && sbChecklists
-            ? sbChecklists.map((c: Record<string, unknown>) => ({
-                  id: (c.id as string) ?? "",
-                  title: (c.title as string) ?? "",
-                  status: (c.status as string) ?? "not_started",
-                  dueDate: (c.due_date as string) ?? undefined,
-                  completionPercent: (c.completion_percent as number) ?? 0,
-                  completedItems: (c.completed_items as number) ?? 0,
-                  totalItems: (c.total_items as number) ?? 0,
-                  items: ((c.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
-                      id: (item.id as string) ?? "",
-                      title: (item.title as string) ?? "",
-                      completed: (item.completed as boolean) ?? false,
-                      required: (item.required as boolean) ?? false,
-                      completedBy: (item.completed_by as string) ?? undefined,
-                  })),
-              }))
-            : MOCK_JOB_CHECKLISTS;
+    const checklists: ChecklistEntry[] = (sbChecklists ?? []).map((c: Record<string, unknown>) => ({
+        id: (c.id as string) ?? "",
+        title: (c.title as string) ?? "",
+        status: (c.status as string) ?? "not_started",
+        dueDate: (c.due_date as string) ?? undefined,
+        completionPercent: (c.completion_percent as number) ?? 0,
+        completedItems: (c.completed_items as number) ?? 0,
+        totalItems: (c.total_items as number) ?? 0,
+        items: ((c.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
+            id: (item.id as string) ?? "",
+            title: (item.title as string) ?? "",
+            completed: (item.completed as boolean) ?? false,
+            required: (item.required as boolean) ?? false,
+            completedBy: (item.completed_by as string) ?? undefined,
+        })),
+    }));
     const templates = MOCK_CHECKLIST_TEMPLATES;
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

@@ -15,21 +15,23 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import {
-    MOCK_CAMPAIGN_ASSETS,
-    MOCK_CAMPAIGN_CHANNELS,
-    MOCK_CAMPAIGN_KPIS,
-    MOCK_CAMPAIGNS,
-} from "@/lib/demo-data-creative-brand";
+    useCampaignAssets,
+    useCampaignChannels,
+    useCampaignKpis,
+} from "@/lib/supabase/hooks-pages";
 import {
     BarChart3,
     CalendarDays,
     DollarSign,
     ImageIcon,
+    Loader2,
     Megaphone,
     Play,
     Target,
     TrendingUp,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useCampaign } from "@/lib/supabase/hooks-pages";
 
 type TabId = "overview" | "channels" | "assets" | "performance" | "chatter";
 const TAB_VALUES = ["overview", "channels", "assets", "performance", "chatter"] as const;
@@ -41,16 +43,67 @@ export default function CampaignDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const campaign = MOCK_CAMPAIGNS[0]!;
-    const channels = MOCK_CAMPAIGN_CHANNELS.filter((ch) => ch.campaign_id === campaign.id);
-    const assets = MOCK_CAMPAIGN_ASSETS.filter((a) => a.campaign_id === campaign.id);
-    const kpis = MOCK_CAMPAIGN_KPIS.filter((k) => k.campaign_id === campaign.id);
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: campaign, isLoading } = useCampaign(entityId);
+    const { data: sbChannels } = useCampaignChannels(entityId);
+    const { data: sbAssets } = useCampaignAssets(entityId);
+    const { data: sbKpis } = useCampaignKpis(entityId);
+
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!campaign) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
+    type ChannelView = {
+        id: string;
+        label: string;
+        channel_type: string;
+        budget_allocation: number;
+        status: string;
+    };
+    type AssetView = { id: string; name: string; asset_role: string; production_status: string };
+    type KpiView = {
+        id: string;
+        metric_name: string;
+        current_value: number | null;
+        target_value: number | null;
+    };
+    const channels: ChannelView[] = (sbChannels ?? []).map((r: Record<string, unknown>) => ({
+        id: String(r.id ?? ""),
+        label: String(r.label ?? ""),
+        channel_type: String(r.channel_type ?? ""),
+        budget_allocation: Number(r.budget_allocation ?? 0),
+        status: String(r.status ?? ""),
+    }));
+    const assets: AssetView[] = (sbAssets ?? []).map((r: Record<string, unknown>) => ({
+        id: String(r.id ?? ""),
+        name: String(r.name ?? ""),
+        asset_role: String(r.asset_role ?? ""),
+        production_status: String(r.production_status ?? ""),
+    }));
+    const kpis: KpiView[] = (sbKpis ?? []).map((r: Record<string, unknown>) => ({
+        id: String(r.id ?? ""),
+        metric_name: String(r.metric_name ?? ""),
+        current_value: r.current_value != null ? Number(r.current_value) : null,
+        target_value: r.target_value != null ? Number(r.target_value) : null,
+    }));
     const budgetPct =
         campaign.total_budget > 0
             ? Math.round((campaign.spent_budget / campaign.total_budget) * 100)
             : 0;
-
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -148,7 +201,7 @@ export default function CampaignDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
-                        {campaign.tags.map((tag) => (
+                        {campaign.tags.map((tag: string) => (
                             <Chip key={tag} size="sm">
                                 {tag}
                             </Chip>

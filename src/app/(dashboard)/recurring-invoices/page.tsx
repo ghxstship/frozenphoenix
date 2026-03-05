@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { Calendar, DollarSign, Loader2, Pause, Play, Plus, RefreshCw } from "lucide-react";
-import { isSupabaseConfigured, useRecurringInvoices } from "@/lib/supabase/hooks-pages";
+import { useRecurringInvoices } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type RecurringStatus = "active" | "paused" | "completed" | "cancelled";
@@ -39,89 +39,27 @@ const FREQ_LABELS: Record<Frequency, string> = {
     annually: "Annually",
 };
 
-const mockRecurring: RecurringInvoice[] = [
-    {
-        id: "1",
-        title: "Nike Monthly Retainer",
-        client: "Nike",
-        project: "Nike Air Max Launch",
-        amount: 25000,
-        frequency: "monthly",
-        status: "active",
-        nextDate: "2026-03-01",
-        lastGenerated: "2026-02-01",
-        totalGenerated: 3,
-        totalCollected: 50000,
-        occurrencesLeft: 9,
-    },
-    {
-        id: "2",
-        title: "Red Bull T&M Billing",
-        client: "Red Bull",
-        project: "Red Bull Festival",
-        amount: 80000,
-        frequency: "monthly",
-        status: "active",
-        nextDate: "2026-03-01",
-        lastGenerated: "2026-02-01",
-        totalGenerated: 2,
-        totalCollected: 80000,
-        occurrencesLeft: 4,
-    },
-    {
-        id: "3",
-        title: "TechStart Retainer",
-        client: "TechStart",
-        project: "TechStart Launch",
-        amount: 15000,
-        frequency: "monthly",
-        status: "paused",
-        nextDate: "2026-04-01",
-        lastGenerated: "2026-01-01",
-        totalGenerated: 1,
-        totalCollected: 15000,
-        occurrencesLeft: null,
-    },
-    {
-        id: "4",
-        title: "Glossier Quarterly Review",
-        client: "Glossier",
-        project: "Glossier Pop-Up",
-        amount: 5000,
-        frequency: "quarterly",
-        status: "completed",
-        nextDate: "",
-        lastGenerated: "2026-01-01",
-        totalGenerated: 4,
-        totalCollected: 20000,
-        occurrencesLeft: 0,
-    },
-];
-
 export default function RecurringInvoicesPage() {
     const [search, setSearch] = useState("");
 
     const { data: sbRecurring, isLoading } = useRecurringInvoices();
 
-    const invoices: RecurringInvoice[] =
-        isSupabaseConfigured && sbRecurring
-            ? sbRecurring.map((r: Record<string, unknown>) => ({
-                  id: (r.id as string) ?? "",
-                  title: (r.title as string) ?? "",
-                  client: (r.client_name as string) ?? (r.client as string) ?? "",
-                  project: (r.project_name as string) ?? (r.project as string) ?? "",
-                  amount: (r.amount as number) ?? 0,
-                  frequency: ((r.frequency as string) ?? "monthly") as Frequency,
-                  status: ((r.status as string) ?? "active") as RecurringStatus,
-                  nextDate: (r.next_date as string) ?? "",
-                  lastGenerated: (r.last_generated as string) ?? null,
-                  totalGenerated: (r.total_generated as number) ?? 0,
-                  totalCollected: (r.total_collected as number) ?? 0,
-                  occurrencesLeft: (r.occurrences_left as number) ?? null,
-              }))
-            : mockRecurring;
+    const invoices: RecurringInvoice[] = (sbRecurring ?? []).map((r: Record<string, unknown>) => ({
+        id: (r.id as string) ?? "",
+        title: (r.title as string) ?? "",
+        client: (r.client_name as string) ?? (r.client as string) ?? "",
+        project: (r.project_name as string) ?? (r.project as string) ?? "",
+        amount: (r.amount as number) ?? 0,
+        frequency: ((r.frequency as string) ?? "monthly") as Frequency,
+        status: ((r.status as string) ?? "active") as RecurringStatus,
+        nextDate: (r.next_date as string) ?? "",
+        lastGenerated: (r.last_generated as string) ?? null,
+        totalGenerated: (r.total_generated as number) ?? 0,
+        totalCollected: (r.total_collected as number) ?? 0,
+        occurrencesLeft: (r.occurrences_left as number) ?? null,
+    }));
 
-    if (isSupabaseConfigured && isLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

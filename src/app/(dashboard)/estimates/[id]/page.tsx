@@ -11,7 +11,6 @@ import type { CommentItem } from "@/components/activity";
 import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { MOCK_ESTIMATES } from "@/lib/demo-data-vendor-lifecycle";
 import {
     Building2,
     Calendar,
@@ -19,9 +18,12 @@ import {
     DollarSign,
     FileSignature,
     FileText,
+    Loader2,
     Send,
     User,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEstimate } from "@/lib/supabase/hooks-pages";
 
 type TabId = "details" | "line-items" | "chatter";
 const TAB_VALUES = ["details", "line-items", "chatter"] as const;
@@ -78,7 +80,9 @@ export default function EstimateDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const estimate = MOCK_ESTIMATES[0]!;
+    const params = useParams();
+    const entityId = params.id as string;
+    const { data: estimate, isLoading } = useEstimate(entityId);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
@@ -93,6 +97,22 @@ export default function EstimateDetailPage() {
             },
         ]);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!estimate) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Record not found</p>
+            </div>
+        );
+    }
 
     const tabs = [
         { id: "details" as const, label: "Details" },

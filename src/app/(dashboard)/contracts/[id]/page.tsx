@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -134,6 +137,20 @@ type TabId = "details" | "signatures" | "documents" | "chatter";
 const TAB_VALUES = ["details", "signatures", "documents", "chatter"] as const;
 
 export default function ContractDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useContract(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Contract",
+        listPath: "/contracts",
+        useUpdateHook: useUpdateContract,
+        useDeleteHook: useDeleteContract,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -299,7 +316,7 @@ export default function ContractDetailPage() {
             menuItems={[
                 { label: "Export PDF", onClick: handleExportPDF },
                 { label: "Duplicate Contract", onClick: () => {} },
-                { label: "Terminate Contract", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

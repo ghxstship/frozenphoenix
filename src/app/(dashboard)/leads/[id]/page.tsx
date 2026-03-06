@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteLead, useUpdateLead } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -123,6 +125,14 @@ export default function LeadDetailPage() {
     const params = useParams();
     const router = useRouter();
     const leadId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: leadId,
+        entityLabel: "Lead",
+        listPath: "/leads",
+        useUpdateHook: useUpdateLead,
+        useDeleteHook: useDeleteLead,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -260,11 +270,7 @@ export default function LeadDetailPage() {
                     </Button>
                 </>
             }
-            menuItems={[
-                { label: "Convert to Deal", onClick: () => {} },
-                { label: "Mark as Lost", onClick: () => {}, variant: "destructive" },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
-            ]}
+            menuItems={[{ label: "Convert to Deal", onClick: () => {} }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

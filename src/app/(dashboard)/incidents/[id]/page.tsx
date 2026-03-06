@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteIncident, useUpdateIncident } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +72,14 @@ export default function IncidentDetailPage() {
     const params = useParams();
     const router = useRouter();
     const incidentId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: incidentId,
+        entityLabel: "Incident",
+        listPath: "/incidents",
+        useUpdateHook: useUpdateIncident,
+        useDeleteHook: useDeleteIncident,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -233,7 +243,7 @@ export default function IncidentDetailPage() {
             menuItems={[
                 { label: "File Insurance Claim", onClick: () => {} },
                 { label: "Close Incident", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

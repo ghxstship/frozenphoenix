@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteLocation, useUpdateLocation } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +43,14 @@ export default function LocationDetailPage() {
     const params = useParams();
     const router = useRouter();
     const locationId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: locationId,
+        entityLabel: "Location",
+        listPath: "/locations",
+        useUpdateHook: useUpdateLocation,
+        useDeleteHook: useDeleteLocation,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -331,6 +341,7 @@ export default function LocationDetailPage() {
                         onClick: () => router.push(`/events/new?locationId=${locationId}`),
                     },
                     { label: "View on Map", onClick: () => {} },
+                    ...crudMenuItems,
                 ]}
                 tabs={tabs}
                 activeTab={activeTab}

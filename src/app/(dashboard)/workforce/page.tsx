@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_WORKFORCE_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
@@ -77,6 +79,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function WorkforcePage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [classFilter, setClassFilter] = useState<string>("all");
@@ -117,11 +120,9 @@ export default function WorkforcePage() {
                     title="Workforce Directory"
                     description="Unified view of all workers across all employment classifications — employees, contractors, freelancers, vendors, and more"
                 >
-                    <Link href="/workforce/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> Add Worker
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> Add Worker
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -282,6 +283,11 @@ export default function WorkforcePage() {
                     Showing {filtered.length} of {workers.length} workers
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_WORKFORCE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

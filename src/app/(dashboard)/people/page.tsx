@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_PERSON_CONFIG } from "@/config/create-entity-configs";
 import { MOCK_STAKEHOLDERS } from "@/lib/demo-data";
 import { usePeople } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -25,6 +27,7 @@ const typeConfig: Record<
 };
 
 export default function PeoplePage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbPeople, isLoading } = usePeople();
     const stakeholders = (sbPeople ?? []) as typeof MOCK_STAKEHOLDERS;
 
@@ -50,11 +53,9 @@ export default function PeoplePage() {
                     title="Stakeholder Matrix"
                     description="CRM for Internal Team, Clients, Freelance Crew, and Subcontractors"
                 >
-                    <Link href="/people/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> Add Contact
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> Add Contact
+                    </Button>
                 </PageHeader>
 
                 {/* Type filters */}
@@ -126,6 +127,11 @@ export default function PeoplePage() {
                     })}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_PERSON_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

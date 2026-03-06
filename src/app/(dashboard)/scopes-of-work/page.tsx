@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/ui/page-header";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SOW_CONFIG } from "@/config/create-entity-configs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -44,6 +46,7 @@ interface SOWItem {
 }
 
 export default function ScopesOfWorkPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const STATUS_FILTERS = ["all", "active", "draft", "pending_approval", "completed"] as const;
     const [statusFilter, setStatusFilter] = useQueryTabState({
@@ -104,7 +107,7 @@ export default function ScopesOfWorkPage() {
                     title="Scopes of Work"
                     description="Manage SOW deliverables, billing, and project scope"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New SOW
                     </Button>
                 </PageHeader>
@@ -245,6 +248,11 @@ export default function ScopesOfWorkPage() {
                     })}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_SOW_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

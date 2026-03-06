@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -9,6 +9,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_INSURANCE_POLICY_CONFIG } from "@/config/create-entity-configs";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Shield, XCircle } from "lucide-react";
 import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/demo-data-governance";
 import { useInsurancePolicies } from "@/lib/supabase/hooks-pages";
@@ -50,6 +52,7 @@ const holderNames: Record<string, string> = {
 };
 
 export default function InsurancePoliciesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbPolicies, isLoading } = useInsurancePolicies();
@@ -88,11 +91,9 @@ export default function InsurancePoliciesPage() {
                     title="Insurance Policies"
                     description="Unified insurance registry — verify coverage, track expiration, auto-suspend on lapse"
                 >
-                    <Link href="/insurance-policies/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> Add Policy
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> Add Policy
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -250,6 +251,11 @@ export default function InsurancePoliciesPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog
+                config={CREATE_INSURANCE_POLICY_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

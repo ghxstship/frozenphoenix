@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { LayoutGrid, List, Loader2, Plus, Table2 } from "lucide-react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_TASK_CONFIG } from "@/config/create-entity-configs";
 import {
     FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
     TASK_PRIORITY_MAP as TASK_PRIORITY_CONFIG,
@@ -168,6 +170,7 @@ const boardCardFields: CardField<Task>[] = [
 ];
 
 export default function TasksPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["list", "table", "board"] as const;
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -276,7 +279,7 @@ export default function TasksPage() {
                             ]}
                             ariaLabel="View mode"
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             New Task
                         </Button>
@@ -424,6 +427,11 @@ export default function TasksPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_TASK_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

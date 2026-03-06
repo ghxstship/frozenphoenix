@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteEstimate, useUpdateEstimate } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -81,8 +84,18 @@ export default function EstimateDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: estimate, isLoading } = useEstimate(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Estimate",
+        listPath: "/estimates",
+        useUpdateHook: useUpdateEstimate,
+        useDeleteHook: useDeleteEstimate,
+    });
+    void router;
+    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
@@ -212,7 +225,7 @@ export default function EstimateDetailPage() {
                 { label: "Edit Estimate", onClick: () => {} },
                 { label: "Duplicate", onClick: () => {} },
                 { label: "Convert to Invoice", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

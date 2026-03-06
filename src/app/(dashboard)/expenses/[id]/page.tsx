@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useDeleteExpense, useExpense, useUpdateExpense } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +45,20 @@ const mockExpense = {
 };
 
 export default function ExpenseDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useExpense(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Expense",
+        listPath: "/expenses",
+        useUpdateHook: useUpdateExpense,
+        useDeleteHook: useDeleteExpense,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -157,10 +174,7 @@ export default function ExpenseDetailPage() {
                     Approve
                 </Button>
             }
-            menuItems={[
-                { label: "Edit Expense", onClick: () => {} },
-                { label: "Reject", onClick: () => {}, variant: "destructive" },
-            ]}
+            menuItems={[{ label: "Edit Expense", onClick: () => {} }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

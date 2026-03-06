@@ -4,6 +4,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SERVICE_REQUEST_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -76,6 +78,7 @@ const CONVERT_ICONS: Record<string, typeof FileSignature> = {
 };
 
 export default function ServiceRequestsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -141,7 +144,7 @@ export default function ServiceRequestsPage() {
                     title="Service Requests"
                     description="Triage incoming work requests from clients, online booking, and other channels into estimates, work orders, or projects"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> New Request
                     </Button>
                 </PageHeader>
@@ -329,6 +332,11 @@ export default function ServiceRequestsPage() {
                     )}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_SERVICE_REQUEST_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

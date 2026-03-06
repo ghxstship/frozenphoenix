@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteEvent, useUpdateEvent } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +56,14 @@ export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
     const eventId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: eventId,
+        entityLabel: "Event",
+        listPath: "/events",
+        useUpdateHook: useUpdateEvent,
+        useDeleteHook: useDeleteEvent,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -229,10 +239,7 @@ export default function EventDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[
-                { label: "Duplicate", onClick: () => {} },
-                { label: "Cancel Event", onClick: () => {}, variant: "destructive" },
-            ]}
+            menuItems={[{ label: "Duplicate", onClick: () => {} }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

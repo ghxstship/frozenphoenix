@@ -2,6 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteKBArticle, useUpdateKBArticle } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,6 +181,14 @@ export default function KBArticleDetailPage() {
     const params = useParams();
     const router = useRouter();
     const articleId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: articleId,
+        entityLabel: "Article",
+        listPath: "/knowledge-base",
+        useUpdateHook: useUpdateKBArticle,
+        useDeleteHook: useDeleteKBArticle,
+    });
+    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -356,11 +366,7 @@ export default function KBArticleDetailPage() {
                 menuItems={[
                     { label: "Publish New Version", onClick: () => {} },
                     { label: "Request Acknowledgment", onClick: () => {} },
-                    {
-                        label: "Delete Article",
-                        onClick: () => router.push("/knowledge-base"),
-                        variant: "destructive",
-                    },
+                    ...crudMenuItems,
                 ]}
             >
                 {/* View Tab */}

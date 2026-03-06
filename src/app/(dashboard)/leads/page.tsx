@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_LEAD_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +90,7 @@ const DEMO_LEADS = [
 ];
 
 export default function LeadsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -134,12 +137,10 @@ export default function LeadsPage() {
                 title="Leads"
                 description="Manage incoming leads and opportunities"
                 actions={
-                    <Link href="/leads/new">
-                        <Button>
-                            <Plus className="h-4 w-4" />
-                            Add Lead
-                        </Button>
-                    </Link>
+                    <Button onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        Add Lead
+                    </Button>
                 }
             >
                 {/* Filters */}
@@ -327,6 +328,11 @@ export default function LeadsPage() {
                     </div>
                 )}
             </PageShell>
+            <CreateEntityDialog
+                config={CREATE_LEAD_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

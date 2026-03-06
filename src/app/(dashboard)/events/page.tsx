@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +30,7 @@ const STATUS_VARIANTS: Record<string, string> = {
 };
 
 export default function EventsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -102,12 +105,10 @@ export default function EventsPage() {
                 title="Events"
                 description="Manage shows, rehearsals, and scheduled activities"
                 actions={
-                    <Link href="/events/new">
-                        <Button>
-                            <Plus className="h-4 w-4" />
-                            Schedule Event
-                        </Button>
-                    </Link>
+                    <Button onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        Schedule Event
+                    </Button>
                 }
             >
                 {/* Filters */}
@@ -281,6 +282,11 @@ export default function EventsPage() {
                     </div>
                 )}
             </PageShell>
+            <CreateEntityDialog
+                config={CREATE_EVENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

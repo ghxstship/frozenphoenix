@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DECK_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -90,6 +92,7 @@ const typeConfig: Record<DeckType, { label: string; color: string }> = {
 };
 
 export default function DecksPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["grid", "list"] as const;
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -196,7 +199,7 @@ export default function DecksPage() {
                             ]}
                             ariaLabel="View mode"
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             New Deck
                         </Button>
@@ -405,6 +408,11 @@ export default function DecksPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_DECK_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

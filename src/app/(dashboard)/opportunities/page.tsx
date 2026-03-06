@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_OPPORTUNITY_CONFIG } from "@/config/create-entity-configs";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
@@ -130,6 +131,7 @@ const tableColumns: ColumnDef<Opportunity>[] = [
 ];
 
 export default function OpportunitiesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["board", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -189,11 +191,9 @@ export default function OpportunitiesPage() {
                     title="Opportunities"
                     description="Sales pipeline — track opportunities from discovery to close"
                 >
-                    <Link href="/opportunities/new">
-                        <Button size="sm">
-                            <Plus className="mr-2 h-4 w-4" /> New Opportunity
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> New Opportunity
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -386,6 +386,11 @@ export default function OpportunitiesPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_OPPORTUNITY_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

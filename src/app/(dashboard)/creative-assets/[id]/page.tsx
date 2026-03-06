@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+    useCreativeAsset,
+    useDeleteCreativeAsset,
+    useUpdateCreativeAsset,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +72,20 @@ const mockReviews = [
 ];
 
 export default function CreativeAssetDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useCreativeAsset(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Creative Asset",
+        listPath: "/creative-assets",
+        useUpdateHook: useUpdateCreativeAsset,
+        useDeleteHook: useDeleteCreativeAsset,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -209,7 +230,7 @@ export default function CreativeAssetDetailPage() {
             menuItems={[
                 { label: "Edit Asset", onClick: () => {} },
                 { label: "Submit for Review", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

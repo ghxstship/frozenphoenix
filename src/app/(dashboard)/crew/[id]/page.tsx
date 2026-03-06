@@ -4,6 +4,11 @@ import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import {
+    useDeleteCrewMember,
+    useUpdateCrewMember as useUpdateCrewMemberHook,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +48,13 @@ export default function CrewDetailPage() {
     const params = useParams();
     const router = useRouter();
     const crewId = params.id as string;
+    const { menuItems: crudMenuItems } = useDetailCrud({
+        entityId: crewId,
+        entityLabel: "Crew Member",
+        listPath: "/crew",
+        useUpdateHook: useUpdateCrewMemberHook,
+        useDeleteHook: useDeleteCrewMember,
+    });
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -245,6 +257,7 @@ export default function CrewDetailPage() {
                         onClick: handleDeactivate,
                         variant: "destructive",
                     },
+                    ...crudMenuItems,
                 ]}
                 tabs={tabs}
                 activeTab={activeTab}

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteBudget, useUpdateBudget } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +73,14 @@ export default function BudgetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const budgetId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: budgetId,
+        entityLabel: "Budget",
+        listPath: "/budgets",
+        useUpdateHook: useUpdateBudget,
+        useDeleteHook: useDeleteBudget,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -227,7 +237,7 @@ export default function BudgetDetailPage() {
             menuItems={[
                 { label: "Export PDF", onClick: () => {} },
                 { label: "Create New Version", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

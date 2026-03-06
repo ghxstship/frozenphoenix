@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +116,20 @@ type TabId = "details" | "payments" | "chatter";
 const TAB_VALUES = ["details", "payments", "chatter"] as const;
 
 export default function InvoiceDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useInvoice(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Invoice",
+        listPath: "/invoices",
+        useUpdateHook: useUpdateInvoice,
+        useDeleteHook: useDeleteInvoice,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -256,7 +273,7 @@ export default function InvoiceDetailPage() {
             menuItems={[
                 { label: "Record Payment", onClick: () => {} },
                 { label: "Duplicate", onClick: () => {} },
-                { label: "Void Invoice", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

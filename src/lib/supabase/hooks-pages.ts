@@ -138,6 +138,21 @@ export function useClientInvoices(status?: string) {
     });
 }
 
+export function useClientInvoice(id: string) {
+    return useQuery({
+        queryKey: ["client_invoice", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("client_invoices")
+                .select("*, projects(name), profiles(name)")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
 export function useCreateClientInvoice() {
     const qc = useQueryClient();
     return useMutation({
@@ -295,6 +310,21 @@ export function useComplianceChecklists() {
     });
 }
 
+export function useComplianceChecklist(id: string) {
+    return useQuery({
+        queryKey: ["compliance_checklist", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("compliance_checklists")
+                .select("*, profiles(name)")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CALL SHEETS
 // ═══════════════════════════════════════════════════════════════
@@ -436,6 +466,21 @@ export function useVendorReviews(vendorId?: string) {
     });
 }
 
+export function useVendorReview(id: string) {
+    return useQuery({
+        queryKey: ["vendor_review", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("vendor_reviews")
+                .select("*, vendors(name), profiles(name), projects(name)")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════
 // E-SIGNATURES
 // ═══════════════════════════════════════════════════════════════
@@ -507,6 +552,21 @@ export function useAccounts() {
     });
 }
 
+export function useAccount(id: string) {
+    return useQuery({
+        queryKey: ["account", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("stakeholders")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
 export function usePeople() {
     return useQuery({
         queryKey: ["people"],
@@ -515,6 +575,18 @@ export function usePeople() {
             if (error) throw error;
             return data;
         },
+    });
+}
+
+export function usePerson(id: string) {
+    return useQuery({
+        queryKey: ["person", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("profiles").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
     });
 }
 
@@ -587,6 +659,21 @@ export function useBrandGuidelines() {
             if (error) throw error;
             return data;
         },
+    });
+}
+
+export function useBrandGuideline(id: string) {
+    return useQuery({
+        queryKey: ["brand_guideline", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("brand_guidelines")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
     });
 }
 
@@ -778,6 +865,18 @@ export function useDispatch() {
     });
 }
 
+export function useDispatchRecord(id: string) {
+    return useQuery({
+        queryKey: ["dispatch_record", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("shipments").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════
 // PAYROLL
 // ═══════════════════════════════════════════════════════════════
@@ -843,6 +942,21 @@ export function useWorkerProfiles() {
             if (error) throw error;
             return data;
         },
+    });
+}
+
+export function useWorkerProfile(id: string) {
+    return useQuery({
+        queryKey: ["worker_profile", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("worker_profiles")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
     });
 }
 
@@ -1540,5 +1654,737 @@ export function useEvent(id: string) {
             return data;
         },
         enabled: !!id,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SINGLE-RECORD HOOKS (Phase 1 — wire mock detail pages to Supabase)
+// ═══════════════════════════════════════════════════════════════
+
+export function useBrandKit(id: string) {
+    return useQuery({
+        queryKey: ["brand_kit", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("brand_kits").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCallSheet(id: string) {
+    return useQuery({
+        queryKey: ["call_sheet", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("call_sheets")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCompany(id: string) {
+    return useQuery({
+        queryKey: ["company", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("companies").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useContract(id: string) {
+    return useQuery({
+        queryKey: ["contract", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("contracts").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCreativeAsset(id: string) {
+    return useQuery({
+        queryKey: ["creative_asset", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("digital_assets")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useDeck(id: string) {
+    return useQuery({
+        queryKey: ["deck", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("decks").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useDigitalAsset(id: string) {
+    return useQuery({
+        queryKey: ["digital_asset", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("digital_assets")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useExpense(id: string) {
+    return useQuery({
+        queryKey: ["expense", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("expenses").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useInvoice(id: string) {
+    return useQuery({
+        queryKey: ["invoice", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("invoices").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useProposal(id: string) {
+    return useQuery({
+        queryKey: ["proposal", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("proposals").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useRecurringInvoice(id: string) {
+    return useQuery({
+        queryKey: ["recurring_invoice", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("recurring_invoices")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useScopeOfWork(id: string) {
+    return useQuery({
+        queryKey: ["scope_of_work", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("scopes_of_work")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useTechSheet(id: string) {
+    return useQuery({
+        queryKey: ["tech_sheet", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("tech_sheets")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useTemplate(id: string) {
+    return useQuery({
+        queryKey: ["template", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("project_templates")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPDATE MUTATION HOOKS (Phase 2)
+// ═══════════════════════════════════════════════════════════════
+
+function makeUpdateHook(table: string, keyPrefix: string) {
+    return function useUpdateEntity() {
+        const qc = useQueryClient();
+        return useMutation({
+            mutationFn: async ({ id, ...updates }: Record<string, unknown>) => {
+                const { data, error } = await fromTable(table)
+                    .update(updates)
+                    .eq("id", id as string)
+                    .select()
+                    .single();
+                if (error) throw error;
+                return data;
+            },
+            onSuccess: (_d, vars) => {
+                qc.invalidateQueries({ queryKey: [keyPrefix] });
+                qc.invalidateQueries({ queryKey: [keyPrefix, vars.id] });
+            },
+        });
+    };
+}
+
+function makeDeleteHook(table: string, keyPrefix: string) {
+    return function useDeleteEntity() {
+        const qc = useQueryClient();
+        return useMutation({
+            mutationFn: async (id: string) => {
+                const { error } = await fromTable(table).delete().eq("id", id);
+                if (error) throw error;
+            },
+            onSuccess: () => {
+                qc.invalidateQueries({ queryKey: [keyPrefix] });
+            },
+        });
+    };
+}
+
+export const useUpdateBrandKit = makeUpdateHook("brand_kits", "brand_kits");
+export const useUpdateActivation = makeUpdateHook("activations", "activations");
+export const useUpdateAsset = makeUpdateHook("assets", "assets");
+export const useUpdateBrief = makeUpdateHook("briefs", "briefs");
+export const useUpdateBudget = makeUpdateHook("budgets", "budgets");
+export const useUpdateCallSheet = makeUpdateHook("call_sheets", "call_sheets");
+export const useUpdateCampaign = makeUpdateHook("campaigns", "campaigns");
+export const useUpdateCertification = makeUpdateHook("certifications", "certifications");
+export const useUpdateCrewMember = makeUpdateHook("crew_members", "crew_members");
+export const useUpdateChangeOrder = makeUpdateHook("change_orders", "change_orders");
+export const useUpdateCompany = makeUpdateHook("companies", "companies");
+export const useUpdateContract = makeUpdateHook("contracts", "contracts");
+export const useUpdateCreativeAsset = makeUpdateHook("digital_assets", "creative_assets");
+export const useUpdateDeal = makeUpdateHook("deals", "deals");
+export const useUpdateDeck = makeUpdateHook("decks", "decks");
+export const useUpdateDigitalAsset = makeUpdateHook("digital_assets", "digital_assets");
+export const useUpdateEstimate = makeUpdateHook("estimates", "estimates");
+export const useUpdateEvent = makeUpdateHook("events", "events");
+export const useUpdateExpense = makeUpdateHook("expenses", "expenses");
+export const useUpdateIncident = makeUpdateHook("incidents", "incidents");
+export const useUpdateInsurancePolicy = makeUpdateHook("insurance_policies", "insurance_policies");
+export const useUpdateInvoice = makeUpdateHook("invoices", "invoices");
+export const useUpdateKBArticle = makeUpdateHook(
+    "knowledge_base_articles",
+    "knowledge_base_articles"
+);
+export const useUpdateLead = makeUpdateHook("leads", "leads");
+export const useUpdateLocation = makeUpdateHook("locations", "locations");
+export const useUpdateOpportunity = makeUpdateHook("opportunities", "opportunities");
+export const useUpdatePermit = makeUpdateHook("permits", "permits");
+export const useUpdateRecurringInvoice = makeUpdateHook("recurring_invoices", "recurring_invoices");
+export const useUpdateScopeOfWork = makeUpdateHook("scopes_of_work", "scopes_of_work");
+export const useUpdateServiceRequest = makeUpdateHook("service_requests", "service_requests");
+export const useUpdateShipment = makeUpdateHook("shipments", "shipments");
+export const useUpdateTechSheet = makeUpdateHook("tech_sheets", "tech_sheets");
+export const useUpdateTemplate = makeUpdateHook("project_templates", "templates");
+export const useUpdateVendor = makeUpdateHook("vendors", "vendors");
+export const useUpdateWorkerProfile = makeUpdateHook("worker_profiles", "worker_profiles");
+export const useUpdateWorkOrder = makeUpdateHook("work_orders", "work_orders");
+export const useUpdateAccount = makeUpdateHook("stakeholders", "accounts");
+export const useUpdateBrandGuideline = makeUpdateHook("brand_guidelines", "brand_guidelines");
+export const useUpdateClientInvoice = makeUpdateHook("client_invoices", "client_invoices");
+export const useUpdateComplianceChecklist = makeUpdateHook(
+    "compliance_checklists",
+    "compliance_checklists"
+);
+export const useUpdateDispatchRecord = makeUpdateHook("shipments", "dispatch");
+export const useUpdatePerson = makeUpdateHook("profiles", "people");
+export const useUpdateVendorReview = makeUpdateHook("vendor_reviews", "vendor_reviews");
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE MUTATION HOOKS (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+
+export const useDeleteBrandKit = makeDeleteHook("brand_kits", "brand_kits");
+export const useDeleteActivation = makeDeleteHook("activations", "activations");
+export const useDeleteAsset = makeDeleteHook("assets", "assets");
+export const useDeleteBrief = makeDeleteHook("briefs", "briefs");
+export const useDeleteBudget = makeDeleteHook("budgets", "budgets");
+export const useDeleteCallSheet = makeDeleteHook("call_sheets", "call_sheets");
+export const useDeleteCampaign = makeDeleteHook("campaigns", "campaigns");
+export const useDeleteCertification = makeDeleteHook("certifications", "certifications");
+export const useDeleteCrewMember = makeDeleteHook("crew_members", "crew_members");
+export const useDeleteChangeOrder = makeDeleteHook("change_orders", "change_orders");
+export const useDeleteCompany = makeDeleteHook("companies", "companies");
+export const useDeleteContract = makeDeleteHook("contracts", "contracts");
+export const useDeleteCreativeAsset = makeDeleteHook("digital_assets", "creative_assets");
+export const useDeleteDeal = makeDeleteHook("deals", "deals");
+export const useDeleteVendor = makeDeleteHook("vendors", "vendors");
+export const useDeleteDeck = makeDeleteHook("decks", "decks");
+export const useDeleteDigitalAsset = makeDeleteHook("digital_assets", "digital_assets");
+export const useDeleteEstimate = makeDeleteHook("estimates", "estimates");
+export const useDeleteEvent = makeDeleteHook("events", "events");
+export const useDeleteExpense = makeDeleteHook("expenses", "expenses");
+export const useDeleteIncident = makeDeleteHook("incidents", "incidents");
+export const useDeleteInsurancePolicy = makeDeleteHook("insurance_policies", "insurance_policies");
+export const useDeleteInvoice = makeDeleteHook("invoices", "invoices");
+export const useDeleteKBArticle = makeDeleteHook(
+    "knowledge_base_articles",
+    "knowledge_base_articles"
+);
+export const useDeleteLead = makeDeleteHook("leads", "leads");
+export const useDeleteLocation = makeDeleteHook("locations", "locations");
+export const useDeleteOpportunity = makeDeleteHook("opportunities", "opportunities");
+export const useDeletePermit = makeDeleteHook("permits", "permits");
+export const useDeleteProposal = makeDeleteHook("proposals", "proposals");
+export const useDeleteRecurringInvoice = makeDeleteHook("recurring_invoices", "recurring_invoices");
+export const useDeleteScopeOfWork = makeDeleteHook("scopes_of_work", "scopes_of_work");
+export const useDeleteServiceRequest = makeDeleteHook("service_requests", "service_requests");
+export const useDeleteShipment = makeDeleteHook("shipments", "shipments");
+export const useDeleteTechSheet = makeDeleteHook("tech_sheets", "tech_sheets");
+export const useDeleteTemplate = makeDeleteHook("project_templates", "templates");
+export const useDeleteWorkerProfile = makeDeleteHook("worker_profiles", "worker_profiles");
+export const useDeleteWorkOrder = makeDeleteHook("work_orders", "work_orders");
+export const useDeleteAccount = makeDeleteHook("stakeholders", "accounts");
+export const useDeleteBrandGuideline = makeDeleteHook("brand_guidelines", "brand_guidelines");
+export const useDeleteClientInvoice = makeDeleteHook("client_invoices", "client_invoices");
+export const useDeleteComplianceChecklist = makeDeleteHook(
+    "compliance_checklists",
+    "compliance_checklists"
+);
+export const useDeleteDispatchRecord = makeDeleteHook("shipments", "dispatch");
+export const useDeletePerson = makeDeleteHook("profiles", "people");
+export const useDeleteVendorReview = makeDeleteHook("vendor_reviews", "vendor_reviews");
+
+// ═══════════════════════════════════════════════════════════════
+// MISSING CREATE HOOKS (Phase 5)
+// ═══════════════════════════════════════════════════════════════
+
+export function useCreateCertification() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("certifications").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["certifications"] }),
+    });
+}
+
+export function useCreateInsurancePolicy() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("insurance_policies")
+                .insert(b)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["insurance_policies"] }),
+    });
+}
+
+export function useCreateOpportunity() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("opportunities").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
+    });
+}
+
+export function useCreatePermit() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("permits").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["permits"] }),
+    });
+}
+
+export function useCreateServiceRequest() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("service_requests").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["service_requests"] }),
+    });
+}
+
+export function useCreateWorkOrder() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("work_orders").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["work_orders"] }),
+    });
+}
+
+export function useCreateAccount() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("stakeholders").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["stakeholders"] }),
+    });
+}
+
+export function useCreateBrandGuideline() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("brand_guidelines").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["brand_guidelines"] }),
+    });
+}
+
+export function useCreateBrandKit() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("brand_kits").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["brand_kits"] }),
+    });
+}
+
+export function useCreateComplianceChecklist() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("compliance_checklists")
+                .insert(b)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["compliance_checklists"] }),
+    });
+}
+
+export function useCreateDeck() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("decks").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["decks"] }),
+    });
+}
+
+export function useCreateDispatchRecord() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("shipments").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["shipments"] }),
+    });
+}
+
+export function useCreatePerson() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("profiles").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["profiles"] }),
+    });
+}
+
+export function useCreateVendorReview() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("vendor_reviews").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["vendor_reviews"] }),
+    });
+}
+
+export function useCreateWorkerProfile() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("worker_profiles").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["worker_profiles"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PURCHASE REQUISITIONS — single-record + mutations
+// ═══════════════════════════════════════════════════════════════
+
+export function usePurchaseRequisition(id: string) {
+    return useQuery({
+        queryKey: ["purchase_requisition", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("purchase_requisitions")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCreatePurchaseRequisition() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("purchase_requisitions")
+                .insert(b)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
+    });
+}
+
+export function useUpdatePurchaseRequisition() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("purchase_requisitions")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
+    });
+}
+
+export function useDeletePurchaseRequisition() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await fromTable("purchase_requisitions").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PURCHASE ORDERS — single-record + mutations
+// ═══════════════════════════════════════════════════════════════
+
+export function usePurchaseOrder(id: string) {
+    return useQuery({
+        queryKey: ["purchase_order", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("purchase_orders")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useUpdatePurchaseOrder() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("purchase_orders")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_orders"] }),
+    });
+}
+
+export function useDeletePurchaseOrder() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await fromTable("purchase_orders").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_orders"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APPROVALS — single-record + mutations
+// ═══════════════════════════════════════════════════════════════
+
+export function useApproval(id: string) {
+    return useQuery({
+        queryKey: ["approval", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("approvals").select("*").eq("id", id).single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCreateApproval() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("approvals").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["approvals"] }),
+    });
+}
+
+export function useDeleteApproval() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await fromTable("approvals").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["approvals"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENTS (vault_documents) — single-record + mutations
+// ═══════════════════════════════════════════════════════════════
+
+export function useDocument(id: string) {
+    return useQuery({
+        queryKey: ["document", id],
+        queryFn: async () => {
+            const { data, error } = await fromTable("vault_documents")
+                .select("*, profiles(name)")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+}
+
+export function useCreateDocument() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (b: Record<string, unknown>) => {
+            const { data, error } = await fromTable("vault_documents").insert(b).select().single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
+    });
+}
+
+export function useUpdateDocument() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("vault_documents")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
+    });
+}
+
+export function useDeleteDocument() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await fromTable("vault_documents").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
     });
 }

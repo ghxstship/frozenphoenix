@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_VENDOR_REVIEW_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
@@ -40,6 +42,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
 }
 
 export default function VendorReviewsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const { data: sbReviews, isLoading } = useVendorReviews();
 
@@ -73,11 +76,9 @@ export default function VendorReviewsPage() {
                     title="Vendor Reviews"
                     description="Performance reviews, ratings, and rehire recommendations for all vendors and subcontractors"
                 >
-                    <Link href="/vendor-reviews/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> New Review
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> New Review
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -224,6 +225,11 @@ export default function VendorReviewsPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_VENDOR_REVIEW_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

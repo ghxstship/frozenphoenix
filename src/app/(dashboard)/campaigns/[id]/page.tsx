@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteCampaign, useUpdateCampaign } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -44,8 +47,18 @@ export default function CampaignDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: campaign, isLoading } = useCampaign(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Campaign",
+        listPath: "/campaigns",
+        useUpdateHook: useUpdateCampaign,
+        useDeleteHook: useDeleteCampaign,
+    });
+    void router;
+    void handleUpdate;
     const { data: sbChannels } = useCampaignChannels(entityId);
     const { data: sbAssets } = useCampaignAssets(entityId);
     const { data: sbKpis } = useCampaignKpis(entityId);
@@ -233,7 +246,7 @@ export default function CampaignDetailPage() {
             menuItems={[
                 { label: "Edit Campaign", onClick: () => {} },
                 { label: "Duplicate", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

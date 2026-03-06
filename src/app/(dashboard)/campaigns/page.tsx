@@ -2,9 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CAMPAIGN_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ const STATUS_ORDER: CampaignStatus[] = [
 ];
 
 export default function CampaignsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const VIEW_MODES = ["cards", "kanban"] as const;
@@ -130,12 +132,10 @@ export default function CampaignsPage() {
                             ]}
                             ariaLabel="View mode"
                         />
-                        <Link href="/campaigns/new">
-                            <Button size="sm">
-                                <Plus className="h-4 w-4" />
-                                New Campaign
-                            </Button>
-                        </Link>
+                        <Button size="sm" onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            New Campaign
+                        </Button>
                     </div>
                 </PageHeader>
 
@@ -488,6 +488,11 @@ export default function CampaignsPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_CAMPAIGN_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

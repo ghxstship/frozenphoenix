@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+    useDeleteDigitalAsset,
+    useDigitalAsset,
+    useUpdateDigitalAsset,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +92,20 @@ const mockLinks = [
 ];
 
 export default function DigitalAssetDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useDigitalAsset(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Digital Asset",
+        listPath: "/digital-assets",
+        useUpdateHook: useUpdateDigitalAsset,
+        useDeleteHook: useDeleteDigitalAsset,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -234,7 +255,7 @@ export default function DigitalAssetDetailPage() {
             menuItems={[
                 { label: "Edit Metadata", onClick: () => {} },
                 { label: "Upload New Version", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SHIPMENT_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +30,7 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function ShipmentsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -102,12 +105,10 @@ export default function ShipmentsPage() {
                 title="Shipments"
                 description="Track and manage logistics and freight"
                 actions={
-                    <Link href="/shipments/new">
-                        <Button>
-                            <Plus className="h-4 w-4" />
-                            New Shipment
-                        </Button>
-                    </Link>
+                    <Button onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        New Shipment
+                    </Button>
                 }
             >
                 {/* Filters */}
@@ -306,6 +307,11 @@ export default function ShipmentsPage() {
                     </div>
                 )}
             </PageShell>
+            <CreateEntityDialog
+                config={CREATE_SHIPMENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

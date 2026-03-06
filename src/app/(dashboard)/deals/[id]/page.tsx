@@ -4,6 +4,8 @@ import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteDeal, useUpdateDeal as useUpdateDealHook } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -51,6 +53,13 @@ export default function DealDetailPage() {
     const params = useParams();
     const router = useRouter();
     const dealId = params.id as string;
+    const { menuItems: crudMenuItems } = useDetailCrud({
+        entityId: dealId,
+        entityLabel: "Deal",
+        listPath: "/deals",
+        useUpdateHook: useUpdateDealHook,
+        useDeleteHook: useDeleteDeal,
+    });
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -269,6 +278,7 @@ export default function DealDetailPage() {
                         onClick: handleMarkWon,
                     },
                     { label: "Mark as Lost", onClick: handleMarkLost, variant: "destructive" },
+                    ...crudMenuItems,
                 ]}
                 tabs={tabs}
                 activeTab={activeTab}

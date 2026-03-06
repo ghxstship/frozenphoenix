@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import {
+    useBrandKit,
+    useDeleteBrandKit as useDeleteHook,
+    useUpdateBrandKit as useUpdateHook,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
+import { Loader2 } from "lucide-react";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -188,8 +195,17 @@ const BRAND_TAB_VALUES = ["colors", "assets", "guidelines", "chatter"] as const;
 
 export default function BrandKitDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const kitId = params.id as string;
-    void kitId;
+    const { data: sbRecord, isLoading } = useBrandKit(kitId);
+    const { menuItems: crudMenuItems } = useDetailCrud({
+        entityId: kitId,
+        entityLabel: "Brand Kit",
+        listPath: "/brand-kit",
+        useUpdateHook,
+        useDeleteHook,
+    });
+    void router;
     const [activeTab, setActiveTab] = useQueryTabState<BrandTab>({
         key: "tab",
         defaultValue: "colors",
@@ -296,11 +312,22 @@ export default function BrandKitDetailPage() {
         </div>
     );
 
+    const entity = (sbRecord as Record<string, unknown>) ?? mockBrand;
+    const brandName = (entity.client_name ?? entity.clientName ?? mockBrand.clientName) as string;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
         <DetailLayout
             backHref="/brand-kit"
             backLabel="Brand Kits"
-            title={`${mockBrand.clientName} Brand Kit`}
+            title={`${brandName} Brand Kit`}
             subtitle="Last updated Feb 20, 2026"
             avatar={
                 <div
@@ -324,6 +351,7 @@ export default function BrandKitDetailPage() {
                     </Button>
                 </>
             }
+            menuItems={crudMenuItems}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as BrandTab)}

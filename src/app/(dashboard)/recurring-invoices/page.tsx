@@ -4,6 +4,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_RECURRING_INVOICE_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -40,6 +42,7 @@ const FREQ_LABELS: Record<Frequency, string> = {
 };
 
 export default function RecurringInvoicesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
 
     const { data: sbRecurring, isLoading } = useRecurringInvoices();
@@ -99,7 +102,7 @@ export default function RecurringInvoicesPage() {
                     title="Recurring Invoices"
                     description="Automate invoice generation on a schedule"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New Recurring Invoice
                     </Button>
                 </PageHeader>
@@ -216,6 +219,11 @@ export default function RecurringInvoicesPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_RECURRING_INVOICE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

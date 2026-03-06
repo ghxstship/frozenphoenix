@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeletePermit, useUpdatePermit } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -36,8 +39,18 @@ export default function PermitDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: permit, isLoading } = usePermit(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Permit",
+        listPath: "/permits",
+        useUpdateHook: useUpdatePermit,
+        useDeleteHook: useDeletePermit,
+    });
+    void router;
+    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
 
@@ -217,7 +230,7 @@ export default function PermitDetailPage() {
             menuItems={[
                 { label: "Edit Permit", onClick: () => {} },
                 { label: "Upload Document", onClick: () => {} },
-                { label: "Revoke", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

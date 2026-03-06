@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CLIENT_INVOICE_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -45,6 +47,7 @@ interface ClientInvoice {
 }
 
 export default function ClientInvoicesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const STATUS_FILTERS = ["all", "draft", "sent", "overdue", "paid"] as const;
     const [statusFilter, setStatusFilter] = useQueryTabState({
@@ -110,11 +113,9 @@ export default function ClientInvoicesPage() {
                     title="Client Invoices"
                     description="Create, send, and track client-facing invoices"
                 >
-                    <Link href="/client-invoices/new">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> New Invoice
-                        </Button>
-                    </Link>
+                    <Button onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> New Invoice
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -248,6 +249,11 @@ export default function ClientInvoicesPage() {
                     })}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_CLIENT_INVOICE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

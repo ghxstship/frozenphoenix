@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteWorkOrder, useUpdateWorkOrder } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -60,8 +63,18 @@ export default function WorkOrderDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: wo, isLoading } = useWorkOrder(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Work Order",
+        listPath: "/work-orders",
+        useUpdateHook: useUpdateWorkOrder,
+        useDeleteHook: useDeleteWorkOrder,
+    });
+    void router;
+    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
     const handleAddComment = async (content: string) => {
@@ -184,7 +197,7 @@ export default function WorkOrderDetailPage() {
             menuItems={[
                 { label: "Edit Work Order", onClick: () => {} },
                 { label: "Reassign Vendor", onClick: () => {} },
-                { label: "Cancel", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

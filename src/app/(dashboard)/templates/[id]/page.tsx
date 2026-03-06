@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteTemplate, useTemplate, useUpdateTemplate } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -186,6 +188,16 @@ export default function TemplateDetailPage() {
     const params = useParams();
     const router = useRouter();
     const templateId = params.id as string;
+    const { data: sbRecord } = useTemplate(templateId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: templateId,
+        entityLabel: "Template",
+        listPath: "/templates",
+        useUpdateHook: useUpdateTemplate,
+        useDeleteHook: useDeleteTemplate,
+    });
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -306,7 +318,7 @@ export default function TemplateDetailPage() {
                     onClick: () => {},
                 },
                 { label: "Export", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

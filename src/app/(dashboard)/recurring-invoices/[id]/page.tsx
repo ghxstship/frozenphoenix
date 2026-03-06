@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+    useDeleteRecurringInvoice,
+    useRecurringInvoice,
+    useUpdateRecurringInvoice,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +64,20 @@ const mockHistory = [
 ];
 
 export default function RecurringInvoiceDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useRecurringInvoice(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Recurring Invoice",
+        listPath: "/recurring-invoices",
+        useUpdateHook: useUpdateRecurringInvoice,
+        useDeleteHook: useDeleteRecurringInvoice,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -217,7 +238,7 @@ export default function RecurringInvoiceDetailPage() {
             menuItems={[
                 { label: "Edit Schedule", onClick: () => {} },
                 { label: "Edit Line Items", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

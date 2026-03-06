@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DISPATCH_CONFIG } from "@/config/create-entity-configs";
 import { CheckCircle2, Clock, Loader2, MapPin, Navigation, Plus, Truck, Users } from "lucide-react";
 import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
 import { useDispatch } from "@/lib/supabase/hooks-pages";
@@ -29,6 +31,7 @@ const DISPATCH_STATUSES: DispatchStatus[] = [
 ];
 
 export default function DispatchPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbDispatch, isLoading } = useDispatch();
@@ -70,11 +73,9 @@ export default function DispatchPage() {
                     title="Dispatch Board"
                     description="Real-time crew and vendor dispatch tracking across all active work orders"
                 >
-                    <Link href="/dispatch/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> New Dispatch
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> New Dispatch
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -245,6 +246,11 @@ export default function DispatchPage() {
                     </Card>
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_DISPATCH_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

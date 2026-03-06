@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -17,6 +17,8 @@ import {
 } from "@/lib/demo-data-creative-brand";
 import { useBrandGuidelines } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_BRAND_GUIDELINE_CONFIG } from "@/config/create-entity-configs";
 import type { BrandGuideline, BrandGuidelineSection, BrandLevel } from "@/types";
 import {
     Accessibility,
@@ -67,6 +69,7 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
 };
 
 export default function BrandGuidelinesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [expandedGuideline, setExpandedGuideline] = useState<string | null>("bg-1");
     const { data: sbGuidelines, isLoading } = useBrandGuidelines();
@@ -114,12 +117,10 @@ export default function BrandGuidelinesPage() {
                     title="Brand Guidelines"
                     description="Multi-brand governance with versioned visual identity, typography, voice, and compliance standards"
                 >
-                    <Link href="/brand-guidelines/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" />
-                            New Guideline
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        New Guideline
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -162,6 +163,11 @@ export default function BrandGuidelinesPage() {
                     )}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_BRAND_GUIDELINE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

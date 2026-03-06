@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -63,6 +65,7 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 }
 
 export default function AccountsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbAccounts, isLoading } = useAccounts();
@@ -110,11 +113,9 @@ export default function AccountsPage() {
                     title="Accounts"
                     description="Client relationship health and revenue overview"
                 >
-                    <Link href="/accounts/new">
-                        <Button size="sm">
-                            <Building2 className="mr-2 h-4 w-4" /> New Account
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Building2 className="mr-2 h-4 w-4" /> New Account
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -159,6 +160,11 @@ export default function AccountsPage() {
                     )}
                 </div>
             </div>
+            <CreateEntityDialog
+                config={CREATE_ACCOUNT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

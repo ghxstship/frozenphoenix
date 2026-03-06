@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_PURCHASE_REQUISITION_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -32,6 +34,7 @@ const URGENCY_VARIANTS: Record<string, "destructive" | "warning" | "default" | "
 };
 
 export default function PurchaseRequisitionsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -85,7 +88,7 @@ export default function PurchaseRequisitionsPage() {
                     title="Purchase Requisitions"
                     description="Pre-PO approval workflow — request, justify, and approve purchases before PO issuance"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> New Requisition
                     </Button>
                 </PageHeader>
@@ -191,6 +194,11 @@ export default function PurchaseRequisitionsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog
+                config={CREATE_PURCHASE_REQUISITION_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

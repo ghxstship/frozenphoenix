@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteInsurancePolicy, useUpdateInsurancePolicy } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +31,18 @@ export default function InsurancePolicyDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: policy, isLoading } = useInsurancePolicy(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Insurance Policy",
+        listPath: "/insurance-policies",
+        useUpdateHook: useUpdateInsurancePolicy,
+        useDeleteHook: useDeleteInsurancePolicy,
+    });
+    void router;
+    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
 
@@ -202,7 +215,7 @@ export default function InsurancePolicyDetailPage() {
             menuItems={[
                 { label: "Edit Policy", onClick: () => {} },
                 { label: "Upload Certificate", onClick: () => {} },
-                { label: "Cancel Policy", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

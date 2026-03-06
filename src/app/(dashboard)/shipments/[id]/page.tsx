@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteShipment, useUpdateShipment } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +64,14 @@ export default function ShipmentDetailPage() {
     const params = useParams();
     const router = useRouter();
     const shipmentId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: shipmentId,
+        entityLabel: "Shipment",
+        listPath: "/shipments",
+        useUpdateHook: useUpdateShipment,
+        useDeleteHook: useDeleteShipment,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -257,10 +267,7 @@ export default function ShipmentDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[
-                { label: "Print BOL", onClick: () => {} },
-                { label: "Cancel Shipment", onClick: () => {}, variant: "destructive" },
-            ]}
+            menuItems={[{ label: "Print BOL", onClick: () => {} }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

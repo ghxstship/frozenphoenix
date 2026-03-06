@@ -4,6 +4,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_EXPENSE_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -58,6 +60,7 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 };
 
 export default function ExpensesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -106,7 +109,7 @@ export default function ExpensesPage() {
                     title="Expenses"
                     description="Track and manage expense reports and reimbursements"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         Submit Expense
                     </Button>
@@ -221,6 +224,11 @@ export default function ExpensesPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_EXPENSE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

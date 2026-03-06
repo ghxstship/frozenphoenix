@@ -34,6 +34,8 @@ import type { SupportedLocale } from "@/lib/locale";
 import type { PermissionLevel } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {
+    AlertTriangle,
+    Banknote,
     Briefcase,
     Building2,
     CalendarPlus,
@@ -41,9 +43,11 @@ import {
     ChevronDown,
     ChevronRight,
     CircleDot,
+    ClipboardCheck,
     ClipboardPlus,
     Command,
     ExternalLink,
+    FileSignature,
     FileText,
     FolderPlus,
     Globe,
@@ -51,17 +55,26 @@ import {
     Keyboard,
     LifeBuoy,
     LogOut,
+    Megaphone,
     Menu,
     MessageSquare,
     Monitor,
     Moon,
     MoreHorizontal,
+    Package,
+    PenTool,
     Plus,
+    Receipt,
+    ScrollText,
     Search,
     Settings,
     Shield,
+    ShoppingCart,
     Sparkles,
+    Store,
     Sun,
+    Target,
+    Truck,
     User,
     UserPlus,
     Wifi,
@@ -249,7 +262,7 @@ const LOCALE_OPTIONS: { value: SupportedLocale; label: string; flag: string }[] 
     { value: "ko-KR", label: "한국어", flag: "🇰🇷" },
 ];
 
-// ─── Quick Create Actions (context-aware) ───
+// ─── Quick Create Actions (context-aware, grouped by domain) ───
 
 interface QuickCreateAction {
     label: string;
@@ -258,21 +271,184 @@ interface QuickCreateAction {
     resource: string;
 }
 
-const QUICK_CREATE_ACTIONS: QuickCreateAction[] = [
+interface QuickCreateGroup {
+    label: string;
+    actions: QuickCreateAction[];
+}
+
+const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
     {
-        label: "New Project",
-        icon: FolderPlus,
-        href: "/projects?action=create",
-        resource: "projects",
+        label: "Production",
+        actions: [
+            { label: "New Project", icon: FolderPlus, href: "/projects/new", resource: "projects" },
+            {
+                label: "New Task",
+                icon: ClipboardPlus,
+                href: "/tasks?action=create",
+                resource: "tasks",
+            },
+            {
+                label: "New Event",
+                icon: CalendarPlus,
+                href: "/events?action=create",
+                resource: "events",
+            },
+            {
+                label: "New Activation",
+                icon: Sparkles,
+                href: "/activations?action=create",
+                resource: "activations",
+            },
+            {
+                label: "New Scope of Work",
+                icon: ScrollText,
+                href: "/scopes-of-work?action=create",
+                resource: "sow",
+            },
+        ],
     },
-    { label: "New Deal", icon: Briefcase, href: "/pipeline?action=create", resource: "deals" },
-    { label: "New Task", icon: ClipboardPlus, href: "/tasks?action=create", resource: "tasks" },
-    { label: "New Event", icon: CalendarPlus, href: "/events?action=create", resource: "events" },
     {
-        label: "Invite Member",
-        icon: UserPlus,
-        href: "/onboarding/invite-team",
-        resource: "invitations",
+        label: "Sales & CRM",
+        actions: [
+            { label: "New Deal", icon: Briefcase, href: "/pipeline/new", resource: "deals" },
+            { label: "New Lead", icon: UserPlus, href: "/leads?action=create", resource: "leads" },
+            {
+                label: "New Opportunity",
+                icon: Target,
+                href: "/opportunities?action=create",
+                resource: "opportunities",
+            },
+            {
+                label: "New Contact",
+                icon: Building2,
+                href: "/companies?action=create",
+                resource: "people",
+            },
+            {
+                label: "New Service Request",
+                icon: MessageSquare,
+                href: "/service-requests?action=create",
+                resource: "service_requests",
+            },
+        ],
+    },
+    {
+        label: "Finance",
+        actions: [
+            { label: "New Invoice", icon: Banknote, href: "/invoices/new", resource: "invoices" },
+            {
+                label: "New Expense",
+                icon: Receipt,
+                href: "/expenses?action=create",
+                resource: "expenses",
+            },
+            {
+                label: "New Estimate",
+                icon: FileSignature,
+                href: "/estimates?action=create",
+                resource: "estimates",
+            },
+            {
+                label: "New Budget",
+                icon: FolderPlus,
+                href: "/budgets?action=create",
+                resource: "budgets",
+            },
+            {
+                label: "New Purchase Requisition",
+                icon: ShoppingCart,
+                href: "/purchase-requisitions?action=create",
+                resource: "purchase_requisitions",
+            },
+            {
+                label: "New Purchase Order",
+                icon: Package,
+                href: "/purchase-orders?action=create",
+                resource: "purchase_orders",
+            },
+        ],
+    },
+    {
+        label: "Creative & Docs",
+        actions: [
+            {
+                label: "New Brief",
+                icon: PenTool,
+                href: "/briefs?action=create",
+                resource: "creative_briefs",
+            },
+            {
+                label: "New Campaign",
+                icon: Megaphone,
+                href: "/campaigns?action=create",
+                resource: "campaigns",
+            },
+            {
+                label: "New Proposal",
+                icon: FileText,
+                href: "/proposals/new",
+                resource: "proposals",
+            },
+            {
+                label: "New Document",
+                icon: FileText,
+                href: "/documents?action=create",
+                resource: "vault_documents",
+            },
+        ],
+    },
+    {
+        label: "Vendor & Operations",
+        actions: [
+            { label: "New Vendor", icon: Store, href: "/vendors/new", resource: "vendors" },
+            {
+                label: "New Work Order",
+                icon: ClipboardCheck,
+                href: "/work-orders?action=create",
+                resource: "work_orders",
+            },
+            {
+                label: "New Contract",
+                icon: FileSignature,
+                href: "/contracts/new",
+                resource: "contracts",
+            },
+            {
+                label: "New Incident",
+                icon: AlertTriangle,
+                href: "/incidents?action=create",
+                resource: "incidents",
+            },
+            {
+                label: "New Approval",
+                icon: Shield,
+                href: "/approvals?action=create",
+                resource: "approvals",
+            },
+        ],
+    },
+    {
+        label: "Assets & Logistics",
+        actions: [
+            { label: "New Asset", icon: Package, href: "/assets/new", resource: "assets" },
+            {
+                label: "New Shipment",
+                icon: Truck,
+                href: "/shipments?action=create",
+                resource: "shipments",
+            },
+        ],
+    },
+    {
+        label: "Team",
+        actions: [
+            {
+                label: "Invite Member",
+                icon: UserPlus,
+                href: "/onboarding/invite-team",
+                resource: "invitations",
+            },
+        ],
     },
 ];
 
@@ -280,10 +456,15 @@ const QUICK_CREATE_ACTIONS: QuickCreateAction[] = [
 
 function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
     const router = useRouter();
-    const visible = QUICK_CREATE_ACTIONS.filter((a) =>
-        hasPermission(userRole, a.resource, "write")
-    );
-    if (visible.length === 0) return null;
+
+    const visibleGroups = useMemo(() => {
+        return QUICK_CREATE_GROUPS.map((group) => ({
+            ...group,
+            actions: group.actions.filter((a) => hasPermission(userRole, a.resource, "write")),
+        })).filter((group) => group.actions.length > 0);
+    }, [userRole]);
+
+    if (visibleGroups.length === 0) return null;
 
     return (
         <DropdownMenu>
@@ -299,13 +480,26 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
                     <Plus className={ICON_SIZES.sm} />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuContent align="end" className="w-56 max-h-[70vh] overflow-y-auto">
                 <DropdownMenuLabel>Create New</DropdownMenuLabel>
-                {visible.map((action) => (
-                    <DropdownMenuItem key={action.href} onClick={() => router.push(action.href)}>
-                        <action.icon className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                        {action.label}
-                    </DropdownMenuItem>
+                {visibleGroups.map((group, gi) => (
+                    <React.Fragment key={group.label}>
+                        {gi > 0 && <DropdownMenuSeparator />}
+                        <DropdownMenuLabel className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wider">
+                            {group.label}
+                        </DropdownMenuLabel>
+                        {group.actions.map((action) => (
+                            <DropdownMenuItem
+                                key={action.href}
+                                onClick={() => router.push(action.href)}
+                            >
+                                <action.icon
+                                    className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")}
+                                />
+                                {action.label}
+                            </DropdownMenuItem>
+                        ))}
+                    </React.Fragment>
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>

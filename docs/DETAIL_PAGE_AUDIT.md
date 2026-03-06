@@ -523,46 +523,50 @@ Some new detail pages require Supabase hooks not yet in `hooks.ts` or `hooks-ext
 
 ## 8. Entity–Detail Page Matrix
 
-| Entity            | List Page | Detail Page   | DB Table             | Nav Section                 | Status         |
-| ----------------- | --------- | ------------- | -------------------- | --------------------------- | -------------- |
-| Project           | ✅        | ✅            | `projects`           | Production                  | Complete       |
-| Deal              | ✅        | ✅            | `deals`              | Sales & CRM                 | Complete       |
-| Task              | ✅        | ✅            | `tasks`              | Production                  | Complete       |
-| Asset             | ✅        | ✅            | `assets`             | Assets & Logistics          | Complete       |
-| Crew Member       | ✅        | ✅            | `crew_members`       | People & Resources          | Complete       |
-| Vendor            | ✅        | ✅            | `vendors`            | Finance > Procurement       | Complete       |
-| Location          | ✅        | ✅            | `locations`          | Production                  | Complete       |
-| Invoice           | ✅        | ✅            | `invoices`           | Finance > Billing           | Legacy pattern |
-| Contract          | ✅        | ✅            | `contracts`          | Legal & Compliance          | Legacy pattern |
-| Proposal          | ✅        | ✅            | `proposals`          | Creative & Docs > Documents | Legacy pattern |
-| Deck              | ✅        | ✅            | `decks`              | Creative & Docs             | Legacy pattern |
-| Brand Kit         | ✅        | ✅            | `brand_kits`         | Creative & Docs             | Legacy pattern |
-| Call Sheet        | ✅        | ✅            | `call_sheets`        | Creative & Docs > Documents | Legacy pattern |
-| Tech Sheet        | ✅        | ✅            | `tech_sheets`        | Creative & Docs > Documents | Legacy pattern |
-| KB Article        | ✅        | ✅            | `knowledge_articles` | Admin                       | Complete       |
-| Activation        | ✅        | ❌ **BROKEN** | `activations`        | Production                  | **P0**         |
-| Budget            | ✅        | ❌ **BROKEN** | `budgets`            | Finance > Budgeting         | **P0**         |
-| Event             | ✅        | ❌ **BROKEN** | `events`             | Production                  | **P0**         |
-| Incident          | ✅        | ❌ **BROKEN** | `incidents`          | Legal & Compliance          | **P0**         |
-| Lead              | ✅        | ❌ **BROKEN** | `leads`              | Sales & CRM                 | **P0**         |
-| Shipment          | ✅        | ❌ **BROKEN** | `shipments`          | Assets & Logistics          | **P0**         |
-| Template          | ✅        | ❌ **BROKEN** | `project_templates`  | Creative & Docs             | **P0**         |
-| Opportunity       | ✅        | ❌            | `opportunities`      | Sales & CRM                 | **P1**         |
-| Company           | ✅        | ❌            | `companies`          | Sales & CRM                 | **P1**         |
-| Campaign          | ✅        | ❌            | `campaigns`          | Creative & Docs             | **P1**         |
-| Estimate          | ✅        | ❌            | `estimates`          | Finance > Budgeting         | **P1**         |
-| Work Order        | ✅        | ❌            | `work_orders`        | Vendor Management           | **P1**         |
-| Expense           | ✅        | ❌            | `expenses`           | Finance                     | **P1**         |
-| Scope of Work     | ✅        | ❌            | `scopes_of_work`     | Production                  | **P1**         |
-| Brief             | ✅        | ❌            | `creative_briefs`    | Creative & Docs             | **P1**         |
-| Digital Asset     | ✅        | ❌            | `digital_assets`     | Creative & Docs             | **P2**         |
-| Creative Asset    | ✅        | ❌            | `creative_reviews`   | Creative & Docs             | **P2**         |
-| Permit            | ✅        | ❌            | `permits`            | Legal & Compliance          | **P2**         |
-| Insurance Policy  | ✅        | ❌            | `insurance_policies` | Legal & Compliance          | **P2**         |
-| Recurring Invoice | ✅        | ❌            | `recurring_invoices` | Finance > Billing           | **P2**         |
-| Change Order      | ✅        | ❌            | `change_orders`      | Sales & CRM                 | **P3**         |
-| Service Request   | ✅        | ❌            | `service_requests`   | Sales & CRM                 | **P3**         |
-| Certification     | ✅        | ❌            | `certifications`     | Legal & Compliance          | **P3**         |
+| Entity            | List Page  | Detail Page   | DB Table                | Nav Section                 | Status         |
+| ----------------- | ---------- | ------------- | ----------------------- | --------------------------- | -------------- |
+| Project           | ✅         | ✅            | `projects`              | Production                  | Complete       |
+| Deal              | ✅         | ✅            | `deals`                 | Sales & CRM                 | Complete       |
+| Task              | ✅         | ✅            | `tasks`                 | Production                  | Complete       |
+| Asset             | ✅         | ✅            | `assets`                | Assets & Logistics          | Complete       |
+| Crew Member       | ✅         | ✅            | `crew_members`          | People & Resources          | Complete       |
+| Vendor            | ✅         | ✅            | `vendors`               | Finance > Procurement       | Complete       |
+| Location          | ✅         | ✅            | `locations`             | Production                  | Complete       |
+| Invoice           | ✅         | ✅            | `invoices`              | Finance > Billing           | Legacy pattern |
+| Contract          | ✅         | ✅            | `contracts`             | Legal & Compliance          | Legacy pattern |
+| Proposal          | ✅         | ✅            | `proposals`             | Creative & Docs > Documents | Legacy pattern |
+| Deck              | ✅         | ✅            | `decks`                 | Creative & Docs             | Legacy pattern |
+| Brand Kit         | ✅         | ✅            | `brand_kits`            | Creative & Docs             | Legacy pattern |
+| Call Sheet        | ✅         | ✅            | `call_sheets`           | Creative & Docs > Documents | Legacy pattern |
+| Tech Sheet        | ✅         | ✅            | `tech_sheets`           | Creative & Docs > Documents | Legacy pattern |
+| KB Article        | ✅         | ✅            | `knowledge_articles`    | Admin                       | Complete       |
+| Activation        | ✅         | ❌ **BROKEN** | `activations`           | Production                  | **P0**         |
+| Budget            | ✅         | ❌ **BROKEN** | `budgets`               | Finance > Budgeting         | **P0**         |
+| Event             | ✅         | ❌ **BROKEN** | `events`                | Production                  | **P0**         |
+| Incident          | ✅         | ❌ **BROKEN** | `incidents`             | Legal & Compliance          | **P0**         |
+| Lead              | ✅         | ❌ **BROKEN** | `leads`                 | Sales & CRM                 | **P0**         |
+| Shipment          | ✅         | ❌ **BROKEN** | `shipments`             | Assets & Logistics          | **P0**         |
+| Template          | ✅         | ❌ **BROKEN** | `project_templates`     | Creative & Docs             | **P0**         |
+| Opportunity       | ✅         | ❌            | `opportunities`         | Sales & CRM                 | **P1**         |
+| Company           | ✅         | ❌            | `companies`             | Sales & CRM                 | **P1**         |
+| Campaign          | ✅         | ❌            | `campaigns`             | Creative & Docs             | **P1**         |
+| Estimate          | ✅         | ❌            | `estimates`             | Finance > Budgeting         | **P1**         |
+| Work Order        | ✅         | ❌            | `work_orders`           | Vendor Management           | **P1**         |
+| Expense           | ✅         | ❌            | `expenses`              | Finance                     | **P1**         |
+| Scope of Work     | ✅         | ❌            | `scopes_of_work`        | Production                  | **P1**         |
+| Brief             | ✅         | ❌            | `creative_briefs`       | Creative & Docs             | **P1**         |
+| Digital Asset     | ✅         | ❌            | `digital_assets`        | Creative & Docs             | **P2**         |
+| Creative Asset    | ✅         | ❌            | `creative_reviews`      | Creative & Docs             | **P2**         |
+| Permit            | ✅         | ❌            | `permits`               | Legal & Compliance          | **P2**         |
+| Insurance Policy  | ✅         | ❌            | `insurance_policies`    | Legal & Compliance          | **P2**         |
+| Recurring Invoice | ✅         | ❌            | `recurring_invoices`    | Finance > Billing           | **P2**         |
+| Change Order      | ✅         | ❌            | `change_orders`         | Sales & CRM                 | **P3**         |
+| Service Request   | ✅         | ❌            | `service_requests`      | Sales & CRM                 | **P3**         |
+| Certification     | ✅         | ❌            | `certifications`        | Legal & Compliance          | **P3**         |
+| Purchase Req.     | ✅         | ✅ **NEW**    | `purchase_requisitions` | Finance > Procurement       | Phase 6 ✅     |
+| Purchase Order    | ✅ **NEW** | ✅ **NEW**    | `purchase_orders`       | Finance > Procurement       | Phase 6 ✅     |
+| Approval          | ✅         | ✅ **NEW**    | `approvals`             | Vendor & Operations         | Phase 6 ✅     |
+| Document          | ✅         | ✅ **NEW**    | `vault_documents`       | Creative & Docs             | Phase 6 ✅     |
 
 ---
 
@@ -624,14 +628,15 @@ Every detail page MUST have at minimum:
 
 ## Summary of Effort
 
-| Phase     | Scope            | Pages                                     | Estimated Effort |
-| --------- | ---------------- | ----------------------------------------- | ---------------- |
-| Phase 1   | P0 Broken Links  | 7 new                                     | 11 days          |
-| Phase 2   | Legacy Migration | 7 refactored + 2 chatter additions        | 7 days           |
-| Phase 3   | P1 Core Entities | 8 new                                     | 13 days          |
-| Phase 4   | P2+P3 Secondary  | 8 new                                     | 9 days           |
-| Phase 5   | Cross-Entity Nav | All 30                                    | 7 days           |
-| **Total** |                  | **30 detail pages** (23 new + 7 migrated) | **~47 days**     |
+| Phase     | Scope            | Pages                                             | Estimated Effort |
+| --------- | ---------------- | ------------------------------------------------- | ---------------- |
+| Phase 1   | P0 Broken Links  | 7 new                                             | 11 days          |
+| Phase 2   | Legacy Migration | 7 refactored + 2 chatter additions                | 7 days           |
+| Phase 3   | P1 Core Entities | 8 new                                             | 13 days          |
+| Phase 4   | P2+P3 Secondary  | 8 new                                             | 9 days           |
+| Phase 5   | Cross-Entity Nav | All 30                                            | 7 days           |
+| Phase 6   | Procurement+Gov  | 1 new list + 4 new detail (PR, PO, Approval, Doc) | 1 day (done)     |
+| **Total** |                  | **34 detail pages** (27 new + 7 migrated)         | **~48 days**     |
 
 ### Success Criteria
 

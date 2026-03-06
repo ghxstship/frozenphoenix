@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteActivation, useUpdateActivation } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +57,14 @@ export default function ActivationDetailPage() {
     const params = useParams();
     const router = useRouter();
     const activationId = params.id as string;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: activationId,
+        entityLabel: "Activation",
+        listPath: "/activations",
+        useUpdateHook: useUpdateActivation,
+        useDeleteHook: useDeleteActivation,
+    });
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -214,7 +224,7 @@ export default function ActivationDetailPage() {
             menuItems={[
                 { label: "Duplicate", onClick: () => {} },
                 { label: "Archive", onClick: () => {} },
-                { label: "Delete", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

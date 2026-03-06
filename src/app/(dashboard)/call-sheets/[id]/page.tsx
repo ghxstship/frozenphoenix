@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallSheet, useDeleteCallSheet, useUpdateCallSheet } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +152,20 @@ type TabId = "schedule" | "crew" | "chatter";
 const TAB_VALUES = ["schedule", "crew", "chatter"] as const;
 
 export default function CallSheetDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useCallSheet(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Call Sheet",
+        listPath: "/call-sheets",
+        useUpdateHook: useUpdateCallSheet,
+        useDeleteHook: useDeleteCallSheet,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "schedule",
@@ -310,7 +327,7 @@ export default function CallSheetDetailPage() {
             menuItems={[
                 { label: "Download PDF", onClick: () => {} },
                 { label: "Duplicate Call Sheet", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

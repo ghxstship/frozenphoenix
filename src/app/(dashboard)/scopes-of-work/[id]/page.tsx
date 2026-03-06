@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+    useDeleteScopeOfWork,
+    useScopeOfWork,
+    useUpdateScopeOfWork,
+} from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +104,20 @@ const mockDeliverables = [
 ];
 
 export default function ScopeOfWorkDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const entityId = params.id as string;
+    const { data: sbRecord } = useScopeOfWork(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Scope of Work",
+        listPath: "/scopes-of-work",
+        useUpdateHook: useUpdateScopeOfWork,
+        useDeleteHook: useDeleteScopeOfWork,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -238,7 +259,7 @@ export default function ScopeOfWorkDetailPage() {
             menuItems={[
                 { label: "Edit SOW", onClick: () => {} },
                 { label: "Create Amendment", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

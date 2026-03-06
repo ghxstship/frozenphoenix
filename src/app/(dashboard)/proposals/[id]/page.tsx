@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useCallback, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useDeleteProposal, useProposal, useUpdateProposal } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -225,8 +227,19 @@ const PROPOSAL_TAB_VALUES = ["editor", "preview", "activity", "chatter"] as cons
 
 export default function ProposalDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const proposalId = params.id as string;
-    void proposalId;
+    const { data: sbRecord } = useProposal(proposalId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: proposalId,
+        entityLabel: "Proposal",
+        listPath: "/proposals",
+        useUpdateHook: useUpdateProposal,
+        useDeleteHook: useDeleteProposal,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<ProposalTab>({
         key: "tab",
         defaultValue: "editor",
@@ -473,7 +486,7 @@ export default function ProposalDetailPage() {
                 menuItems={[
                     { label: "Duplicate", onClick: () => {} },
                     { label: "Save Draft", onClick: () => {} },
-                    { label: "Archive", onClick: () => {}, variant: "destructive" },
+                    ...crudMenuItems,
                 ]}
                 tabs={tabs}
                 activeTab={activeTab}

@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useDeck, useDeleteDeck, useUpdateDeck } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -51,8 +53,19 @@ const DECK_TAB_VALUES = ["editor", "chatter"] as const;
 
 export default function DeckEditorPage() {
     const params = useParams();
+    const router = useRouter();
     const deckId = params.id as string;
-    void deckId;
+    const { data: sbRecord } = useDeck(deckId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: deckId,
+        entityLabel: "Deck",
+        listPath: "/decks",
+        useUpdateHook: useUpdateDeck,
+        useDeleteHook: useDeleteDeck,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<DeckTabId>({
         key: "tab",
@@ -334,10 +347,7 @@ export default function DeckEditorPage() {
                     </Button>
                 </>
             }
-            menuItems={[
-                { label: "Duplicate Deck", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
-            ]}
+            menuItems={[{ label: "Duplicate Deck", onClick: () => {} }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as DeckTabId)}

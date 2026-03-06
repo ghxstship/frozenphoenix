@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteOpportunity, useUpdateOpportunity } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -80,8 +83,18 @@ export default function OpportunityDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
     const { data: opp, isLoading } = useOpportunity(entityId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Opportunity",
+        listPath: "/opportunities",
+        useUpdateHook: useUpdateOpportunity,
+        useDeleteHook: useDeleteOpportunity,
+    });
+    void router;
+    void handleUpdate;
 
     const expectedClose = opp?.expectedCloseDate ?? null;
     const daysToClose = useMemo(() => {
@@ -248,7 +261,7 @@ export default function OpportunityDetailPage() {
             menuItems={[
                 { label: "Edit Opportunity", onClick: () => {} },
                 { label: "Clone Opportunity", onClick: () => {} },
-                { label: "Mark as Lost", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

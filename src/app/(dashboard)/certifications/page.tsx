@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -9,6 +9,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { CERT_TYPE_LABELS, getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CERTIFICATION_CONFIG } from "@/config/create-entity-configs";
 import { BadgeCheck, CheckCircle2, Clock, Loader2, Plus, XCircle } from "lucide-react";
 import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
 import { useCertifications } from "@/lib/supabase/hooks-pages";
@@ -24,6 +26,7 @@ const CERT_STATUSES: AssetCertificationStatus[] = [
 ];
 
 export default function CertificationsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbCerts, isLoading } = useCertifications();
@@ -58,11 +61,9 @@ export default function CertificationsPage() {
                     title="Certifications"
                     description="Unified crew and asset certification tracking with expiry enforcement"
                 >
-                    <Link href="/certifications/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> Add Certification
-                        </Button>
-                    </Link>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" /> Add Certification
+                    </Button>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -158,6 +159,11 @@ export default function CertificationsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog
+                config={CREATE_CERTIFICATION_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

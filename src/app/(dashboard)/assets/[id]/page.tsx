@@ -4,6 +4,8 @@ import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteAsset, useUpdateAsset as useUpdateAssetHook } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +45,13 @@ export default function AssetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const assetId = params.id as string;
+    const { menuItems: crudMenuItems } = useDetailCrud({
+        entityId: assetId,
+        entityLabel: "Asset",
+        listPath: "/assets",
+        useUpdateHook: useUpdateAssetHook,
+        useDeleteHook: useDeleteAsset,
+    });
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -253,6 +262,7 @@ export default function AssetDetailPage() {
                         onClick: handleDecommission,
                         variant: "destructive",
                     },
+                    ...crudMenuItems,
                 ]}
                 tabs={tabs}
                 activeTab={activeTab}

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_WORK_ORDER_CONFIG } from "@/config/create-entity-configs";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
@@ -59,6 +60,7 @@ const PRIORITY_CONFIG: Record<WorkOrderPriority, { label: string; color: string 
 };
 
 export default function WorkOrdersPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["cards", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -124,11 +126,9 @@ export default function WorkOrdersPage() {
                                 },
                             ]}
                         />
-                        <Link href="/work-orders/new">
-                            <Button size="sm">
-                                <Plus className="h-4 w-4" /> New Work Order
-                            </Button>
-                        </Link>
+                        <Button size="sm" onClick={openCreate}>
+                            <Plus className="h-4 w-4" /> New Work Order
+                        </Button>
                     </div>
                 </PageHeader>
 
@@ -327,6 +327,11 @@ export default function WorkOrdersPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_WORK_ORDER_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

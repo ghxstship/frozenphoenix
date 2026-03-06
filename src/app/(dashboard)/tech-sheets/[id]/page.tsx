@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useDeleteTechSheet, useTechSheet, useUpdateTechSheet } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -192,8 +194,19 @@ const TECH_SHEET_TAB_VALUES = ["equipment", "power", "chatter"] as const;
 
 export default function TechSheetDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const sheetId = params.id as string;
-    void sheetId;
+    const { data: sbRecord } = useTechSheet(sheetId);
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId: sheetId,
+        entityLabel: "Tech Sheet",
+        listPath: "/tech-sheets",
+        useUpdateHook: useUpdateTechSheet,
+        useDeleteHook: useDeleteTechSheet,
+    });
+    void router;
+    void sbRecord;
+    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TechSheetTabId>({
         key: "tab",
@@ -362,7 +375,7 @@ export default function TechSheetDetailPage() {
             menuItems={[
                 { label: "Download PDF", onClick: () => {} },
                 { label: "Duplicate Tech Sheet", onClick: () => {} },
-                { label: "Archive", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

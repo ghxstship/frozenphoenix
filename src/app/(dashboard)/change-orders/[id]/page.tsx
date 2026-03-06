@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDeleteChangeOrder, useUpdateChangeOrder } from "@/lib/supabase/hooks-pages";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +31,19 @@ export default function ChangeOrderDetailPage() {
     });
 
     const params = useParams();
+    const router = useRouter();
     const entityId = params.id as string;
-    const { data: co, isLoading } = useChangeOrder(entityId);
+    const { data: changeOrder, isLoading } = useChangeOrder(entityId);
+    const co = changeOrder;
+    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+        entityId,
+        entityLabel: "Change Order",
+        listPath: "/change-orders",
+        useUpdateHook: useUpdateChangeOrder,
+        useDeleteHook: useDeleteChangeOrder,
+    });
+    void router;
+    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
 
@@ -190,7 +204,7 @@ export default function ChangeOrderDetailPage() {
             menuItems={[
                 { label: "Edit Change Order", onClick: () => {} },
                 { label: "Duplicate", onClick: () => {} },
-                { label: "Reject", onClick: () => {}, variant: "destructive" },
+                ...crudMenuItems,
             ]}
             tabs={tabs}
             activeTab={activeTab}

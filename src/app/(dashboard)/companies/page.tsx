@@ -5,6 +5,8 @@ import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { formatCurrency } from "@/lib/utils";
 import { Building2, Globe, MapPin, MoreHorizontal, Plus, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CONTACT_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +80,7 @@ const typeVariants: Record<
 };
 
 export default function CompaniesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -144,7 +147,7 @@ export default function CompaniesPage() {
                             Manage your clients, brands, agencies, and partners
                         </p>
                     </div>
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Company
                     </Button>
@@ -402,6 +405,11 @@ export default function CompaniesPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog
+                config={CREATE_CONTACT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

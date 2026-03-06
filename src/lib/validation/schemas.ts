@@ -248,18 +248,39 @@ export const commentCreateSchema = z.object({
 });
 
 // ─── Invitations ───
-const inviteeSchema = z.object({
+const orgInviteeSchema = z.object({
     email: emailField,
     role: z.enum(["exec", "director", "pm", "member", "client", "collaborator"]).default("member"),
 });
 
-export const invitationCreateSchema = z.object({
+const referralInviteeSchema = z.object({
+    email: emailField,
+});
+
+export const invitationCreateSchema = z
+    .object({
+        invite_type: z.enum(["org_invite", "referral"]).default("org_invite"),
+        invitees: z
+            .array(orgInviteeSchema)
+            .min(1, "At least one invitee is required")
+            .max(50, "Maximum 50 invitations at once"),
+        organization_id: uuidField.optional(),
+        message: z.string().max(1000).optional(),
+        referral_code: z.string().max(100).optional(),
+    })
+    .refine((data) => data.invite_type === "referral" || !!data.organization_id, {
+        message: "Organization is required for org invites",
+        path: ["organization_id"],
+    });
+
+export const referralInviteSchema = z.object({
+    invite_type: z.literal("referral"),
     invitees: z
-        .array(inviteeSchema)
+        .array(referralInviteeSchema)
         .min(1, "At least one invitee is required")
         .max(50, "Maximum 50 invitations at once"),
-    organization_id: uuidField,
     message: z.string().max(1000).optional(),
+    referral_code: z.string().max(100).optional(),
 });
 
 // ─── Organizations ───

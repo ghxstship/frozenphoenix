@@ -9,11 +9,15 @@ import {
     AlertCircle,
     ArrowRight,
     CheckCircle2,
+    Link2,
     Loader2,
     Mail,
     Trash2,
     UserPlus,
+    Users,
 } from "lucide-react";
+
+type InviteType = "org_invite" | "referral";
 
 const ROLE_OPTIONS = [
     { value: "exec", label: "Executive" },
@@ -32,13 +36,14 @@ interface InviteRow {
 
 let rowCounter = 0;
 function createRow(): InviteRow {
-    return { id: `row-${++rowCounter}`, email: "", role: "pm" };
+    return { id: `row-${++rowCounter}`, email: "", role: "member" };
 }
 
 export default function InviteTeamPage() {
     const router = useRouter();
     const { activeOrg } = useAuth();
 
+    const [inviteType, setInviteType] = useState<InviteType>("org_invite");
     const [rows, setRows] = useState<InviteRow[]>([createRow(), createRow(), createRow()]);
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -75,7 +80,7 @@ export default function InviteTeamPage() {
                 return;
             }
 
-            if (!activeOrg) {
+            if (inviteType === "org_invite" && !activeOrg) {
                 setError("No organization found. Please set up your organization first.");
                 return;
             }
@@ -83,14 +88,27 @@ export default function InviteTeamPage() {
             setLoading(true);
 
             try {
+                const body =
+                    inviteType === "org_invite"
+                        ? {
+                              invite_type: "org_invite" as const,
+                              invitees: validRows.map((r) => ({
+                                  email: r.email.trim(),
+                                  role: r.role,
+                              })),
+                              organization_id: activeOrg?.organization_id,
+                              message: message.trim() || undefined,
+                          }
+                        : {
+                              invite_type: "referral" as const,
+                              invitees: validRows.map((r) => ({ email: r.email.trim() })),
+                              message: message.trim() || undefined,
+                          };
+
                 const res = await fetch("/api/invitations", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        invitees: validRows.map((r) => ({ email: r.email.trim(), role: r.role })),
-                        organization_id: activeOrg.organization_id,
-                        message: message.trim() || undefined,
-                    }),
+                    body: JSON.stringify(body),
                 });
 
                 if (!res.ok) {
@@ -112,7 +130,7 @@ export default function InviteTeamPage() {
                 setLoading(false);
             }
         },
-        [rows, message, activeOrg]
+        [rows, message, activeOrg, inviteType]
     );
 
     const handleSkip = useCallback(() => {
@@ -134,7 +152,9 @@ export default function InviteTeamPage() {
                         {sentCount} invitation{sentCount !== 1 ? "s" : ""} sent!
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Your team members will receive an email with a link to join.
+                        {inviteType === "org_invite"
+                            ? "Your team members will receive an email with a link to join."
+                            : "They\u2019ll receive an email with a link to sign up."}
                     </p>
                     <p className="text-xs text-muted-foreground">One more step to go.</p>
                     <Button onClick={() => router.push("/onboarding/billing")}>
@@ -160,11 +180,49 @@ export default function InviteTeamPage() {
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-2">
                         <UserPlus className="h-7 w-7 text-primary" aria-hidden="true" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Invite your team</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Invite people</h1>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Add team members to {activeOrg?.organizations?.name || "your organization"}.
+                        {inviteType === "org_invite"
+                            ? `Add team members to ${activeOrg?.organizations?.name || "your organization"}.`
+                            : "Invite people to join the platform — no organization required."}{" "}
                         You can always invite more people later.
                     </p>
+                </div>
+
+                {/* Invite type toggle */}
+                <div
+                    className="flex rounded-lg border border-input p-1 gap-1"
+                    role="radiogroup"
+                    aria-label="Invitation type"
+                >
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={inviteType === "org_invite"}
+                        onClick={() => setInviteType("org_invite")}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                            inviteType === "org_invite"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Users className="h-4 w-4" aria-hidden="true" />
+                        Team Invite
+                    </button>
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={inviteType === "referral"}
+                        onClick={() => setInviteType("referral")}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                            inviteType === "referral"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Link2 className="h-4 w-4" aria-hidden="true" />
+                        Referral Invite
+                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -189,7 +247,11 @@ export default function InviteTeamPage() {
                                     />
                                     <Input
                                         type="email"
-                                        placeholder={`teammate${idx + 1}@company.com`}
+                                        placeholder={
+                                            inviteType === "org_invite"
+                                                ? `teammate${idx + 1}@company.com`
+                                                : `friend${idx + 1}@example.com`
+                                        }
                                         value={row.email}
                                         onChange={(e) => updateRow(row.id, "email", e.target.value)}
                                         className="pl-10"
@@ -197,19 +259,21 @@ export default function InviteTeamPage() {
                                         disabled={loading}
                                     />
                                 </div>
-                                <select
-                                    value={row.role}
-                                    onChange={(e) => updateRow(row.id, "role", e.target.value)}
-                                    className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    aria-label={`Role for invite ${idx + 1}`}
-                                    disabled={loading}
-                                >
-                                    {ROLE_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                {inviteType === "org_invite" && (
+                                    <select
+                                        value={row.role}
+                                        onChange={(e) => updateRow(row.id, "role", e.target.value)}
+                                        className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        aria-label={`Role for invite ${idx + 1}`}
+                                        disabled={loading}
+                                    >
+                                        {ROLE_OPTIONS.map((opt) => (
+                                            <option key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                                 <Button
                                     type="button"
                                     variant="ghost"

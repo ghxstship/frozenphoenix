@@ -8,9 +8,10 @@ export const PLAYBOOK_BRAND: BrandConfig = {
     id: "playbook",
     name: "Playbook",
     shortName: "PB",
-    tagline: "Production Command Center",
-    description: "Enterprise-grade production management platform for live events, fabrication, and experiential marketing.",
-    
+    tagline: "Experiential Project Management System",
+    description:
+        "Enterprise-grade production management platform for live events, fabrication, and experiential marketing.",
+
     colors: {
         light: {
             primary: "220 70% 50%",
@@ -45,23 +46,23 @@ export const PLAYBOOK_BRAND: BrandConfig = {
             ring: "220 70% 60%",
         },
     },
-    
+
     typography: {
         fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif",
         fontFamilyMono: "var(--font-geist-mono), ui-monospace, monospace",
     },
-    
+
     assets: {
         logoIcon: "/logo-icon.svg",
         logoWordmark: "/logo-wordmark.svg",
         favicon: "/favicon.ico",
     },
-    
+
     support: {
         email: "support@playbook.production",
         url: "https://playbook.production/support",
     },
-    
+
     features: {
         enableDarkMode: true,
         enableAnimations: true,

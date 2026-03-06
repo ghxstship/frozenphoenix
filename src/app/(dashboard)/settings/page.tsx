@@ -16,8 +16,27 @@ import {
 } from "@/lib/settings/hooks";
 import { SettingRow } from "@/components/settings/setting-row";
 import { PermissionGate } from "@/components/permission-guard";
-import { useTheme } from "@/components/theme-provider";
-import type { ColorMode } from "@/components/theme-provider";
+import {
+    ACCENT_PRESETS,
+    ANIMATION_PRESETS,
+    BORDER_RADIUS_PRESETS,
+    DENSITY_SCALE,
+    FONT_FAMILY_PRESETS,
+    FONT_SIZE_PRESETS,
+    SHADOW_PRESETS,
+    useTheme,
+} from "@/components/theme-provider";
+import type {
+    AccentColor,
+    AnimationSpeed,
+    BorderRadiusScale,
+    ColorMode,
+    FontFamilyChoice,
+    FontSizeScale,
+    GlassEffect,
+    LayoutDensity,
+    ShadowIntensity,
+} from "@/components/theme-provider";
 import type { ResolvedSetting, SettingCategory } from "@/types/settings";
 import {
     AtSign,
@@ -99,7 +118,26 @@ export default function SettingsPage() {
         defaultValue: "profile",
         validValues: SETTINGS_TAB_VALUES,
     });
-    const { colorMode, setColorMode } = useTheme();
+    const {
+        colorMode,
+        setColorMode,
+        accentColor,
+        setAccentColor,
+        density: currentDensity,
+        setDensity,
+        borderRadius: currentRadius,
+        setBorderRadius,
+        fontFamily: currentFont,
+        setFontFamily,
+        fontSizeScale: currentFontSize,
+        setFontSizeScale,
+        shadowIntensity: currentShadow,
+        setShadowIntensity,
+        glassEffect: currentGlass,
+        setGlassEffect,
+        animationSpeed: currentAnimation,
+        setAnimationSpeed,
+    } = useTheme();
     const { user, profile, memberships, activeOrg } = useAuth();
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
 
@@ -734,21 +772,34 @@ export default function SettingsPage() {
 
                                         <div>
                                             <p className="text-sm font-medium mb-3">Accent Color</p>
-                                            <div className="flex gap-2">
-                                                {[
-                                                    { hsl: "220 70% 50%", name: "Blue" },
-                                                    { hsl: "262 83% 58%", name: "Violet" },
-                                                    { hsl: "347 77% 50%", name: "Rose" },
-                                                    { hsl: "31 97% 50%", name: "Orange" },
-                                                    { hsl: "152 69% 40%", name: "Emerald" },
-                                                ].map((accent) => (
+                                            <div className="flex gap-3">
+                                                {(
+                                                    Object.entries(ACCENT_PRESETS) as [
+                                                        AccentColor,
+                                                        (typeof ACCENT_PRESETS)[AccentColor],
+                                                    ][]
+                                                ).map(([key, preset]) => (
                                                     <button
-                                                        key={accent.name}
-                                                        className="h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-background ring-transparent hover:ring-primary transition-all"
-                                                        style={{
-                                                            backgroundColor: `hsl(${accent.hsl})`,
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setAccentColor(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "accent_color",
+                                                                key
+                                                            );
                                                         }}
-                                                        title={accent.name}
+                                                        className={`h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-background transition-all ${
+                                                            accentColor === key
+                                                                ? "ring-foreground scale-110"
+                                                                : "ring-transparent hover:ring-muted-foreground"
+                                                        }`}
+                                                        style={{
+                                                            backgroundColor: `hsl(${preset.hsl})`,
+                                                        }}
+                                                        title={preset.label}
+                                                        aria-label={`Accent color: ${preset.label}`}
+                                                        aria-pressed={accentColor === key}
                                                     />
                                                 ))}
                                             </div>
@@ -757,33 +808,277 @@ export default function SettingsPage() {
                                         <div>
                                             <p className="text-sm font-medium mb-3">Density</p>
                                             <div className="flex gap-2">
-                                                {["compact", "default", "comfortable"].map(
-                                                    (density) => (
-                                                        <button
-                                                            key={density}
-                                                            onClick={() =>
-                                                                handleSaveSetting(
-                                                                    "preferences",
-                                                                    "layout_density",
-                                                                    density
-                                                                )
-                                                            }
-                                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                                                density === "default"
-                                                                    ? "bg-primary text-primary-foreground"
-                                                                    : "bg-secondary hover:bg-secondary/80"
-                                                            }`}
+                                                {(
+                                                    Object.keys(DENSITY_SCALE) as LayoutDensity[]
+                                                ).map((densityKey) => (
+                                                    <button
+                                                        key={densityKey}
+                                                        onClick={() => {
+                                                            setDensity(densityKey);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "layout_density",
+                                                                densityKey
+                                                            );
+                                                        }}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                            currentDensity === densityKey
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-secondary hover:bg-secondary/80"
+                                                        }`}
+                                                        aria-pressed={currentDensity === densityKey}
+                                                    >
+                                                        {densityKey.charAt(0).toUpperCase() +
+                                                            densityKey.slice(1)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Shape & Typography</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">
+                                                Border Radius
+                                            </p>
+                                            <div className="flex gap-2">
+                                                {(
+                                                    Object.entries(BORDER_RADIUS_PRESETS) as [
+                                                        BorderRadiusScale,
+                                                        (typeof BORDER_RADIUS_PRESETS)[BorderRadiusScale],
+                                                    ][]
+                                                ).map(([key, preset]) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setBorderRadius(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "border_radius",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`flex flex-col items-center gap-1.5 px-3 py-2.5 border-2 transition-colors ${
+                                                            currentRadius === key
+                                                                ? "border-primary bg-primary/5"
+                                                                : "border-border hover:border-primary/50"
+                                                        }`}
+                                                        style={{
+                                                            borderRadius:
+                                                                preset.value === "9999px"
+                                                                    ? "1rem"
+                                                                    : preset.value,
+                                                        }}
+                                                        aria-pressed={currentRadius === key}
+                                                        aria-label={`Border radius: ${preset.label}`}
+                                                    >
+                                                        <div
+                                                            className="h-6 w-10 border-2 border-foreground/30 bg-muted"
+                                                            style={{ borderRadius: preset.value }}
+                                                        />
+                                                        <span className="text-xs font-medium">
+                                                            {preset.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">Font Family</p>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                                {(
+                                                    Object.entries(FONT_FAMILY_PRESETS) as [
+                                                        FontFamilyChoice,
+                                                        (typeof FONT_FAMILY_PRESETS)[FontFamilyChoice],
+                                                    ][]
+                                                ).map(([key, preset]) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setFontFamily(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "font_family",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-colors ${
+                                                            currentFont === key
+                                                                ? "border-primary bg-primary/5"
+                                                                : "border-border hover:border-primary/50"
+                                                        }`}
+                                                        aria-pressed={currentFont === key}
+                                                        aria-label={`Font: ${preset.label}`}
+                                                    >
+                                                        <span
+                                                            className="text-2xl font-semibold leading-none"
+                                                            style={{ fontFamily: preset.stack }}
                                                         >
-                                                            {
-                                                                {
-                                                                    compact: "Compact",
-                                                                    default: "Default",
-                                                                    comfortable: "Comfortable",
-                                                                }[density]
-                                                            }
-                                                        </button>
-                                                    )
-                                                )}
+                                                            {preset.sample}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {preset.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">Font Size</p>
+                                            <div className="flex gap-2">
+                                                {(
+                                                    Object.entries(FONT_SIZE_PRESETS) as [
+                                                        FontSizeScale,
+                                                        (typeof FONT_SIZE_PRESETS)[FontSizeScale],
+                                                    ][]
+                                                ).map(([key, preset]) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setFontSizeScale(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "font_size_scale",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                            currentFontSize === key
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-secondary hover:bg-secondary/80"
+                                                        }`}
+                                                        aria-pressed={currentFontSize === key}
+                                                    >
+                                                        {preset.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Effects & Motion</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">
+                                                Shadow Intensity
+                                            </p>
+                                            <div className="flex gap-2">
+                                                {(
+                                                    Object.entries(SHADOW_PRESETS) as [
+                                                        ShadowIntensity,
+                                                        (typeof SHADOW_PRESETS)[ShadowIntensity],
+                                                    ][]
+                                                ).map(([key, preset]) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setShadowIntensity(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "shadow_intensity",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-lg border-2 transition-colors ${
+                                                            currentShadow === key
+                                                                ? "border-primary bg-primary/5"
+                                                                : "border-border hover:border-primary/50"
+                                                        }`}
+                                                        aria-pressed={currentShadow === key}
+                                                        aria-label={`Shadow: ${preset.label}`}
+                                                    >
+                                                        <div
+                                                            className="h-6 w-10 rounded bg-card border border-border"
+                                                            style={{
+                                                                boxShadow:
+                                                                    key === "none"
+                                                                        ? "none"
+                                                                        : key === "subtle"
+                                                                          ? "0 2px 4px rgb(0 0 0 / 0.05)"
+                                                                          : key === "default"
+                                                                            ? "0 4px 8px rgb(0 0 0 / 0.1)"
+                                                                            : "0 8px 16px rgb(0 0 0 / 0.2)",
+                                                            }}
+                                                        />
+                                                        <span className="text-xs font-medium">
+                                                            {preset.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">
+                                                Glass / Blur Effects
+                                            </p>
+                                            <div className="flex gap-2">
+                                                {(["on", "off"] as GlassEffect[]).map((key) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setGlassEffect(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "glass_effect",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                            currentGlass === key
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-secondary hover:bg-secondary/80"
+                                                        }`}
+                                                        aria-pressed={currentGlass === key}
+                                                    >
+                                                        {key === "on" ? "Enabled" : "Disabled"}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-medium mb-3">
+                                                Animation Speed
+                                            </p>
+                                            <div className="flex gap-2">
+                                                {(
+                                                    Object.entries(ANIMATION_PRESETS) as [
+                                                        AnimationSpeed,
+                                                        (typeof ANIMATION_PRESETS)[AnimationSpeed],
+                                                    ][]
+                                                ).map(([key, preset]) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => {
+                                                            setAnimationSpeed(key);
+                                                            handleSaveSetting(
+                                                                "preferences",
+                                                                "animation_speed",
+                                                                key
+                                                            );
+                                                        }}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                            currentAnimation === key
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-secondary hover:bg-secondary/80"
+                                                        }`}
+                                                        aria-pressed={currentAnimation === key}
+                                                    >
+                                                        {preset.label}
+                                                    </button>
+                                                ))}
                                             </div>
                                         </div>
                                     </CardContent>

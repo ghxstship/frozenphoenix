@@ -1,4 +1,4 @@
-# Frozen Phoenix — Production Command Center
+# Frozen Phoenix — Experiential Project Management System
 
 End-to-end client ecosystem for technical production, fabrication, and experiential agencies.
 
@@ -114,15 +114,18 @@ src/
 ## Features
 
 ### Command Center
+
 - **Dashboard**: Real-time KPIs, active projects, overdue approvals
 - **Calendar**: Unified view of projects, tasks, and milestones
 
 ### Commercial
+
 - **Pipeline**: Kanban-style deal management
 - **Contacts**: Stakeholder CRM
 - **Case Studies**: Auto-published from completed projects
 
 ### Production
+
 - **Projects**: Full lifecycle management with phase tracking
 - **Tasks**: Granular task management with fabrication status
 - **Scheduling**: Crew shift management
@@ -131,16 +134,19 @@ src/
 - **Fleet**: Vehicle dispatch and GPS tracking
 
 ### Creative
+
 - **Brand Kit**: Client brand guidelines library
 - **Decks**: Auto-generated presentation decks
 - **Approvals**: Milestone-tied approvals with escalation
 
 ### Finance
+
 - **Vendors**: COI validation, NDA tracking, ratings
 - **Invoices**: Three-way match (PO ↔ WO ↔ Invoice)
 - **Procurement**: Purchase requests and PO management
 
 ### Organization
+
 - **People**: Stakeholder matrix by type
 - **Org Chart**: Auto-generated per project
 - **SOPs**: Role-based procedures with acknowledgments
@@ -150,12 +156,12 @@ src/
 
 Four permission levels:
 
-| Level | Access |
-|-------|--------|
-| **exec** | Full access — margins, payroll, cross-project data |
-| **pm** | Project-scoped — budgets, crew, tasks |
+| Level      | Access                                                |
+| ---------- | ----------------------------------------------------- |
+| **exec**   | Full access — margins, payroll, cross-project data    |
+| **pm**     | Project-scoped — budgets, crew, tasks                 |
 | **client** | Approved deliverables, progress decks, public budgets |
-| **vendor** | Task-specific work orders, site maps only |
+| **vendor** | Task-specific work orders, site maps only             |
 
 ## Development
 

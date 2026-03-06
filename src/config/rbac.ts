@@ -386,6 +386,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "digital_assets", actions: ["read"] },
         // User Management (client view — own profile only)
         { resource: "user_management", actions: ["read"] },
+        { resource: "invitations", actions: ["read", "write"] },
         // Creative & Brand (client view)
         { resource: "creative_briefs", actions: ["read", "write"] },
         { resource: "brand_guidelines", actions: ["read", "write"] },
@@ -453,6 +454,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "digital_assets", actions: ["read", "write"] },
         // User Management (own profile)
         { resource: "user_management", actions: ["read"] },
+        { resource: "invitations", actions: ["read", "write"] },
         // Creative & Brand
         { resource: "creative_briefs", actions: ["read"] },
         { resource: "brand_guidelines", actions: ["read"] },
@@ -499,6 +501,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "checklists", actions: ["read", "write"] },
         { resource: "vendor_compliance", actions: ["read", "write"] },
         { resource: "vendor_portal", actions: ["read"] },
+        // User Management (collaborator view)
+        { resource: "invitations", actions: ["read", "write"] },
         // Digital Assets (collaborator view)
         { resource: "digital_assets", actions: ["read"] },
         // Governance (collaborator view)

@@ -46,20 +46,39 @@ export async function POST(
         return ApiErrors.gone("This invitation has expired");
     }
 
-    // Create org membership
-    const { error: memberError } = await supabase.from("org_memberships").upsert(
-        {
-            user_id: user.id,
-            organization_id: invitation.organization_id,
-            role: invitation.role,
-            status: "active",
-            is_default_org: false,
-        },
-        { onConflict: "user_id,organization_id" }
-    );
+    // Referral invites: just mark as accepted — no org membership needed
+    const isReferral = invitation.invite_type === "referral" || !invitation.organization_id;
 
-    if (memberError) {
-        return ApiErrors.internalError("Failed to join organization");
+    if (!isReferral && invitation.organization_id) {
+        // Create org membership for org invites
+        const { error: memberError } = await supabase.from("org_memberships").upsert(
+            {
+                user_id: user.id,
+                organization_id: invitation.organization_id,
+                role: invitation.role ?? "member",
+                status: "active",
+                is_default_org: false,
+            },
+            { onConflict: "user_id,organization_id" }
+        );
+
+        if (memberError) {
+            return ApiErrors.internalError("Failed to join organization");
+        }
+
+        // Update profile org_id if user has no org yet
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("organization_id")
+            .eq("id", user.id)
+            .single();
+
+        if (profile && !profile.organization_id) {
+            await supabase
+                .from("profiles")
+                .update({ organization_id: invitation.organization_id })
+                .eq("id", user.id);
+        }
     }
 
     // Mark invitation as accepted
@@ -72,23 +91,10 @@ export async function POST(
         })
         .eq("id", invitation.id);
 
-    // Update profile org_id if user has no org yet
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("id", user.id)
-        .single();
-
-    if (profile && !profile.organization_id) {
-        await supabase
-            .from("profiles")
-            .update({ organization_id: invitation.organization_id })
-            .eq("id", user.id);
-    }
-
     return NextResponse.json({
         success: true,
-        organization_id: invitation.organization_id,
+        invite_type: isReferral ? "referral" : "org_invite",
+        organization_id: invitation.organization_id || null,
     });
 }
 

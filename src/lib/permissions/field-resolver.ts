@@ -80,7 +80,7 @@ function tierSatisfies(orgTier: PricingTier, requiredTier: PricingTier): boolean
 
 // ─── Role Hierarchy ──────────────────────────────────────────
 
-const ROLE_HIERARCHY: Record<PermissionLevel, number> = {
+export const ROLE_HIERARCHY: Record<PermissionLevel, number> = {
     exec: 5,
     director: 4,
     pm: 3,

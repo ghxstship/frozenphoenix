@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: process.env.NEXT_PUBLIC_BRAND_NAME
-        ? `${process.env.NEXT_PUBLIC_BRAND_NAME} — ${process.env.NEXT_PUBLIC_BRAND_TAGLINE || "Production Command Center"}`
-        : "Playbook — Production Command Center",
+        ? `${process.env.NEXT_PUBLIC_BRAND_NAME} — ${process.env.NEXT_PUBLIC_BRAND_TAGLINE || "Experiential Project Management System"}`
+        : "Playbook — Experiential Project Management System",
     description:
         "End-to-end client ecosystem for technical production, fabrication, and experiential agencies.",
 };

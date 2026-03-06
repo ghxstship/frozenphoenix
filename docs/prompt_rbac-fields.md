@@ -1,4 +1,4 @@
-# WINDSURF PROMPT: Database Schema Audit, Data Field SSOT, Field-Level RBAC & Usage-Based Pricing Architecture — Frozen Phoenix (Production Command Center)
+# WINDSURF PROMPT: Database Schema Audit, Data Field SSOT, Field-Level RBAC & Usage-Based Pricing Architecture — Frozen Phoenix (Experiential Project Management System)
 
 ---
 
@@ -11,18 +11,18 @@ You are an enterprise data architect and full-stack systems engineer working ins
 
 ### Tech Stack (read directly from `package.json` and README)
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth |
-| State | Zustand + React Query |
-| Styling | Tailwind CSS 4 |
-| UI Components | Radix UI + shadcn/ui patterns |
-| Forms | React Hook Form + Zod validation |
-| Charts | Recharts |
-| Hosting | Vercel |
-| Quality | Vitest + ESLint + custom quality-gate config |
+| Layer         | Technology                                   |
+| ------------- | -------------------------------------------- |
+| Framework     | Next.js 16 (App Router)                      |
+| Database      | Supabase (PostgreSQL)                        |
+| Auth          | Supabase Auth                                |
+| State         | Zustand + React Query                        |
+| Styling       | Tailwind CSS 4                               |
+| UI Components | Radix UI + shadcn/ui patterns                |
+| Forms         | React Hook Form + Zod validation             |
+| Charts        | Recharts                                     |
+| Hosting       | Vercel                                       |
+| Quality       | Vitest + ESLint + custom quality-gate config |
 
 ### Key File Paths (anchor your work to these)
 
@@ -57,10 +57,12 @@ frozenphoenix/
 These are the actual dashboard routes in the codebase. Every module below maps to a route, a set of database tables, and a feature surface:
 
 **Command Center**
+
 - `dashboard/` — Real-time KPIs, active projects, overdue approvals
 - `calendar/` — Unified view of projects, tasks, and milestones
 
 **Commercial**
+
 - `pipeline/` — CRM Pipeline: Kanban-style deal management (RFP → Bid → Contract → Onboarding → Advancing → Compliance → Training lifecycle)
 - `people/` — Stakeholder matrix / Contacts CRM
 - `brand-kit/` — Client brand guidelines repository
@@ -68,6 +70,7 @@ These are the actual dashboard routes in the codebase. Every module below maps t
 - `case-studies/` — Auto-published from completed projects
 
 **Production**
+
 - `projects/` — Full lifecycle management with phase tracking (draft → planning → scheduled → active → post_mortem → archived)
 - `tasks/` — Granular task management with fabrication status tracking
 - `scheduling/` — Crew shift scheduling and management
@@ -77,12 +80,14 @@ These are the actual dashboard routes in the codebase. Every module below maps t
 - `org-chart/` — Project-specific organizational charts
 
 **Operations & Compliance**
+
 - `vendors/` — Vendor vault: directory, COIs, scorecards, payment terms
 - `procurement/` — Purchase requests, purchase orders, bid management
 - `finance/` — Financial operations: budgets (est/actual/committed), invoicing, expense tracking, P&L
 - `approvals/` — Milestone approval workflows
 
 **Knowledge & Admin**
+
 - `sops/` — Standard operating procedures
 - `vault/` — Secure document storage
 - `settings/` — User & org settings, billing, team management
@@ -142,6 +147,7 @@ CREATE TYPE view_type AS ENUM ('list', 'table', 'board', 'calendar', 'timeline',
 #### Table Groups (already defined)
 
 **CORE TABLES:**
+
 - `organizations` — Multi-tenant root (name, slug, status, pricing_tier, branding, settings)
 - `user_profiles` — Extended user data linked to Supabase Auth
 - `roles` — Role definitions per organization
@@ -150,6 +156,7 @@ CREATE TYPE view_type AS ENUM ('list', 'table', 'board', 'calendar', 'timeline',
 - `team_memberships` — User-to-team assignments with `project_role`
 
 **BUSINESS TABLES:**
+
 - `projects` — Productions/events (lifecycle via `event_phase`, hierarchy via `parent_project_id`, venue data, settings JSONB)
 - `tasks` — Task tracking (`task_status`, `task_priority`, assignees, dates)
 - `subtasks` — Nested task breakdown
@@ -163,6 +170,7 @@ CREATE TYPE view_type AS ENUM ('list', 'table', 'board', 'calendar', 'timeline',
 - `approvals` — Approval workflow instances (`approval_status`)
 
 **CONFIG TABLES:**
+
 - `view_configs` — Saved view configurations per user/module
 - `workflows` — Active workflow instances (`workflow_status`)
 - `workflow_definitions` — Workflow templates (`workflow_trigger`)
@@ -193,6 +201,7 @@ Productions range from a 20-person intimate immersive theater piece to a multi-s
 Execute a three-phase audit and architecture build across ALL database schemas in the `supabase/migrations/` directory. Each phase builds on the previous. Do not proceed to the next phase until the current phase is fully documented and validated.
 
 **Start by reading the actual files:**
+
 1. `supabase/migrations/001_initial_schema.sql` (and any subsequent migration files)
 2. `src/types/index.ts`
 3. `src/lib/supabase/database.types.ts`
@@ -206,6 +215,7 @@ This gives you the ground truth of what exists before recommending what should e
 ## PHASE 1: Data Field Type Inventory — Centralized SSOT
 
 ### Objective
+
 Scan every table in `supabase/migrations/`, every TypeScript type in `src/types/`, and every Supabase-generated type in `src/lib/supabase/database.types.ts`. Extract every field and classify it into a centralized Master Data Field Type Registry — the single source of truth for every field type in the Frozen Phoenix platform.
 
 ### Instructions
@@ -264,6 +274,7 @@ FIELD_TYPE_ID (unique identifier)
 ## PHASE 2: Schema Enrichment — Apply Field Library to Each Database Table
 
 ### Objective
+
 Apply the Master Data Field Type Registry to every table in `supabase/migrations/`. Map each existing column to its canonical type, identify missing columns that industry standards require, and enrich every table to its highest possible level of professional/enterprise completeness.
 
 ### Instructions
@@ -346,6 +357,7 @@ ENRICHMENT REPORT:
 ## PHASE 3: Field-Level RBAC & Usage-Based Pricing Architecture
 
 ### Objective
+
 Design a field-level Role-Based Access Control system that maps directly to Frozen Phoenix's existing `pricing_tier` enum (`core`, `pro`, `enterprise`) and role enums (`platform_role`, `project_role`). Users are priced by data field access — not seats. Every field belongs to a tier, and tiers unlock progressively.
 
 ### Instructions
@@ -419,6 +431,7 @@ PERMISSION_RESOLUTION (integrate with middleware.ts + src/config/rbac.ts):
 ```
 
 **Implementation approach:** Leverage Supabase RLS policies for row-level access (already multi-tenant via `organization_id`). Layer field-level filtering in the application via:
+
 - Server-side: Next.js Server Components / Route Handlers filter response fields
 - Client-side: Zustand store holds resolved field permissions, React Query selectors strip inaccessible fields
 - Hooks: Extend `src/lib/supabase/hooks.ts` with field-aware query builders
@@ -534,6 +547,7 @@ billing_usage_records        -- Metered usage for billing
 ```
 
 **All new tables must include:**
+
 - `organization_id` FK with RLS policy
 - `created_at`, `updated_at` timestamps with triggers
 - `deleted_at` for soft-delete
@@ -593,6 +607,7 @@ billing_usage_records        -- Metered usage for billing
 ### Validation Checklist:
 
 Before delivering, verify:
+
 - [ ] All migration files in `supabase/migrations/` scanned
 - [ ] All TypeScript types in `src/types/index.ts` cross-referenced
 - [ ] All Supabase hooks in `src/lib/supabase/hooks.ts` reviewed for field usage patterns
@@ -628,4 +643,4 @@ Before delivering, verify:
 
 ---
 
-*This prompt is designed for use with Windsurf/Cascade AI. Feed the entire prompt as a single instruction. Ensure the `ghxstship/frozenphoenix` repository is open in the workspace so Cascade can directly read migration files, TypeScript types, and existing RBAC config. If migration files don't yet contain all tables referenced by dashboard routes, Cascade should generate the missing table definitions as part of Phase 2 enrichment.*
+_This prompt is designed for use with Windsurf/Cascade AI. Feed the entire prompt as a single instruction. Ensure the `ghxstship/frozenphoenix` repository is open in the workspace so Cascade can directly read migration files, TypeScript types, and existing RBAC config. If migration files don't yet contain all tables referenced by dashboard routes, Cascade should generate the missing table definitions as part of Phase 2 enrichment._

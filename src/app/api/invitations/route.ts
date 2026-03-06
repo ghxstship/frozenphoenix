@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { invitationCreateSchema } from "@/lib/validation/schemas";
+import { hasPermission } from "@/config/rbac";
+import { ROLE_HIERARCHY } from "@/lib/permissions/field-resolver";
+import type { PermissionLevel } from "@/types";
 import { randomBytes } from "crypto";
 
 export async function POST(request: Request) {
@@ -21,9 +24,42 @@ export async function POST(request: Request) {
     const parsed = await parseAndValidate(request, invitationCreateSchema);
     if (!parsed.success) return parsed.response;
 
-    const { invitees, organization_id, message } = parsed.data;
+    const { invite_type, invitees, organization_id, message, referral_code } = parsed.data;
 
-    // Verify the inviter has permission (exec or pm)
+    // ── Referral invites: any authenticated user can send ──
+    if (invite_type === "referral") {
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+
+        const invitations = invitees.map((invitee: { email: string; role?: string }) => ({
+            email: invitee.email.trim().toLowerCase(),
+            organization_id: null,
+            role: null,
+            invite_type: "referral" as const,
+            invited_by: user.id,
+            token: randomBytes(32).toString("base64url"),
+            referral_code: referral_code || null,
+            status: "pending" as const,
+            expires_at: expiresAt,
+            personal_message: message || null,
+        }));
+
+        const { data, error } = await supabase
+            .from("invitations")
+            .insert(invitations)
+            .select("id, email, invite_type, expires_at, token");
+
+        if (error) {
+            return ApiErrors.internalError("Failed to create referral invitations");
+        }
+
+        return sendInviteEmails(request, data, null, message, invite_type);
+    }
+
+    // ── Org invites: verify membership + RBAC + role escalation ──
+    if (!organization_id) {
+        return ApiErrors.forbidden("Organization is required for org invites");
+    }
+
     const { data: membership } = await supabase
         .from("org_memberships")
         .select("role")
@@ -32,8 +68,28 @@ export async function POST(request: Request) {
         .eq("status", "active")
         .single();
 
-    if (!membership || !["exec", "pm"].includes(membership.role)) {
-        return ApiErrors.forbidden("Insufficient permissions to invite users");
+    if (!membership) {
+        return ApiErrors.forbidden("You are not a member of this organization");
+    }
+
+    const inviterRole = membership.role as PermissionLevel;
+
+    // Check RBAC permission matrix (declarative, not hardcoded)
+    if (!hasPermission(inviterRole, "invitations", "write")) {
+        return ApiErrors.forbidden("Your role does not have permission to send invitations");
+    }
+
+    // Role escalation prevention: can only invite at your level or below
+    const inviterLevel = ROLE_HIERARCHY[inviterRole] ?? 0;
+    for (const invitee of invitees) {
+        const inviteeRole = (invitee.role || "member") as PermissionLevel;
+        const inviteeLevel = ROLE_HIERARCHY[inviteeRole] ?? 0;
+        if (inviteeLevel > inviterLevel) {
+            return ApiErrors.forbidden(
+                `Cannot invite someone as "${inviteeRole}" — your "${inviterRole}" role ` +
+                    `can only invite at your level or below`
+            );
+        }
     }
 
     // Fetch org name for email content
@@ -46,10 +102,11 @@ export async function POST(request: Request) {
     const orgName = org?.name || "your organization";
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const invitations = invitees.map((invitee: { email: string; role: string }) => ({
+    const invitations = invitees.map((invitee: { email: string; role?: string }) => ({
         email: invitee.email.trim().toLowerCase(),
         organization_id,
-        role: invitee.role,
+        role: invitee.role || "member",
+        invite_type: "org_invite" as const,
         invited_by: user.id,
         token: randomBytes(32).toString("base64url"),
         status: "pending" as const,
@@ -60,13 +117,30 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
         .from("invitations")
         .insert(invitations)
-        .select("id, email, role, expires_at, token");
+        .select("id, email, role, invite_type, expires_at, token");
 
     if (error) {
         return ApiErrors.internalError("Failed to create invitations");
     }
 
-    // Send invitation emails (fire-and-forget — don't block the response)
+    return sendInviteEmails(request, data, orgName, message, invite_type);
+}
+
+// ── Helper: send emails + return safe response ──────────────────────────
+function sendInviteEmails(
+    request: Request,
+    data: Array<{
+        id: string;
+        email: string;
+        role?: string | null;
+        token: string;
+        invite_type?: string;
+        [key: string]: unknown;
+    }> | null,
+    orgName: string | null,
+    message: string | undefined,
+    inviteType: string
+) {
     if (data) {
         const baseUrl =
             request.headers.get("origin") || request.headers.get("x-forwarded-host") || "";
@@ -74,7 +148,7 @@ export async function POST(request: Request) {
         const appUrl = baseUrl.startsWith("http") ? baseUrl : `${protocol}://${baseUrl}`;
 
         Promise.allSettled(
-            data.map(async (inv: { email: string; token: string; role: string }) => {
+            data.map(async (inv) => {
                 try {
                     await fetch(`${appUrl}/api/invitations/send-email`, {
                         method: "POST",
@@ -82,9 +156,10 @@ export async function POST(request: Request) {
                         body: JSON.stringify({
                             to: inv.email,
                             token: inv.token,
-                            role: inv.role,
-                            orgName,
+                            role: inv.role || null,
+                            orgName: orgName || "the platform",
                             personalMessage: message || null,
+                            inviteType,
                             appUrl,
                         }),
                     });

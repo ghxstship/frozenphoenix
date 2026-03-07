@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import {
     ArrowLeft,
     Building2,
@@ -47,11 +47,7 @@ async function getOrgProfile(slug: string): Promise<{
     const admin = createAdminClient();
     if (!admin) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = admin as any;
-
-    const { data: org } = await db
-        .from("organizations")
+    const { data: org } = await serverFromTable(admin!, "organizations")
         .select(
             "id, name, slug, logo_url, cover_image_url, tagline, description, industry, website_url, linkedin_url, location, employee_count_range, profile_visibility"
         )
@@ -63,8 +59,7 @@ async function getOrgProfile(slug: string): Promise<{
     }
 
     // Get member count
-    const { count } = await db
-        .from("org_memberships")
+    const { count } = await serverFromTable(admin!, "org_memberships")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", org.id)
         .eq("status", "active");
@@ -72,8 +67,7 @@ async function getOrgProfile(slug: string): Promise<{
     // Get first few public members for preview
     let members: MemberPreview[] = [];
     if (org.profile_visibility === "public") {
-        const { data: memberData } = await db
-            .from("org_memberships")
+        const { data: memberData } = await serverFromTable(admin!, "org_memberships")
             .select("user_id, role, user_profiles(username, display_name, avatar_url, headline)")
             .eq("organization_id", org.id)
             .eq("status", "active")

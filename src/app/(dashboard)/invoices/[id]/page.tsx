@@ -250,6 +250,8 @@ export default function InvoiceDetailPage() {
         <DetailLayout
             backHref="/invoices"
             backLabel="Invoices"
+            entityType="invoices"
+            entityId={entityId}
             title={`Invoice ${mockInvoice.invoiceNumber}`}
             subtitle={`${mockInvoice.companyName} · ${mockInvoice.projectName}`}
             status={mockInvoice.status}

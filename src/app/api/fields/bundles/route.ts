@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 
 export async function GET() {
@@ -20,8 +20,7 @@ export async function GET() {
         return ApiErrors.unauthorized();
     }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("organization_id")
         .eq("user_id", user.id)
         .limit(1)
@@ -34,8 +33,7 @@ export async function GET() {
     const orgId = membership.organization_id;
 
     // Load all active bundles with their field types
-    const { data: bundles, error: bundlesError } = await supabase
-        .from("field_bundles")
+    const { data: bundles, error: bundlesError } = await serverFromTable(supabase!, "field_bundles")
         .select(`
             bundle_id,
             name,
@@ -55,19 +53,17 @@ export async function GET() {
     }
 
     // Load org's active bundle subscriptions
-    const { data: orgBundles } = await supabase
-        .from("org_bundle_subscriptions")
+    const { data: orgBundles } = await serverFromTable(supabase!, "org_bundle_subscriptions")
         .select("bundle_id, status, activated_at, expires_at")
         .eq("organization_id", orgId)
         .eq("status", "active");
 
     const activeBundleIds = new Set(
-        (orgBundles ?? []).map((ob) => ob.bundle_id)
+        (orgBundles ?? []).map((ob: Record<string, unknown>) => ob.bundle_id as string)
     );
 
     // Load org subscription tier
-    const { data: subscription } = await supabase
-        .from("org_subscriptions")
+    const { data: subscription } = await serverFromTable(supabase!, "org_subscriptions")
         .select("pricing_tier")
         .eq("organization_id", orgId)
         .eq("status", "active")
@@ -76,13 +72,13 @@ export async function GET() {
 
     const orgTier = subscription?.pricing_tier ?? "core";
 
-    const enrichedBundles = (bundles ?? []).map((b) => ({
+    const enrichedBundles = (bundles ?? []).map((b: Record<string, unknown>) => ({
         ...b,
-        fieldTypeIds: (b.field_bundle_items ?? []).map(
-            (fi: { field_type_id: string }) => fi.field_type_id
+        fieldTypeIds: ((b.field_bundle_items ?? []) as Array<{ field_type_id: string }>).map(
+            (fi) => fi.field_type_id
         ),
-        isSubscribed: activeBundleIds.has(b.bundle_id),
-        isEligible: tierSatisfies(orgTier, b.base_tier_required),
+        isSubscribed: activeBundleIds.has(b.bundle_id as string),
+        isEligible: tierSatisfies(orgTier, b.base_tier_required as string),
     }));
 
     return NextResponse.json({

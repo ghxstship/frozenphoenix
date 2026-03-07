@@ -202,6 +202,8 @@ export default function BriefDetailPage() {
         <DetailLayout
             backHref="/briefs"
             backLabel="Briefs"
+            entityType="briefs"
+            entityId={entityId}
             title={brief.title}
             subtitle={`${typeCfg?.label ?? brief.brief_type} Brief · v${brief.version}`}
             status={brief.status}

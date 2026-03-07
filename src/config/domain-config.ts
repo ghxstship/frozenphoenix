@@ -1463,6 +1463,28 @@ export const RENTAL_AGREEMENT_STATUS_MAP = Object.fromEntries(
     RENTAL_AGREEMENT_STATUSES.map((s) => [s.value, s])
 ) as Record<RentalAgreementStatus, EnumConfig<RentalAgreementStatus>>;
 
+// ─── Messaging: Channel Categories ───
+export const CHANNEL_CATEGORIES = [
+    { value: "general", label: "General", icon: "Hash", description: "Open discussion channels" },
+    { value: "project", label: "Project", icon: "Briefcase", description: "Project-scoped channels" },
+    { value: "department", label: "Department", icon: "Building2", description: "Department channels" },
+    { value: "announcement", label: "Announcement", icon: "Megaphone", description: "One-way announcement channels" },
+    { value: "support", label: "Support", icon: "LifeBuoy", description: "Support and help channels" },
+] as const;
+
+export type ChannelCategory = (typeof CHANNEL_CATEGORIES)[number]["value"];
+
+export const CHANNEL_CATEGORY_MAP = Object.fromEntries(
+    CHANNEL_CATEGORIES.map((c) => [c.value, c])
+) as Record<ChannelCategory, (typeof CHANNEL_CATEGORIES)[number]>;
+
+// ─── Messaging: Conversation Types ───
+export const CONVERSATION_TYPES = [
+    { value: "dm", label: "Direct Message", variant: "ghost" as const },
+    { value: "group", label: "Group", variant: "info" as const },
+    { value: "channel", label: "Channel", variant: "default" as const },
+] as const;
+
 // ─── Helper: Get Config by Value ───
 export function getEnumConfig<T extends string>(
     map: Record<T, EnumConfig<T>>,

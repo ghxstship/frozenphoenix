@@ -242,6 +242,8 @@ export default function ScopeOfWorkDetailPage() {
         <DetailLayout
             backHref="/scopes-of-work"
             backLabel="Scopes of Work"
+            entityType="scopes-of-work"
+            entityId={entityId}
             title={mockSOW.title}
             subtitle={`${mockSOW.number} · ${mockSOW.client}`}
             status={mockSOW.status}

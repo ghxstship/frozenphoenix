@@ -207,6 +207,8 @@ export default function PermitDetailPage() {
         <DetailLayout
             backHref="/permits"
             backLabel="Permits"
+            entityType="permits"
+            entityId={entityId}
             title={permit.title}
             subtitle={`${permit.jurisdiction} - ${permit.permit_type.replace(/_/g, " ")}`}
             status={permit.status}

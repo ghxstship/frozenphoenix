@@ -130,6 +130,8 @@ export default function ApprovalDetailPage() {
         <DetailLayout
             backHref="/approvals"
             backLabel="Approvals"
+            entityType="approvals"
+            entityId={entityId}
             title={approval.milestone_name}
             subtitle={`Milestone ${approval.milestone_id}`}
             status={isOverdue ? "overdue" : approval.status}

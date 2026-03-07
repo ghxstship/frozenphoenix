@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
+import { logger } from "@/lib/logger";
 import type { Database } from "@/lib/supabase/database.types";
 
 export async function POST(
@@ -26,7 +27,7 @@ export async function POST(
     }
 
     // Fetch the change request
-    const { data: changeRequest, error: fetchErr } = await supabase.from("settings_change_requests")
+    const { data: changeRequest, error: fetchErr } = await serverFromTable(supabase!, "settings_change_requests")
         .select("*")
         .eq("id", requestId)
         .single();
@@ -40,7 +41,7 @@ export async function POST(
     }
 
     // Verify reviewer is exec in the org
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", changeRequest.organization_id)
@@ -57,7 +58,7 @@ export async function POST(
     }
 
     // Update the change request
-    const { data: updated, error: updateErr } = await supabase.from("settings_change_requests")
+    const { data: updated, error: updateErr } = await serverFromTable(supabase!, "settings_change_requests")
         .update({
             status: action as Database["public"]["Enums"]["settings_approval_status"],
             reviewed_by: user.id,
@@ -69,45 +70,70 @@ export async function POST(
         .single();
 
     if (updateErr) {
+        logger.error("[POST /api/settings/change-requests/[id]/review] update failed", { error: updateErr });
         return ApiErrors.internalError("Failed to update change request");
     }
+
+    // Resolve the setting definition by key
+    const { data: definition } = await serverFromTable(supabase!, "setting_definitions")
+        .select("id")
+        .eq("key", changeRequest.setting_key)
+        .single();
+
+    if (!definition) {
+        logger.error("[POST /api/settings/change-requests/[id]/review] definition not found", {
+            setting_key: changeRequest.setting_key,
+        });
+        // Still return success for the review itself — setting application is best-effort
+        return NextResponse.json({ request: updated });
+    }
+
+    const definitionId = definition.id as string;
+    let settingId: string | null = null;
 
     // If approved, apply the setting change
     if (action === "approved") {
         try {
-            // TODO: Refactor to resolve definition_id from setting_key
-            // The settings table schema uses definition_id, not organization_id+key
-            await supabase.from("settings")
+            const { data: upserted, error: upsertErr } = await serverFromTable(supabase!, "settings")
                 .upsert(
                     {
-                        definition_id: changeRequest.setting_key, // placeholder — needs resolver
+                        definition_id: definitionId,
                         scope_type: changeRequest.scope_type as Database["public"]["Enums"]["setting_scope"],
                         scope_id: changeRequest.scope_id,
                         value: changeRequest.proposed_value,
                         changed_by: user.id,
                     },
                     { onConflict: "definition_id,scope_type,scope_id" }
-                );
-        } catch {
-            // Setting application failed — still record the approval
+                )
+                .select("id")
+                .single();
+
+            if (upsertErr) {
+                logger.error("[POST /api/settings/change-requests/[id]/review] setting upsert failed", { error: upsertErr });
+            } else {
+                settingId = upserted?.id as string ?? null;
+            }
+        } catch (err) {
+            logger.error("[POST /api/settings/change-requests/[id]/review] setting application failed", { error: err });
         }
     }
 
-    // Audit log
-    try {
-        // TODO: Refactor to include real setting_id + definition_id
-        await supabase.from("settings_change_log").insert({
-            setting_id: requestId, // placeholder — needs real setting ID
-            definition_id: changeRequest.setting_key, // placeholder — needs resolver
-            scope_type: changeRequest.scope_type as Database["public"]["Enums"]["setting_scope"],
-            scope_id: changeRequest.scope_id,
-            old_value: changeRequest.current_value,
-            new_value: action === "approved" ? changeRequest.proposed_value : null,
-            changed_by: user.id,
-            change_reason: `${action}: ${comment || "No comment"}`,
-        });
-    } catch {
-        // Non-blocking
+    // Audit log (only if we have a valid setting_id)
+    if (settingId) {
+        try {
+            await serverFromTable(supabase!, "settings_change_log").insert({
+                setting_id: settingId,
+                definition_id: definitionId,
+                scope_type: changeRequest.scope_type as Database["public"]["Enums"]["setting_scope"],
+                scope_id: changeRequest.scope_id,
+                old_value: changeRequest.current_value,
+                new_value: action === "approved" ? changeRequest.proposed_value : null,
+                changed_by: user.id,
+                change_reason: `${action}: ${comment || "No comment"}`,
+            });
+        } catch (err) {
+            logger.error("[POST /api/settings/change-requests/[id]/review] audit log failed", { error: err });
+        }
     }
 
     return NextResponse.json({ request: updated });

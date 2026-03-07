@@ -4,15 +4,15 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { logger } from "@/lib/logger";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface DetailCrudOptions {
     entityId: string;
     entityLabel: string;
     listPath: string;
-    useUpdateHook: () => { mutateAsync: any; isPending: boolean };
-    useDeleteHook: () => { mutateAsync: any; isPending: boolean };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useUpdateHook: () => { mutateAsync: (vars: any) => Promise<any>; isPending: boolean };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useDeleteHook: () => { mutateAsync: (vars: any) => Promise<any>; isPending: boolean };
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function useDetailCrud({
     entityId,

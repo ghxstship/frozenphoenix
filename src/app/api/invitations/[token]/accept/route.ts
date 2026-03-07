@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 
 export async function POST(
@@ -20,8 +20,7 @@ export async function POST(
     }
 
     // Find the invitation
-    const { data: invitation, error: invError } = await supabase
-        .from("invitations")
+    const { data: invitation, error: invError } = await serverFromTable(supabase!, "invitations")
         .select("*")
         .eq("token", token)
         .single();
@@ -41,7 +40,7 @@ export async function POST(
 
     if (new Date(invitation.expires_at) < new Date()) {
         // Mark as expired
-        await supabase.from("invitations").update({ status: "expired" }).eq("id", invitation.id);
+        await serverFromTable(supabase!, "invitations").update({ status: "expired" }).eq("id", invitation.id);
 
         return ApiErrors.gone("This invitation has expired");
     }
@@ -51,7 +50,7 @@ export async function POST(
 
     if (!isReferral && invitation.organization_id) {
         // Create org membership for org invites
-        const { error: memberError } = await supabase.from("org_memberships").upsert(
+        const { error: memberError } = await serverFromTable(supabase!, "org_memberships").upsert(
             {
                 user_id: user.id,
                 organization_id: invitation.organization_id,
@@ -67,23 +66,20 @@ export async function POST(
         }
 
         // Update profile org_id if user has no org yet
-        const { data: profile } = await supabase
-            .from("profiles")
+        const { data: profile } = await serverFromTable(supabase!, "profiles")
             .select("organization_id")
             .eq("id", user.id)
             .single();
 
         if (profile && !profile.organization_id) {
-            await supabase
-                .from("profiles")
+            await serverFromTable(supabase!, "profiles")
                 .update({ organization_id: invitation.organization_id })
                 .eq("id", user.id);
         }
     }
 
     // Mark invitation as accepted
-    await supabase
-        .from("invitations")
+    await serverFromTable(supabase!, "invitations")
         .update({
             status: "accepted",
             accepted_by: user.id,
@@ -109,8 +105,7 @@ export async function GET(
     }
 
     // Public endpoint — returns invitation details without requiring auth
-    const { data: invitation, error } = await supabase
-        .from("invitations")
+    const { data: invitation, error } = await serverFromTable(supabase!, "invitations")
         .select("email, role, status, expires_at, personal_message, organizations(id, name, slug)")
         .eq("token", token)
         .single();

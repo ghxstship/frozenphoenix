@@ -10,8 +10,11 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { PageTransition } from "@/components/ui/page-transition";
+import { MessagingPanel } from "@/components/messaging/messaging-panel";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    const { messagingEnabled } = useMessagingEnabled();
     const isCollapsed = useSidebar((state) => state.isCollapsed);
     const setMobile = useSidebar((state) => state.setMobile);
     const setOpen = useSidebar((state) => state.setOpen);
@@ -73,6 +76,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </ErrorBoundary>
                     </main>
                 </div>
+
+                {/* Messaging slide-over panel */}
+                {messagingEnabled && <MessagingPanel />}
             </div>
         </>
     );

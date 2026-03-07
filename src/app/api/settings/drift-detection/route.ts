@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 
 interface DriftItem {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify exec access
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
     const driftItems: DriftItem[] = [];
 
     // Fetch setting definitions
-    const { data: definitions } = await supabase.from("setting_definitions")
+    const { data: definitions } = await serverFromTable(supabase!, "setting_definitions")
         .select("*")
         .eq("is_active", true);
 
     // Fetch current settings for this org
-    const { data: settings } = await supabase.from("settings")
+    const { data: settings } = await serverFromTable(supabase!, "settings")
         .select("*")
         .eq("organization_id", orgId);
 

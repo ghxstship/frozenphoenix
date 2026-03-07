@@ -9,6 +9,8 @@ import { TabBar } from "@/components/ui/tab-bar";
 import type { TabBarItem } from "@/components/ui/tab-bar";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import { MessagingButton } from "@/components/messaging/messaging-button";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 /** @deprecated Use TabBarItem from '@/components/ui/tab-bar' directly */
 export type DetailTabConfig = TabBarItem;
@@ -26,6 +28,10 @@ export interface DetailLayoutProps {
     activeTab?: string;
     onTabChange?: (tabId: string) => void;
     sidebar?: React.ReactNode;
+    /** Entity type for messaging context (e.g. "project", "event"). Enables MessagingButton when provided with entityId. */
+    entityType?: string;
+    /** Entity ID for messaging context. Enables MessagingButton when provided with entityType. */
+    entityId?: string;
     className?: string;
     children: React.ReactNode;
 }
@@ -43,9 +49,12 @@ export function DetailLayout({
     activeTab,
     onTabChange,
     sidebar,
+    entityType,
+    entityId,
     className,
     children,
 }: DetailLayoutProps) {
+    const { messagingEnabled } = useMessagingEnabled();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -108,6 +117,9 @@ export function DetailLayout({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                    {messagingEnabled && entityType && entityId && (
+                        <MessagingButton entityType={entityType} entityId={entityId} />
+                    )}
                     {actions}
                     {menuItems && menuItems.length > 0 && (
                         <div className="relative" ref={menuRef}>

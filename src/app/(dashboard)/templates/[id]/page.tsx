@@ -293,6 +293,8 @@ export default function TemplateDetailPage() {
         <DetailLayout
             backHref="/templates"
             backLabel="Templates"
+            entityType="templates"
+            entityId={templateId}
             title={template.name}
             subtitle={`${catCfg.label} Template · Used ${template.usageCount} times`}
             avatar={

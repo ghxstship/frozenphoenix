@@ -310,6 +310,8 @@ export default function CallSheetDetailPage() {
         <DetailLayout
             backHref="/call-sheets"
             backLabel="Call Sheets"
+            entityType="call-sheets"
+            entityId={entityId}
             title={mockCallSheet.title}
             subtitle={`${mockCallSheet.projectName} — ${formatDate(mockCallSheet.date)}`}
             status={mockCallSheet.status}

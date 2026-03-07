@@ -9,6 +9,8 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/supabase/auth-context";
+import { useMessaging } from "@/hooks/use-messaging";
+import { useUnreadCounts } from "@/lib/supabase/hooks-messaging";
 
 import { FOCUS_RING, ICON_SIZES, LAYOUT } from "@/config/design-tokens";
 import { useReducedMotion } from "@/hooks/use-media-query";
@@ -506,42 +508,29 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
     );
 }
 
-// ─── Messages Dropdown ───
+// ─── Messages Button ───
 
 function MessagesMenu() {
-    const router = useRouter();
-    const messageCount = 0; // TODO: wire to real unread message count
+    const setPanelOpen = useMessaging((s) => s.setPanelOpen);
+    const { data: unreadCount = 0 } = useUnreadCounts();
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                        "hover:text-foreground hover:bg-secondary transition-colors relative",
-                        FOCUS_RING
-                    )}
-                    aria-label={`Messages${messageCount > 0 ? ` (${messageCount} unread)` : ""}`}
-                >
-                    <MessageSquare className={ICON_SIZES.sm} />
-                    {messageCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold px-1">
-                            {messageCount > 9 ? "9+" : messageCount}
-                        </span>
-                    )}
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>Messages</DropdownMenuLabel>
-                <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                    No messages yet
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/messages")}>
-                    View all messages
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+            onClick={() => setPanelOpen(true)}
+            className={cn(
+                "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
+                "hover:text-foreground hover:bg-secondary transition-colors relative",
+                FOCUS_RING
+            )}
+            aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        >
+            <MessageSquare className={ICON_SIZES.sm} />
+            {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold px-1">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+            )}
+        </button>
     );
 }
 

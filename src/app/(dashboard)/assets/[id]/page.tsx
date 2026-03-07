@@ -239,6 +239,8 @@ export default function AssetDetailPage() {
             <DetailLayout
                 backHref="/assets"
                 backLabel="Assets"
+                entityType="assets"
+                entityId={assetId}
                 title={asset.name}
                 subtitle={asset.category}
                 status={asset.condition}

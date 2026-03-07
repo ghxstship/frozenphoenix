@@ -244,6 +244,8 @@ export default function OpportunityDetailPage() {
         <DetailLayout
             backHref="/opportunities"
             backLabel="Opportunities"
+            entityType="opportunities"
+            entityId={entityId}
             title={opp.name}
             subtitle={`${opp.companyName} · ${typeCfg?.label ?? opp.type}`}
             status={opp.stage}

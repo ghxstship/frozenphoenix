@@ -358,6 +358,8 @@ export default function TechSheetDetailPage() {
         <DetailLayout
             backHref="/tech-sheets"
             backLabel="Tech Sheets"
+            entityType="tech-sheets"
+            entityId={sheetId}
             title={mockTechSheet.title}
             subtitle={`${mockTechSheet.projectName} — ${mockTechSheet.venue}`}
             status={mockTechSheet.status}

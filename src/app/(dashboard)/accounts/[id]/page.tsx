@@ -100,6 +100,8 @@ export default function AccountDetailPage() {
         <DetailLayout
             backHref="/accounts"
             backLabel="Accounts"
+            entityType="accounts"
+            entityId={entityId}
             title={String(a.name ?? "Untitled Account")}
             subtitle={String(a.type ?? "Account")}
             status={String(a.status ?? "active")}

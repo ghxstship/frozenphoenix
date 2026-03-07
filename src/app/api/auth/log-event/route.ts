@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { logEventSchema } from "@/lib/validation/api-schemas";
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || "unknown";
 
     // Attempt to insert into login_audit_log
-    const { error } = await supabase.from("login_audit_log")
+    const { error } = await serverFromTable(supabase!, "login_audit_log")
         .insert({
             user_id: user.id,
             event_type,

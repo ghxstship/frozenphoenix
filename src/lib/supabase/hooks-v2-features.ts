@@ -8,7 +8,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, getSupabase, isSupabaseConfigured } from "./client";
+import { fromTable, isSupabaseConfigured } from "./client";
 
 export { isSupabaseConfigured };
 
@@ -581,10 +581,8 @@ export function useGenerateInvoiceFromTime() {
             projectId: string;
             timeEntryIds: string[];
         }) => {
-            const sb = getSupabase();
             // Fetch approved billable time entries
-            const { data: entries, error: fetchError } = await sb
-                .from("production_time_entries" as never)
+            const { data: entries, error: fetchError } = await fromTable("production_time_entries")
                 .select("*")
                 .in("id", timeEntryIds)
                 .eq("billable", true)
@@ -610,8 +608,7 @@ export function useGenerateInvoiceFromTime() {
             const totalAmount = typedEntries.reduce((s, e) => s + (e.total_pay || 0), 0);
 
             // Create invoice
-            const { data: invoice, error: invoiceError } = await sb
-                .from("invoices" as never)
+            const { data: invoice, error: invoiceError } = await fromTable("invoices")
                 .insert({
                     project_id: projectId,
                     amount: totalAmount,
@@ -619,7 +616,7 @@ export function useGenerateInvoiceFromTime() {
                     source: "timesheet",
                     generated_from_time_entries: true,
                     notes: `Auto-generated from ${typedEntries.length} time entries (${totalHours.toFixed(1)}h)`,
-                } as never)
+                })
                 .select()
                 .single();
             if (invoiceError) throw invoiceError;
@@ -627,9 +624,8 @@ export function useGenerateInvoiceFromTime() {
             const invoiceId = (invoice as unknown as { id: string }).id;
 
             // Link time entries to invoice
-            const { error: linkError } = await sb
-                .from("production_time_entries" as never)
-                .update({ invoice_id: invoiceId } as never)
+            const { error: linkError } = await fromTable("production_time_entries")
+                .update({ invoice_id: invoiceId })
                 .in("id", timeEntryIds);
             if (linkError) throw linkError;
 

@@ -192,6 +192,8 @@ export default function InsurancePolicyDetailPage() {
         <DetailLayout
             backHref="/insurance-policies"
             backLabel="Insurance Policies"
+            entityType="insurance-policies"
+            entityId={entityId}
             title={`${policy.carrier} — ${policy.policy_type.replace(/_/g, " ")}`}
             subtitle={`Policy ${policy.policy_number} · ${policy.holder_type}`}
             status={policy.status}

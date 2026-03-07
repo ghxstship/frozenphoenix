@@ -250,6 +250,8 @@ export default function LeadDetailPage() {
         <DetailLayout
             backHref="/leads"
             backLabel="Leads"
+            entityType="leads"
+            entityId={leadId}
             title={fullName}
             subtitle={`${lead.job_title} at ${lead.company}`}
             status={lead.status}

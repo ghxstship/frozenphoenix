@@ -143,6 +143,8 @@ export default function DocumentDetailPage() {
         <DetailLayout
             backHref="/documents"
             backLabel="Documents"
+            entityType="documents"
+            entityId={entityId}
             title={doc.name}
             subtitle={`${CATEGORY_LABELS[doc.category] ?? doc.category} · ${doc.mime_type}`}
             status={doc.category}

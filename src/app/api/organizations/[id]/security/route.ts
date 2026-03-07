@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import type { Json } from "@/lib/supabase/database.types";
 
@@ -19,7 +19,7 @@ export async function GET(
     }
 
     // Verify the user is exec in this org
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -30,7 +30,7 @@ export async function GET(
         return ApiErrors.forbidden("Only executives can view security settings");
     }
 
-    const { data: org, error } = await supabase.from("organizations")
+    const { data: org, error } = await serverFromTable(supabase!, "organizations")
         .select(
             "id, name, slug, require_mfa, enforce_sso, sso_domain, allowed_email_domains, session_timeout_hours, max_sessions_per_user, invitation_expiry_days, default_role"
         )
@@ -60,7 +60,7 @@ export async function PATCH(
     }
 
     // Verify the user is exec in this org
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -96,7 +96,7 @@ export async function PATCH(
         return ApiErrors.badRequest("No valid fields to update");
     }
 
-    const { data: org, error } = await supabase.from("organizations")
+    const { data: org, error } = await serverFromTable(supabase!, "organizations")
         .update(allowedFields)
         .eq("id", orgId)
         .select(
@@ -110,7 +110,7 @@ export async function PATCH(
 
     // Audit log the change
     try {
-        await supabase.from("login_audit_log").insert({
+        await serverFromTable(supabase!, "login_audit_log").insert({
             user_id: user.id,
             event_type: "org_security_updated",
             metadata: { organization_id: orgId, changes: Object.keys(allowedFields) } as unknown as Json,

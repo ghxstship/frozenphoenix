@@ -323,6 +323,8 @@ export default function DeckEditorPage() {
         <DetailLayout
             backHref="/decks"
             backLabel="Decks"
+            entityType="decks"
+            entityId={deckId}
             title={deckTitle}
             subtitle={`${slides.length} slides`}
             status="draft"

@@ -181,6 +181,8 @@ export default function ChangeOrderDetailPage() {
         <DetailLayout
             backHref="/change-orders"
             backLabel="Change Orders"
+            entityType="change-orders"
+            entityId={entityId}
             title={co.title}
             subtitle={`${co.number} · ${co.projectName ?? co.projectId}`}
             status={co.status}

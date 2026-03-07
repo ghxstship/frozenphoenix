@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ActivityFeed, type ActivityItem } from "./activity-feed";
 import { type CommentItem, CommentsSection } from "./comments-section";
+import { EntityCommentsSection } from "./entity-comments-section";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 import { Activity, MessageSquare } from "lucide-react";
 
 type ChatterTab = "comments" | "activity";
@@ -26,6 +28,8 @@ export interface RecordChatterProps {
 }
 
 export function RecordChatter({
+    recordType,
+    recordId,
     activityItems,
     comments,
     currentUserId,
@@ -38,6 +42,7 @@ export function RecordChatter({
     compact = false,
 }: RecordChatterProps) {
     const [tab, setTab] = useState<ChatterTab>(defaultTab);
+    const { messagingEnabled } = useMessagingEnabled();
 
     return (
         <Card className={cn("overflow-hidden", className)}>
@@ -66,13 +71,20 @@ export function RecordChatter({
             </CardHeader>
             <CardContent>
                 {tab === "comments" ? (
-                    <CommentsSection
-                        comments={comments}
-                        currentUserId={currentUserId}
-                        onAddComment={onAddComment}
-                        onEditComment={onEditComment}
-                        onDeleteComment={onDeleteComment}
-                    />
+                    messagingEnabled ? (
+                        <EntityCommentsSection
+                            entityType={recordType}
+                            entityId={recordId}
+                        />
+                    ) : (
+                        <CommentsSection
+                            comments={comments}
+                            currentUserId={currentUserId}
+                            onAddComment={onAddComment}
+                            onEditComment={onEditComment}
+                            onDeleteComment={onDeleteComment}
+                        />
+                    )
                 ) : (
                     <ActivityFeed
                         items={activityItems}

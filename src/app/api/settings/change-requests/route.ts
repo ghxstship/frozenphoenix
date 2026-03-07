@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the user is an active member of this org
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", orgId)
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         return ApiErrors.forbidden();
     }
 
-    const query = supabase.from("settings_change_requests")
+    const query = serverFromTable(supabase!, "settings_change_requests")
         .select("*")
         .eq("organization_id", orgId)
         .order("created_at", { ascending: false })
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the user is an active member of this org
-    const { data: membership } = await supabase.from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", organization_id)
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         return ApiErrors.forbidden();
     }
 
-    const { data, error } = await supabase.from("settings_change_requests")
+    const { data, error } = await serverFromTable(supabase!, "settings_change_requests")
         .insert({
             organization_id,
             setting_key,

@@ -1,11 +1,14 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { AlertTriangle, Clock, DollarSign, TrendingUp } from "lucide-react";
+import { AlertTriangle, Clock, CreditCard, DollarSign, TrendingUp } from "lucide-react";
 import { OT_ALERT_LEVEL_MAP } from "@/config/domain-config";
+import { usePosTransactions } from "@/lib/supabase/hooks-external-sync";
+import { formatCurrency } from "@/lib/utils";
 
 const snapshot = {
     budgetTotal: 185000,
@@ -33,6 +36,17 @@ const totalRevenue =
     snapshot.revenueTickets + snapshot.revenueFb + snapshot.revenueMerch + snapshot.revenueOther;
 
 export default function LiveFinancialsPage() {
+    const { data: posTransactions } = usePosTransactions();
+    const posTxns = (posTransactions ?? []) as Record<string, unknown>[];
+    const posTotal = posTxns.reduce((sum, t) => sum + (Number(t.total_amount) || 0), 0);
+    const posTax = posTxns.reduce((sum, t) => sum + (Number(t.tax_amount) || 0), 0);
+    const posCount = posTxns.length;
+    const posCategories = posTxns.reduce<Record<string, number>>((acc, t) => {
+        const cat = (t.category as string) || "uncategorized";
+        acc[cat] = (acc[cat] || 0) + (Number(t.total_amount) || 0);
+        return acc;
+    }, {});
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
@@ -158,6 +172,61 @@ export default function LiveFinancialsPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                        <CreditCard className="h-4 w-4" />
+                        POS Transactions (Live)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <p className="text-xs text-muted-foreground">Transactions</p>
+                            <p className="text-lg font-bold">{posCount}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Gross Revenue</p>
+                            <p className="text-lg font-bold">{formatCurrency(posTotal)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Tax Collected</p>
+                            <p className="text-lg font-bold">{formatCurrency(posTax)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Avg Transaction</p>
+                            <p className="text-lg font-bold">
+                                {posCount > 0 ? formatCurrency(posTotal / posCount) : "—"}
+                            </p>
+                        </div>
+                    </div>
+                    {Object.keys(posCategories).length > 0 && (
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-2">Revenue by Category</p>
+                            <div className="space-y-1.5">
+                                {Object.entries(posCategories)
+                                    .sort(([, a], [, b]) => b - a)
+                                    .map(([cat, amount]) => (
+                                        <div key={cat} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="secondary" className="text-[9px] capitalize">
+                                                    {cat.replace("_", " ")}
+                                                </Badge>
+                                            </div>
+                                            <span className="text-xs font-medium">{formatCurrency(amount)}</span>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )}
+                    {posCount === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            No POS transactions synced yet. Connect a POS provider in Integrations.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

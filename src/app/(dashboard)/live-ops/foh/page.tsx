@@ -1,13 +1,15 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Clock, ShoppingCart, TrendingUp, Users } from "lucide-react";
+import { Clock, ShoppingCart, Ticket, TrendingUp, Users } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
+import { useCredentialAssignments } from "@/lib/supabase/hooks-credentialing";
 
 interface MockZone {
     id: string;
@@ -98,6 +100,13 @@ const mockZones: MockZone[] = [
 ];
 
 export default function FohPage() {
+    const { data: credentialAssignments } = useCredentialAssignments({
+        status: ["approved", "issued", "checked_in", "checked_out"],
+    });
+    const credRows = (credentialAssignments ?? []) as Record<string, unknown>[];
+    const credCheckedIn = credRows.filter((r) => r.status === "checked_in").length;
+    const credIssued = credRows.filter((r) => ["approved", "issued"].includes(r.status as string)).length;
+
     const totalOccupancy = mockZones.reduce((s, z) => s + z.occupancy, 0);
     const totalCapacity = mockZones.reduce((s, z) => s + z.capacity, 0);
     const totalSales = mockZones.reduce((s, z) => s + z.salesAmount, 0);
@@ -128,6 +137,31 @@ export default function FohPage() {
                 />
                 <StatCard title="Active Incidents" value={totalIncidents} icon={Clock} />
             </div>
+
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                        <Ticket className="h-4 w-4" />
+                        Credential Status
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <Badge variant="success" className="text-[10px]">{credCheckedIn}</Badge>
+                            <span className="text-xs text-muted-foreground">Checked In</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Badge variant="info" className="text-[10px]">{credIssued}</Badge>
+                            <span className="text-xs text-muted-foreground">Issued / Pending Entry</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-[10px]">{credRows.length}</Badge>
+                            <span className="text-xs text-muted-foreground">Total Active</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {mockZones.map((zone, i) => {

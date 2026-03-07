@@ -110,6 +110,8 @@ export default function WorkforceDetailPage() {
         <DetailLayout
             backHref="/workforce"
             backLabel="Workforce"
+            entityType="workforce"
+            entityId={entityId}
             title={String(w.full_name ?? w.name ?? "Unknown Worker")}
             subtitle={String(w.classification ?? "Worker Profile")}
             status={String(w.lifecycle_status ?? w.status ?? "active")}

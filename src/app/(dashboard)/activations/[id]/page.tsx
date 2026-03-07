@@ -207,6 +207,8 @@ export default function ActivationDetailPage() {
         <DetailLayout
             backHref="/activations"
             backLabel="Activations"
+            entityType="activations"
+            entityId={activationId}
             title={activation.name}
             subtitle={location?.name}
             status={activation.status}

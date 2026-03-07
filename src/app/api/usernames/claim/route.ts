@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import { logger } from "@/lib/logger";
 import { usernameClaimSchema } from "@/lib/validation/schemas";
 import { checkUsernameAvailable } from "@/lib/username-utils";
 
@@ -31,14 +32,8 @@ export async function POST(request: NextRequest) {
     if (!admin) {
         return ApiErrors.serviceUnavailable();
     }
-    // New tables/columns from migration 038 are not yet in database.types.ts.
-    // Use untyped accessor for those tables.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = admin as any;
-
     // Check if user already has a username
-    const { data: profile } = await db
-        .from("user_profiles")
+    const { data: profile } = await serverFromTable(admin!, "user_profiles")
         .select("username")
         .eq("id", user.id)
         .single();
@@ -50,14 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check availability
-    const availability = await checkUsernameAvailable(db, username);
+    const availability = await checkUsernameAvailable(admin!, username);
     if (!availability.available) {
         return ApiErrors.conflict(availability.reason ?? "Username not available");
     }
 
     // Claim it
-    const { error: updateError } = await db
-        .from("user_profiles")
+    const { error: updateError } = await serverFromTable(admin!, "user_profiles")
         .update({
             username,
             username_changed_at: new Date().toISOString(),
@@ -69,13 +63,12 @@ export async function POST(request: NextRequest) {
         if (updateError.code === "23505") {
             return ApiErrors.conflict("This username was just claimed by someone else");
         }
-        // eslint-disable-next-line no-console
-        console.error("[POST /api/usernames/claim] update failed:", updateError);
+        logger.error("[POST /api/usernames/claim] update failed", { error: updateError });
         return ApiErrors.internalError("Failed to claim username");
     }
 
     // Log the claim in the change log
-    await db.from("username_change_log").insert({
+    await serverFromTable(admin!, "username_change_log").insert({
         entity_type: "user",
         entity_id: user.id,
         old_value: "",

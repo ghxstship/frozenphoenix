@@ -2,7 +2,8 @@
    USERNAME UTILITIES — Shared logic for username operations
    ═══════════════════════════════════════════════════════════════ */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ServerClient } from "@/lib/supabase/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 
 // ─── Client-side reserved words (mirrors DB reserved_usernames table) ──
@@ -83,8 +84,7 @@ interface AvailabilityResult {
  * Uses direct queries (bypasses generated types for new tables).
  */
 export async function checkUsernameAvailable(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    admin: SupabaseClient<any>,
+    admin: ServerClient,
     username: string
 ): Promise<AvailabilityResult> {
     const normalized = username.toLowerCase().trim();
@@ -101,8 +101,7 @@ export async function checkUsernameAvailable(
     }
 
     // Reserved check
-    const { data: reserved } = await admin
-        .from("reserved_usernames")
+    const { data: reserved } = await serverFromTable(admin, "reserved_usernames")
         .select("username")
         .eq("username", normalized)
         .maybeSingle();
@@ -112,8 +111,7 @@ export async function checkUsernameAvailable(
     }
 
     // Taken by existing user
-    const { data: existing } = await admin
-        .from("user_profiles")
+    const { data: existing } = await serverFromTable(admin, "user_profiles")
         .select("id")
         .ilike("username", normalized)
         .maybeSingle();
@@ -123,8 +121,7 @@ export async function checkUsernameAvailable(
     }
 
     // Cooldown check (recently released)
-    const { data: released } = await admin
-        .from("released_usernames")
+    const { data: released } = await serverFromTable(admin, "released_usernames")
         .select("claimable_after")
         .ilike("username", normalized)
         .gt("claimable_after", new Date().toISOString())
@@ -144,8 +141,7 @@ export async function checkUsernameAvailable(
  * Generate up to 3 available username suggestions based on a desired base.
  */
 export async function generateUsernameSuggestions(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    admin: SupabaseClient<any>,
+    admin: ServerClient,
     base: string,
     maxSuggestions = 3
 ): Promise<string[]> {
@@ -178,15 +174,13 @@ export async function generateUsernameSuggestions(
  * Check whether a user is within the username change cooldown period.
  */
 export async function isWithinChangeCooldown(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    admin: SupabaseClient<any>,
+    admin: ServerClient,
     userId: string
 ): Promise<{ blocked: boolean; nextChangeAt: string | null }> {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - USERNAME_CHANGE_COOLDOWN_DAYS);
 
-    const { data: profile } = await admin
-        .from("user_profiles")
+    const { data: profile } = await serverFromTable(admin, "user_profiles")
         .select("username_changed_at")
         .eq("id", userId)
         .single();

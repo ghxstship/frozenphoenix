@@ -226,6 +226,8 @@ export default function IncidentDetailPage() {
         <DetailLayout
             backHref="/incidents"
             backLabel="Incidents"
+            entityType="incidents"
+            entityId={incidentId}
             title={incident.title}
             subtitle={`${incident.number} · ${incident.specificLocation}`}
             status={incident.status}

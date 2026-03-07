@@ -100,6 +100,8 @@ export default function PersonDetailPage() {
         <DetailLayout
             backHref="/people"
             backLabel="People"
+            entityType="people"
+            entityId={entityId}
             title={String(p.full_name ?? p.name ?? "Unknown")}
             subtitle={String(p.role ?? "Person")}
             status={String(p.status ?? "active")}

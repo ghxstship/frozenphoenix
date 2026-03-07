@@ -12,7 +12,11 @@ type TableName =
     | "workflow_instances" | "workflow_step_approvals"
     | "crew_shifts" | "incidents" | "shipments"
     | "proposals" | "scopes_of_work" | "e_signatures"
-    | "assets" | "purchase_orders" | "expenses";
+    | "assets" | "purchase_orders" | "expenses"
+    | "credential_assignments" | "credential_scan_log"
+    | "credential_inventory_pools" | "credential_types"
+    | "provider_connections" | "sync_events" | "webhook_events"
+    | "pos_transactions";
 
 interface UseRealtimeOptions {
     table: TableName;
@@ -544,6 +548,155 @@ export function useIncidentsRealtime() {
                 { event: "*", schema: "public", table: "incidents" },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["incidents"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [queryClient]);
+}
+
+// ─── Credential Assignments Realtime ───
+export function useCredentialAssignmentsRealtime(eventId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = eventId ? `event_id=eq.${eventId}` : undefined;
+
+        const assignmentsChannel = supabase
+            .channel("credential_assignments_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "credential_assignments", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["credential_assignments"] });
+                    queryClient.invalidateQueries({ queryKey: ["credential_inventory_pools"] });
+                }
+            )
+            .subscribe();
+
+        const scanChannel = supabase
+            .channel("credential_scan_log_realtime")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "credential_scan_log" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["credential_scan_log"] });
+                    queryClient.invalidateQueries({ queryKey: ["credential_assignments"] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(assignmentsChannel);
+            supabase.removeChannel(scanChannel);
+        };
+    }, [eventId, queryClient]);
+}
+
+// ─── Provider Connections & Sync Realtime ───
+export function useIntegrationsSyncRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const connectionsChannel = supabase
+            .channel("provider_connections_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "provider_connections" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["provider_connections"] });
+                }
+            )
+            .subscribe();
+
+        const syncChannel = supabase
+            .channel("sync_events_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "sync_events" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["sync_events"] });
+                    queryClient.invalidateQueries({ queryKey: ["provider_connections"] });
+                }
+            )
+            .subscribe();
+
+        const webhookChannel = supabase
+            .channel("webhook_events_realtime")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "webhook_events" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["webhook_events"] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(connectionsChannel);
+            supabase.removeChannel(syncChannel);
+            supabase.removeChannel(webhookChannel);
+        };
+    }, [queryClient]);
+}
+
+// ─── POS Transactions Realtime ───
+export function usePosTransactionsRealtime(eventId?: string) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const filter = eventId ? `event_id=eq.${eventId}` : undefined;
+
+        const channel = supabase
+            .channel("pos_transactions_realtime")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "pos_transactions", filter },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["pos_transactions"] });
+                    queryClient.invalidateQueries({ queryKey: ["live_financial_snapshots"] });
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [eventId, queryClient]);
+}
+
+// ─── Credential Pools Realtime ───
+export function useCredentialPoolsRealtime() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        const supabase = createClient();
+        if (!supabase) return;
+
+        const channel = supabase
+            .channel("credential_pools_realtime")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "credential_inventory_pools" },
+                () => {
+                    queryClient.invalidateQueries({ queryKey: ["credential_inventory_pools"] });
+                    queryClient.invalidateQueries({ queryKey: ["credential_types"] });
                 }
             )
             .subscribe();

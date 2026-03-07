@@ -313,6 +313,8 @@ export default function LocationDetailPage() {
             <DetailLayout
                 backHref="/locations"
                 backLabel="Locations"
+                entityType="locations"
+                entityId={locationId}
                 title={location.name}
                 subtitle={
                     location.address

@@ -207,6 +207,8 @@ export default function EstimateDetailPage() {
         <DetailLayout
             backHref="/estimates"
             backLabel="Estimates"
+            entityType="estimates"
+            entityId={entityId}
             title={estimate.title}
             subtitle={`${estimate.number} · ${estimate.companyName}`}
             status={estimate.status}

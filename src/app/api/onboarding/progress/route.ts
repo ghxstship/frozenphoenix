@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { onboardingProgressSchema } from "@/lib/validation/api-schemas";
 
@@ -18,8 +18,7 @@ export async function GET() {
     let userRole = "pm";
     let profileName: string | null = null;
 
-    const { data: profileData } = await supabase
-        .from("profiles")
+    const { data: profileData } = await serverFromTable(supabase!, "profiles")
         .select("role, name")
         .eq("id", user.id)
         .single();
@@ -30,13 +29,13 @@ export async function GET() {
     }
 
     // Get step definitions relevant to this user's role
-    const { data: steps } = await supabase.from("onboarding_step_definitions")
+    const { data: steps } = await serverFromTable(supabase!, "onboarding_step_definitions")
         .select("*")
         .or(`role.eq.all,role.eq.${userRole}`)
         .order("sort_order", { ascending: true });
 
     // Get user's progress
-    const { data: progress } = await supabase.from("user_onboarding_progress")
+    const { data: progress } = await serverFromTable(supabase!, "user_onboarding_progress")
         .select("*")
         .eq("user_id", user.id);
 
@@ -73,7 +72,7 @@ export async function GET() {
             return autoCompleteMap[key] && !progressMap.has(s.id as string);
         })
         .map((s: Record<string, unknown>) =>
-            supabase.from("user_onboarding_progress").upsert(
+            serverFromTable(supabase!, "user_onboarding_progress").upsert(
                 {
                     user_id: user.id,
                     step_definition_id: s.id as string,
@@ -122,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     const { step_definition_id, status: stepStatus } = validated.data;
 
-    const { data, error } = await supabase.from("user_onboarding_progress")
+    const { data, error } = await serverFromTable(supabase!, "user_onboarding_progress")
         .upsert(
             {
                 user_id: user.id,

@@ -303,6 +303,8 @@ export default function ProjectDetailPage() {
             <DetailLayout
                 backHref="/projects"
                 backLabel="Projects"
+                entityType="projects"
+                entityId={projectId}
                 title={project.name}
                 subtitle={project.client}
                 status={project.status}

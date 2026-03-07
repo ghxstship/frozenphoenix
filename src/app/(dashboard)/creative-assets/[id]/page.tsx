@@ -207,6 +207,8 @@ export default function CreativeAssetDetailPage() {
         <DetailLayout
             backHref="/creative-assets"
             backLabel="Creative Assets"
+            entityType="creative-assets"
+            entityId={entityId}
             title={mockCreativeAsset.name}
             subtitle={`${mockCreativeAsset.campaign_name} · ${mockCreativeAsset.asset_role}`}
             status={mockCreativeAsset.production_status}

@@ -215,6 +215,8 @@ export default function VendorDetailPage() {
             <DetailLayout
                 backHref="/vendors"
                 backLabel="Vendors"
+                entityType="vendors"
+                entityId={vendorId}
                 title={vendor.name}
                 subtitle={vendor.specialty}
                 status={vendor.status}

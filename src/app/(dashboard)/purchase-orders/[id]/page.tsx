@@ -116,6 +116,8 @@ export default function PurchaseOrderDetailPage() {
         <DetailLayout
             backHref="/purchase-orders"
             backLabel="Purchase Orders"
+            entityType="purchase-orders"
+            entityId={entityId}
             title={`PO ${po.id.slice(0, 8)}`}
             subtitle={`Issued ${po.issued_date ? formatDate(po.issued_date) : "—"}`}
             status={po.status}

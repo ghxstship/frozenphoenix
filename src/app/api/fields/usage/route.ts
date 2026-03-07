@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -29,8 +29,7 @@ export async function POST(request: NextRequest) {
         return ApiErrors.unauthorized();
     }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("organization_id")
         .eq("user_id", user.id)
         .limit(1)
@@ -61,8 +60,7 @@ export async function POST(request: NextRequest) {
     const { field_type_id, action, resource, count } = parsed.data;
 
     // Fire-and-forget insert — non-blocking
-    const { error } = await supabase
-        .from("field_usage_events")
+    const { error } = await serverFromTable(supabase!, "field_usage_events")
         .insert({
             organization_id: membership.organization_id,
             user_id: user.id,
@@ -91,8 +89,7 @@ export async function GET(request: NextRequest) {
         return ApiErrors.unauthorized();
     }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("organization_id")
         .eq("user_id", user.id)
         .limit(1)
@@ -107,8 +104,7 @@ export async function GET(request: NextRequest) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const { data: usage, error } = await supabase
-        .from("field_usage_daily")
+    const { data: usage, error } = await serverFromTable(supabase!, "field_usage_daily")
         .select("field_type_id, action, total_count, unique_users, event_date, pricing_tier")
         .eq("organization_id", orgId)
         .gte("event_date", since.toISOString().split("T")[0])

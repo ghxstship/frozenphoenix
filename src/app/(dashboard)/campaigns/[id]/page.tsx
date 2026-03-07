@@ -229,6 +229,8 @@ export default function CampaignDetailPage() {
         <DetailLayout
             backHref="/campaigns"
             backLabel="Campaigns"
+            entityType="campaigns"
+            entityId={entityId}
             title={campaign.name}
             subtitle={campaign.description ?? ""}
             status={campaign.status}

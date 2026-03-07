@@ -229,6 +229,8 @@ export default function CrewDetailPage() {
             <DetailLayout
                 backHref="/crew"
                 backLabel="Crew"
+                entityType="crew"
+                entityId={crewId}
                 title={crewMember.name}
                 subtitle={crewMember.role}
                 status={crewMember.status}

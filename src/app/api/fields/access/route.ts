@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import {
     type FieldAccessRule,
@@ -41,8 +41,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Resolve user's org and role
-    const { data: membership } = await supabase
-        .from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("organization_id, role")
         .eq("user_id", user.id)
         .limit(1)
@@ -56,8 +55,7 @@ export async function GET(request: NextRequest) {
     const userRole = (membership.role ?? "vendor") as PermissionLevel;
 
     // Resolve org pricing tier
-    const { data: subscription } = await supabase
-        .from("org_subscriptions")
+    const { data: subscription } = await serverFromTable(supabase!, "org_subscriptions")
         .select("pricing_tier")
         .eq("organization_id", orgId)
         .eq("status", "active")
@@ -67,8 +65,7 @@ export async function GET(request: NextRequest) {
     const orgTier = (subscription?.pricing_tier ?? "core") as PricingTier;
 
     // Load field tier assignments
-    const { data: fieldAssignments } = await supabase
-        .from("field_tier_assignments")
+    const { data: fieldAssignments } = await serverFromTable(supabase!, "field_tier_assignments")
         .select("field_type_id, category, pricing_tier, safety_critical");
 
     if (!fieldAssignments?.length) {
@@ -76,18 +73,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Load role access rules for user's role
-    const { data: roleAccess } = await supabase
-        .from("field_role_access")
+    const { data: roleAccess } = await serverFromTable(supabase!, "field_role_access")
         .select(
             "field_type_id, role_key, visibility, write_access, exportable, api_accessible, audit_logged, override_allowed"
         )
         .eq("role_key", userRole);
 
-    const roleAccessMap = new Map((roleAccess ?? []).map((r) => [r.field_type_id, r] as const));
+    const roleAccessMap = new Map<string, Record<string, unknown>>(
+        (roleAccess ?? []).map((r: Record<string, unknown>) => [r.field_type_id as string, r])
+    );
 
     // Load overrides for this org
-    const { data: overrides } = await supabase
-        .from("field_access_overrides")
+    const { data: overrides } = await serverFromTable(supabase!, "field_access_overrides")
         .select(
             "field_type_id, granted_visibility, granted_write, scope_type, scope_id, expires_at"
         )
@@ -95,13 +92,13 @@ export async function GET(request: NextRequest) {
         .eq("role_key", userRole)
         .eq("is_active", true);
 
-    const fieldOverrides: FieldOverride[] = (overrides ?? []).map((o) => ({
+    const fieldOverrides: FieldOverride[] = (overrides ?? []).map((o: Record<string, unknown>) => ({
         fieldTypeId: o.field_type_id,
         grantedVisibility: o.granted_visibility as Visibility,
         grantedWrite: (o.granted_write ?? "none") as FieldWriteAccess,
         scopeType: o.scope_type as "global" | "org" | "project",
-        scopeId: o.scope_id,
-        expiresAt: o.expires_at,
+        scopeId: o.scope_id as string | undefined,
+        expiresAt: o.expires_at as string | undefined,
     }));
 
     // Build context
@@ -113,14 +110,14 @@ export async function GET(request: NextRequest) {
     };
 
     // Resolve access for each field type
-    const results = fieldAssignments.map((fa) => {
-        const ra = roleAccessMap.get(fa.field_type_id);
+    const results = fieldAssignments.map((fa: Record<string, unknown>) => {
+        const ra = roleAccessMap.get(fa.field_type_id as string);
 
         const rule: FieldAccessRule = {
-            fieldTypeId: fa.field_type_id,
-            category: fa.category,
+            fieldTypeId: fa.field_type_id as string,
+            category: fa.category as string,
             pricingTier: fa.pricing_tier as PricingTier,
-            safetyCritical: fa.safety_critical,
+            safetyCritical: fa.safety_critical as boolean,
             roleAccess: {
                 exec: {
                     visibility: "VISIBLE" as Visibility,
@@ -163,15 +160,15 @@ export async function GET(request: NextRequest) {
                           [userRole]: {
                               visibility: ra.visibility as Visibility,
                               write: (ra.write_access ?? "none") as FieldWriteAccess,
-                              exportable: ra.exportable,
-                              apiAccessible: ra.api_accessible,
+                              exportable: ra.exportable as boolean,
+                              apiAccessible: ra.api_accessible as boolean,
                           },
                       }
                     : {}),
             },
-            auditLogged: ra?.audit_logged ?? false,
+            auditLogged: (ra?.audit_logged ?? false) as boolean,
             rlsEnforced: true,
-            overrideAllowed: ra?.override_allowed ?? false,
+            overrideAllowed: (ra?.override_allowed ?? false) as boolean,
         };
 
         return resolveFieldAccess(rule, context);

@@ -176,6 +176,8 @@ export default function CertificationDetailPage() {
         <DetailLayout
             backHref="/certifications"
             backLabel="Certifications"
+            entityType="certifications"
+            entityId={entityId}
             title={cert.title}
             subtitle={`${assetName} · ${CERT_TYPE_LABELS[cert.cert_type] ?? cert.cert_type}`}
             status={cert.status}

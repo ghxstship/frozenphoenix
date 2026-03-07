@@ -45,6 +45,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "tasks", actions: ["read", "write", "delete", "manage"] },
         { resource: "sow", actions: ["read", "write", "manage"] },
         { resource: "schedule", actions: ["read", "write"] },
+        { resource: "advancing", actions: ["read", "write", "manage"] },
         // Resources
         { resource: "crew", actions: ["read", "write"] },
         { resource: "time_tracking", actions: ["read", "write"] },
@@ -187,6 +188,30 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "technical_specs", actions: ["read", "write"] },
         { resource: "rights_licenses", actions: ["read", "write"] },
         { resource: "rental_agreements", actions: ["read", "write"] },
+        // Credentialing & Ticketing
+        { resource: "credential_types", actions: ["read", "write", "manage"] },
+        { resource: "credential_pools", actions: ["read", "write", "manage"] },
+        { resource: "credential_assignments", actions: ["read", "write", "manage"] },
+        { resource: "credential_scans", actions: ["read", "write"] },
+        { resource: "bulk_imports", actions: ["read", "write"] },
+        { resource: "export_templates", actions: ["read", "write", "manage"] },
+        // External Sync & POS
+        { resource: "provider_connections", actions: ["read", "write", "manage"] },
+        { resource: "provider_ticket_map", actions: ["read", "write"] },
+        { resource: "pos_transactions", actions: ["read"] },
+        { resource: "webhook_events", actions: ["read"] },
+        { resource: "sync_events", actions: ["read"] },
+        { resource: "sync_policies", actions: ["read", "write", "manage"] },
+        { resource: "gate_operations", actions: ["read", "write"] },
+        // Messaging
+        { resource: "messaging_dm", actions: ["read", "write"] },
+        { resource: "messaging_group", actions: ["read", "write", "manage"] },
+        { resource: "messaging_channel", actions: ["read", "write", "manage"] },
+        { resource: "messaging_message", actions: ["read", "write", "delete"] },
+        { resource: "messaging_announcement", actions: ["read", "write"] },
+        { resource: "messaging_mandatory_read", actions: ["read", "write"] },
+        { resource: "messaging_export", actions: ["read", "write"] },
+        { resource: "messaging_ptt", actions: ["read", "write"] },
     ],
     pm: [
         // Command Center
@@ -216,6 +241,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "tasks", actions: ["read", "write", "delete"] },
         { resource: "sow", actions: ["read", "write"] },
         { resource: "schedule", actions: ["read", "write"] },
+        { resource: "advancing", actions: ["read", "write"] },
         // Resources
         { resource: "crew", actions: ["read", "write"] },
         { resource: "time_tracking", actions: ["read", "write"] },
@@ -358,12 +384,35 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "technical_specs", actions: ["read", "write"] },
         { resource: "rights_licenses", actions: ["read", "write"] },
         { resource: "rental_agreements", actions: ["read", "write"] },
+        // Credentialing & Ticketing
+        { resource: "credential_types", actions: ["read", "write"] },
+        { resource: "credential_pools", actions: ["read", "write"] },
+        { resource: "credential_assignments", actions: ["read", "write"] },
+        { resource: "credential_scans", actions: ["read", "write"] },
+        { resource: "bulk_imports", actions: ["read", "write"] },
+        { resource: "export_templates", actions: ["read", "write"] },
+        // External Sync & POS
+        { resource: "provider_connections", actions: ["read", "write"] },
+        { resource: "provider_ticket_map", actions: ["read", "write"] },
+        { resource: "pos_transactions", actions: ["read"] },
+        { resource: "webhook_events", actions: ["read"] },
+        { resource: "sync_events", actions: ["read"] },
+        { resource: "sync_policies", actions: ["read", "write"] },
+        { resource: "gate_operations", actions: ["read", "write"] },
+        // Messaging
+        { resource: "messaging_dm", actions: ["read", "write"] },
+        { resource: "messaging_group", actions: ["read", "write", "manage"] },
+        { resource: "messaging_channel", actions: ["read", "write"] },
+        { resource: "messaging_message", actions: ["read", "write"] },
+        { resource: "messaging_export", actions: ["read", "write"] },
+        { resource: "messaging_ptt", actions: ["read", "write"] },
     ],
     client: [
         { resource: "dashboard", actions: ["read"] },
         { resource: "projects", actions: ["read"] },
         { resource: "events", actions: ["read"] },
         { resource: "activations", actions: ["read"] },
+        { resource: "advancing", actions: ["read"] },
         { resource: "decks", actions: ["read"] },
         { resource: "approvals", actions: ["read", "write"] },
         { resource: "brand", actions: ["read"] },
@@ -411,6 +460,12 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "qc_gates", actions: ["read", "write"] },
         { resource: "rental_agreements", actions: ["read"] },
         { resource: "rights_licenses", actions: ["read"] },
+        // Credentialing (client view — own credentials)
+        { resource: "credential_assignments", actions: ["read"] },
+        { resource: "credential_scans", actions: ["read"] },
+        // Messaging (client — DM assigned PM only)
+        { resource: "messaging_dm", actions: ["read", "write"] },
+        { resource: "messaging_message", actions: ["read", "write"] },
     ],
     member: [
         // Command Center (limited)
@@ -424,6 +479,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "sow", actions: ["read"] },
         { resource: "schedule", actions: ["read", "write"] },
         { resource: "locations", actions: ["read"] },
+        { resource: "advancing", actions: ["read", "write"] },
         // Resources (own + assigned)
         { resource: "crew", actions: ["read"] },
         { resource: "time_tracking", actions: ["read", "write"] },
@@ -488,6 +544,18 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "production_runs", actions: ["read"] },
         // System
         { resource: "data_export", actions: ["read"] },
+        // Credentialing & Ticketing (member — gate ops + read)
+        { resource: "credential_types", actions: ["read"] },
+        { resource: "credential_pools", actions: ["read"] },
+        { resource: "credential_assignments", actions: ["read", "write"] },
+        { resource: "credential_scans", actions: ["read", "write"] },
+        { resource: "gate_operations", actions: ["read", "write"] },
+        // Messaging
+        { resource: "messaging_dm", actions: ["read", "write"] },
+        { resource: "messaging_group", actions: ["read", "write"] },
+        { resource: "messaging_channel", actions: ["read"] },
+        { resource: "messaging_message", actions: ["read", "write"] },
+        { resource: "messaging_ptt", actions: ["read", "write"] },
     ],
     collaborator: [
         { resource: "tasks", actions: ["read"] },
@@ -498,6 +566,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "tech_sheets", actions: ["read"] },
         { resource: "work_orders", actions: ["read", "write"] },
         { resource: "dispatch", actions: ["read"] },
+        { resource: "advancing", actions: ["read"] },
         { resource: "checklists", actions: ["read", "write"] },
         { resource: "vendor_compliance", actions: ["read", "write"] },
         { resource: "vendor_portal", actions: ["read"] },
@@ -524,6 +593,12 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "qc_gates", actions: ["read", "write"] },
         { resource: "technical_specs", actions: ["read"] },
         { resource: "production_runs", actions: ["read"] },
+        // Credentialing (collaborator — own credentials only)
+        { resource: "credential_assignments", actions: ["read"] },
+        { resource: "credential_scans", actions: ["read"] },
+        // Messaging (collaborator — DM assigned PM only)
+        { resource: "messaging_dm", actions: ["read", "write"] },
+        { resource: "messaging_message", actions: ["read", "write"] },
     ],
 };
 

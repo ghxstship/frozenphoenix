@@ -206,6 +206,8 @@ export default function RecurringInvoiceDetailPage() {
         <DetailLayout
             backHref="/recurring-invoices"
             backLabel="Recurring Invoices"
+            entityType="recurring-invoices"
+            entityId={entityId}
             title={`Recurring Invoice — ${formatCurrency(mockRecurring.amount, mockRecurring.currency)}/mo`}
             subtitle={`${mockRecurring.frequency} · ${mockRecurring.invoicesGenerated} generated`}
             status={mockRecurring.isActive ? "active" : "paused"}

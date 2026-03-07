@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "./client";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database, Tables } from "./database.types";
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(!isSupabaseConfigured ? false : true);
 
     const supabase = useMemo(() => createClient(), []);
+    const router = useRouter();
 
     // Derive active org from memberships + stored preference
     const activeOrg = useMemo(() => {
@@ -167,14 +169,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchUsername = useCallback(
         async (userId: string) => {
             if (!supabase) return;
-            // username lives on user_profiles (migration 038)
             const { data } = await supabase
                 .from("user_profiles")
                 .select("username")
                 .eq("id", userId)
                 .single();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setUsername((data as any)?.username ?? null);
+            setUsername(data?.username ?? null);
         },
         [supabase]
     );
@@ -198,7 +198,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (typeof window !== "undefined") {
             localStorage.removeItem(AUTH_ACTIVE_ORG_KEY);
         }
-    }, [supabase]);
+        router.push("/login");
+    }, [supabase, router]);
 
     useEffect(() => {
         if (!supabase || !isSupabaseConfigured) {

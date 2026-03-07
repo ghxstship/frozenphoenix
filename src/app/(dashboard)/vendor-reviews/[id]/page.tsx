@@ -108,6 +108,8 @@ export default function VendorReviewDetailPage() {
         <DetailLayout
             backHref="/vendor-reviews"
             backLabel="Vendor Reviews"
+            entityType="vendor-reviews"
+            entityId={entityId}
             title={String(r.title ?? r.name ?? "Vendor Review")}
             subtitle="Vendor Review"
             status={String(r.status ?? "pending")}

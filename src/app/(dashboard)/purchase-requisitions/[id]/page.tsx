@@ -145,6 +145,8 @@ export default function PurchaseRequisitionDetailPage() {
         <DetailLayout
             backHref="/purchase-requisitions"
             backLabel="Purchase Requisitions"
+            entityType="purchase-requisitions"
+            entityId={entityId}
             title={req.title}
             subtitle={`${req.number} · ${req.department ?? "No Department"}`}
             status={req.status}

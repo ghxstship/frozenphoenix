@@ -113,6 +113,8 @@ export default function ClientInvoiceDetailPage() {
         <DetailLayout
             backHref="/client-invoices"
             backLabel="Client Invoices"
+            entityType="client-invoices"
+            entityId={entityId}
             title={String(inv.invoice_number ?? inv.number ?? `INV-${entityId.slice(0, 8)}`)}
             subtitle="Client Invoice"
             status={String(inv.status ?? "draft")}

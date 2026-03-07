@@ -299,6 +299,8 @@ export default function ContractDetailPage() {
         <DetailLayout
             backHref="/contracts"
             backLabel="Contracts"
+            entityType="contracts"
+            entityId={entityId}
             title={contract.title}
             subtitle={`${contract.contractNumber} · ${typeCfg?.label}`}
             status={contract.status}

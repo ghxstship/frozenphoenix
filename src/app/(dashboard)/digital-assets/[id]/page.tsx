@@ -232,6 +232,8 @@ export default function DigitalAssetDetailPage() {
         <DetailLayout
             backHref="/digital-assets"
             backLabel="Digital Assets"
+            entityType="digital-assets"
+            entityId={entityId}
             title={mockAsset.name}
             subtitle={`${mockAsset.filename} · ${mockAsset.document_number ?? mockAsset.id}`}
             status={mockAsset.status}

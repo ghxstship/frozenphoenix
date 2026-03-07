@@ -212,6 +212,8 @@ export default function ServiceRequestDetailPage() {
         <DetailLayout
             backHref="/service-requests"
             backLabel="Service Requests"
+            entityType="service-requests"
+            entityId={entityId}
             title={sr.title}
             subtitle={`${sr.priority} priority · ${sr.source.replace(/_/g, " ")}`}
             status={sr.status}

@@ -451,6 +451,8 @@ export default function ProposalDetailPage() {
             <DetailLayout
                 backHref="/proposals"
                 backLabel="Proposals"
+                entityType="proposals"
+                entityId={proposalId}
                 title={title}
                 subtitle={`${mockProposal.companyName} — ${formatCurrency(grandTotal)}`}
                 status={mockProposal.status}

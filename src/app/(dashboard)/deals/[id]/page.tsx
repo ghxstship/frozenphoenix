@@ -254,6 +254,8 @@ export default function DealDetailPage() {
             <DetailLayout
                 backHref="/pipeline"
                 backLabel="Pipeline"
+                entityType="deals"
+                entityId={dealId}
                 title={deal.title}
                 subtitle={deal.company}
                 status={deal.stage}

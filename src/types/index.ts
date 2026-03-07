@@ -44,6 +44,18 @@ export * from "./production-lifecycle";
 // Re-export Audit Remediation types (Migration 022)
 export * from "./audit-remediation";
 
+// Re-export Messaging & Communications types (Migration 046)
+export * from "./messaging";
+
+// Re-export Production Advancing types (Migrations 047-049)
+export * from "./advancing";
+
+// Re-export Credentialing & Ticketing types (Migrations 050-051)
+export * from "./credentialing";
+
+// Re-export External Sync & POS Integration types (Migration 052)
+export * from "./external-sync";
+
 // ─── Auth & RBAC ───
 export type PermissionLevel = "exec" | "director" | "pm" | "member" | "client" | "collaborator";
 

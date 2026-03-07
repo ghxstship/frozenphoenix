@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { buildTransactionalEmail, sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
@@ -32,8 +32,7 @@ export async function POST(request: NextRequest) {
 
     // ── Path A: Dispatch an existing notification by ID ──
     if (body.notification_id && typeof body.notification_id === "string") {
-        const { data: notification, error } = await admin
-            .from("notifications")
+        const { data: notification, error } = await serverFromTable(admin!, "notifications")
             .select("*")
             .eq("id", body.notification_id)
             .single();
@@ -56,8 +55,7 @@ export async function POST(request: NextRequest) {
 
     const messageText = (body.body as string) || title;
 
-    const { data: notification, error: insertErr } = await admin
-        .from("notifications")
+    const { data: notification, error: insertErr } = await serverFromTable(admin!, "notifications")
         .insert({
             user_id: userId,
             title,
@@ -114,8 +112,7 @@ async function dispatchToEmail(
 ): Promise<{ dispatched: boolean; channel?: string; reason?: string }> {
     // 1. Check user's notification preferences (migration 006 schema)
     //    Single row per user with email_enabled toggle + categories JSONB
-    const { data: prefs } = await admin
-        .from("notification_preferences")
+    const { data: prefs } = await serverFromTable(admin, "notification_preferences")
         .select("email_enabled, categories")
         .eq("user_id", notification.user_id)
         .single();
@@ -141,8 +138,7 @@ async function dispatchToEmail(
     // No prefs row → defaults to email_enabled=true (schema default)
 
     // 2. Look up user email from profiles
-    const { data: profile } = await admin
-        .from("profiles")
+    const { data: profile } = await serverFromTable(admin, "profiles")
         .select("email, name")
         .eq("id", notification.user_id)
         .single();

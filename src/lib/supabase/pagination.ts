@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { fromTable, isSupabaseConfigured } from "./client";
 
 export const DEFAULT_PAGE_SIZE = 25;
 export const MAX_PAGE_SIZE = 100;
@@ -50,9 +50,7 @@ export function usePaginatedQuery<T>({
     const result = useQuery({
         queryKey: [...queryKey, "paginated", page, effectivePageSize, JSON.stringify(filters)],
         queryFn: async () => {
-            const supabase = getSupabase();
-            let query = supabase
-                .from(table as never)
+            let query = fromTable(table)
                 .select(select, { count: "exact" })
                 .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                 .range(from, to);
@@ -108,9 +106,7 @@ export function usePaginatedQuery<T>({
                     JSON.stringify(filters),
                 ],
                 queryFn: async () => {
-                    const supabase = getSupabase();
-                    let query = supabase
-                        .from(table as never)
+                    let query = fromTable(table)
                         .select(select, { count: "exact" })
                         .order(orderBy.column, { ascending: orderBy.ascending ?? false })
                         .range(nextFrom, nextTo);

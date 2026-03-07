@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { navigationConfig } from "@/config/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, Clock, Command, Search, Sparkles, X } from "lucide-react";
+import { ArrowRight, Clock, Command, MessageSquare, Search, Sparkles, X } from "lucide-react";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 interface CommandBarProps {
     className?: string;
@@ -34,6 +35,7 @@ export function CommandBar({ className }: CommandBarProps) {
     const listRef = React.useRef<HTMLDivElement>(null);
     const panelRef = React.useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const { messagingEnabled } = useMessagingEnabled();
 
     // Load recent paths from localStorage
     React.useEffect(() => {
@@ -85,13 +87,24 @@ export function CommandBar({ className }: CommandBarProps) {
             return [...recents, ...rest].slice(0, 20);
         }
         const q = query.toLowerCase();
-        return allCommands.filter(
+        const matched = allCommands.filter(
             (cmd) =>
                 cmd.title.toLowerCase().includes(q) ||
                 cmd.section.toLowerCase().includes(q) ||
                 cmd.path.toLowerCase().includes(q)
         );
-    }, [query, allCommands, recentPaths]);
+        // Append "Search Messages" action when messaging is enabled and query is non-empty
+        if (messagingEnabled && query.trim().length > 0) {
+            matched.push({
+                id: "__msg-search__",
+                title: `Search messages for "${query.trim()}"`,
+                path: `/messages?q=${encodeURIComponent(query.trim())}`,
+                section: "Messages",
+                icon: MessageSquare,
+            });
+        }
+        return matched;
+    }, [query, allCommands, recentPaths, messagingEnabled]);
 
     // Group results by section for display
     const groupedResults = React.useMemo<GroupedResults[]>(() => {

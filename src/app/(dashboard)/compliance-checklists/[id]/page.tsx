@@ -104,6 +104,8 @@ export default function ComplianceChecklistDetailPage() {
         <DetailLayout
             backHref="/compliance-checklists"
             backLabel="Compliance Checklists"
+            entityType="compliance-checklists"
+            entityId={entityId}
             title={String(cl.name ?? "Untitled Checklist")}
             subtitle="Compliance Checklist"
             status={String(cl.status ?? "pending")}

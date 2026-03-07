@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,7 @@ export async function GET() {
         }
 
         // Fetch profile data
-        const { data: profile } = await supabase
-            .from("profiles")
+        const { data: profile } = await serverFromTable(supabase!, "profiles")
             .select("*")
             .eq("id", user.id)
             .single();
@@ -42,7 +42,8 @@ export async function GET() {
             },
             session: { authenticated: true },
         });
-    } catch {
+    } catch (err) {
+        logger.error("[GET /api/auth/session]", { error: err });
         return NextResponse.json(
             { user: null, session: null, error: "Internal server error" },
             { status: 500 }

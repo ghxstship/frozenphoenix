@@ -104,6 +104,8 @@ export default function DispatchDetailPage() {
         <DetailLayout
             backHref="/dispatch"
             backLabel="Dispatch"
+            entityType="dispatch"
+            entityId={entityId}
             title={String(d.tracking_number ?? d.name ?? `DISP-${entityId.slice(0, 8)}`)}
             subtitle="Dispatch Record"
             status={String(d.status ?? "pending")}

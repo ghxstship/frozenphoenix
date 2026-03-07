@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import { z } from "zod";
+import { logger } from "@/lib/logger";
+
+const editMessageSchema = z.object({
+    body: z.string().min(1).max(10000),
+});
+
+interface RouteContext {
+    params: Promise<{ id: string }>;
+}
+
+/**
+ * PATCH /api/messages/[id]
+ * Edit a message (sender only). Sets edited_at timestamp.
+ */
+export async function PATCH(request: NextRequest, context: RouteContext) {
+    const { id: messageId } = await context.params;
+    const supabase = await createClient();
+    if (!supabase) return ApiErrors.serviceUnavailable();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return ApiErrors.unauthorized();
+
+    const admin = createAdminClient();
+    if (!admin) return ApiErrors.serviceUnavailable();
+
+    // Verify ownership
+    const { data: existing } = await serverFromTable(admin!, "messages")
+        .select("sender_id")
+        .eq("id", messageId)
+        .is("deleted_at", null)
+        .single();
+
+    if (!existing) return ApiErrors.notFound("Message");
+    if ((existing as Record<string, unknown>).sender_id !== user.id) {
+        return ApiErrors.forbidden("You can only edit your own messages");
+    }
+
+    const parsed = await parseAndValidate(request, editMessageSchema);
+    if (!parsed.success) return parsed.response;
+
+    const { data: updated, error } = await serverFromTable(admin!, "messages")
+        .update({
+            body: parsed.data.body,
+            edited_at: new Date().toISOString(),
+        })
+        .eq("id", messageId)
+        .select("*")
+        .single();
+
+    if (error) {
+        logger.error("[PATCH /api/messages/[id]] update failed", { error });
+        return ApiErrors.internalError("Failed to edit message");
+    }
+
+    return NextResponse.json({ data: updated });
+}
+
+/**
+ * DELETE /api/messages/[id]
+ * Soft-delete a message (sender only). Sets deleted_at timestamp.
+ */
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+    const { id: messageId } = await context.params;
+    const supabase = await createClient();
+    if (!supabase) return ApiErrors.serviceUnavailable();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return ApiErrors.unauthorized();
+
+    const admin = createAdminClient();
+    if (!admin) return ApiErrors.serviceUnavailable();
+
+    // Verify ownership
+    const { data: existing } = await serverFromTable(admin!, "messages")
+        .select("sender_id")
+        .eq("id", messageId)
+        .is("deleted_at", null)
+        .single();
+
+    if (!existing) return ApiErrors.notFound("Message");
+    if ((existing as Record<string, unknown>).sender_id !== user.id) {
+        return ApiErrors.forbidden("You can only delete your own messages");
+    }
+
+    const { error } = await serverFromTable(admin!, "messages")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", messageId);
+
+    if (error) {
+        logger.error("[DELETE /api/messages/[id]] soft-delete failed", { error });
+        return ApiErrors.internalError("Failed to delete message");
+    }
+
+    return NextResponse.json({ success: true });
+}

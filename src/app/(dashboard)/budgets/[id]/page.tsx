@@ -220,6 +220,8 @@ export default function BudgetDetailPage() {
         <DetailLayout
             backHref="/budgets"
             backLabel="Budgets"
+            entityType="budgets"
+            entityId={budgetId}
             title={project ? `${project.name} Budget` : `Budget ${budgetId}`}
             subtitle={`Version ${budget.version} · ${budget.currency}`}
             status={budget.status}

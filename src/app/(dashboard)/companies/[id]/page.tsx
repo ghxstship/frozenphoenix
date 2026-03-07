@@ -267,6 +267,8 @@ export default function CompanyDetailPage() {
         <DetailLayout
             backHref="/companies"
             backLabel="Companies"
+            entityType="companies"
+            entityId={entityId}
             title={mockCompany.name}
             subtitle={`${mockCompany.industry} · ${mockCompany.city}, ${mockCompany.state}`}
             status={mockCompany.status}

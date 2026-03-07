@@ -179,6 +179,8 @@ export default function TaskDetailPage() {
         <DetailLayout
             backHref="/tasks"
             backLabel="Tasks"
+            entityType="tasks"
+            entityId={taskId}
             title={task.title}
             subtitle={project?.name}
             status={task.status}

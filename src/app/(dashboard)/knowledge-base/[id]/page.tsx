@@ -351,6 +351,8 @@ export default function KBArticleDetailPage() {
             <DetailLayout
                 backHref="/knowledge-base"
                 backLabel="Knowledge Base"
+                entityType="knowledge-base"
+                entityId={articleId}
                 title={article.title}
                 subtitle={article.summary}
                 avatar={<CategoryIcon className="h-5 w-5 text-primary" />}

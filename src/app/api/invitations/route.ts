@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { invitationCreateSchema } from "@/lib/validation/schemas";
 import { hasPermission } from "@/config/rbac";
@@ -43,8 +43,7 @@ export async function POST(request: Request) {
             personal_message: message || null,
         }));
 
-        const { data, error } = await supabase
-            .from("invitations")
+        const { data, error } = await serverFromTable(supabase!, "invitations")
             .insert(invitations)
             .select("id, email, invite_type, expires_at, token");
 
@@ -60,8 +59,7 @@ export async function POST(request: Request) {
         return ApiErrors.forbidden("Organization is required for org invites");
     }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
+    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", organization_id)
@@ -93,8 +91,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch org name for email content
-    const { data: org } = await supabase
-        .from("organizations")
+    const { data: org } = await serverFromTable(supabase!, "organizations")
         .select("name")
         .eq("id", organization_id)
         .single();
@@ -114,8 +111,7 @@ export async function POST(request: Request) {
         personal_message: message || null,
     }));
 
-    const { data, error } = await supabase
-        .from("invitations")
+    const { data, error } = await serverFromTable(supabase!, "invitations")
         .insert(invitations)
         .select("id, email, role, invite_type, expires_at, token");
 

@@ -8,6 +8,8 @@ import type { Database } from "@/lib/supabase/database.types";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/config";
+import { serverFromTable } from "@/lib/supabase/server";
+import type { ServerClient } from "@/lib/supabase/server";
 import { cachedPermissionCheck } from "@/lib/permission-cache";
 import type { CachedPermission } from "@/lib/permission-cache";
 import { hasPermission as hasStaticPermission } from "@/config/rbac";
@@ -73,12 +75,12 @@ export async function checkPermission(
     }
 
     // Resolve role + grants from cache (or DB on miss)
+    const sb = supabase as unknown as ServerClient;
 
     let cached: CachedPermission;
     try {
         // First fetch membership to get orgId (needed as cache key)
-        const { data: membership } = await supabase
-            .from("org_memberships")
+        const { data: membership } = await serverFromTable(sb, "org_memberships")
             .select("organization_id, role")
             .eq("user_id", user.id)
             .eq("status", "active")
@@ -99,8 +101,7 @@ export async function checkPermission(
         const userRole = membership.role as string;
 
         cached = await cachedPermissionCheck(user.id, userOrgId, async () => {
-            const { data: grants } = await supabase
-                .from("permission_grants")
+            const { data: grants } = await serverFromTable(sb, "permission_grants")
                 .select(
                     "id, resource, action, scope_id, role_definition_id, role_definitions!inner(key, is_active)"
                 )
@@ -169,7 +170,7 @@ export async function checkPermission(
     if (!hasPermission) {
         // Log denied access (non-blocking)
         try {
-            await supabase.from("access_audit_log").insert({
+            await serverFromTable(sb, "access_audit_log").insert({
                 user_id: user.id,
                 resource,
                 action,

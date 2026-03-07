@@ -104,6 +104,8 @@ export default function BrandGuidelineDetailPage() {
         <DetailLayout
             backHref="/brand-guidelines"
             backLabel="Brand Guidelines"
+            entityType="brand-guidelines"
+            entityId={entityId}
             title={String(g.name ?? g.title ?? "Untitled Guideline")}
             subtitle="Brand Guideline"
             status={String(g.status ?? "active")}

@@ -327,6 +327,8 @@ export default function BrandKitDetailPage() {
         <DetailLayout
             backHref="/brand-kit"
             backLabel="Brand Kits"
+            entityType="brand-kit"
+            entityId={kitId}
             title={`${brandName} Brand Kit`}
             subtitle="Last updated Feb 20, 2026"
             avatar={

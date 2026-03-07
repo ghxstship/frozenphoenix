@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import {
     ArrowLeft,
     Briefcase,
@@ -43,11 +43,7 @@ async function getPublicProfile(username: string): Promise<{
     const admin = createAdminClient();
     if (!admin) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = admin as any;
-
-    const { data: profile } = await db
-        .from("user_profiles")
+    const { data: profile } = await serverFromTable(admin!, "user_profiles")
         .select(
             "id, username, display_name, avatar_url, headline, bio, job_title, website_url, linkedin_url, location, profile_visibility"
         )
@@ -61,8 +57,7 @@ async function getPublicProfile(username: string): Promise<{
     // Only fetch org memberships if profile is public
     let memberships: OrgMembership[] = [];
     if (profile.profile_visibility === "public") {
-        const { data: orgs } = await db
-            .from("org_memberships")
+        const { data: orgs } = await serverFromTable(admin!, "org_memberships")
             .select("role, organizations(name, slug, logo_url)")
             .eq("user_id", profile.id)
             .eq("status", "active");

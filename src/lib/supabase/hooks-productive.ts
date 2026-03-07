@@ -267,7 +267,7 @@ export function useCustomFields(entityType?: string) {
                 .order("display_order", { ascending: true });
 
             if (entityType) {
-                query = query.eq("entity_type", entityType as never);
+                query = query.eq("entity_type", filterValue(entityType));
             }
 
             const { data, error } = await query;

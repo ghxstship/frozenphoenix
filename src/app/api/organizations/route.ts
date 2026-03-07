@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { organizationCreateSchema } from "@/lib/validation/schemas";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
@@ -35,14 +36,12 @@ export async function POST(request: NextRequest) {
     // chicken-and-egg. The admin client bypasses RLS entirely.
     const admin = createAdminClient();
     if (!admin) {
-        // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] SUPABASE_SERVICE_ROLE_KEY not configured");
+        logger.error("[POST /api/organizations] SUPABASE_SERVICE_ROLE_KEY not configured");
         return ApiErrors.serviceUnavailable();
     }
 
     // 1. Insert organization
-    const { data: org, error: orgError } = await admin
-        .from("organizations")
+    const { data: org, error: orgError } = await serverFromTable(admin!, "organizations")
         .insert({
             name: name.trim(),
             slug: orgSlug,
@@ -57,15 +56,14 @@ export async function POST(request: NextRequest) {
         if (orgError.code === "23505") {
             return ApiErrors.conflict("An organization with this name already exists");
         }
-        // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] org insert failed:", orgError);
+        logger.error("[POST /api/organizations] org insert failed", { error: orgError });
         return ApiErrors.internalError("Failed to create organization");
     }
 
     // 2. Ensure user_profiles row exists (FK target for org_memberships).
     //    The handle_new_user trigger should have created this, but if it
     //    failed silently the row may be missing — guard against that.
-    await admin.from("user_profiles").upsert(
+    await serverFromTable(admin!, "user_profiles").upsert(
         {
             id: user.id,
             email: user.email ?? "",
@@ -76,7 +74,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 3. Create exec membership for the creator
-    const { error: memberError } = await admin.from("org_memberships").upsert(
+    const { error: memberError } = await serverFromTable(admin!, "org_memberships").upsert(
         {
             user_id: user.id,
             organization_id: org.id,
@@ -88,13 +86,12 @@ export async function POST(request: NextRequest) {
     );
 
     if (memberError) {
-        // eslint-disable-next-line no-console
-        console.error("[POST /api/organizations] membership upsert failed:", memberError);
+        logger.error("[POST /api/organizations] membership upsert failed", { error: memberError });
         return ApiErrors.internalError("Organization created but membership failed");
     }
 
     // 4. Update the user's profile org_id to the new org
-    await admin.from("profiles").update({ organization_id: org.id }).eq("id", user.id);
+    await serverFromTable(admin!, "profiles").update({ organization_id: org.id }).eq("id", user.id);
 
     return NextResponse.json({ organization: org }, { status: 201 });
 }

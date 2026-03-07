@@ -253,6 +253,8 @@ export default function ShipmentDetailPage() {
         <DetailLayout
             backHref="/logistics/shipments"
             backLabel="Shipments"
+            entityType="shipments"
+            entityId={shipmentId}
             title={shipment.description}
             subtitle={`${shipment.number} · ${shipment.carrierName}`}
             status={shipment.status}

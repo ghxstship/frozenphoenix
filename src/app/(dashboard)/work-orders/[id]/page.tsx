@@ -180,6 +180,8 @@ export default function WorkOrderDetailPage() {
         <DetailLayout
             backHref="/work-orders"
             backLabel="Work Orders"
+            entityType="work-orders"
+            entityId={entityId}
             title={wo.title}
             subtitle={`${wo.number} · ${wo.vendorName ?? "Unassigned"}`}
             status={wo.status}

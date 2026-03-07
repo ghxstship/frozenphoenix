@@ -160,6 +160,8 @@ export default function ExpenseDetailPage() {
         <DetailLayout
             backHref="/expenses"
             backLabel="Expenses"
+            entityType="expenses"
+            entityId={entityId}
             title={mockExpense.description}
             subtitle={`${EXPENSE_CATEGORY_LABELS[mockExpense.category] ?? mockExpense.category} · ${mockExpense.projectName}`}
             status={mockExpense.status}

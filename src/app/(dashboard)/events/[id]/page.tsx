@@ -225,6 +225,8 @@ export default function EventDetailPage() {
         <DetailLayout
             backHref="/events"
             backLabel="Events"
+            entityType="events"
+            entityId={eventId}
             title={event.name}
             subtitle={`${formatDate(event.date)} · ${event.startTime}–${event.endTime}`}
             status={event.status}

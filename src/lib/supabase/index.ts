@@ -144,5 +144,114 @@ export {
     useGenerateInvoiceFromTime,
 } from "./hooks-v2-features";
 
+// ─── Advancing Hooks ───
+export {
+    useCatalogCategories,
+    useCatalogCategory,
+    useCatalogItems,
+    useCatalogItemSearch,
+    useCatalogItem,
+    useCatalogItemModifiers,
+    useCatalogOrgOverrides,
+    useCatalogOrgOverride,
+    useAdvances,
+    useAdvance,
+    useCreateAdvance,
+    useUpdateAdvance,
+    useDeleteAdvance,
+    useAdvanceStatusTransition,
+    useAdvanceItems,
+    useCreateAdvanceItem,
+    useUpdateAdvanceItem,
+    useDeleteAdvanceItem,
+    useAdvanceItemStatusTransition,
+    useAdvanceStatusHistory,
+    useAdvanceTemplates,
+    useAdvanceTemplate,
+    useCreateAdvanceTemplate,
+    useUpdateAdvanceTemplate,
+    useDeleteAdvanceTemplate,
+} from "./hooks-advancing";
+
+// ─── Advancing Realtime ───
+export {
+    useAdvancesRealtime,
+    useAdvanceStatusHistoryRealtime,
+    useCatalogRealtime,
+} from "./realtime-advancing";
+
+// ─── Credentialing Hooks ───
+export {
+    useBulkImportJob,
+    useBulkImportJobs,
+    useCreateBulkImportJob,
+    useCreateCredentialAssignment,
+    useCreateCredentialPool,
+    useCreateCredentialType,
+    useCreateExportTemplate,
+    useCreateScanEntry,
+    useCredentialAssignment,
+    useCredentialAssignments,
+    useCredentialPool,
+    useCredentialPools,
+    useCredentialScanLogs,
+    useCredentialType,
+    useCredentialTypes,
+    useExportTemplates,
+    useUpdateCredentialAssignment,
+    useUpdateCredentialPool,
+    useUpdateCredentialType,
+    useUpdateExportTemplate,
+} from "./hooks-credentialing";
+
+// ─── External Sync & POS Hooks ───
+export {
+    useCreateProviderConnection,
+    useCreateSyncConflictPolicy,
+    useDeleteProviderConnection,
+    usePosTransaction,
+    usePosTransactions,
+    useProviderConnection,
+    useProviderConnections,
+    useProviderTicketMap,
+    useSyncConflictPolicies,
+    useSyncEvents,
+    useUpdateProviderConnection,
+    useUpdateSyncConflictPolicy,
+    useWebhookEvents,
+} from "./hooks-external-sync";
+
+// ─── Messaging Hooks ───
+export {
+    messagingKeys,
+    useConversations,
+    useConversation,
+    useConversationMembers,
+    useMessages,
+    useEntityMessages,
+    useThreadMessages,
+    useUnreadCounts,
+    usePinnedMessages,
+    useCreateConversation,
+    useUpdateConversation,
+    useSendMessage,
+    useEditMessage,
+    useDeleteMessage,
+    useToggleReaction,
+    usePinMessage,
+    useMarkRead,
+    useAcknowledgeMandatoryRead,
+    useAddConversationMembers,
+    useRemoveConversationMember,
+} from "./hooks-messaging";
+
+// ─── Messaging Realtime ───
+export {
+    useTypingIndicator,
+    usePresence,
+    useMessagesRealtime,
+    useConversationsRealtime,
+} from "./hooks-messaging-realtime";
+
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

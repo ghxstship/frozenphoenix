@@ -26,7 +26,7 @@ import {
     Users,
     UserX,
 } from "lucide-react";
-import { MOCK_WORKER_PROFILES } from "@/lib/demo-data-workforce";
+import type { WorkerProfile } from "@/types/workforce";
 import { useWorkerProfiles } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { WorkerClassification, WorkerLifecycleStatus } from "@/types/workforce";
@@ -85,7 +85,7 @@ export default function WorkforcePage() {
     const [classFilter, setClassFilter] = useState<string>("all");
     const { data: sbWorkers, isLoading } = useWorkerProfiles();
 
-    const workers = (sbWorkers ?? []) as typeof MOCK_WORKER_PROFILES;
+    const workers = (sbWorkers ?? []) as WorkerProfile[];
     const filtered = workers.filter((w) => {
         const matchesSearch =
             !search ||

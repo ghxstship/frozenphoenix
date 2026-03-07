@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CERTIFICATION_CONFIG } from "@/config/create-entity-configs";
 import { BadgeCheck, CheckCircle2, Clock, Loader2, Plus, XCircle } from "lucide-react";
-import { MOCK_ASSET_CERTIFICATIONS } from "@/lib/demo-data-governance";
+import type { AssetCertification } from "@/types/governance";
 import { useCertifications } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { AssetCertificationStatus } from "@/types/governance";
@@ -31,7 +31,7 @@ export default function CertificationsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbCerts, isLoading } = useCertifications();
 
-    const certs = (sbCerts ?? []) as typeof MOCK_ASSET_CERTIFICATIONS;
+    const certs = (sbCerts ?? []) as AssetCertification[];
 
     const filtered = certs.filter((c) => {
         const matchesSearch =

@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     OPPORTUNITY_STAGES_KANBAN as OPPORTUNITY_STAGES,
     OPPORTUNITY_TYPE_MAP,
@@ -105,7 +104,7 @@ export default function OpportunityDetailPage() {
         );
     }, [expectedClose]);
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -416,7 +415,6 @@ export default function OpportunityDetailPage() {
                 <RecordChatter
                     recordType="opportunity"
                     recordId={opp.id}
-                    activityItems={makeMockActivity("opportunity")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     BarChart3,
     ChevronLeft,
@@ -127,7 +126,7 @@ export default function DeckEditorPage() {
     ]);
     const [selectedSlide, setSelectedSlide] = useState(0);
     const [isPresenting, setIsPresenting] = useState(false);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -511,7 +510,6 @@ export default function DeckEditorPage() {
                 <RecordChatter
                     recordType="deck"
                     recordId={deckId}
-                    activityItems={makeMockActivity("deck")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

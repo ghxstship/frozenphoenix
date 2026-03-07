@@ -13,10 +13,9 @@ import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { OverlineText } from "@/components/ui/overline-text";
 import { SearchInput } from "@/components/ui/search-input";
-import { MOCK_ACCOUNT_HEALTH_SCORES, MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
+import type { AccountHealthScore } from "@/types/crm-revenue";
 import { useAccounts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-import type { AccountHealthScore } from "@/types";
 import {
     AlertTriangle,
     Building2,
@@ -70,10 +69,7 @@ export default function AccountsPage() {
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbAccounts, isLoading } = useAccounts();
 
-    const accounts = useMemo(
-        () => (sbAccounts ?? []) as typeof MOCK_ACCOUNT_HEALTH_SCORES,
-        [sbAccounts]
-    );
+    const accounts = useMemo(() => (sbAccounts ?? []) as AccountHealthScore[], [sbAccounts]);
 
     const filtered = useMemo(() => {
         let result = accounts;
@@ -170,10 +166,6 @@ export default function AccountsPage() {
 }
 
 function AccountCard({ account }: { account: AccountHealthScore }) {
-    const opps = MOCK_OPPORTUNITIES.filter(
-        (o) => o.companyId === account.companyId && o.stage !== "won" && o.stage !== "lost"
-    );
-
     return (
         <Card className="hover:shadow-sm transition-shadow">
             <CardHeader className="pb-3">
@@ -286,20 +278,14 @@ function AccountCard({ account }: { account: AccountHealthScore }) {
                     </div>
                 )}
 
-                {opps.length > 0 && (
+                {account.openOpportunityCount > 0 && (
                     <div className="space-y-1.5 border-t pt-3">
-                        <div className="text-xs font-medium text-muted-foreground">
-                            Open Opportunities
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="font-medium text-muted-foreground">
+                                Open Opportunities
+                            </span>
+                            <span className="font-semibold">{account.openOpportunityCount}</span>
                         </div>
-                        {opps.map((opp) => (
-                            <div key={opp.id} className="flex items-center justify-between text-xs">
-                                <span className="truncate">{opp.name}</span>
-                                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                    <StatusBadge status={opp.stage} />
-                                    <span className="font-medium">{formatCurrency(opp.value)}</span>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 )}
             </CardContent>

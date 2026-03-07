@@ -27,7 +27,6 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
 import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase/hooks";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     AlertTriangle,
@@ -65,7 +64,7 @@ export default function CrewDetailPage() {
     const [certOpen, setCertOpen] = useState(false);
     const [certName, setCertName] = useState("");
     const [certExpiry, setCertExpiry] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -442,7 +441,6 @@ export default function CrewDetailPage() {
                     <RecordChatter
                         recordType="crew_member"
                         recordId={crewId}
-                        activityItems={makeMockActivity("crew_member")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

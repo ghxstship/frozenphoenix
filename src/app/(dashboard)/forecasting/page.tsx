@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when forecasting tables are available
+// NEXT: Wire to Supabase when forecasting tables are available
 type ForecastView = "revenue" | "utilization" | "budget" | "hiring";
 
 interface RevenueMonth {

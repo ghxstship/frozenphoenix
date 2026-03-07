@@ -19,7 +19,6 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     CheckCircle2,
     Copy,
@@ -214,7 +213,7 @@ export default function BrandKitDetailPage() {
     const [copiedColor, setCopiedColor] = useState<string | null>(null);
     const [assetFilter, setAssetFilter] = useState<string>("all");
     const [guidelineSections, setGuidelineSections] = useState(mockGuidelines);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -688,7 +687,6 @@ export default function BrandKitDetailPage() {
                 <RecordChatter
                     recordType="brand_kit"
                     recordId={kitId}
-                    activityItems={makeMockActivity("brand_kit")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

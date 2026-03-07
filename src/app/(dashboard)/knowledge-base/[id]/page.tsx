@@ -64,7 +64,7 @@ interface KBArticleDetail {
 }
 
 // ─── Mock Data ───
-const MOCK_ARTICLES: Record<string, KBArticleDetail> = {
+const PLACEHOLDER_ARTICLES: Record<string, KBArticleDetail> = {
     "kb-1": {
         id: "kb-1",
         category: "sop",
@@ -121,7 +121,7 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     training: Users,
 };
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -156,7 +156,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -201,10 +201,10 @@ export default function KBArticleDetailPage() {
     const [editContent, setEditContent] = useState("");
     const [editTags, setEditTags] = useState("");
     const [isEditing, setIsEditing] = useState(false);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
     const [linkSearch, setLinkSearch] = useState("");
 
-    const article = MOCK_ARTICLES[articleId];
+    const article = PLACEHOLDER_ARTICLES[articleId];
 
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
@@ -614,7 +614,7 @@ export default function KBArticleDetailPage() {
                     <RecordChatter
                         recordType="kb_article"
                         recordId={articleId}
-                        activityItems={MOCK_ACTIVITY}
+                        activityItems={PLACEHOLDER_ACTIVITY}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

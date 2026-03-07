@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when resource_bookings queries are available
+// NEXT: Wire to Supabase when resource_bookings queries are available
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
 

@@ -11,7 +11,7 @@ import { Activity, AlertTriangle, Radio, Users } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when live_events/incidents queries are available
+// NEXT: Wire to Supabase when live_events/incidents queries are available
 type EventPhase =
     | "advance"
     | "load_in"

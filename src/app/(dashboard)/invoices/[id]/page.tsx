@@ -17,7 +17,6 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     Building2,
     Calendar,
@@ -140,7 +139,7 @@ export default function InvoiceDetailPage() {
     const taxAmount = useMemo(() => subtotal * (mockInvoice.taxRate / 100), [subtotal]);
     const total = subtotal + taxAmount;
     const balance = total - mockInvoice.paidAmount;
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -445,7 +444,6 @@ export default function InvoiceDetailPage() {
                 <RecordChatter
                     recordType="invoice"
                     recordId={mockInvoice.id}
-                    activityItems={makeMockActivity("invoice")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -9,7 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_PERSON_CONFIG } from "@/config/create-entity-configs";
-import { MOCK_STAKEHOLDERS } from "@/lib/demo-data";
+import type { Stakeholder } from "@/types";
 import { usePeople } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { Building2, Loader2, Mail, Phone, Plus, UserCircle, Users, Wrench } from "lucide-react";
@@ -29,7 +29,7 @@ const typeConfig: Record<
 export default function PeoplePage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbPeople, isLoading } = usePeople();
-    const stakeholders = (sbPeople ?? []) as typeof MOCK_STAKEHOLDERS;
+    const stakeholders = (sbPeople ?? []) as Stakeholder[];
 
     const grouped = {
         internal: stakeholders.filter((s) => s.type === "internal"),

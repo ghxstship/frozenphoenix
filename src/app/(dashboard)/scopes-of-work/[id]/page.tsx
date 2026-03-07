@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
@@ -131,7 +130,7 @@ export default function ScopeOfWorkDetailPage() {
     const invoicedPct =
         mockSOW.totalValue > 0 ? Math.round((mockSOW.invoiced / mockSOW.totalValue) * 100) : 0;
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -419,7 +418,6 @@ export default function ScopeOfWorkDetailPage() {
                 <RecordChatter
                     recordType="scope_of_work"
                     recordId={mockSOW.id}
-                    activityItems={makeMockActivity("scope_of_work")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

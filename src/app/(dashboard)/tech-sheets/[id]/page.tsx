@@ -14,7 +14,6 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     AlertTriangle,
     CheckCircle2,
@@ -217,7 +216,7 @@ export default function TechSheetDetailPage() {
     const categories = [...new Set(mockEquipment.map((e) => e.category))];
     const confirmedItems = mockEquipment.filter((e) => e.status === "confirmed").length;
     const totalAmps = mockPowerCircuits.reduce((sum, c) => sum + c.amperage, 0);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -496,7 +495,6 @@ export default function TechSheetDetailPage() {
                 <RecordChatter
                     recordType="tech_sheet"
                     recordId={mockTechSheet.id}
-                    activityItems={makeMockActivity("tech_sheet")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

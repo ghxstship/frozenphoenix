@@ -9,7 +9,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Calendar, ClipboardCheck, Plus, Star, ThumbsUp } from "lucide-react";
-import { MOCK_WORKER_REVIEWS } from "@/lib/demo-data-workforce";
+import type { WorkerReview } from "@/types/workforce";
 import type { ReviewTargetType } from "@/types/workforce";
 
 const TARGET_LABELS: Record<ReviewTargetType, string> = {
@@ -50,7 +50,8 @@ export default function WorkforceReviewsPage() {
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
-    const reviews = MOCK_WORKER_REVIEWS;
+    // NEXT: Wire to useWorkerReviews() when hook is available
+    const reviews: WorkerReview[] = [];
     const filtered = reviews.filter((r) => {
         const matchesSearch =
             !search ||

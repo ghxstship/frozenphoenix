@@ -21,7 +21,7 @@ import {
     Plus,
     XCircle,
 } from "lucide-react";
-import { MOCK_PERMITS } from "@/lib/demo-data-governance";
+import type { Permit } from "@/types/governance";
 import { usePermits } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { PermitStatus } from "@/types/governance";
@@ -68,7 +68,7 @@ export default function PermitsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbPermits, isLoading } = usePermits();
 
-    const permits = (sbPermits ?? []) as typeof MOCK_PERMITS;
+    const permits = (sbPermits ?? []) as Permit[];
 
     const filtered = permits.filter((p) => {
         const matchesSearch =

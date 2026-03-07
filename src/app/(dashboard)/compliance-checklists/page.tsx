@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_COMPLIANCE_CHECKLIST_CONFIG } from "@/config/create-entity-configs";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus } from "lucide-react";
-import { MOCK_COMPLIANCE_CHECKLISTS } from "@/lib/demo-data-governance";
+import type { ComplianceChecklist } from "@/types/governance";
 import { useComplianceChecklists } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceChecklistStatus } from "@/types/governance";
@@ -48,7 +48,7 @@ export default function ComplianceChecklistsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbChecklists, isLoading } = useComplianceChecklists();
 
-    const checklists = (sbChecklists ?? []) as typeof MOCK_COMPLIANCE_CHECKLISTS;
+    const checklists = (sbChecklists ?? []) as ComplianceChecklist[];
 
     const filtered = checklists.filter((c) => {
         const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());

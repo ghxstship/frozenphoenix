@@ -95,3 +95,18 @@ function getNestedValue(obj: unknown, path: string): unknown {
 }
 
 export type { AuthMessages };
+
+// ─── Domain String Catalogs ──────────────────────────────────
+export { AUTH_STRINGS, type AuthStringKey } from "./auth-strings";
+export { MESSAGING_STRINGS, type MessagingStringKey } from "./messaging-strings";
+export { PRODUCTION_STRINGS, type ProductionStringKey } from "./production-strings";
+export { FINANCE_STRINGS, type FinanceStringKey } from "./finance-strings";
+export { CONTRACTS_STRINGS, type ContractsStringKey } from "./contracts-strings";
+export { VENDORS_STRINGS, type VendorsStringKey } from "./vendors-strings";
+export { CRM_STRINGS, type CrmStringKey } from "./crm-strings";
+export { ASSETS_STRINGS, type AssetsStringKey } from "./assets-strings";
+export { APPROVALS_STRINGS, type ApprovalsStringKey } from "./approvals-strings";
+export { CAMPAIGNS_STRINGS, type CampaignsStringKey } from "./campaigns-strings";
+export { INCIDENTS_STRINGS, type IncidentsStringKey } from "./incidents-strings";
+export { SETTINGS_STRINGS, type SettingsStringKey } from "./settings-strings";
+export { COMMON_STRINGS, type CommonStringKey } from "./common-strings";

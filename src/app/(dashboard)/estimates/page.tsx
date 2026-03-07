@@ -24,7 +24,7 @@ import {
     Send,
     Table2,
 } from "lucide-react";
-import { MOCK_ESTIMATES } from "@/lib/demo-data-vendor-lifecycle";
+import type { Estimate } from "@/types/vendor-lifecycle";
 import { useEstimates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { Loader2 } from "lucide-react";
@@ -55,7 +55,7 @@ export default function EstimatesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbEstimates, isLoading } = useEstimates();
 
-    const estimates = (sbEstimates ?? []) as typeof MOCK_ESTIMATES;
+    const estimates = (sbEstimates ?? []) as Estimate[];
     const filtered = estimates.filter((est) => {
         const matchesSearch =
             !search ||

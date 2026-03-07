@@ -21,7 +21,6 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     Building2,
     CheckCircle,
@@ -261,7 +260,7 @@ export default function ProposalDetailPage() {
     const [signerName, setSignerName] = useState(mockProposal.contactName);
     const [signerEmail, setSignerEmail] = useState(mockProposal.contactEmail);
     const [signatureAgreed, setSignatureAgreed] = useState(false);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddChatterComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -902,7 +901,6 @@ export default function ProposalDetailPage() {
                     <RecordChatter
                         recordType="proposal"
                         recordId={proposalId}
-                        activityItems={makeMockActivity("proposal")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddChatterComment}

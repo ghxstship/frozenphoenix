@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     CONTRACT_STATUS_MAP,
     CONTRACT_TYPE_MAP,
@@ -184,7 +183,7 @@ export default function ContractDetailPage() {
         );
     }, [contract.expirationDate]);
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -534,7 +533,6 @@ export default function ContractDetailPage() {
                 <RecordChatter
                     recordType="contract"
                     recordId={contract.id}
-                    activityItems={makeMockActivity("contract")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

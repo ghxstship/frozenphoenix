@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { CERT_TYPE_LABELS, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText, Loader2 } from "lucide-react";
@@ -42,7 +41,7 @@ export default function CertificationDetailPage() {
     void router;
     void handleUpdate;
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -336,7 +335,6 @@ export default function CertificationDetailPage() {
                 <RecordChatter
                     recordType="certification"
                     recordId={cert.id}
-                    activityItems={makeMockActivity("certification")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -51,7 +51,7 @@ interface EmailAccount {
     messagesProcessed: number;
 }
 
-const MOCK_EMAILS: EmailMessage[] = [
+const PLACEHOLDER_EMAILS: EmailMessage[] = [
     {
         id: "em1",
         subject: "Re: Air Max Launch — Stage Design Approval",
@@ -126,7 +126,7 @@ const MOCK_EMAILS: EmailMessage[] = [
     },
 ];
 
-const MOCK_ACCOUNTS: EmailAccount[] = [
+const PLACEHOLDER_ACCOUNTS: EmailAccount[] = [
     {
         id: "ea1",
         email: "team@playbook.io",
@@ -168,16 +168,16 @@ export default function EmailIntegrationPage() {
         validValues: ["inbox", "linked", "settings"],
     });
 
-    const unreadCount = MOCK_EMAILS.filter((e) => !e.isRead).length;
-    const linkedCount = MOCK_EMAILS.filter((e) => e.linkedEntity).length;
-    const inboundToday = MOCK_EMAILS.filter((e) => e.direction === "inbound").length;
-    const outboundToday = MOCK_EMAILS.filter((e) => e.direction === "outbound").length;
+    const unreadCount = PLACEHOLDER_EMAILS.filter((e) => !e.isRead).length;
+    const linkedCount = PLACEHOLDER_EMAILS.filter((e) => e.linkedEntity).length;
+    const inboundToday = PLACEHOLDER_EMAILS.filter((e) => e.direction === "inbound").length;
+    const outboundToday = PLACEHOLDER_EMAILS.filter((e) => e.direction === "outbound").length;
 
     const tabs = [
         {
             id: "inbox" as const,
             label: "Activity Feed",
-            count: MOCK_EMAILS.length,
+            count: PLACEHOLDER_EMAILS.length,
             icon: <Inbox className="h-4 w-4" />,
         },
         {
@@ -189,7 +189,7 @@ export default function EmailIntegrationPage() {
         {
             id: "settings" as const,
             label: "Accounts",
-            count: MOCK_ACCOUNTS.length,
+            count: PLACEHOLDER_ACCOUNTS.length,
             icon: <Settings className="h-4 w-4" />,
         },
     ];
@@ -221,7 +221,7 @@ export default function EmailIntegrationPage() {
 
                 <TabPanel value="inbox" activeValue={activeTab}>
                     <div className="space-y-2">
-                        {MOCK_EMAILS.map((email) => (
+                        {PLACEHOLDER_EMAILS.map((email) => (
                             <Card
                                 key={email.id}
                                 className={
@@ -300,7 +300,7 @@ export default function EmailIntegrationPage() {
                 <TabPanel value="linked" activeValue={activeTab}>
                     <div className="space-y-4">
                         {Object.entries(
-                            MOCK_EMAILS.filter((e) => e.linkedEntity).reduce<
+                            PLACEHOLDER_EMAILS.filter((e) => e.linkedEntity).reduce<
                                 Record<string, EmailMessage[]>
                             >((acc, email) => {
                                 const key = `${email.linkedEntityType}:${email.linkedEntity}`;
@@ -365,7 +365,7 @@ export default function EmailIntegrationPage() {
                                 <Plus className="h-4 w-4" /> Add Account
                             </Button>
                         </div>
-                        {MOCK_ACCOUNTS.map((account) => (
+                        {PLACEHOLDER_ACCOUNTS.map((account) => (
                             <Card key={account.id}>
                                 <CardContent className="p-4">
                                     <div className="flex items-center justify-between">

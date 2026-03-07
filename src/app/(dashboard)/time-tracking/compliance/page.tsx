@@ -57,7 +57,7 @@ interface WorkerCompliance {
     status: "compliant" | "at_risk" | "non_compliant";
 }
 
-const MOCK_POLICIES: CompliancePolicy[] = [
+const PLACEHOLDER_POLICIES: CompliancePolicy[] = [
     {
         id: "cp1",
         name: "Standard Crew",
@@ -90,7 +90,7 @@ const MOCK_POLICIES: CompliancePolicy[] = [
     },
 ];
 
-const MOCK_VIOLATIONS: ComplianceViolation[] = [
+const PLACEHOLDER_VIOLATIONS: ComplianceViolation[] = [
     {
         id: "v1",
         workerName: "Jake Morrison",
@@ -138,7 +138,7 @@ const MOCK_VIOLATIONS: ComplianceViolation[] = [
     },
 ];
 
-const MOCK_WORKERS: WorkerCompliance[] = [
+const PLACEHOLDER_WORKERS: WorkerCompliance[] = [
     {
         id: "w1",
         name: "Jake Morrison",
@@ -214,12 +214,12 @@ const STATUS_BADGE: Record<string, "success" | "warning" | "destructive"> = {
 };
 
 export default function TimeTrackingCompliancePage() {
-    const totalViolations = MOCK_VIOLATIONS.filter((v) => !v.resolved).length;
-    const compliantWorkers = MOCK_WORKERS.filter((w) => w.status === "compliant").length;
+    const totalViolations = PLACEHOLDER_VIOLATIONS.filter((v) => !v.resolved).length;
+    const compliantWorkers = PLACEHOLDER_WORKERS.filter((w) => w.status === "compliant").length;
     const avgLoggingRate = Math.round(
-        MOCK_WORKERS.reduce((s, w) => s + w.loggingRate, 0) / MOCK_WORKERS.length
+        PLACEHOLDER_WORKERS.reduce((s, w) => s + w.loggingRate, 0) / PLACEHOLDER_WORKERS.length
     );
-    const atRiskCount = MOCK_WORKERS.filter((w) => w.status !== "compliant").length;
+    const atRiskCount = PLACEHOLDER_WORKERS.filter((w) => w.status !== "compliant").length;
 
     return (
         <PermissionGate resource="time_tracking" action="read">
@@ -246,7 +246,7 @@ export default function TimeTrackingCompliancePage() {
                     />
                     <StatCard
                         title="Compliant Workers"
-                        value={`${compliantWorkers}/${MOCK_WORKERS.length}`}
+                        value={`${compliantWorkers}/${PLACEHOLDER_WORKERS.length}`}
                         icon={CheckCircle2}
                     />
                     <StatCard title="Avg Logging Rate" value={`${avgLoggingRate}%`} icon={Timer} />
@@ -263,7 +263,7 @@ export default function TimeTrackingCompliancePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {MOCK_POLICIES.filter((p) => p.isActive).map((policy) => (
+                            {PLACEHOLDER_POLICIES.filter((p) => p.isActive).map((policy) => (
                                 <div
                                     key={policy.id}
                                     className="p-4 rounded-lg bg-secondary/30 space-y-3"
@@ -326,7 +326,7 @@ export default function TimeTrackingCompliancePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {MOCK_VIOLATIONS.filter((v) => !v.resolved).map((violation) => (
+                        {PLACEHOLDER_VIOLATIONS.filter((v) => !v.resolved).map((violation) => (
                             <div
                                 key={violation.id}
                                 className="flex items-start justify-between p-3 rounded-lg bg-secondary/30"
@@ -381,7 +381,7 @@ export default function TimeTrackingCompliancePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {MOCK_WORKERS.map((worker) => {
+                        {PLACEHOLDER_WORKERS.map((worker) => {
                             const hoursPct = Math.round(
                                 (worker.totalHoursThisWeek / worker.maxWeeklyHours) * 100
                             );

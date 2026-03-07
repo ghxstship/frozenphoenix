@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import { Calendar, Download, Eye, FileBox, History, Link2, Shield, User } from "lucide-react";
@@ -112,7 +111,7 @@ export default function DigitalAssetDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -439,7 +438,6 @@ export default function DigitalAssetDetailPage() {
                 <RecordChatter
                     recordType="digital_asset"
                     recordId={mockAsset.id}
-                    activityItems={makeMockActivity("digital_asset")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -32,7 +32,7 @@ import {
 type TabId = "overview" | "line-items" | "approvals" | "chatter";
 const TAB_VALUES = ["overview", "line-items", "approvals", "chatter"] as const;
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -59,7 +59,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u2",
@@ -86,7 +86,7 @@ export default function BudgetDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const { data: budget, isLoading } = useBudget(budgetId);
     const { data: sbLines } = useBudgetLines(budgetId);
@@ -427,7 +427,7 @@ export default function BudgetDetailPage() {
                 <RecordChatter
                     recordType="budget"
                     recordId={budgetId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

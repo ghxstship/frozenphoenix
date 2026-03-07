@@ -15,11 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    MOCK_CAMPAIGN_ASSETS,
-    MOCK_CAMPAIGNS,
-    MOCK_CREATIVE_REVIEWS,
-} from "@/lib/demo-data-creative-brand";
+import type { Campaign } from "@/types/creative-brand";
 import { useCreativeAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
@@ -54,9 +50,10 @@ export default function CreativeAssetsPage() {
     });
     const { data: sbAssets, isLoading } = useCreativeAssets();
 
-    const assets = sbAssets ? (sbAssets as unknown as CampaignAsset[]) : MOCK_CAMPAIGN_ASSETS;
-    const reviews = MOCK_CREATIVE_REVIEWS;
-    const campaigns = MOCK_CAMPAIGNS;
+    const assets = useMemo(() => (sbAssets ?? []) as unknown as CampaignAsset[], [sbAssets]);
+    // NEXT: Wire to useCreativeReviews/useCampaigns() when hooks are available
+    const reviews: CreativeReview[] = [];
+    const campaigns: Campaign[] = [];
 
     const filtered = useMemo(() => {
         return assets.filter((a) => {

@@ -20,6 +20,41 @@ const eslintConfig = defineConfig([
           allowSeparatedGroups: true,
         },
       ],
+      // Q-001: Ban unresolved work markers — all work must be tracked in issues, not code comments.
+      "no-warning-comments": [
+        "error",
+        {
+          terms: ["TODO", "FIXME", "HACK", "XXX"],
+          location: "anywhere",
+        },
+      ],
+      // Q-002: Ban demo-data and mock imports — production code must use Supabase hooks.
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/demo-data*"],
+              message:
+                "Demo data imports are banned in production code. Use Supabase hooks instead.",
+            },
+            {
+              group: ["**/mock*", "**/mocks*"],
+              message:
+                "Mock data imports are banned in production code. Use Supabase hooks instead.",
+            },
+          ],
+        },
+      ],
+      // Q-003: Ban inline MOCK_ constant declarations — eliminates shadow data sources.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "VariableDeclarator[id.name=/^MOCK_/]",
+          message:
+            "Inline MOCK_ constants are banned. Use Supabase hooks for data fetching.",
+        },
+      ],
     },
   },
   {
@@ -30,6 +65,35 @@ const eslintConfig = defineConfig([
     ],
     rules: {
       "no-console": "off",
+    },
+  },
+  // Supabase Edge Functions run in Deno — console is the standard logging mechanism.
+  {
+    files: ["supabase/functions/**/*.ts"],
+    rules: {
+      "no-console": "off",
+      "no-warning-comments": "off",
+    },
+  },
+  // Q-001 override: Allow unresolved work markers in test files and config.
+  {
+    files: [
+      "src/__tests__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "eslint.config.mjs",
+    ],
+    rules: {
+      "no-warning-comments": "off",
+    },
+  },
+  // Q-002 + Q-003 override: Demo-data definition files are the source, not consumers.
+  {
+    files: ["src/lib/demo-data*.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
   // L-005: Exclude generated Supabase types (500KB+, deoptimizes ESLint).

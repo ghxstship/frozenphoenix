@@ -10,7 +10,6 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects } from "@/lib/supabase/hooks";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
@@ -45,7 +44,7 @@ interface Deck {
     presentedAt?: string;
 }
 
-const MOCK_DECKS: Deck[] = [
+const PLACEHOLDER_DECKS: Deck[] = [
     {
         id: "dk1",
         projectId: "p1",
@@ -210,7 +209,7 @@ export default function DecksPage() {
                     {(
                         Object.entries(typeConfig) as [DeckType, (typeof typeConfig)[DeckType]][]
                     ).map(([type, config]) => {
-                        const count = MOCK_DECKS.filter((d) => d.type === type).length;
+                        const count = PLACEHOLDER_DECKS.filter((d) => d.type === type).length;
                         return (
                             <div
                                 key={type}
@@ -227,7 +226,7 @@ export default function DecksPage() {
                 {view === "grid" ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredDecks.map((deck, i) => {
-                            const project = MOCK_PROJECTS.find((p) => p.id === deck.projectId);
+                            const project = projects.find((p) => p.id === deck.projectId);
                             const type = typeConfig[deck.type];
                             return (
                                 <StaggerItem key={deck.id} index={i} stagger="relaxed">
@@ -339,7 +338,7 @@ export default function DecksPage() {
                                 </thead>
                                 <tbody>
                                     {filteredDecks.map((deck) => {
-                                        const project = MOCK_PROJECTS.find(
+                                        const project = projects.find(
                                             (p) => p.id === deck.projectId
                                         );
                                         const type = typeConfig[deck.type];

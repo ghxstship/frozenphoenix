@@ -39,7 +39,7 @@ interface SuggestedQuery {
     category: string;
 }
 
-const MOCK_QUERIES: AiReportQuery[] = [
+const PLACEHOLDER_QUERIES: AiReportQuery[] = [
     {
         id: "aq1",
         query: "Show me project profitability by client for Q1 2026",
@@ -133,7 +133,7 @@ const CHART_ICONS: Record<string, React.ReactNode> = {
     metric: <TrendingUp className="h-4 w-4" />,
 };
 
-const MOCK_BAR_DATA = [
+const PLACEHOLDER_BAR_DATA = [
     { label: "Nike", value: 82 },
     { label: "Red Bull", value: 65 },
     { label: "Adidas", value: 45 },
@@ -145,7 +145,7 @@ const MOCK_BAR_DATA = [
 export default function AiReportsPage() {
     const [queryInput, setQueryInput] = useState("");
     const [selectedQuery, setSelectedQuery] = useState<AiReportQuery | null>(
-        MOCK_QUERIES[0] || null
+        PLACEHOLDER_QUERIES[0] || null
     );
 
     return (
@@ -164,17 +164,17 @@ export default function AiReportsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Reports Generated"
-                        value={MOCK_QUERIES.length}
+                        value={PLACEHOLDER_QUERIES.length}
                         icon={BarChart3}
                     />
                     <StatCard
                         title="Avg Response"
-                        value={`${Math.round(MOCK_QUERIES.reduce((s, q) => s + q.executionTimeMs, 0) / MOCK_QUERIES.length)}ms`}
+                        value={`${Math.round(PLACEHOLDER_QUERIES.reduce((s, q) => s + q.executionTimeMs, 0) / PLACEHOLDER_QUERIES.length)}ms`}
                         icon={Clock}
                     />
                     <StatCard
                         title="Data Points"
-                        value={MOCK_QUERIES.reduce((s, q) => s + q.dataPoints, 0)}
+                        value={PLACEHOLDER_QUERIES.reduce((s, q) => s + q.dataPoints, 0)}
                         icon={Table2}
                     />
                     <StatCard
@@ -237,7 +237,7 @@ export default function AiReportsPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            {MOCK_QUERIES.map((q) => (
+                            {PLACEHOLDER_QUERIES.map((q) => (
                                 <button
                                     key={q.id}
                                     onClick={() => setSelectedQuery(q)}
@@ -294,7 +294,7 @@ export default function AiReportsPage() {
                                     {/* Mock Chart Visualization */}
                                     {selectedQuery.chartType === "bar" && (
                                         <div className="space-y-3">
-                                            {MOCK_BAR_DATA.map((item) => (
+                                            {PLACEHOLDER_BAR_DATA.map((item) => (
                                                 <div
                                                     key={item.label}
                                                     className="flex items-center gap-3"

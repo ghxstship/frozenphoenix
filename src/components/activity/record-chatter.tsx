@@ -15,8 +15,8 @@ type ChatterTab = "comments" | "activity";
 export interface RecordChatterProps {
     recordType: string;
     recordId: string;
-    activityItems: ActivityItem[];
-    comments: CommentItem[];
+    activityItems?: ActivityItem[];
+    comments?: CommentItem[];
     currentUserId?: string;
     onAddComment?: (content: string) => Promise<void>;
     onEditComment?: (id: string, content: string) => Promise<void>;
@@ -30,8 +30,8 @@ export interface RecordChatterProps {
 export function RecordChatter({
     recordType,
     recordId,
-    activityItems,
-    comments,
+    activityItems = [],
+    comments = [],
     currentUserId,
     onAddComment,
     onEditComment,
@@ -72,10 +72,7 @@ export function RecordChatter({
             <CardContent>
                 {tab === "comments" ? (
                     messagingEnabled ? (
-                        <EntityCommentsSection
-                            entityType={recordType}
-                            entityId={recordId}
-                        />
+                        <EntityCommentsSection entityType={recordType} entityId={recordId} />
                     ) : (
                         <CommentsSection
                             comments={comments}

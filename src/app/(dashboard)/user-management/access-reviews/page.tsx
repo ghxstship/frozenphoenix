@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_ACCESS_REVIEWS, MOCK_TEMP_GRANTS } from "@/lib/demo-data-user-lifecycle";
+import type { AccessReviewEntry, TemporaryAccessGrant } from "@/types/user-lifecycle";
 import {
     AlertTriangle,
     CheckCircle2,
@@ -31,8 +31,12 @@ export default function AccessReviewsPage() {
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<"all" | "low" | "medium" | "high">("all");
 
+    // NEXT: Wire to useAccessReviews/useTempGrants() when hooks are available
+    const accessReviews = useMemo<AccessReviewEntry[]>(() => [], []);
+    const tempGrants = useMemo<TemporaryAccessGrant[]>(() => [], []);
+
     const filtered = useMemo(() => {
-        return MOCK_ACCESS_REVIEWS.filter((r) => {
+        return accessReviews.filter((r) => {
             const matchesSearch =
                 !search ||
                 r.userName.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,12 +44,12 @@ export default function AccessReviewsPage() {
             const matchesRisk = riskFilter === "all" || r.riskLevel === riskFilter;
             return matchesSearch && matchesRisk;
         });
-    }, [search, riskFilter]);
+    }, [accessReviews, search, riskFilter]);
 
-    const highRisk = MOCK_ACCESS_REVIEWS.filter((r) => r.riskLevel === "high").length;
-    const mediumRisk = MOCK_ACCESS_REVIEWS.filter((r) => r.riskLevel === "medium").length;
-    const activeGrants = MOCK_TEMP_GRANTS.filter((g) => g.status === "active").length;
-    const staleAccess = MOCK_ACCESS_REVIEWS.filter((r) => r.daysSinceActive > 30).length;
+    const highRisk = accessReviews.filter((r) => r.riskLevel === "high").length;
+    const mediumRisk = accessReviews.filter((r) => r.riskLevel === "medium").length;
+    const activeGrants = tempGrants.filter((g) => g.status === "active").length;
+    const staleAccess = accessReviews.filter((r) => r.daysSinceActive > 30).length;
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -76,33 +80,37 @@ export default function AccessReviewsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
-                        {MOCK_TEMP_GRANTS.filter((g) => g.status === "active").map((grant) => (
-                            <div
-                                key={grant.id}
-                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-secondary/30"
-                            >
-                                <div>
-                                    <p className="text-sm font-medium">{grant.userName}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        <span className="font-medium">{grant.resourceType}</span>{" "}
-                                        access ({grant.actions.join(", ")}) — granted by{" "}
-                                        {grant.grantedByName}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground italic mt-0.5">
-                                        {grant.reason}
-                                    </p>
+                        {tempGrants
+                            .filter((g) => g.status === "active")
+                            .map((grant) => (
+                                <div
+                                    key={grant.id}
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-secondary/30"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium">{grant.userName}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            <span className="font-medium">
+                                                {grant.resourceType}
+                                            </span>{" "}
+                                            access ({grant.actions.join(", ")}) — granted by{" "}
+                                            {grant.grantedByName}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground italic mt-0.5">
+                                            {grant.reason}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className="text-xs text-muted-foreground">
+                                            Expires {new Date(grant.expiresAt).toLocaleDateString()}
+                                        </span>
+                                        <Button variant="ghost" size="sm">
+                                            Revoke
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-xs text-muted-foreground">
-                                        Expires {new Date(grant.expiresAt).toLocaleDateString()}
-                                    </span>
-                                    <Button variant="ghost" size="sm">
-                                        Revoke
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
-                        {MOCK_TEMP_GRANTS.filter((g) => g.status === "active").length === 0 && (
+                            ))}
+                        {tempGrants.filter((g) => g.status === "active").length === 0 && (
                             <p className="text-sm text-muted-foreground text-center py-4">
                                 No active temporary grants
                             </p>

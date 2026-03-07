@@ -12,7 +12,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Loader2, Plus, Star, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
-import { MOCK_VENDOR_REVIEWS } from "@/lib/demo-data-vendor-lifecycle";
+import type { VendorReview } from "@/types/vendor-lifecycle";
 import { useVendorReviews } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { VendorReviewType } from "@/types/vendor-lifecycle";
@@ -46,7 +46,7 @@ export default function VendorReviewsPage() {
     const [search, setSearch] = useState("");
     const { data: sbReviews, isLoading } = useVendorReviews();
 
-    const reviews = (sbReviews ?? []) as typeof MOCK_VENDOR_REVIEWS;
+    const reviews = (sbReviews ?? []) as VendorReview[];
     const filtered = reviews.filter(
         (r) =>
             !search ||

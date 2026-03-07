@@ -521,6 +521,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         applyAnimationSpeedToDOM(animationSpeed);
 
         return () => clearTimeout(transitionTimer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- setResolvedMode is a stable Zustand setter; mergeTokens/applyTokensToDOM are stable module-level functions
     }, [
         colorMode,
         accentColor,
@@ -535,7 +536,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         orgTokens,
         projectTokens,
         userTokens,
-    ]); // eslint-disable-line react-hooks/exhaustive-deps -- mergeTokens/applyTokensToDOM are stable module-level functions; token objects use identity comparison intentionally
+    ]);
 
     // Listen for system color scheme changes
     useEffect(() => {

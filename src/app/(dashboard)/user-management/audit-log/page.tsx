@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
-import { MOCK_LOGIN_AUDIT, MOCK_ROLE_CHANGES } from "@/lib/demo-data-user-lifecycle";
+import type { LoginAuditEntry, RoleChangeLogEntry } from "@/types/user-lifecycle";
 import {
     AlertTriangle,
     Clock,
@@ -98,8 +98,12 @@ export default function AuditLogPage() {
     const [search, setSearch] = useState("");
     const [eventFilter, setEventFilter] = useState<"all" | "success" | "failure">("all");
 
+    // NEXT: Wire to useLoginAudit/useRoleChanges() when hooks are available
+    const loginAudit = useMemo<LoginAuditEntry[]>(() => [], []);
+    const roleChanges = useMemo<RoleChangeLogEntry[]>(() => [], []);
+
     const filteredLogins = useMemo(() => {
-        return MOCK_LOGIN_AUDIT.filter((e) => {
+        return loginAudit.filter((e) => {
             const matchesSearch =
                 !search ||
                 (e.email ?? "").toLowerCase().includes(search.toLowerCase()) ||
@@ -111,21 +115,21 @@ export default function AuditLogPage() {
                 (eventFilter === "failure" && !e.success);
             return matchesSearch && matchesEvent;
         });
-    }, [search, eventFilter]);
+    }, [loginAudit, search, eventFilter]);
 
     const filteredRoleChanges = useMemo(() => {
-        return MOCK_ROLE_CHANGES.filter((r) => {
+        return roleChanges.filter((r) => {
             return (
                 !search ||
                 (r.userName ?? "").toLowerCase().includes(search.toLowerCase()) ||
                 (r.changedByName ?? "").toLowerCase().includes(search.toLowerCase())
             );
         });
-    }, [search]);
+    }, [roleChanges, search]);
 
-    const successCount = MOCK_LOGIN_AUDIT.filter((e) => e.success).length;
-    const failureCount = MOCK_LOGIN_AUDIT.filter((e) => !e.success).length;
-    const uniqueIps = new Set(MOCK_LOGIN_AUDIT.map((e) => e.ipAddress).filter(Boolean)).size;
+    const successCount = loginAudit.filter((e) => e.success).length;
+    const failureCount = loginAudit.filter((e) => !e.success).length;
+    const uniqueIps = new Set(loginAudit.map((e) => e.ipAddress).filter(Boolean)).size;
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -140,7 +144,7 @@ export default function AuditLogPage() {
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Login Events" value={MOCK_LOGIN_AUDIT.length} icon={LogIn} />
+                <StatCard title="Login Events" value={loginAudit.length} icon={LogIn} />
                 <StatCard title="Successful" value={successCount} icon={ShieldCheck} />
                 <StatCard title="Failed" value={failureCount} icon={ShieldAlert} />
                 <StatCard title="Unique IPs" value={uniqueIps} icon={Globe} />

@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -145,7 +144,7 @@ export default function CompanyDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -451,7 +450,6 @@ export default function CompanyDetailPage() {
                 <RecordChatter
                     recordType="company"
                     recordId={mockCompany.id}
-                    activityItems={makeMockActivity("company")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

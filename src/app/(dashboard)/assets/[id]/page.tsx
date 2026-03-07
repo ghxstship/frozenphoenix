@@ -24,7 +24,6 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
 import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase/hooks";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     AlertTriangle,
@@ -61,7 +60,7 @@ export default function AssetDetailPage() {
     const [maintenanceOpen, setMaintenanceOpen] = useState(false);
     const [checkoutProject, setCheckoutProject] = useState("");
     const [maintenanceNote, setMaintenanceNote] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -384,7 +383,6 @@ export default function AssetDetailPage() {
                     <RecordChatter
                         recordType="asset"
                         recordId={assetId}
-                        activityItems={makeMockActivity("asset")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

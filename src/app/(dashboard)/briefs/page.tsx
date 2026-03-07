@@ -15,7 +15,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { OverlineText } from "@/components/ui/overline-text";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_BRIEF_TEMPLATES, MOCK_CREATIVE_BRIEFS } from "@/lib/demo-data-creative-brand";
+import type { BriefTemplate } from "@/types/creative-brand";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { useBriefs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -61,8 +61,9 @@ export default function BriefsPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbBriefs, isLoading } = useBriefs();
 
-    const briefs = sbBriefs ? (sbBriefs as unknown as CreativeBrief[]) : MOCK_CREATIVE_BRIEFS;
-    const templates = MOCK_BRIEF_TEMPLATES;
+    const briefs = useMemo(() => (sbBriefs ?? []) as unknown as CreativeBrief[], [sbBriefs]);
+    // NEXT: Wire to useBriefTemplates() when hook is available
+    const templates: BriefTemplate[] = [];
 
     const filtered = useMemo(() => {
         return briefs.filter((b) => {

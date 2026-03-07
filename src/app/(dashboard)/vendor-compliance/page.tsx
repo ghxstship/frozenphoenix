@@ -20,7 +20,7 @@ import {
     ShieldCheck,
     XCircle,
 } from "lucide-react";
-import { MOCK_COMPLIANCE_REQUIREMENTS } from "@/lib/demo-data-vendor-lifecycle";
+import type { ComplianceRequirement } from "@/types/vendor-lifecycle";
 import { useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceDocStatus, VendorComplianceDoc } from "@/types/vendor-lifecycle";
@@ -83,7 +83,8 @@ export default function VendorCompliancePage() {
                 carrierName: (d.carrier_name as string) ?? undefined,
             }) as VendorComplianceDoc
     );
-    const requirements = MOCK_COMPLIANCE_REQUIREMENTS;
+    // NEXT: Wire to useComplianceRequirements() when hook is available
+    const requirements: ComplianceRequirement[] = [];
 
     if (isLoading) {
         return (

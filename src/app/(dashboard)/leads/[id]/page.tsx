@@ -83,7 +83,7 @@ const DEMO_LEADS = [
     },
 ];
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -110,7 +110,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -138,7 +138,7 @@ export default function LeadDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const lead = DEMO_LEADS.find((l) => l.id === leadId);
 
@@ -372,7 +372,7 @@ export default function LeadDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {MOCK_ACTIVITY.map((item) => (
+                            {PLACEHOLDER_ACTIVITY.map((item) => (
                                 <div key={item.id} className="flex items-start gap-4">
                                     <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
                                     <div>
@@ -395,7 +395,7 @@ export default function LeadDetailPage() {
                 <RecordChatter
                     recordType="lead"
                     recordId={leadId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

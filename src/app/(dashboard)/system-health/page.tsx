@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when system_health monitoring queries are available
+// NEXT: Wire to Supabase when system_health monitoring queries are available
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";
 

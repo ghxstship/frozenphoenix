@@ -13,7 +13,6 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
 import { ClipboardCheck, Loader2, Star } from "lucide-react";
@@ -41,7 +40,7 @@ export default function VendorReviewDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -158,7 +157,6 @@ export default function VendorReviewDetailPage() {
                     recordType="vendor_review"
                     recordId={entityId}
                     comments={chatterComments}
-                    activityItems={makeMockActivity("vendor_review")}
                     onAddComment={handleAddComment}
                 />
             )}

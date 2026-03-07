@@ -67,6 +67,7 @@ export function CatalogItemDetail({
                         {/* Thumbnail */}
                         {Boolean(rec.thumbnail_url) && (
                             <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
+                                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic external URLs from Supabase Storage */}
                                 <img
                                     src={String(rec.thumbnail_url)}
                                     alt={String(rec.name)}
@@ -102,7 +103,11 @@ export function CatalogItemDetail({
                             )}
                             {Boolean(rec.tags) &&
                                 (rec.tags as string[]).map((tag) => (
-                                    <Badge key={tag} variant="outline" className="gap-1 text-[10px]">
+                                    <Badge
+                                        key={tag}
+                                        variant="outline"
+                                        className="gap-1 text-[10px]"
+                                    >
                                         <Tag className="h-2.5 w-2.5" />
                                         {tag}
                                     </Badge>
@@ -121,7 +126,9 @@ export function CatalogItemDetail({
                             <div className="flex items-center gap-2 text-sm">
                                 <Package className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Unit:</span>
-                                <span className="font-medium">{String(rec.unit_of_measure ?? "ea")}</span>
+                                <span className="font-medium">
+                                    {String(rec.unit_of_measure ?? "ea")}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -164,7 +171,10 @@ export function CatalogItemDetail({
                                         >
                                             <span>{String(mod.name)}</span>
                                             <span className="font-medium">
-                                                +{formatAdvanceCost(Number(mod.price_adjustment ?? 0))}
+                                                +
+                                                {formatAdvanceCost(
+                                                    Number(mod.price_adjustment ?? 0)
+                                                )}
                                             </span>
                                         </div>
                                     ))}

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when scenarios table is available
+// NEXT: Wire to Supabase when scenarios table is available
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
 

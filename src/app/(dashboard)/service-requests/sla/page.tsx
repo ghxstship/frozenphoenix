@@ -54,7 +54,7 @@ interface ActiveSla {
     elapsedMinutes: number;
 }
 
-const MOCK_POLICIES: SlaPolicy[] = [
+const PLACEHOLDER_POLICIES: SlaPolicy[] = [
     {
         id: "sp1",
         name: "Critical — Production Down",
@@ -101,7 +101,7 @@ const MOCK_POLICIES: SlaPolicy[] = [
     },
 ];
 
-const MOCK_ACTIVE_SLAS: ActiveSla[] = [
+const PLACEHOLDER_ACTIVE_SLAS: ActiveSla[] = [
     {
         id: "as1",
         ticketNumber: "SR-2026-0142",
@@ -185,22 +185,22 @@ export default function SlaPage() {
         validValues: ["policies", "active", "metrics"],
     });
 
-    const breached = MOCK_ACTIVE_SLAS.filter((s) => s.status === "breached").length;
-    const atRisk = MOCK_ACTIVE_SLAS.filter((s) => s.status === "at_risk").length;
-    const withinSla = MOCK_ACTIVE_SLAS.filter((s) => s.status === "within_sla").length;
-    const complianceRate = Math.round((withinSla / MOCK_ACTIVE_SLAS.length) * 100);
+    const breached = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "breached").length;
+    const atRisk = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "at_risk").length;
+    const withinSla = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "within_sla").length;
+    const complianceRate = Math.round((withinSla / PLACEHOLDER_ACTIVE_SLAS.length) * 100);
 
     const tabs = [
         {
             id: "active" as const,
             label: "Active SLAs",
-            count: MOCK_ACTIVE_SLAS.length,
+            count: PLACEHOLDER_ACTIVE_SLAS.length,
             icon: <Timer className="h-4 w-4" />,
         },
         {
             id: "policies" as const,
             label: "Policies",
-            count: MOCK_POLICIES.length,
+            count: PLACEHOLDER_POLICIES.length,
             icon: <Shield className="h-4 w-4" />,
         },
         { id: "metrics" as const, label: "Metrics", icon: <TrendingUp className="h-4 w-4" /> },
@@ -247,7 +247,7 @@ export default function SlaPage() {
 
                 <TabPanel value="active" activeValue={activeTab}>
                     <div className="space-y-3">
-                        {MOCK_ACTIVE_SLAS.filter(
+                        {PLACEHOLDER_ACTIVE_SLAS.filter(
                             (s) =>
                                 !search ||
                                 s.ticketTitle.toLowerCase().includes(search.toLowerCase()) ||
@@ -338,7 +338,7 @@ export default function SlaPage() {
 
                 <TabPanel value="policies" activeValue={activeTab}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {MOCK_POLICIES.map((policy) => (
+                        {PLACEHOLDER_POLICIES.map((policy) => (
                             <Card key={policy.id}>
                                 <CardContent className="p-4 space-y-3">
                                     <div className="flex items-center justify-between">

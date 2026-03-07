@@ -19,7 +19,7 @@ import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when dashboard aggregation queries are available
+// NEXT: Wire to Supabase when dashboard aggregation queries are available
 
 interface DashboardWidget {
     id: string;

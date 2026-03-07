@@ -13,7 +13,13 @@
  */
 
 import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
-import { completeSyncEvent, createSyncEvent, getActiveConnection, incrementConnectionErrorCount, updateConnectionSyncTimestamp } from "../_shared/sync-utils.ts";
+import {
+    completeSyncEvent,
+    createSyncEvent,
+    getActiveConnection,
+    incrementConnectionErrorCount,
+    updateConnectionSyncTimestamp,
+} from "../_shared/sync-utils.ts";
 
 interface OutboundSyncRequest {
     connection_id: string;
@@ -39,7 +45,10 @@ Deno.serve(async (req: Request) => {
     const { connection_id, entity_type, entity_ids, action } = body;
 
     if (!connection_id || !entity_type || !entity_ids?.length || !action) {
-        return errorResponse("Missing required fields: connection_id, entity_type, entity_ids, action", 400);
+        return errorResponse(
+            "Missing required fields: connection_id, entity_type, entity_ids, action",
+            400
+        );
     }
 
     // -----------------------------------------------------------------------
@@ -86,7 +95,12 @@ Deno.serve(async (req: Request) => {
                     errorMessage: "No entities found",
                 });
             }
-            return jsonResponse({ status: "completed", processed: 0, failed: 0, message: "No entities found" });
+            return jsonResponse({
+                status: "completed",
+                processed: 0,
+                failed: 0,
+                message: "No entities found",
+            });
         }
 
         // -----------------------------------------------------------------
@@ -113,7 +127,10 @@ Deno.serve(async (req: Request) => {
                 processed++;
             } catch (err) {
                 const msg = (err as Error).message;
-                console.error(`Outbound sync failed for ${entity_type}/${(entity as Record<string, unknown>).id}:`, msg);
+                console.error(
+                    `Outbound sync failed for ${entity_type}/${(entity as Record<string, unknown>).id}:`,
+                    msg
+                );
                 errors.push(msg);
                 failed++;
             }
@@ -128,7 +145,8 @@ Deno.serve(async (req: Request) => {
     // -----------------------------------------------------------------------
     // 5. Finalize
     // -----------------------------------------------------------------------
-    const finalStatus = failed === 0 ? "completed" : failed === entity_ids.length ? "failed" : "partial";
+    const finalStatus =
+        failed === 0 ? "completed" : failed === entity_ids.length ? "failed" : "partial";
 
     if (syncEventId) {
         await completeSyncEvent(supabase, syncEventId, {
@@ -167,18 +185,21 @@ async function pushToProvider(
         entity: Record<string, unknown>;
         action: string;
         credentials: { apiKey: string; apiSecret: string; accessToken: string };
-    },
+    }
 ): Promise<void> {
     // Log outbound sync attempt for audit
-    await supabase.from("sync_events").update({
-        metadata: {
-            outbound_entity_id: params.entity.id,
-            outbound_action: params.action,
-            provider: params.providerName,
-        },
-    }).eq("connection_id", params.connectionId);
+    await supabase
+        .from("sync_events")
+        .update({
+            metadata: {
+                outbound_entity_id: params.entity.id,
+                outbound_action: params.action,
+                provider: params.providerName,
+            },
+        })
+        .eq("connection_id", params.connectionId);
 
-    // TODO: Implement provider-specific API calls
+    // NEXT: Implement provider-specific API calls
     // - Eventbrite: PATCH /v3/attendees/{id}/ for check-in status
     // - Square: POST /v2/orders for order updates
     // - Front Gate: Provider-specific API endpoints

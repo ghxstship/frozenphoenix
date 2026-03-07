@@ -36,7 +36,7 @@ interface ProjectTemplate {
     tags: string[];
 }
 
-const MOCK_TEMPLATES: ProjectTemplate[] = [
+const PLACEHOLDER_TEMPLATES: ProjectTemplate[] = [
     {
         id: "pt1",
         name: "Brand Activation — Standard",
@@ -114,7 +114,7 @@ const MOCK_TEMPLATES: ProjectTemplate[] = [
 export default function ProjectTemplatesPage() {
     const [search, setSearch] = useState("");
 
-    const filtered = MOCK_TEMPLATES.filter(
+    const filtered = PLACEHOLDER_TEMPLATES.filter(
         (t) =>
             !search ||
             t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -122,7 +122,7 @@ export default function ProjectTemplatesPage() {
             t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
     );
 
-    const totalUsage = MOCK_TEMPLATES.reduce((s, t) => s + t.usageCount, 0);
+    const totalUsage = PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.usageCount, 0);
 
     return (
         <PermissionGate resource="projects" action="read">
@@ -137,19 +137,23 @@ export default function ProjectTemplatesPage() {
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Templates" value={MOCK_TEMPLATES.length} icon={Layout} />
+                    <StatCard
+                        title="Templates"
+                        value={PLACEHOLDER_TEMPLATES.length}
+                        icon={Layout}
+                    />
                     <StatCard title="Total Usage" value={totalUsage} icon={Copy} />
                     <StatCard
                         title="Avg Tasks"
                         value={Math.round(
-                            MOCK_TEMPLATES.reduce((s, t) => s + t.taskCount, 0) /
-                                MOCK_TEMPLATES.length
+                            PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.taskCount, 0) /
+                                PLACEHOLDER_TEMPLATES.length
                         )}
                         icon={CheckSquare}
                     />
                     <StatCard
                         title="Categories"
-                        value={new Set(MOCK_TEMPLATES.map((t) => t.category)).size}
+                        value={new Set(PLACEHOLDER_TEMPLATES.map((t) => t.category)).size}
                         icon={Tag}
                     />
                 </div>

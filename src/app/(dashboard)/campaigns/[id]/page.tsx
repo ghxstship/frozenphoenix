@@ -13,7 +13,6 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
@@ -63,7 +62,7 @@ export default function CampaignDetailPage() {
     const { data: sbAssets } = useCampaignAssets(entityId);
     const { data: sbKpis } = useCampaignKpis(entityId);
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -524,7 +523,6 @@ export default function CampaignDetailPage() {
                 <RecordChatter
                     recordType="campaign"
                     recordId={campaign.id}
-                    activityItems={makeMockActivity("campaign")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

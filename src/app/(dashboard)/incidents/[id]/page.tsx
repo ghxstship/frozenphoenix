@@ -38,7 +38,7 @@ const SEVERITY_CONFIG: Record<string, { label: string; variant: string; color: s
     critical: { label: "Critical", variant: "destructive", color: "text-destructive" },
 };
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -57,7 +57,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -85,7 +85,7 @@ export default function IncidentDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const { data: incident, isLoading } = useIncident(incidentId);
     const { data: sbLocations } = useLocations();
@@ -405,7 +405,7 @@ export default function IncidentDetailPage() {
                 <RecordChatter
                     recordType="incident"
                     recordId={incidentId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -27,7 +27,7 @@ import {
     Table2,
     Users,
 } from "lucide-react";
-import { MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
+import type { WorkOrderFull } from "@/types/vendor-lifecycle";
 import { useWorkOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { WorkOrderPriority, WorkOrderStatus } from "@/types/vendor-lifecycle";
@@ -71,7 +71,7 @@ export default function WorkOrdersPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbWOs, isLoading } = useWorkOrders();
 
-    const workOrders = (sbWOs ?? []) as typeof MOCK_WORK_ORDERS;
+    const workOrders = (sbWOs ?? []) as WorkOrderFull[];
     const filtered = workOrders.filter((wo) => {
         const matchesSearch =
             !search ||

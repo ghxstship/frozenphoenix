@@ -15,7 +15,6 @@ import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_OPPORTUNITIES } from "@/lib/demo-data-crm-revenue";
 import {
     OPPORTUNITY_STAGES_KANBAN as OPPORTUNITY_STAGES,
     OPPORTUNITY_TYPE_MAP,
@@ -143,7 +142,7 @@ export default function OpportunitiesPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbOpps, isLoading } = useOpportunities();
 
-    const opportunities = sbOpps ? (sbOpps as unknown as Opportunity[]) : MOCK_OPPORTUNITIES;
+    const opportunities = useMemo(() => (sbOpps ?? []) as unknown as Opportunity[], [sbOpps]);
 
     const filtered = useMemo(() => {
         let result = opportunities;

@@ -53,7 +53,7 @@ interface SurveyResponse {
     submittedAt: string;
 }
 
-const MOCK_TEMPLATES: SurveyTemplate[] = [
+const PLACEHOLDER_TEMPLATES: SurveyTemplate[] = [
     {
         id: "st1",
         name: "Post-Event CSAT",
@@ -100,7 +100,7 @@ const MOCK_TEMPLATES: SurveyTemplate[] = [
     },
 ];
 
-const MOCK_RESPONSES: SurveyResponse[] = [
+const PLACEHOLDER_RESPONSES: SurveyResponse[] = [
     {
         id: "sr1",
         templateName: "Post-Event CSAT",
@@ -208,32 +208,33 @@ export default function SurveysPage() {
         {
             id: "templates" as const,
             label: "Templates",
-            count: MOCK_TEMPLATES.length,
+            count: PLACEHOLDER_TEMPLATES.length,
             icon: <ClipboardList className="h-4 w-4" />,
         },
         {
             id: "responses" as const,
             label: "Responses",
-            count: MOCK_RESPONSES.length,
+            count: PLACEHOLDER_RESPONSES.length,
             icon: <MessageSquare className="h-4 w-4" />,
         },
         { id: "analytics" as const, label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
     ];
 
-    const totalResponses = MOCK_TEMPLATES.reduce((s, t) => s + t.responseCount, 0);
+    const totalResponses = PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.responseCount, 0);
     const avgRating =
-        MOCK_TEMPLATES.reduce((s, t) => s + t.averageRating, 0) / MOCK_TEMPLATES.length;
+        PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.averageRating, 0) /
+        PLACEHOLDER_TEMPLATES.length;
     const npsAvg =
-        MOCK_RESPONSES.filter((r) => r.npsScore !== null).reduce(
+        PLACEHOLDER_RESPONSES.filter((r) => r.npsScore !== null).reduce(
             (s, r) => s + (r.npsScore || 0),
             0
-        ) / MOCK_RESPONSES.filter((r) => r.npsScore !== null).length;
-    const promoters = MOCK_RESPONSES.filter((r) => (r.npsScore || 0) >= 9).length;
+        ) / PLACEHOLDER_RESPONSES.filter((r) => r.npsScore !== null).length;
+    const promoters = PLACEHOLDER_RESPONSES.filter((r) => (r.npsScore || 0) >= 9).length;
 
-    const filteredTemplates = MOCK_TEMPLATES.filter(
+    const filteredTemplates = PLACEHOLDER_TEMPLATES.filter(
         (t) => !search || t.name.toLowerCase().includes(search.toLowerCase())
     );
-    const filteredResponses = MOCK_RESPONSES.filter(
+    const filteredResponses = PLACEHOLDER_RESPONSES.filter(
         (r) =>
             !search ||
             r.respondentName.toLowerCase().includes(search.toLowerCase()) ||
@@ -258,14 +259,16 @@ export default function SurveysPage() {
                     <StatCard
                         title="NPS Score"
                         value={Math.round(
-                            (promoters / MOCK_RESPONSES.length) * 100 -
-                                ((MOCK_RESPONSES.length - promoters) / MOCK_RESPONSES.length) * 100
+                            (promoters / PLACEHOLDER_RESPONSES.length) * 100 -
+                                ((PLACEHOLDER_RESPONSES.length - promoters) /
+                                    PLACEHOLDER_RESPONSES.length) *
+                                    100
                         )}
                         icon={TrendingUp}
                     />
                     <StatCard
                         title="Active Templates"
-                        value={MOCK_TEMPLATES.filter((t) => t.isActive).length}
+                        value={PLACEHOLDER_TEMPLATES.filter((t) => t.isActive).length}
                         icon={ClipboardList}
                     />
                 </div>
@@ -292,7 +295,7 @@ export default function SurveysPage() {
                                 {filteredTemplates.map((template) => (
                                     <StaggerItem
                                         key={template.id}
-                                        index={MOCK_TEMPLATES.indexOf(template)}
+                                        index={PLACEHOLDER_TEMPLATES.indexOf(template)}
                                     >
                                         <Card className="hover:border-primary/30 transition-colors">
                                             <CardContent className="p-4">
@@ -391,7 +394,7 @@ export default function SurveysPage() {
                                 {filteredResponses.map((response) => (
                                     <StaggerItem
                                         key={response.id}
-                                        index={MOCK_RESPONSES.indexOf(response)}
+                                        index={PLACEHOLDER_RESPONSES.indexOf(response)}
                                     >
                                         <Card>
                                             <CardContent className="p-4">
@@ -451,11 +454,11 @@ export default function SurveysPage() {
                                         </CardHeader>
                                         <CardContent className="space-y-3">
                                             {[5, 4, 3, 2, 1].map((rating) => {
-                                                const count = MOCK_RESPONSES.filter(
+                                                const count = PLACEHOLDER_RESPONSES.filter(
                                                     (r) => r.overallRating === rating
                                                 ).length;
                                                 const pct = Math.round(
-                                                    (count / MOCK_RESPONSES.length) * 100
+                                                    (count / PLACEHOLDER_RESPONSES.length) * 100
                                                 );
                                                 return (
                                                     <div
@@ -490,14 +493,14 @@ export default function SurveysPage() {
                                             {[
                                                 {
                                                     label: "Promoters (9-10)",
-                                                    count: MOCK_RESPONSES.filter(
+                                                    count: PLACEHOLDER_RESPONSES.filter(
                                                         (r) => (r.npsScore || 0) >= 9
                                                     ).length,
                                                     color: "bg-success",
                                                 },
                                                 {
                                                     label: "Passives (7-8)",
-                                                    count: MOCK_RESPONSES.filter(
+                                                    count: PLACEHOLDER_RESPONSES.filter(
                                                         (r) =>
                                                             (r.npsScore || 0) >= 7 &&
                                                             (r.npsScore || 0) < 9
@@ -506,7 +509,7 @@ export default function SurveysPage() {
                                                 },
                                                 {
                                                     label: "Detractors (0-6)",
-                                                    count: MOCK_RESPONSES.filter(
+                                                    count: PLACEHOLDER_RESPONSES.filter(
                                                         (r) => (r.npsScore || 0) < 7
                                                     ).length,
                                                     color: "bg-destructive",
@@ -525,7 +528,8 @@ export default function SurveysPage() {
                                                     <span className="text-sm font-bold">
                                                         {seg.count} (
                                                         {Math.round(
-                                                            (seg.count / MOCK_RESPONSES.length) *
+                                                            (seg.count /
+                                                                PLACEHOLDER_RESPONSES.length) *
                                                                 100
                                                         )}
                                                         %)

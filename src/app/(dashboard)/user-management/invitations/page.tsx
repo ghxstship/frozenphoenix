@@ -9,7 +9,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { MOCK_INVITATIONS } from "@/lib/demo-data-user-lifecycle";
+import type { Invitation } from "@/types/user-lifecycle";
 import { CheckCircle2, Clock, Mail, RotateCcw, Send, UserPlus, XCircle } from "lucide-react";
 import type { InvitationStatus, PermissionLevel } from "@/types";
 
@@ -29,8 +29,11 @@ export default function InvitationsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<InvitationStatus | "all">("all");
 
+    // NEXT: Wire to useInvitations() when hook is available
+    const invitations = useMemo<Invitation[]>(() => [], []);
+
     const filtered = useMemo(() => {
-        return MOCK_INVITATIONS.filter((inv) => {
+        return invitations.filter((inv) => {
             const matchesSearch =
                 !search ||
                 inv.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -38,12 +41,12 @@ export default function InvitationsPage() {
             const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
             return matchesSearch && matchesStatus;
         });
-    }, [search, statusFilter]);
+    }, [invitations, search, statusFilter]);
 
-    const pendingCount = MOCK_INVITATIONS.filter((i) => i.status === "pending").length;
-    const acceptedCount = MOCK_INVITATIONS.filter((i) => i.status === "accepted").length;
-    const expiredCount = MOCK_INVITATIONS.filter((i) => i.status === "expired").length;
-    const revokedCount = MOCK_INVITATIONS.filter((i) => i.status === "revoked").length;
+    const pendingCount = invitations.filter((i) => i.status === "pending").length;
+    const acceptedCount = invitations.filter((i) => i.status === "accepted").length;
+    const expiredCount = invitations.filter((i) => i.status === "expired").length;
+    const revokedCount = invitations.filter((i) => i.status === "revoked").length;
 
     return (
         <div className="space-y-6 animate-fade-in">

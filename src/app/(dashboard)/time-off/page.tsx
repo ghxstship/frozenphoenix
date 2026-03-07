@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when leave_requests table is available
+// NEXT: Wire to Supabase when leave_requests table is available
 type LeaveType = "vacation" | "sick" | "personal" | "training" | "parental" | "bereavement";
 
 const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {

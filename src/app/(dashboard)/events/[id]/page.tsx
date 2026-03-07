@@ -23,7 +23,7 @@ import { Calendar, Clock, DollarSign, Edit, Loader2, MapPin, Play, Users } from 
 type TabId = "overview" | "run-of-show" | "crew" | "logistics" | "chatter";
 const TAB_VALUES = ["overview", "run-of-show", "crew", "logistics", "chatter"] as const;
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -42,7 +42,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -69,7 +69,7 @@ export default function EventDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const { data: event, isLoading } = useEvent(eventId);
     const { data: sbLocations } = useLocations();
@@ -480,7 +480,7 @@ export default function EventDetailPage() {
                 <RecordChatter
                     recordType="event"
                     recordId={eventId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

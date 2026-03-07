@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Calendar, DollarSign, FileText, Loader2, Package, Truck } from "lucide-react";
@@ -44,7 +43,7 @@ export default function PurchaseOrderDetailPage() {
     void router;
     void handleUpdate;
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -210,7 +209,6 @@ export default function PurchaseOrderDetailPage() {
                 <RecordChatter
                     recordType="purchase_order"
                     recordId={po.id}
-                    activityItems={makeMockActivity("purchase_order")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

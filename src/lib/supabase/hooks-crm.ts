@@ -189,7 +189,7 @@ export function usePublicTestimonials() {
     return useQuery({
         queryKey: ["testimonials", "public"],
         queryFn: async () => {
-            if (!isSupabaseConfigured) return MOCK_TESTIMONIALS;
+            if (!isSupabaseConfigured) return PLACEHOLDER_TESTIMONIALS;
             const { data, error } = await getSupabase()
                 .from("testimonials")
                 .select("*")
@@ -198,7 +198,7 @@ export function usePublicTestimonials() {
                 .order("display_order");
             if (error) throw error;
             const rows = data as unknown as Testimonial[];
-            return rows?.length ? rows : MOCK_TESTIMONIALS;
+            return rows?.length ? rows : PLACEHOLDER_TESTIMONIALS;
         },
     });
 }
@@ -226,7 +226,7 @@ export function useReviews() {
     return useQuery({
         queryKey: ["reviews"],
         queryFn: async () => {
-            if (!isSupabaseConfigured) return MOCK_REVIEWS;
+            if (!isSupabaseConfigured) return PLACEHOLDER_REVIEWS;
             const { data, error } = await getSupabase()
                 .from("reviews")
                 .select("*")
@@ -234,7 +234,7 @@ export function useReviews() {
                 .order("review_date", { ascending: false });
             if (error) throw error;
             const rows = data as unknown as Review[];
-            return rows?.length ? rows : MOCK_REVIEWS;
+            return rows?.length ? rows : PLACEHOLDER_REVIEWS;
         },
     });
 }
@@ -245,9 +245,9 @@ export function useReviewStats() {
         queryFn: async () => {
             if (!isSupabaseConfigured) {
                 return {
-                    total_reviews: MOCK_REVIEWS.length,
+                    total_reviews: PLACEHOLDER_REVIEWS.length,
                     average_rating: 4.8,
-                    positive_reviews: MOCK_REVIEWS.filter((r) => r.rating >= 4).length,
+                    positive_reviews: PLACEHOLDER_REVIEWS.filter((r) => r.rating >= 4).length,
                     platforms: 3,
                 };
             }
@@ -285,7 +285,7 @@ const DEMO_PIPELINE_STATS = [
 
 // ─── Mock Data ───
 
-const MOCK_TESTIMONIALS: Testimonial[] = [
+const PLACEHOLDER_TESTIMONIALS: Testimonial[] = [
     {
         id: "test-1",
         project_id: null,
@@ -357,7 +357,7 @@ const MOCK_TESTIMONIALS: Testimonial[] = [
     },
 ];
 
-const MOCK_REVIEWS: Review[] = [
+const PLACEHOLDER_REVIEWS: Review[] = [
     {
         id: "rev-1",
         platform: "Google",

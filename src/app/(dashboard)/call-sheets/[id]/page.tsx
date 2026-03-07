@@ -13,7 +13,6 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { formatDate } from "@/lib/utils";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import {
     AlertTriangle,
     Calendar,
@@ -173,7 +172,7 @@ export default function CallSheetDetailPage() {
     });
     const confirmed = mockCrew.filter((c) => c.confirmed).length;
     const departments = [...new Set(mockCrew.map((c) => c.department))];
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -423,7 +422,6 @@ export default function CallSheetDetailPage() {
                 <RecordChatter
                     recordType="call_sheet"
                     recordId={mockCallSheet.id}
-                    activityItems={makeMockActivity("call_sheet")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

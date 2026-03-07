@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { MOCK_POS, MOCK_PROJECTS, MOCK_VENDORS } from "@/lib/demo-data";
+import type { Project, PurchaseOrder, Vendor } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { CheckCircle2, Clock, FileText, Plus, ShoppingCart, Truck } from "lucide-react";
@@ -16,7 +16,7 @@ import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 
-// TODO: Wire to Supabase when procurement_requests table is available
+// NEXT: Wire to Supabase when procurement_requests table is available
 
 interface ProcurementRequest {
     id: string;
@@ -30,7 +30,8 @@ interface ProcurementRequest {
     createdAt: string;
 }
 
-const MOCK_REQUESTS: ProcurementRequest[] = [
+// NEXT: Replace with Supabase data when procurement_requests table is available
+const PLACEHOLDER_REQUESTS: ProcurementRequest[] = [
     {
         id: "pr1",
         projectId: "p1",
@@ -101,19 +102,24 @@ export default function ProcurementPage() {
     });
     const [filterProject, setFilterProject] = useState<string>("all");
 
-    const totalPOValue = MOCK_POS.reduce((sum, po) => sum + po.totalAmount, 0);
-    const pendingRequests = MOCK_REQUESTS.filter((r) => r.status === "pending").length;
-    const issuedPOs = MOCK_POS.filter((po) => po.status === "issued").length;
+    // NEXT: Wire to usePurchaseOrders/useProjects/useVendors/useProcurementRequests() when hooks are available
+    const purchaseOrders: PurchaseOrder[] = [];
+    const projects: Project[] = [];
+    const vendors: Vendor[] = [];
+
+    const totalPOValue = purchaseOrders.reduce((sum, po) => sum + po.totalAmount, 0);
+    const pendingRequests = PLACEHOLDER_REQUESTS.filter((r) => r.status === "pending").length;
+    const issuedPOs = purchaseOrders.filter((po) => po.status === "issued").length;
 
     const filteredRequests =
         filterProject === "all"
-            ? MOCK_REQUESTS
-            : MOCK_REQUESTS.filter((r) => r.projectId === filterProject);
+            ? PLACEHOLDER_REQUESTS
+            : PLACEHOLDER_REQUESTS.filter((r) => r.projectId === filterProject);
 
     const filteredPOs =
         filterProject === "all"
-            ? MOCK_POS
-            : MOCK_POS.filter((po) => po.projectId === filterProject);
+            ? purchaseOrders
+            : purchaseOrders.filter((po) => po.projectId === filterProject);
 
     return (
         <PermissionGate resource="procurement" action="read">
@@ -129,7 +135,7 @@ export default function ProcurementPage() {
                             className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
                         >
                             <option value="all">All Projects</option>
-                            {MOCK_PROJECTS.map((p) => (
+                            {projects.map((p) => (
                                 <option key={p.id} value={p.id}>
                                     {p.name}
                                 </option>
@@ -152,7 +158,7 @@ export default function ProcurementPage() {
                     <StatCard title="Active POs" value={issuedPOs} icon={FileText} />
                     <StatCard
                         title="Vendors Used"
-                        value={MOCK_VENDORS.filter((v) => v.status === "active").length}
+                        value={vendors.filter((v) => v.status === "active").length}
                         icon={Truck}
                     />
                 </div>
@@ -175,7 +181,7 @@ export default function ProcurementPage() {
                     className="mt-0 space-y-4"
                 >
                     {filteredRequests.map((request, i) => {
-                        const project = MOCK_PROJECTS.find((p) => p.id === request.projectId);
+                        const project = projects.find((p) => p.id === request.projectId);
                         const priority = priorityConfig[request.priority];
                         const status = requestStatusConfig[request.status];
 
@@ -285,10 +291,10 @@ export default function ProcurementPage() {
                                     </thead>
                                     <tbody>
                                         {filteredPOs.map((po) => {
-                                            const vendor = MOCK_VENDORS.find(
+                                            const vendor = vendors.find(
                                                 (v) => v.id === po.vendorId
                                             );
-                                            const project = MOCK_PROJECTS.find(
+                                            const project = projects.find(
                                                 (p) => p.id === po.projectId
                                             );
                                             return (

@@ -154,7 +154,7 @@ const mockTemplates: TemplateItem[] = [
 type TabId = "overview" | "preview" | "usage" | "chatter";
 const TAB_VALUES = ["overview", "preview", "usage", "chatter"] as const;
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -173,7 +173,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -203,7 +203,7 @@ export default function TemplateDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const template = mockTemplates.find((t) => t.id === templateId);
 
@@ -449,7 +449,7 @@ export default function TemplateDetailPage() {
                 <RecordChatter
                     recordType="template"
                     recordId={templateId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

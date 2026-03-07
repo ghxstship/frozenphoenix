@@ -18,7 +18,7 @@ import {
 import type { DataExportStatus } from "@/types";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when data_exports table is available
+// NEXT: Wire to Supabase when data_exports table is available
 
 interface ExportRequest {
     id: string;

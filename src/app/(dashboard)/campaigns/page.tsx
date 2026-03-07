@@ -18,12 +18,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import {
-    MOCK_CAMPAIGN_ASSETS,
-    MOCK_CAMPAIGN_CHANNELS,
-    MOCK_CAMPAIGN_KPIS,
-    MOCK_CAMPAIGNS,
-} from "@/lib/demo-data-creative-brand";
+import type { CampaignAsset, CampaignChannel, CampaignKpi } from "@/types/creative-brand";
 import { useCampaigns } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Campaign, CampaignStatus } from "@/types";
@@ -64,10 +59,11 @@ export default function CampaignsPage() {
     });
     const { data: sbCampaigns, isLoading } = useCampaigns();
 
-    const campaigns = sbCampaigns ? (sbCampaigns as unknown as Campaign[]) : MOCK_CAMPAIGNS;
-    const channels = MOCK_CAMPAIGN_CHANNELS;
-    const assets = MOCK_CAMPAIGN_ASSETS;
-    const kpis = MOCK_CAMPAIGN_KPIS;
+    const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);
+    // NEXT: Wire to useCampaignChannels/Assets/Kpis() when hooks are available
+    const channels: CampaignChannel[] = [];
+    const assets: CampaignAsset[] = [];
+    const kpis: CampaignKpi[] = [];
 
     const filtered = useMemo(() => {
         return campaigns.filter((c) => {

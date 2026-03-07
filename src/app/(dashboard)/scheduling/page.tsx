@@ -43,7 +43,7 @@ interface Shift {
 }
 
 // Mock utilization data for demo mode
-const MOCK_UTILIZATION = [
+const PLACEHOLDER_UTILIZATION = [
     {
         id: "c1",
         name: "Sarah Chen",
@@ -127,7 +127,7 @@ const MOCK_UTILIZATION = [
 ];
 
 // Mock Gantt tasks for demo mode
-const MOCK_GANTT_TASKS: GanttTask[] = [
+const PLACEHOLDER_GANTT_TASKS: GanttTask[] = [
     {
         id: "g1",
         label: "CES Booth Build",
@@ -346,7 +346,7 @@ export default function SchedulingPage() {
                         icon={CheckCircle2}
                     />
                     {(() => {
-                        const util = utilizationData ?? MOCK_UTILIZATION;
+                        const util = utilizationData ?? PLACEHOLDER_UTILIZATION;
                         const avgUtil =
                             util.length > 0
                                 ? Math.round(
@@ -395,7 +395,7 @@ export default function SchedulingPage() {
                         </CardHeader>
                         <CardContent>
                             {(() => {
-                                const util = utilizationData ?? MOCK_UTILIZATION;
+                                const util = utilizationData ?? PLACEHOLDER_UTILIZATION;
                                 const weekDayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
                                 const heatmapRows = util.map((u) => {
@@ -512,7 +512,7 @@ export default function SchedulingPage() {
                         </CardHeader>
                         <CardContent>
                             <GanttChart
-                                tasks={MOCK_GANTT_TASKS}
+                                tasks={PLACEHOLDER_GANTT_TASKS}
                                 startDate="2026-02-17"
                                 endDate="2026-03-22"
                                 granularity="day"

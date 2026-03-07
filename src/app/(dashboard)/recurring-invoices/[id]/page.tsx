@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { Calendar, DollarSign, Hash, Pause, Play, RefreshCw } from "lucide-react";
@@ -84,7 +83,7 @@ export default function RecurringInvoiceDetailPage() {
         validValues: TAB_VALUES,
     });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -387,7 +386,6 @@ export default function RecurringInvoiceDetailPage() {
                 <RecordChatter
                     recordType="recurring_invoice"
                     recordId={mockRecurring.id}
-                    activityItems={makeMockActivity("recurring_invoice")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

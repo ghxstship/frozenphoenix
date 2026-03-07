@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EntityLink } from "@/components/linked-records";
 import { useActivations, useEvents, useLocation, useProjects } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
@@ -56,7 +55,7 @@ export default function LocationDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -705,7 +704,6 @@ export default function LocationDetailPage() {
                     <RecordChatter
                         recordType="location"
                         recordId={locationId}
-                        activityItems={makeMockActivity("location")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

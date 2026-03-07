@@ -13,7 +13,6 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
@@ -42,7 +41,7 @@ export default function ClientInvoiceDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -180,7 +179,6 @@ export default function ClientInvoiceDetailPage() {
                     recordType="client_invoice"
                     recordId={entityId}
                     comments={chatterComments}
-                    activityItems={makeMockActivity("client_invoice")}
                     onAddComment={handleAddComment}
                 />
             )}

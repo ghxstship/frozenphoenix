@@ -67,7 +67,7 @@ const CATEGORY_LABELS: Record<QCCategory, string> = {
     client_signoff: "Client Sign-Off",
 };
 
-const MOCK_QC: QualityCheck[] = [
+const PLACEHOLDER_QC: QualityCheck[] = [
     {
         id: "qc1",
         title: "Stage Structural Integrity Check",
@@ -192,7 +192,7 @@ export default function QualityChecksPage() {
 
     const filtered = useMemo(
         () =>
-            MOCK_QC.filter((qc) => {
+            PLACEHOLDER_QC.filter((qc) => {
                 if (statusFilter !== "all" && qc.status !== statusFilter) return false;
                 if (
                     search &&
@@ -205,13 +205,13 @@ export default function QualityChecksPage() {
         [search, statusFilter]
     );
 
-    const passed = MOCK_QC.filter((q) => q.status === "passed").length;
-    const failed = MOCK_QC.filter((q) => q.status === "failed").length;
-    const pending = MOCK_QC.filter(
+    const passed = PLACEHOLDER_QC.filter((q) => q.status === "passed").length;
+    const failed = PLACEHOLDER_QC.filter((q) => q.status === "failed").length;
+    const pending = PLACEHOLDER_QC.filter(
         (q) => q.status === "pending" || q.status === "in_progress"
     ).length;
-    const totalItems = MOCK_QC.reduce((s, q) => s + q.checkItems.length, 0);
-    const passedItems = MOCK_QC.reduce(
+    const totalItems = PLACEHOLDER_QC.reduce((s, q) => s + q.checkItems.length, 0);
+    const passedItems = PLACEHOLDER_QC.reduce(
         (s, q) => s + q.checkItems.filter((ci) => ci.passed === true).length,
         0
     );

@@ -48,7 +48,7 @@ const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
     email: <Tag className="h-3.5 w-3.5" />,
 };
 
-const MOCK_FIELDS: CustomFieldDefinition[] = [
+const PLACEHOLDER_FIELDS: CustomFieldDefinition[] = [
     {
         id: "cf1",
         name: "Client Industry",
@@ -163,13 +163,13 @@ const MOCK_FIELDS: CustomFieldDefinition[] = [
     },
 ];
 
-const ENTITY_TYPES = ["all", ...new Set(MOCK_FIELDS.map((f) => f.entityType))];
+const ENTITY_TYPES = ["all", ...new Set(PLACEHOLDER_FIELDS.map((f) => f.entityType))];
 
 export default function CustomFieldsPage() {
     const [search, setSearch] = useState("");
     const [entityFilter, setEntityFilter] = useState("all");
 
-    const filtered = MOCK_FIELDS.filter((f) => {
+    const filtered = PLACEHOLDER_FIELDS.filter((f) => {
         const matchesSearch =
             !search ||
             f.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -178,8 +178,8 @@ export default function CustomFieldsPage() {
         return matchesSearch && matchesEntity;
     });
 
-    const totalUsage = MOCK_FIELDS.reduce((s, f) => s + f.usageCount, 0);
-    const entityCoverage = new Set(MOCK_FIELDS.map((f) => f.entityType)).size;
+    const totalUsage = PLACEHOLDER_FIELDS.reduce((s, f) => s + f.usageCount, 0);
+    const entityCoverage = new Set(PLACEHOLDER_FIELDS.map((f) => f.entityType)).size;
 
     return (
         <PermissionGate resource="settings" action="read">
@@ -194,12 +194,16 @@ export default function CustomFieldsPage() {
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Custom Fields" value={MOCK_FIELDS.length} icon={Settings} />
+                    <StatCard
+                        title="Custom Fields"
+                        value={PLACEHOLDER_FIELDS.length}
+                        icon={Settings}
+                    />
                     <StatCard title="Total Usage" value={totalUsage} icon={Layers} />
                     <StatCard title="Entity Types" value={entityCoverage} icon={Tag} />
                     <StatCard
                         title="Required Fields"
-                        value={MOCK_FIELDS.filter((f) => f.isRequired).length}
+                        value={PLACEHOLDER_FIELDS.filter((f) => f.isRequired).length}
                         icon={CheckSquare}
                     />
                 </div>

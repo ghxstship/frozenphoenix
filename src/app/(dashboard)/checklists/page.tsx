@@ -12,7 +12,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { CheckCircle2, Circle, Clock, ListChecks, Loader2, Percent, Plus } from "lucide-react";
-import { MOCK_CHECKLIST_TEMPLATES } from "@/lib/demo-data-vendor-lifecycle";
+import type { ChecklistTemplate } from "@/types/vendor-lifecycle";
 import { useChecklists } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar } from "@/components/ui/tab-bar";
@@ -65,7 +65,8 @@ export default function ChecklistsPage() {
             completedBy: (item.completed_by as string) ?? undefined,
         })),
     }));
-    const templates = MOCK_CHECKLIST_TEMPLATES;
+    // NEXT: Wire to useChecklistTemplates() when hook is available
+    const templates: ChecklistTemplate[] = [];
 
     if (isLoading) {
         return (

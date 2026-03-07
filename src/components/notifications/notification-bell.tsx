@@ -25,7 +25,7 @@ interface MockNotification {
     created_at: string;
 }
 
-const MOCK_NOTIFICATIONS: MockNotification[] = [
+const PLACEHOLDER_NOTIFICATIONS: MockNotification[] = [
     {
         id: "n1",
         type: "mention",
@@ -129,7 +129,7 @@ function timeAgo(dateStr: string): string {
 
 export function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
-    const [localNotifications, setLocalNotifications] = useState(MOCK_NOTIFICATIONS);
+    const [localNotifications, setLocalNotifications] = useState(PLACEHOLDER_NOTIFICATIONS);
     const panelRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 

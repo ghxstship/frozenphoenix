@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { OverlineText } from "@/components/ui/overline-text";
-import { MOCK_CASE_STUDIES } from "@/lib/demo-data";
+import type { CaseStudy } from "@/types";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
 import { getActiveBrand } from "@/config/brands";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -39,6 +39,9 @@ export default function LandingPage() {
     const createLead = useCreateLead();
     const { data: testimonials } = usePublicTestimonials();
     const { data: reviewStats } = useReviewStats();
+
+    // NEXT: Wire to useCaseStudies() when hook is available
+    const caseStudies: CaseStudy[] = [];
 
     const handleSubmit = async () => {
         const [firstName = "", ...lastParts] = formData.name.split(" ");
@@ -311,7 +314,7 @@ export default function LandingPage() {
                             Auto-generated from completed productions.
                         </p>
                     </ScrollReveal>
-                    {MOCK_CASE_STUDIES.map((cs) => (
+                    {caseStudies.map((cs) => (
                         <ScrollReveal
                             key={cs.id}
                             animation="fade-up"

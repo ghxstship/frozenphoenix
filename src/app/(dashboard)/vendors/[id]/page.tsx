@@ -32,7 +32,6 @@ import {
     usePurchaseOrders,
     useUpdateVendor,
 } from "@/lib/supabase/hooks";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     AlertTriangle,
@@ -69,7 +68,7 @@ export default function VendorDetailPage() {
     const [poDialogOpen, setPoDialogOpen] = useState(false);
     const [poDescription, setPoDescription] = useState("");
     const [poAmount, setPoAmount] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -519,7 +518,6 @@ export default function VendorDetailPage() {
                     <RecordChatter
                         recordType="vendor"
                         recordId={vendorId}
-                        activityItems={makeMockActivity("vendor")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

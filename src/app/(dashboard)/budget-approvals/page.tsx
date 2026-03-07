@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { CheckCircle2, Clock, Loader2, ShieldCheck, XCircle } from "lucide-react";
-import { MOCK_BUDGET_APPROVALS } from "@/lib/demo-data-governance";
+import type { BudgetApproval } from "@/types/governance";
 import { useBudgetApprovals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
@@ -29,7 +29,7 @@ export default function BudgetApprovalsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbApprovals, isLoading } = useBudgetApprovals();
 
-    const approvals = (sbApprovals ?? []) as typeof MOCK_BUDGET_APPROVALS;
+    const approvals = (sbApprovals ?? []) as BudgetApproval[];
 
     const filtered = approvals.filter((a) => {
         const matchesSearch =

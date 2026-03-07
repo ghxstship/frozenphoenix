@@ -5,13 +5,16 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import type { Project } from "@/types";
 import { User } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when org_chart/crew_assignments queries are available
+// NEXT: Wire to Supabase when org_chart/crew_assignments queries are available
 
 export default function OrgChartPage() {
+    // NEXT: Wire to useProjects() when hook integration is ready
+    const projects: Project[] = [];
+
     const orgTree = [
         {
             role: "Executive Producer",
@@ -38,7 +41,7 @@ export default function OrgChartPage() {
                     description="Auto-generated chain of command for each production"
                 >
                     <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
-                        {MOCK_PROJECTS.map((p) => (
+                        {projects.map((p) => (
                             <option key={p.id} value={p.id}>
                                 {p.name}
                             </option>

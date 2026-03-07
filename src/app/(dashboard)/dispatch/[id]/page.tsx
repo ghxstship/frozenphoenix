@@ -13,7 +13,6 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
 import { Loader2, MapPin, Package, Truck } from "lucide-react";
@@ -41,7 +40,7 @@ export default function DispatchDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -174,7 +173,6 @@ export default function DispatchDetailPage() {
                     recordType="dispatch"
                     recordId={entityId}
                     comments={chatterComments}
-                    activityItems={makeMockActivity("dispatch")}
                     onAddComment={handleAddComment}
                 />
             )}

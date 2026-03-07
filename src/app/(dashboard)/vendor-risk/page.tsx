@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
-import { MOCK_VENDOR_RISK_SCORES } from "@/lib/demo-data-governance";
+import type { VendorRiskScore } from "@/types/governance";
 import { useRiskAssessments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
@@ -48,7 +48,7 @@ export default function VendorRiskPage() {
     const [riskFilter, setRiskFilter] = useState<string>("all");
     const { data: sbScores, isLoading } = useRiskAssessments();
 
-    const scores = (sbScores ?? []) as typeof MOCK_VENDOR_RISK_SCORES;
+    const scores = (sbScores ?? []) as VendorRiskScore[];
 
     const filtered = scores.filter((s) => {
         const vendorName = vendorNames[s.vendor_id] || s.vendor_id;

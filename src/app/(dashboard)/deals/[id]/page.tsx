@@ -24,7 +24,6 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase/hooks";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
     Building2,
@@ -67,7 +66,7 @@ export default function DealDetailPage() {
     });
     const [noteDialogOpen, setNoteDialogOpen] = useState(false);
     const [noteText, setNoteText] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddChatterComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -388,7 +387,6 @@ export default function DealDetailPage() {
                     <RecordChatter
                         recordType="deal"
                         recordId={dealId}
-                        activityItems={makeMockActivity("deal")}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddChatterComment}

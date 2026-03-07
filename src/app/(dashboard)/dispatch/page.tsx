@@ -13,7 +13,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_DISPATCH_CONFIG } from "@/config/create-entity-configs";
 import { CheckCircle2, Clock, Loader2, MapPin, Navigation, Plus, Truck, Users } from "lucide-react";
-import { MOCK_DISPATCH_ENTRIES, MOCK_WORK_ORDERS } from "@/lib/demo-data-vendor-lifecycle";
+import type { DispatchEntry } from "@/types/vendor-lifecycle";
 import { useDispatch } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { DispatchStatus } from "@/types/vendor-lifecycle";
@@ -36,7 +36,7 @@ export default function DispatchPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbDispatch, isLoading } = useDispatch();
 
-    const dispatches = (sbDispatch ?? []) as typeof MOCK_DISPATCH_ENTRIES;
+    const dispatches = (sbDispatch ?? []) as DispatchEntry[];
     const filtered = dispatches.filter((d) => {
         const matchesSearch =
             !search ||
@@ -53,9 +53,8 @@ export default function DispatchPage() {
     const pending = dispatches.filter((d) => ["unassigned", "offered"].includes(d.status));
     const completed = dispatches.filter((d) => d.status === "completed");
 
-    const getWorkOrderTitle = (woId: string) => {
-        const wo = MOCK_WORK_ORDERS.find((w) => w.id === woId);
-        return wo ? `${wo.number} — ${wo.title}` : woId;
+    const getWorkOrderTitle = (woId: string, title?: string) => {
+        return title ? `${woId} — ${title}` : woId;
     };
 
     if (isLoading) {
@@ -144,7 +143,10 @@ export default function DispatchPage() {
                                             </div>
 
                                             <p className="text-xs text-muted-foreground mb-2 truncate">
-                                                {getWorkOrderTitle(dispatch.workOrderId)}
+                                                {getWorkOrderTitle(
+                                                    dispatch.workOrderId,
+                                                    dispatch.workOrderTitle
+                                                )}
                                             </p>
 
                                             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
@@ -222,7 +224,10 @@ export default function DispatchPage() {
                                                 />
                                             </div>
                                             <p className="text-xs text-muted-foreground truncate">
-                                                {getWorkOrderTitle(dispatch.workOrderId)}
+                                                {getWorkOrderTitle(
+                                                    dispatch.workOrderId,
+                                                    dispatch.workOrderTitle
+                                                )}
                                             </p>
                                             {dispatch.completedAt && (
                                                 <p className="text-[10px] text-muted-foreground mt-1">

@@ -78,7 +78,7 @@ const PERIOD_LABELS: Record<GoalPeriod, string> = {
     annual: "Annual 2026",
 };
 
-const MOCK_GOALS: Goal[] = [
+const PLACEHOLDER_GOALS: Goal[] = [
     {
         id: "g1",
         title: "Increase Project Delivery Efficiency",
@@ -254,7 +254,7 @@ export default function GoalsPage() {
 
     const filtered = useMemo(
         () =>
-            MOCK_GOALS.filter((g) => {
+            PLACEHOLDER_GOALS.filter((g) => {
                 if (statusFilter !== "all" && g.status !== statusFilter) return false;
                 if (
                     search &&
@@ -267,11 +267,13 @@ export default function GoalsPage() {
         [search, statusFilter]
     );
 
-    const onTrack = MOCK_GOALS.filter((g) => g.status === "on_track").length;
-    const atRisk = MOCK_GOALS.filter((g) => g.status === "at_risk" || g.status === "behind").length;
-    const completed = MOCK_GOALS.filter((g) => g.status === "completed").length;
+    const onTrack = PLACEHOLDER_GOALS.filter((g) => g.status === "on_track").length;
+    const atRisk = PLACEHOLDER_GOALS.filter(
+        (g) => g.status === "at_risk" || g.status === "behind"
+    ).length;
+    const completed = PLACEHOLDER_GOALS.filter((g) => g.status === "completed").length;
     const avgProgress = Math.round(
-        MOCK_GOALS.reduce((s, g) => s + g.progress, 0) / MOCK_GOALS.length
+        PLACEHOLDER_GOALS.reduce((s, g) => s + g.progress, 0) / PLACEHOLDER_GOALS.length
     );
 
     return (

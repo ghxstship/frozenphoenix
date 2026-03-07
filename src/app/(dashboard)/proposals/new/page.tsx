@@ -62,7 +62,7 @@ const STEPS = [
 type StepId = (typeof STEPS)[number]["id"];
 
 // ─── Mock companies & deals for demo mode ───
-const MOCK_COMPANIES = [
+const PLACEHOLDER_COMPANIES = [
     { id: "co1", name: "Nike" },
     { id: "co2", name: "Red Bull" },
     { id: "co3", name: "Coachella Valley Music" },
@@ -70,7 +70,7 @@ const MOCK_COMPANIES = [
     { id: "co5", name: "Momentum Worldwide" },
 ];
 
-const MOCK_CONTACTS = [
+const PLACEHOLDER_CONTACTS = [
     { id: "ct1", name: "John Smith", companyId: "co1", email: "john@nike.com" },
     { id: "ct2", name: "Maria Garcia", companyId: "co2", email: "maria@redbull.com" },
     { id: "ct3", name: "Alex Johnson", companyId: "co3", email: "alex@coachella.com" },
@@ -78,13 +78,13 @@ const MOCK_CONTACTS = [
     { id: "ct5", name: "Chris Lee", companyId: "co5", email: "chris@momentum.com" },
 ];
 
-const MOCK_DEALS = [
+const PLACEHOLDER_DEALS = [
     { id: "d1", title: "Air Max Launch Experience", companyId: "co1", value: 500000 },
     { id: "d2", title: "Festival Activation 2026", companyId: "co2", value: 350000 },
     { id: "d3", title: "Brand Experience Package", companyId: "co3", value: 800000 },
 ];
 
-const MOCK_RATE_CARD_ITEMS: RateCardItem[] = [
+const PLACEHOLDER_RATE_CARD_ITEMS: RateCardItem[] = [
     {
         id: "rc1",
         name: "Creative Direction",
@@ -225,15 +225,15 @@ export default function NewProposalPage() {
         0
     );
 
-    const filteredContacts = MOCK_CONTACTS.filter(
+    const filteredContacts = PLACEHOLDER_CONTACTS.filter(
         (c) => !selectedCompany || c.companyId === selectedCompany
     );
 
-    const filteredDeals = MOCK_DEALS.filter(
+    const filteredDeals = PLACEHOLDER_DEALS.filter(
         (d) => !selectedCompany || d.companyId === selectedCompany
     );
 
-    const filteredRateItems = MOCK_RATE_CARD_ITEMS.filter(
+    const filteredRateItems = PLACEHOLDER_RATE_CARD_ITEMS.filter(
         (item) =>
             !rateCardSearch ||
             item.name.toLowerCase().includes(rateCardSearch.toLowerCase()) ||
@@ -465,7 +465,7 @@ export default function NewProposalPage() {
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         >
                                             <option value="">Select a company</option>
-                                            {MOCK_COMPANIES.map((c) => (
+                                            {PLACEHOLDER_COMPANIES.map((c) => (
                                                 <option key={c.id} value={c.id}>
                                                     {c.name}
                                                 </option>
@@ -854,7 +854,7 @@ export default function NewProposalPage() {
                                                 Company
                                             </span>
                                             <span className="font-medium">
-                                                {MOCK_COMPANIES.find(
+                                                {PLACEHOLDER_COMPANIES.find(
                                                     (c) => c.id === selectedCompany
                                                 )?.name ?? "—"}
                                             </span>
@@ -865,8 +865,9 @@ export default function NewProposalPage() {
                                                     Linked Deal
                                                 </span>
                                                 <span className="font-medium">
-                                                    {MOCK_DEALS.find((d) => d.id === selectedDeal)
-                                                        ?.title ?? "—"}
+                                                    {PLACEHOLDER_DEALS.find(
+                                                        (d) => d.id === selectedDeal
+                                                    )?.title ?? "—"}
                                                 </span>
                                             </div>
                                         )}

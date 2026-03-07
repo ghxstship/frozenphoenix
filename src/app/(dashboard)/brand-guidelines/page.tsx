@@ -11,10 +11,6 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    MOCK_BRAND_GUIDELINE_SECTIONS,
-    MOCK_BRAND_GUIDELINES,
-} from "@/lib/demo-data-creative-brand";
 import { useBrandGuidelines } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -74,10 +70,12 @@ export default function BrandGuidelinesPage() {
     const [expandedGuideline, setExpandedGuideline] = useState<string | null>("bg-1");
     const { data: sbGuidelines, isLoading } = useBrandGuidelines();
 
-    const guidelines = sbGuidelines
-        ? (sbGuidelines as unknown as BrandGuideline[])
-        : MOCK_BRAND_GUIDELINES;
-    const sections = MOCK_BRAND_GUIDELINE_SECTIONS;
+    const guidelines = useMemo(
+        () => (sbGuidelines ?? []) as unknown as BrandGuideline[],
+        [sbGuidelines]
+    );
+    // NEXT: Wire to useBrandGuidelineSections() when hook is available
+    const sections: BrandGuidelineSection[] = [];
 
     const filtered = useMemo(() => {
         if (!search) return guidelines;

@@ -13,7 +13,6 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
@@ -56,7 +55,7 @@ export default function BriefDetailPage() {
     void router;
     void handleUpdate;
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -486,7 +485,6 @@ export default function BriefDetailPage() {
                 <RecordChatter
                     recordType="brief"
                     recordId={brief.id}
-                    activityItems={makeMockActivity("brief")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

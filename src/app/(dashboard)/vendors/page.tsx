@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useVendors } from "@/lib/supabase/hooks";
-import { MOCK_VENDORS } from "@/lib/demo-data";
+import type { Vendor } from "@/types";
 import {
     FileText,
     LayoutGrid,
@@ -31,7 +31,6 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
-type Vendor = (typeof MOCK_VENDORS)[number];
 type ViewMode = "cards" | "table";
 
 const vendorColumns: ColumnDef<Vendor>[] = [

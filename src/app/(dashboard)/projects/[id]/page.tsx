@@ -49,7 +49,7 @@ import {
 type TabId = "overview" | "tasks" | "team" | "budget" | "approvals" | "chatter";
 const TAB_VALUES = ["overview", "tasks", "team", "budget", "approvals", "chatter"] as const;
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -101,7 +101,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u2",
@@ -147,7 +147,7 @@ export default function ProjectDetailPage() {
     });
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [taskTitle, setTaskTitle] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
     const updateProject = useUpdateProject();
     const deleteProject = useDeleteProject();
     const createTask = useCreateTask();
@@ -512,7 +512,7 @@ export default function ProjectDetailPage() {
                                     description="Add team members to this project"
                                     action={{
                                         label: "Add Member",
-                                        onClick: () => {} /* TODO: wire add member dialog */,
+                                        onClick: () => {} /* NEXT: wire add member dialog */,
                                     }}
                                 />
                             ) : (
@@ -638,7 +638,7 @@ export default function ProjectDetailPage() {
                     <RecordChatter
                         recordType="project"
                         recordId={projectId}
-                        activityItems={MOCK_ACTIVITY}
+                        activityItems={PLACEHOLDER_ACTIVITY}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

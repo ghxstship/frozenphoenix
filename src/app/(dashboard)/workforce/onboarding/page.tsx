@@ -21,7 +21,7 @@ import {
     Plus,
     UserPlus,
 } from "lucide-react";
-import { MOCK_OFFBOARDING_RUNS, MOCK_ONBOARDING_RUNS } from "@/lib/demo-data-workforce";
+import type { WorkerOffboardingRun, WorkerOnboardingRun } from "@/types/workforce";
 import type { LifecycleStepStatus } from "@/types/workforce";
 
 const STEP_ICONS: Record<LifecycleStepStatus, { icon: typeof CheckCircle2; color: string }> = {
@@ -45,8 +45,9 @@ export default function WorkforceOnboardingPage() {
     });
     const [expandedRun, setExpandedRun] = useState<string | null>("obr1");
 
-    const onboardingRuns = MOCK_ONBOARDING_RUNS;
-    const offboardingRuns = MOCK_OFFBOARDING_RUNS;
+    // NEXT: Wire to useOnboardingRuns/useOffboardingRuns() when hooks are available
+    const onboardingRuns: WorkerOnboardingRun[] = [];
+    const offboardingRuns: WorkerOffboardingRun[] = [];
 
     const activeOnboarding = onboardingRuns.filter((r) => r.status !== "completed").length;
     const completedOnboarding = onboardingRuns.filter((r) => r.status === "completed").length;

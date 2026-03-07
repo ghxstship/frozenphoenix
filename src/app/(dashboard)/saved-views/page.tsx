@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-// TODO: Wire to Supabase when saved_views table is available
+// NEXT: Wire to Supabase when saved_views table is available
 type ViewType = "list" | "board" | "table" | "calendar" | "timeline" | "gantt";
 type ViewVisibility = "private" | "team" | "organization";
 

@@ -253,5 +253,14 @@ export {
     useConversationsRealtime,
 } from "./hooks-messaging-realtime";
 
+// ─── Approval Engine Hooks ───
+export {
+    useApprovalInstanceStatus,
+    useInitiateApproval,
+    useApprovalDecision,
+    useEscalateApproval,
+    useCancelApproval,
+} from "./hooks-approval-engine";
+
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

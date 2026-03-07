@@ -13,7 +13,6 @@ import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { MOCK_CHANGE_ORDERS } from "@/lib/demo-data-crm-revenue";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
 import { useChangeOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -137,9 +136,10 @@ export default function ChangeOrdersPage() {
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbChangeOrders, isLoading } = useChangeOrders();
 
-    const changeOrders = sbChangeOrders
-        ? (sbChangeOrders as unknown as ChangeOrder[])
-        : MOCK_CHANGE_ORDERS;
+    const changeOrders = useMemo(
+        () => (sbChangeOrders ?? []) as unknown as ChangeOrder[],
+        [sbChangeOrders]
+    );
 
     const filtered = useMemo(() => {
         let result = changeOrders;

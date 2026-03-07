@@ -36,6 +36,7 @@ export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCar
             {/* Thumbnail */}
             {thumbnailUrl ? (
                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- dynamic external URLs from Supabase Storage */}
                     <img
                         src={thumbnailUrl}
                         alt={name}
@@ -84,9 +85,7 @@ export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCar
                 </div>
 
                 <div className="mt-auto flex items-center justify-between pt-2">
-                    <span className="text-sm font-semibold">
-                        {formatAdvanceCost(unitCost)}
-                    </span>
+                    <span className="text-sm font-semibold">{formatAdvanceCost(unitCost)}</span>
                     <button
                         onClick={onAddToCart}
                         disabled={!isAvailable}

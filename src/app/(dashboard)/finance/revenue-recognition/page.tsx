@@ -50,7 +50,7 @@ interface RevenueSummary {
     unbilledRevenue: number;
 }
 
-const MOCK_ENTRIES: RevenueEntry[] = [
+const PLACEHOLDER_ENTRIES: RevenueEntry[] = [
     {
         id: "re1",
         projectName: "Nike Air Max Launch",
@@ -108,7 +108,7 @@ const MOCK_ENTRIES: RevenueEntry[] = [
     },
 ];
 
-const MOCK_SUMMARY: RevenueSummary[] = [
+const PLACEHOLDER_SUMMARY: RevenueSummary[] = [
     {
         period: "2026-01",
         totalRevenue: 380000,
@@ -153,22 +153,22 @@ export default function RevenueRecognitionPage() {
         validValues: ["entries", "summary", "schedules"],
     });
 
-    const totalRecognized = MOCK_ENTRIES.reduce((s, e) => s + e.recognizedAmount, 0);
-    const totalDeferred = MOCK_ENTRIES.reduce((s, e) => s + e.deferredAmount, 0);
-    const totalRevenue = MOCK_ENTRIES.reduce((s, e) => s + e.totalAmount, 0);
-    const pendingReview = MOCK_ENTRIES.filter((e) => e.status === "pending_review").length;
+    const totalRecognized = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.recognizedAmount, 0);
+    const totalDeferred = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.deferredAmount, 0);
+    const totalRevenue = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.totalAmount, 0);
+    const pendingReview = PLACEHOLDER_ENTRIES.filter((e) => e.status === "pending_review").length;
 
     const tabs = [
         {
             id: "entries" as const,
             label: "Entries",
-            count: MOCK_ENTRIES.length,
+            count: PLACEHOLDER_ENTRIES.length,
             icon: <FileText className="h-4 w-4" />,
         },
         {
             id: "summary" as const,
             label: "Period Summary",
-            count: MOCK_SUMMARY.length,
+            count: PLACEHOLDER_SUMMARY.length,
             icon: <BarChart3 className="h-4 w-4" />,
         },
         {
@@ -217,7 +217,7 @@ export default function RevenueRecognitionPage() {
 
                 <TabPanel value="entries" activeValue={activeTab}>
                     <div className="space-y-3">
-                        {MOCK_ENTRIES.map((entry) => {
+                        {PLACEHOLDER_ENTRIES.map((entry) => {
                             const pct = Math.round(
                                 (entry.recognizedAmount / entry.totalAmount) * 100
                             );
@@ -289,7 +289,7 @@ export default function RevenueRecognitionPage() {
 
                 <TabPanel value="summary" activeValue={activeTab}>
                     <div className="space-y-4">
-                        {MOCK_SUMMARY.map((period) => {
+                        {PLACEHOLDER_SUMMARY.map((period) => {
                             const recognizedPct = Math.round(
                                 (period.recognizedRevenue / period.totalRevenue) * 100
                             );

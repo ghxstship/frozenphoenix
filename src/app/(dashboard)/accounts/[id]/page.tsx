@@ -9,7 +9,6 @@ import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
 import { Building2, Loader2, Mail, MapPin, Phone, User } from "lucide-react";
@@ -37,7 +36,7 @@ export default function AccountDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -167,7 +166,6 @@ export default function AccountDetailPage() {
                     recordType="account"
                     recordId={entityId}
                     comments={chatterComments}
-                    activityItems={makeMockActivity("account")}
                     onAddComment={handleAddComment}
                 />
             )}

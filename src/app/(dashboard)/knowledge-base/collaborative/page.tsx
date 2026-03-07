@@ -52,7 +52,7 @@ interface VersionEntry {
     deletions: number;
 }
 
-const MOCK_DOCUMENTS: CollaborativeDocument[] = [
+const PLACEHOLDER_DOCUMENTS: CollaborativeDocument[] = [
     {
         id: "cd1",
         title: "Event Production Handbook",
@@ -144,7 +144,7 @@ const MOCK_DOCUMENTS: CollaborativeDocument[] = [
     },
 ];
 
-const MOCK_VERSIONS: VersionEntry[] = [
+const PLACEHOLDER_VERSIONS: VersionEntry[] = [
     {
         version: 42,
         author: "Anna Williams",
@@ -195,12 +195,12 @@ const STATUS_BADGE: Record<string, "success" | "warning" | "default"> = {
 
 export default function CollaborativeEditingPage() {
     const [selectedDoc, setSelectedDoc] = useState<CollaborativeDocument | null>(
-        MOCK_DOCUMENTS[0] || null
+        PLACEHOLDER_DOCUMENTS[0] || null
     );
 
-    const totalEditors = MOCK_DOCUMENTS.reduce((s, d) => s + d.activeEditors.length, 0);
-    const totalVersions = MOCK_DOCUMENTS.reduce((s, d) => s + d.version, 0);
-    const conflicts = MOCK_DOCUMENTS.reduce((s, d) => s + d.conflictCount, 0);
+    const totalEditors = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.activeEditors.length, 0);
+    const totalVersions = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.version, 0);
+    const conflicts = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.conflictCount, 0);
 
     return (
         <PermissionGate resource="knowledge_base" action="read">
@@ -218,7 +218,9 @@ export default function CollaborativeEditingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Active Documents"
-                        value={MOCK_DOCUMENTS.filter((d) => d.activeEditors.length > 0).length}
+                        value={
+                            PLACEHOLDER_DOCUMENTS.filter((d) => d.activeEditors.length > 0).length
+                        }
                         icon={FileText}
                     />
                     <StatCard title="Active Editors" value={totalEditors} icon={Users} />
@@ -232,7 +234,7 @@ export default function CollaborativeEditingPage() {
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                             Documents
                         </h3>
-                        {MOCK_DOCUMENTS.map((doc) => (
+                        {PLACEHOLDER_DOCUMENTS.map((doc) => (
                             <Card
                                 key={doc.id}
                                 className={`cursor-pointer transition-colors ${selectedDoc?.id === doc.id ? "border-primary/30 bg-primary/[0.02]" : "hover:border-primary/20"}`}
@@ -437,7 +439,7 @@ export default function CollaborativeEditingPage() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-2">
-                                        {MOCK_VERSIONS.map((v) => (
+                                        {PLACEHOLDER_VERSIONS.map((v) => (
                                             <div
                                                 key={v.version}
                                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"

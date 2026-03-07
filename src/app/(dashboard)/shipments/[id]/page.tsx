@@ -31,7 +31,7 @@ import {
 type TabId = "overview" | "items" | "tracking" | "chatter";
 const TAB_VALUES = ["overview", "items", "tracking", "chatter"] as const;
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
     {
         id: "a1",
         action: "created",
@@ -50,7 +50,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     },
 ];
 
-const MOCK_COMMENTS: CommentItem[] = [
+const PLACEHOLDER_COMMENTS: CommentItem[] = [
     {
         id: "c1",
         authorId: "u1",
@@ -77,7 +77,7 @@ export default function ShipmentDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(MOCK_COMMENTS);
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
 
     const { data: shipment, isLoading } = useShipment(shipmentId);
     const { data: sbLocations } = useLocations();
@@ -477,7 +477,7 @@ export default function ShipmentDetailPage() {
                 <RecordChatter
                     recordType="shipment"
                     recordId={shipmentId}
-                    activityItems={MOCK_ACTIVITY}
+                    activityItems={PLACEHOLDER_ACTIVITY}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

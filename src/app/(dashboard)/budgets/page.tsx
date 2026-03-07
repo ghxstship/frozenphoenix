@@ -14,8 +14,9 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import { MOCK_BUDGET_LINES } from "@/lib/demo-data-production";
-import { MOCK_PROJECTS } from "@/lib/demo-data";
+import { useProjects } from "@/lib/supabase/hooks";
+import type { BudgetLineItem } from "@/types/production";
+import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
 import { useBudgets } from "@/lib/supabase/hooks";
@@ -47,8 +48,8 @@ const STATUS_VARIANTS: Record<string, string> = {
     locked: "info",
 };
 
-// Mock burn data for demo mode
-const MOCK_BURN_DATA = [
+// NEXT: Replace with real burn data from Supabase when available
+const PLACEHOLDER_BURN_DATA = [
     { label: "Wk 1", planned: 50000, actual: 45000 },
     { label: "Wk 2", planned: 100000, actual: 98000 },
     { label: "Wk 3", planned: 150000, actual: 162000 },
@@ -64,7 +65,8 @@ export default function BudgetsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [showProfitability, setShowProfitability] = useState(true);
     // Supabase dual-path: useBudgets requires a projectId, so we pass empty to get all
-    const { data: sbBudgets, isLoading } = useBudgets("");
+    const { data: sbBudgets, isLoading: loadingBudgets } = useBudgets("");
+    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
     const { data: profitabilityData } = useBudgetProfitability();
     const { data: alertsData } = useBudgetAlerts();
     const acknowledgeMutation = useAcknowledgeBudgetAlert();
@@ -80,6 +82,28 @@ export default function BudgetsPage() {
         markupPercent: Number(b.markup_percent || 0),
     }));
 
+    const projects: Project[] = (sbProjects ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        clientLogo: p.client_logo ?? undefined,
+        status: p.status as ProjectStatus,
+        currentPhase: p.current_phase as ProjectPhase,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        budgetPlanned: p.budget_planned,
+        budgetActual: p.budget_actual,
+        progress: p.progress,
+        managerId: p.manager_id ?? "",
+        teamIds: [],
+        createdAt: p.created_at ?? new Date().toISOString(),
+    }));
+
+    // NEXT: Wire to useBudgetLines() when hook is available
+    const budgetLines: BudgetLineItem[] = [];
+
+    const isLoading = loadingBudgets || loadingProjects;
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -89,7 +113,7 @@ export default function BudgetsPage() {
     }
 
     const filteredBudgets = budgets.filter((budget) => {
-        const project = MOCK_PROJECTS.find((p) => p.id === budget.projectId);
+        const project = projects.find((p) => p.id === budget.projectId);
         return !searchQuery || project?.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
@@ -97,7 +121,7 @@ export default function BudgetsPage() {
     const totalActual = budgets.reduce((sum, b) => sum + b.totalActual, 0);
     const totalVariance = totalActual - totalBudgeted;
 
-    const categoryTotals = MOCK_BUDGET_LINES.reduce(
+    const categoryTotals = budgetLines.reduce(
         (acc, line) => {
             const cat = line.category;
             if (!acc[cat]) acc[cat] = { budgeted: 0, actual: 0 };
@@ -317,7 +341,7 @@ export default function BudgetsPage() {
                                                 Aggregate Budget Burn Forecast
                                             </p>
                                             <BurnChart
-                                                data={MOCK_BURN_DATA}
+                                                data={PLACEHOLDER_BURN_DATA}
                                                 budgetTotal={totalBudgeted || 400000}
                                                 formatValue={(v) => formatCurrency(v)}
                                                 height={180}
@@ -414,7 +438,7 @@ export default function BudgetsPage() {
                 ) : (
                     <div className="space-y-3">
                         {filteredBudgets.map((budget) => {
-                            const project = MOCK_PROJECTS.find((p) => p.id === budget.projectId);
+                            const project = projects.find((p) => p.id === budget.projectId);
                             const statusVariant = STATUS_VARIANTS[budget.status] || "secondary";
                             const variance = budget.totalActual - budget.totalBudget;
                             const burnRate =

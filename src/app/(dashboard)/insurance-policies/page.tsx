@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_INSURANCE_POLICY_CONFIG } from "@/config/create-entity-configs";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Shield, XCircle } from "lucide-react";
-import { MOCK_INSURANCE_POLICIES, MOCK_INSURANCE_REQUIREMENTS } from "@/lib/demo-data-governance";
+import type { InsurancePolicy, InsuranceRequirement } from "@/types/governance";
 import { useInsurancePolicies } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { InsurancePolicyStatus } from "@/types/governance";
@@ -57,7 +57,9 @@ export default function InsurancePoliciesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbPolicies, isLoading } = useInsurancePolicies();
 
-    const policies = (sbPolicies ?? []) as typeof MOCK_INSURANCE_POLICIES;
+    const policies = (sbPolicies ?? []) as InsurancePolicy[];
+    // NEXT: Wire to useInsuranceRequirements() when hook is available
+    const requirements: InsuranceRequirement[] = [];
 
     const filtered = policies.filter((p) => {
         const holderName = holderNames[p.holder_id] || p.holder_id;
@@ -223,12 +225,12 @@ export default function InsurancePoliciesPage() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <Shield className="h-4 w-4" /> Insurance Requirements (
-                            {MOCK_INSURANCE_REQUIREMENTS.length})
+                            {requirements.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {MOCK_INSURANCE_REQUIREMENTS.map((req) => (
+                            {requirements.map((req) => (
                                 <div
                                     key={req.id}
                                     className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"

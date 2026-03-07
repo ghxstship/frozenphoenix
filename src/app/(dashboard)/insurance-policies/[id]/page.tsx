@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
@@ -44,7 +43,7 @@ export default function InsurancePolicyDetailPage() {
     void router;
     void handleUpdate;
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
@@ -392,7 +391,6 @@ export default function InsurancePolicyDetailPage() {
                 <RecordChatter
                     recordType="insurance_policy"
                     recordId={policy.id}
-                    activityItems={makeMockActivity("insurance_policy")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

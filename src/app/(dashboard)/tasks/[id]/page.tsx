@@ -12,7 +12,6 @@ import { PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { makeMockActivity, makeMockComments } from "@/lib/mock-chatter-data";
 import { useDeleteTask, useProjects, useTasks, useUpdateTask } from "@/lib/supabase/hooks";
 import { useTask } from "@/lib/supabase/hooks-pages";
 import { FABRICATION_STATUS_MAP, PROJECT_PHASE_MAP } from "@/config/domain-config";
@@ -40,7 +39,7 @@ export default function TaskDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(makeMockComments());
+    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
             ...prev,
@@ -345,7 +344,6 @@ export default function TaskDetailPage() {
                 <RecordChatter
                     recordType="task"
                     recordId={taskId}
-                    activityItems={makeMockActivity("task")}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

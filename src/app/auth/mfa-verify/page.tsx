@@ -157,9 +157,14 @@ function MfaVerifyForm() {
                     variant="ghost"
                     size="sm"
                     onClick={async () => {
+                        try {
+                            await fetch("/api/auth/signout", { method: "POST" });
+                        } catch {
+                            // Best-effort
+                        }
                         const supabase = createClient();
                         if (supabase) await supabase.auth.signOut();
-                        router.push("/login");
+                        window.location.href = "/login";
                     }}
                     className="text-xs text-muted-foreground"
                 >

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
 import {
     flattenNavItems,
@@ -209,7 +209,6 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
 
 export function Sidebar() {
     const pathname = usePathname();
-    const router = useRouter();
     const { profile, loading: authLoading, signOut } = useAuth();
     const isOpen = useSidebar((state) => state.isOpen);
     const isCollapsed = useSidebar((state) => state.isCollapsed);
@@ -253,7 +252,7 @@ export function Sidebar() {
     const handleSignOut = async () => {
         setSigningOut(true);
         await signOut();
-        router.push("/login");
+        // signOut() handles navigation via window.location.href
     };
 
     useEffect(() => {

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "./client";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database, Tables } from "./database.types";
@@ -56,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(!isSupabaseConfigured ? false : true);
 
     const supabase = useMemo(() => createClient(), []);
-    const router = useRouter();
 
     // Derive active org from memberships + stored preference
     const activeOrg = useMemo(() => {
@@ -188,18 +186,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, fetchProfile, fetchMemberships, fetchUsername]);
 
     const signOut = useCallback(async () => {
-        if (!supabase) return;
-        await supabase.auth.signOut();
+        // Clear client state immediately
         setUser(null);
         setProfile(null);
+        setUsername(null);
         setSession(null);
         setMemberships([]);
         setActiveOrgId(null);
         if (typeof window !== "undefined") {
             localStorage.removeItem(AUTH_ACTIVE_ORG_KEY);
         }
-        router.push("/login");
-    }, [supabase, router]);
+
+        // Clear server-side session cookies via API route, then client-side signOut
+        try {
+            await fetch("/api/auth/signout", { method: "POST" });
+        } catch {
+            // Best-effort — continue with client-side signOut
+        }
+
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+
+        // Hard navigation to /login ensures middleware sees cleared cookies.
+        // router.push would serve a cached RSC payload and race with middleware.
+        if (typeof window !== "undefined") {
+            window.location.href = "/login";
+        }
+    }, [supabase]);
 
     useEffect(() => {
         if (!supabase || !isSupabaseConfigured) {

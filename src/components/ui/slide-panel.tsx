@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { SPRING_PRESETS } from "@/config/design-tokens";
+import { useFocusTrap } from "@/hooks/use-accessibility";
 import { X } from "lucide-react";
 
 interface SlidePanelProps {
@@ -25,6 +26,8 @@ export function SlidePanel({
     children,
     className,
 }: SlidePanelProps) {
+    const focusTrapRef = useFocusTrap(open);
+
     React.useEffect(() => {
         if (!open) return;
         const handleKey = (e: KeyboardEvent) => {
@@ -50,6 +53,7 @@ export function SlidePanel({
                         aria-hidden="true"
                     />
                     <motion.div
+                        ref={focusTrapRef as React.Ref<HTMLDivElement>}
                         className={cn(
                             "fixed top-0 bottom-0 z-[101] w-full bg-background border-border shadow-2xl flex flex-col",
                             side === "right" ? "right-0 border-l" : "left-0 border-r",

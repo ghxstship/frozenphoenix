@@ -5,7 +5,7 @@
 // Usage: import { useDeals, uploadFile, useSignOut } from "@/lib/supabase";
 
 // ─── Configuration ───
-export { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from "./config";
+export { supabaseUrl, supabaseAnonKey } from "./config";
 
 // ─── Clients ───
 export { createClient } from "./client";
@@ -261,6 +261,46 @@ export {
     useEscalateApproval,
     useCancelApproval,
 } from "./hooks-approval-engine";
+
+// ─── Context Switcher Hooks ───
+export {
+    useTeamsForSwitcher,
+    useTeamMembers,
+    useClientsForSwitcher,
+    useProjectsForSwitcher,
+    useActivationsForSwitcher,
+} from "./hooks-switcher";
+
+// ─── Teams Page Hooks ───
+export {
+    useTeams,
+    useTeamDetail,
+    useCreateTeam,
+    useUpdateTeam,
+    useDeleteTeam,
+    useTeamMembersPage,
+    useAddTeamMember,
+    useRemoveTeamMember,
+} from "./hooks-pages";
+
+// ─── Live-Ops Hooks ───
+export {
+    useLiveEventInstances,
+    useLiveCrewAssignments,
+    useStrikeSequences,
+    useEnvironmentalReadings,
+    useFohZones,
+    useFohZoneReadings,
+    useCommChannels,
+    useDepartmentStatuses,
+    useGuestIncidents,
+    useReadinessGates,
+    useRosCues,
+    useVipGuests,
+    useEquipmentCheckIns,
+    useLiveFinancialSnapshots,
+    usePostEventReports,
+} from "./hooks-live-ops";
 
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

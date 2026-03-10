@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
+import { filterValue, getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 // ─── Join-aware return types ───
@@ -122,7 +122,6 @@ export type ProductionChecklistWithJoins = WithJoin<
     ProfileName & ProjectName & EventName
 >;
 
-export { isSupabaseConfigured };
 
 // ─── Deals ───
 export function useDeals() {
@@ -136,7 +135,6 @@ export function useDeals() {
             if (error) throw error;
             return data as unknown as Tables<"deals">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -185,7 +183,6 @@ export function useProjects() {
             if (error) throw error;
             return data as unknown as ProjectWithMembers[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -201,7 +198,7 @@ export function useProject(id: string) {
             if (error) throw error;
             return data as unknown as ProjectDetailWithMembers;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -266,7 +263,6 @@ export function useTasks(projectId?: string) {
             if (error) throw error;
             return data as unknown as TaskWithDeps[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -326,7 +322,6 @@ export function useCrewMembers() {
             if (error) throw error;
             return data as unknown as CrewMemberWithCerts[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -372,7 +367,6 @@ export function useAssets() {
             if (error) throw error;
             return data as unknown as Tables<"assets">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -418,7 +412,6 @@ export function useVehicles() {
             if (error) throw error;
             return data as unknown as Tables<"vehicles">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -431,7 +424,6 @@ export function useVendors() {
             if (error) throw error;
             return data as unknown as Tables<"vendors">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -496,7 +488,6 @@ export function usePurchaseOrders() {
             if (error) throw error;
             return data as unknown as PurchaseOrderWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -512,7 +503,6 @@ export function useInvoices() {
             if (error) throw error;
             return data as unknown as InvoiceWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -528,7 +518,6 @@ export function useApprovals() {
             if (error) throw error;
             return data as unknown as ApprovalWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -561,7 +550,6 @@ export function useStakeholders() {
             if (error) throw error;
             return data as unknown as StakeholderWithProjects[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -577,7 +565,6 @@ export function useCaseStudies() {
             if (error) throw error;
             return data as unknown as CaseStudyWithMetrics[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -594,7 +581,6 @@ export function useNotifications() {
             if (error) throw error;
             return data as unknown as Tables<"notifications">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -624,7 +610,6 @@ export function useCalendarEvents(startDate?: string, endDate?: string) {
             if (error) throw error;
             return data as unknown as CalendarEventWithProject[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -658,7 +643,6 @@ export function useShifts(projectId?: string, date?: string) {
             if (error) throw error;
             return data as unknown as ShiftWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -690,7 +674,6 @@ export function useBrandKits() {
             if (error) throw error;
             return data as unknown as Tables<"brand_kits">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -705,7 +688,6 @@ export function useDecks(projectId?: string) {
             if (error) throw error;
             return data as unknown as DeckWithSlides[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -721,7 +703,6 @@ export function useSOPs() {
             if (error) throw error;
             return data as unknown as SOPWithAcknowledgments[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -737,7 +718,6 @@ export function useVaultDocuments() {
             if (error) throw error;
             return data as unknown as VaultDocumentWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -761,7 +741,6 @@ export function useTimeEntries(projectId?: string) {
             if (error) throw error;
             return data as unknown as TimeEntryWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -795,7 +774,6 @@ export function useExpenses(projectId?: string) {
             if (error) throw error;
             return data as unknown as ExpenseWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -828,7 +806,7 @@ export function useBudgetLineItems(projectId: string) {
             if (error) throw error;
             return data as unknown as Tables<"budget_line_items">[];
         },
-        enabled: isSupabaseConfigured && !!projectId,
+        enabled: !!projectId,
     });
 }
 
@@ -864,7 +842,7 @@ export function useMilestones(projectId: string) {
             if (error) throw error;
             return data as unknown as MilestoneWithApprovals[];
         },
-        enabled: isSupabaseConfigured && !!projectId,
+        enabled: !!projectId,
     });
 }
 
@@ -902,7 +880,7 @@ export function useComments(
             if (error) throw error;
             return data as unknown as CommentWithProfile[];
         },
-        enabled: isSupabaseConfigured && !!entityType && !!entityId,
+        enabled: !!entityType && !!entityId,
     });
 }
 
@@ -941,7 +919,6 @@ export function useActivityLog(entityType?: string, entityId?: string, limit = 2
             if (error) throw error;
             return data as unknown as ActivityLogWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -957,7 +934,6 @@ export function useProjectTemplates() {
             if (error) throw error;
             return data as unknown as Tables<"project_templates">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -989,7 +965,6 @@ export function useIntegrations() {
             if (error) throw error;
             return data as unknown as Tables<"integrations">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1008,7 +983,6 @@ export function useLocations(projectId?: string) {
             if (error) throw error;
             return data as unknown as Tables<"locations">[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1024,7 +998,7 @@ export function useLocation(id: string) {
             if (error) throw error;
             return data as unknown as Tables<"locations">;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -1078,7 +1052,6 @@ export function useActivations(projectId?: string) {
             if (error) throw error;
             return data as unknown as ActivationWithLocation[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1112,7 +1085,6 @@ export function useEvents(projectId?: string) {
             if (error) throw error;
             return data as unknown as EventWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1147,7 +1119,6 @@ export function useProductionTasks(projectId?: string, department?: string) {
             if (error) throw error;
             return data as unknown as ProductionTaskWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1200,7 +1171,7 @@ export function useProductionMilestones(projectId: string) {
             if (error) throw error;
             return data as unknown as ProductionMilestoneWithJoins[];
         },
-        enabled: isSupabaseConfigured && !!projectId,
+        enabled: !!projectId,
     });
 }
 
@@ -1218,7 +1189,6 @@ export function useShipments(projectId?: string) {
             if (error) throw error;
             return data as unknown as ShipmentWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1254,7 +1224,6 @@ export function useCrewShifts(projectId?: string, date?: string) {
             if (error) throw error;
             return data as unknown as CrewShiftWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1288,7 +1257,6 @@ export function useIncidents(projectId?: string) {
             if (error) throw error;
             return data as unknown as IncidentWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1321,7 +1289,7 @@ export function useBudgets(projectId: string) {
             if (error) throw error;
             return data as unknown as BudgetWithLines[];
         },
-        enabled: isSupabaseConfigured && !!projectId,
+        enabled: !!projectId,
     });
 }
 
@@ -1371,7 +1339,6 @@ export function useContracts(projectId?: string) {
             if (error) throw error;
             return data as unknown as ContractWithVendor[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1389,7 +1356,6 @@ export function useRFQs(projectId?: string) {
             if (error) throw error;
             return data as unknown as RFQWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1405,7 +1371,6 @@ export function useWarehouses() {
             if (error) throw error;
             return data as unknown as WarehouseWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1424,7 +1389,6 @@ export function useAssetAssignments(projectId?: string, assetId?: string) {
             if (error) throw error;
             return data as unknown as AssetAssignmentWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1463,7 +1427,6 @@ export function useCrewAvailability(crewMemberId?: string, startDate?: string, e
             if (error) throw error;
             return data as unknown as CrewAvailabilityWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1483,7 +1446,6 @@ export function useKnowledgeBaseArticles(category?: string, department?: string)
             if (error) throw error;
             return data as unknown as KBArticleWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1518,7 +1480,6 @@ export function useProductionSOPs(department?: string) {
             if (error) throw error;
             return data as unknown as ProductionSOPWithProfile[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -1537,6 +1498,5 @@ export function useProductionChecklists(projectId?: string, eventId?: string) {
             if (error) throw error;
             return data as unknown as ProductionChecklistWithJoins[];
         },
-        enabled: isSupabaseConfigured,
     });
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteCampaign, useUpdateCampaign } from "@/lib/supabase/hooks-pages";
@@ -49,15 +50,13 @@ export default function CampaignDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: campaign, isLoading } = useCampaign(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Campaign",
         listPath: "/campaigns",
         useUpdateHook: useUpdateCampaign,
         useDeleteHook: useDeleteCampaign,
     });
-    void router;
-    void handleUpdate;
     const { data: sbChannels } = useCampaignChannels(entityId);
     const { data: sbAssets } = useCampaignAssets(entityId);
     const { data: sbKpis } = useCampaignKpis(entityId);
@@ -66,9 +65,7 @@ export default function CampaignDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -245,8 +242,8 @@ export default function CampaignDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Edit Campaign", onClick: () => {} },
-                { label: "Duplicate", onClick: () => {} },
+                { label: "Edit Campaign", onClick: () => router.push(`/campaigns/${entityId}/edit`) },
+                { label: "Duplicate", onClick: () => router.push(`/campaigns/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

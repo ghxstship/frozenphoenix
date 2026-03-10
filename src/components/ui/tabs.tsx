@@ -22,6 +22,8 @@ const TabsContext = React.createContext<TabsContextValue>({
     orientation: "horizontal",
 });
 
+const _tabsDeprecationWarned = { current: false };
+
 export function Tabs({
     value,
     onValueChange,
@@ -40,6 +42,16 @@ export function Tabs({
     const reactId = React.useId();
     const generatedIdPrefix = React.useMemo(() => `tabs-${reactId.replace(/:/g, "")}`, [reactId]);
     const resolvedIdPrefix = idPrefix ?? generatedIdPrefix;
+
+    React.useEffect(() => {
+        if (!_tabsDeprecationWarned.current) {
+            _tabsDeprecationWarned.current = true;
+            // eslint-disable-next-line no-console
+            console.warn(
+                "[FrozenPhoenix] <Tabs> is deprecated. Use <TabBar>/<TabPanel> from '@/components/ui/tab-bar' for content tabs, or <SegmentedControl> from '@/components/ui/segmented-control' for view-mode toggles. This component will be removed in a future release."
+            );
+        }
+    }, []);
 
     return (
         <TabsContext.Provider

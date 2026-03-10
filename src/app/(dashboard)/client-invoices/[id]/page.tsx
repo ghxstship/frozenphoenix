@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useClientInvoice,
     useDeleteClientInvoice,
@@ -23,18 +24,15 @@ const TAB_VALUES = ["overview", "line-items", "chatter"] as const;
 
 export default function ClientInvoiceDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: invoice, isLoading } = useClientInvoice(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Client Invoice",
         listPath: "/client-invoices",
         useUpdateHook: useUpdateClientInvoice,
         useDeleteHook: useDeleteClientInvoice,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -45,9 +43,7 @@ export default function ClientInvoiceDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -168,11 +164,12 @@ export default function ClientInvoiceDetailPage() {
                 </div>
             )}
             {activeTab === "line-items" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Line items coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={FileText}
+                    title="No line items"
+                    description="Invoice line items and charges will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

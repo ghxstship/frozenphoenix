@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_WORKER_REVIEW_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { Calendar, ClipboardCheck, Plus, Star, ThumbsUp } from "lucide-react";
 import type { WorkerReview } from "@/types/workforce";
 import type { ReviewTargetType } from "@/types/workforce";
+import { PermissionGate } from "@/components/permission-guard";
 
 const TARGET_LABELS: Record<ReviewTargetType, string> = {
     employee: "Employee",
@@ -52,6 +55,7 @@ export default function WorkforceReviewsPage() {
 
     // NEXT: Wire to useWorkerReviews() when hook is available
     const reviews: WorkerReview[] = [];
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const filtered = reviews.filter((r) => {
         const matchesSearch =
             !search ||
@@ -71,12 +75,13 @@ export default function WorkforceReviewsPage() {
     const pendingAck = reviews.filter((r) => !r.acknowledgedAt).length;
 
     return (
+        <PermissionGate resource="workforce" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Performance Reviews"
                 description="Universal review system for all worker classifications — employees, contractors, freelancers, and vendors"
             >
-                <Button size="sm">
+                <Button size="sm" onClick={openCreate}>
                     <Plus className="h-4 w-4" /> New Review
                 </Button>
             </PageHeader>
@@ -232,6 +237,8 @@ export default function WorkforceReviewsPage() {
                     <p className="text-sm text-muted-foreground">No reviews found</p>
                 </div>
             )}
+            <CreateEntityDialog config={CREATE_WORKER_REVIEW_CONFIG} open={createOpen} onClose={closeCreate} />
         </div>
+        </PermissionGate>
     );
 }

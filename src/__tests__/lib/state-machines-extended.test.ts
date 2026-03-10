@@ -60,11 +60,10 @@ function assertHappyPath(
     for (let i = 0; i < path.length - 1; i++) {
         const from = path[i]!;
         const to = path[i + 1]!;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = validateTransition(
-            machine as any,
-            from as any,
-            to as any,
+            machine as unknown as Parameters<typeof validateTransition>[0],
+            from as unknown as Parameters<typeof validateTransition>[1],
+            to as unknown as Parameters<typeof validateTransition>[2],
             ctx(role, entity, guards)
         );
         expect(result.allowed, `Expected ${from} → ${to} to be allowed for ${role}`).toBe(true);

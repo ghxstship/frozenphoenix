@@ -1,7 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
+import { PermissionGate } from "@/components/permission-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,13 +168,12 @@ export default function ComplianceDashboardPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
     return (
+        <PermissionGate resource="compliance" action="read">
         <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
@@ -367,5 +368,6 @@ export default function ComplianceDashboardPage() {
                 </Card>
             )}
         </div>
+        </PermissionGate>
     );
 }

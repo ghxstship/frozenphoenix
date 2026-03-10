@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useBrandGuideline,
     useDeleteBrandGuideline,
@@ -22,18 +23,15 @@ const TAB_VALUES = ["overview", "rules", "chatter"] as const;
 
 export default function BrandGuidelineDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: guideline, isLoading } = useBrandGuideline(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Brand Guideline",
         listPath: "/brand-guidelines",
         useUpdateHook: useUpdateBrandGuideline,
         useDeleteHook: useDeleteBrandGuideline,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -44,9 +42,7 @@ export default function BrandGuidelineDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -131,16 +127,12 @@ export default function BrandGuidelineDetailPage() {
                 </div>
             )}
             {activeTab === "rules" && (
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <FileText className="h-4 w-4" /> Brand Rules
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Detailed brand rules coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={FileText}
+                    title="No brand rules defined"
+                    description="Detailed brand rules and guidelines will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

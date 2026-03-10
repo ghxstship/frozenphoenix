@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, isSupabaseConfigured } from "@/lib/supabase/client";
+import { fromTable } from "@/lib/supabase/client";
 import type {
     AccessAuditLogEntry,
     FeatureFlag,
@@ -36,7 +36,6 @@ export function useSettingDefinitions(category?: string) {
             if (error) throw error;
             return data as SettingDefinition[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -58,7 +57,6 @@ export function useSettingsForScope(scopeType: string, scopeId: string | null) {
             if (error) throw error;
             return data as (SettingValue & { setting_definitions: SettingDefinition })[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -139,7 +137,6 @@ export function useSettingsChangeLog(settingId?: string) {
             if (error) throw error;
             return data as SettingChangeLogEntry[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -153,7 +150,6 @@ export function useFeatureFlags() {
             if (error) throw error;
             return data as FeatureFlag[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -171,7 +167,6 @@ export function useFeatureFlagOverrides(flagId?: string) {
             if (error) throw error;
             return data as FeatureFlagOverride[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -265,7 +260,6 @@ export function useRoleDefinitions(orgId?: string) {
             if (error) throw error;
             return data as (RoleDefinition & { permission_grants: PermissionGrant[] })[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -374,7 +368,6 @@ export function useAccessAuditLog(limit = 50) {
             if (error) throw error;
             return data as AccessAuditLogEntry[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -392,7 +385,7 @@ export function useNotificationPreferences(userId: string | null) {
             if (error && error.code !== "PGRST116") throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!userId,
+        enabled: !!userId,
     });
 }
 
@@ -430,7 +423,6 @@ export function useBrands() {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -448,7 +440,7 @@ export function useUserSessions(userId: string | null) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!userId,
+        enabled: !!userId,
     });
 }
 

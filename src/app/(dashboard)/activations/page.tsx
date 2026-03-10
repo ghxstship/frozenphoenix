@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -19,6 +20,7 @@ import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { ChevronRight, DollarSign, Loader2, MapPin, Plus, Sparkles, Users } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 
 const STATUS_VARIANTS: Record<string, string> = {
     planning: "secondary",
@@ -87,9 +89,7 @@ export default function ActivationsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -107,10 +107,13 @@ export default function ActivationsPage() {
                 title="Activations"
                 description="Manage brand activations, installations, and experiences"
                 actions={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        New Activation
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="activations" />
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            New Activation
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}
@@ -179,7 +182,7 @@ export default function ActivationsPage() {
                         }
                         action={
                             !searchQuery
-                                ? { label: "New Activation", onClick: () => {} }
+                                ? { label: "New Activation", onClick: openCreate }
                                 : undefined
                         }
                     />

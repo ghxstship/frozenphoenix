@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PermissionGate } from "@/components/permission-guard";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useFeatureFlags, useUpdateFeatureFlag } from "@/lib/settings/hooks";
 import { Flag, Globe, Loader2, Percent, Search, ToggleLeft, Users } from "lucide-react";
 
 export default function FeatureFlagsPage() {
     const { data: flags, isLoading } = useFeatureFlags();
     const updateFlag = useUpdateFeatureFlag();
+    const { confirm } = useConfirm();
     const [search, setSearch] = useState("");
 
     const filtered = (flags ?? []).filter(
@@ -136,12 +138,20 @@ export default function FeatureFlagsPage() {
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() =>
-                                                updateFlag.mutate({
-                                                    id: flag.id,
-                                                    is_active: !flag.is_active,
-                                                })
-                                            }
+                                            onClick={async () => {
+                                                const nextState = !flag.is_active;
+                                                const confirmed = await confirm({
+                                                    title: `${nextState ? "Enable" : "Disable"} ${flag.label}?`,
+                                                    description: nextState
+                                                        ? `This will enable the "${flag.label}" feature flag for ${flag.target_orgs.length > 0 ? `${flag.target_orgs.length} org(s)` : "all organizations"}.`
+                                                        : `This will disable the "${flag.label}" feature flag. Users will lose access to the feature immediately.`,
+                                                    confirmLabel: nextState ? "Enable" : "Disable",
+                                                    variant: nextState ? "default" : "destructive",
+                                                });
+                                                if (confirmed) {
+                                                    updateFlag.mutate({ id: flag.id, is_active: nextState });
+                                                }
+                                            }}
                                             disabled={updateFlag.isPending}
                                             className={`h-6 w-11 rounded-full transition-colors shrink-0 ${
                                                 flag.is_active ? "bg-primary" : "bg-muted"

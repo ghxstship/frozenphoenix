@@ -212,6 +212,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "messaging_mandatory_read", actions: ["read", "write"] },
         { resource: "messaging_export", actions: ["read", "write"] },
         { resource: "messaging_ptt", actions: ["read", "write"] },
+        // Teams
+        { resource: "teams", actions: ["read", "write", "manage"] },
+        { resource: "team_members", actions: ["read", "write", "manage"] },
     ],
     pm: [
         // Command Center
@@ -406,6 +409,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "messaging_message", actions: ["read", "write"] },
         { resource: "messaging_export", actions: ["read", "write"] },
         { resource: "messaging_ptt", actions: ["read", "write"] },
+        // Teams
+        { resource: "teams", actions: ["read", "write"] },
+        { resource: "team_members", actions: ["read", "write"] },
     ],
     client: [
         { resource: "dashboard", actions: ["read"] },
@@ -466,6 +472,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Messaging (client — DM assigned PM only)
         { resource: "messaging_dm", actions: ["read", "write"] },
         { resource: "messaging_message", actions: ["read", "write"] },
+        // Teams (client — read own team only)
+        { resource: "teams", actions: ["read"] },
+        { resource: "team_members", actions: ["read"] },
     ],
     member: [
         // Command Center (limited)
@@ -556,6 +565,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "messaging_channel", actions: ["read"] },
         { resource: "messaging_message", actions: ["read", "write"] },
         { resource: "messaging_ptt", actions: ["read", "write"] },
+        // Teams
+        { resource: "teams", actions: ["read"] },
+        { resource: "team_members", actions: ["read"] },
     ],
     collaborator: [
         { resource: "tasks", actions: ["read"] },
@@ -599,6 +611,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Messaging (collaborator — DM assigned PM only)
         { resource: "messaging_dm", actions: ["read", "write"] },
         { resource: "messaging_message", actions: ["read", "write"] },
+        // Teams (collaborator — read own team only)
+        { resource: "teams", actions: ["read"] },
+        { resource: "team_members", actions: ["read"] },
     ],
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type {
     AssignCredentialRequest,
     CreateCredentialPoolRequest,
@@ -31,7 +31,6 @@ export function useCredentialTypes(activeOnly = true) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -47,7 +46,7 @@ export function useCredentialType(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -116,7 +115,6 @@ export function useCredentialPools(filters?: CredentialPoolFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -132,7 +130,7 @@ export function useCredentialPool(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -222,7 +220,6 @@ export function useCredentialAssignments(filters?: CredentialAssignmentFilters) 
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -238,7 +235,7 @@ export function useCredentialAssignment(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -310,7 +307,6 @@ export function useCredentialScanLogs(assignmentId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -364,7 +360,6 @@ export function useBulkImportJobs(entityType?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -380,7 +375,7 @@ export function useBulkImportJob(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
         refetchInterval: (query) => {
             const status = (query.state.data as Record<string, unknown>)?.status;
             if (status === "processing" || status === "validating") return 3000;
@@ -433,7 +428,6 @@ export function useExportTemplates(entityType?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 

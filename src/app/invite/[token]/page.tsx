@@ -112,8 +112,9 @@ export default function InviteAcceptPage() {
     if (state === "loading") {
         return (
             <AuthLayout title="Loading invitation…" subtitle="Verifying your invite">
-                <div className="flex justify-center py-8">
+                <div className="flex justify-center py-8" role="status" aria-live="polite">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="sr-only">Loading invitation details…</span>
                 </div>
             </AuthLayout>
         );
@@ -123,7 +124,7 @@ export default function InviteAcceptPage() {
     if (state === "not_found") {
         return (
             <AuthLayout title="Invitation not found" subtitle="This link may be invalid">
-                <div className="text-center space-y-4 py-4">
+                <div className="text-center space-y-4 py-4" role="alert">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-destructive/10">
                         <XCircle className="h-7 w-7 text-destructive" aria-hidden="true" />
                     </div>
@@ -142,7 +143,7 @@ export default function InviteAcceptPage() {
     if (state === "expired") {
         return (
             <AuthLayout title="Invitation expired" subtitle="This link is no longer valid">
-                <div className="text-center space-y-4 py-4">
+                <div className="text-center space-y-4 py-4" role="alert">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-warning/10">
                         <AlertCircle className="h-7 w-7 text-warning" aria-hidden="true" />
                     </div>
@@ -161,7 +162,7 @@ export default function InviteAcceptPage() {
     if (state === "used") {
         return (
             <AuthLayout title="Already accepted" subtitle="This invitation was already used">
-                <div className="text-center space-y-4 py-4">
+                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-info/10">
                         <CheckCircle2 className="h-7 w-7 text-info" aria-hidden="true" />
                     </div>

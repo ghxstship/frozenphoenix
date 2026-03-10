@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteInsurancePolicy, useUpdateInsurancePolicy } from "@/lib/supabase/hooks-pages";
@@ -33,23 +34,19 @@ export default function InsurancePolicyDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: policy, isLoading } = useInsurancePolicy(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Insurance Policy",
         listPath: "/insurance-policies",
         useUpdateHook: useUpdateInsurancePolicy,
         useDeleteHook: useDeleteInsurancePolicy,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -203,19 +200,19 @@ export default function InsurancePolicyDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => console.log("Renew policy:", entityId)}>
                         <Calendar className="h-4 w-4 mr-1" />
                         Renew
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Verify policy:", entityId)}>
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Verify
                     </Button>
                 </div>
             }
             menuItems={[
-                { label: "Edit Policy", onClick: () => {} },
-                { label: "Upload Certificate", onClick: () => {} },
+                { label: "Edit Policy", onClick: () => router.push(`/insurance-policies/${entityId}/edit`) },
+                { label: "Upload Certificate", onClick: () => router.push(`/documents/new?entityType=insurance_policy&entityId=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -355,7 +352,7 @@ export default function InsurancePolicyDetailPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => console.log("View policy document:", entityId)}>
                                     View
                                 </Button>
                             </div>
@@ -373,7 +370,7 @@ export default function InsurancePolicyDetailPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => console.log("View certificate:", entityId)}>
                                     View
                                 </Button>
                             </div>

@@ -8,35 +8,35 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { AlertTriangle, Clock, CreditCard, DollarSign, TrendingUp } from "lucide-react";
 import { OT_ALERT_LEVEL_MAP } from "@/config/domain-config";
 import { usePosTransactions } from "@/lib/supabase/hooks-external-sync";
+import { useLiveFinancialSnapshots } from "@/lib/supabase/hooks-live-ops";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { formatCurrency } from "@/lib/utils";
 
-const snapshot = {
-    budgetTotal: 185000,
-    spentToDate: 142500,
-    committedNotSpent: 18000,
-    laborRegular: 48000,
-    laborOvertime: 8200,
-    laborDoubleTime: 3100,
-    equipmentCost: 35000,
-    vendorCost: 28000,
-    onsiteProcurement: 2200,
-    revenueTickets: 95000,
-    revenueFb: 18500,
-    revenueMerch: 7200,
-    revenueOther: 3500,
-    marginPercent: 18.2,
-    burnRatePerHour: 1850,
-    otAlertLevel: "advisory" as string,
-};
-
 const fmt = (n: number) => `$${n.toLocaleString()}`;
-const remaining = snapshot.budgetTotal - snapshot.spentToDate - snapshot.committedNotSpent;
-const burnPct = Math.round((snapshot.spentToDate / snapshot.budgetTotal) * 100);
-const totalRevenue =
-    snapshot.revenueTickets + snapshot.revenueFb + snapshot.revenueMerch + snapshot.revenueOther;
 
 export default function LiveFinancialsPage() {
+    const { data: snapshots, isLoading } = useLiveFinancialSnapshots();
     const { data: posTransactions } = usePosTransactions();
+
+    if (isLoading) return <LoadingState />;
+
+    const latest = (snapshots ?? [])[0];
+    const budgetTotal = latest?.budget_total ?? 0;
+    const spentToDate = latest?.spent_to_date ?? 0;
+    const committedNotSpent = latest?.committed_not_spent ?? 0;
+    const laborRegular = latest?.labor_regular ?? 0;
+    const laborOvertime = latest?.labor_overtime ?? 0;
+    const laborDoubleTime = latest?.labor_double_time ?? 0;
+    const revenueTickets = latest?.revenue_tickets ?? 0;
+    const revenueFb = latest?.revenue_fb ?? 0;
+    const revenueMerch = latest?.revenue_merch ?? 0;
+    const revenueOther = latest?.revenue_other ?? 0;
+    const marginPercent = latest?.margin_percent ?? 0;
+    const burnRatePerHour = latest?.burn_rate_per_hour ?? 0;
+    const otAlertLevel = latest?.ot_alert_level ?? "none";
+    const remaining = budgetTotal - spentToDate - committedNotSpent;
+    const burnPct = budgetTotal > 0 ? Math.round((spentToDate / budgetTotal) * 100) : 0;
+    const totalRevenue = revenueTickets + revenueFb + revenueMerch + revenueOther;
     const posTxns = (posTransactions ?? []) as Record<string, unknown>[];
     const posTotal = posTxns.reduce((sum, t) => sum + (Number(t.total_amount) || 0), 0);
     const posTax = posTxns.reduce((sum, t) => sum + (Number(t.tax_amount) || 0), 0);
@@ -59,22 +59,22 @@ export default function LiveFinancialsPage() {
                 <StatCard title="Remaining" value={fmt(remaining)} icon={TrendingUp} />
                 <StatCard
                     title="Burn Rate"
-                    value={`${fmt(snapshot.burnRatePerHour)}/hr`}
+                    value={`${fmt(burnRatePerHour)}/hr`}
                     icon={Clock}
                 />
-                <StatCard title="Margin" value={`${snapshot.marginPercent}%`} icon={TrendingUp} />
+                <StatCard title="Margin" value={`${marginPercent}%`} icon={TrendingUp} />
             </div>
 
-            {snapshot.otAlertLevel !== "none" && (
+            {otAlertLevel !== "none" && (
                 <Card className="border-warning/30 bg-warning/5">
                     <CardContent className="py-3 flex items-center gap-3">
                         <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
                         <p className="text-sm font-medium text-warning">
                             Overtime alert:{" "}
                             {OT_ALERT_LEVEL_MAP[
-                                snapshot.otAlertLevel as keyof typeof OT_ALERT_LEVEL_MAP
-                            ]?.label ?? snapshot.otAlertLevel}{" "}
-                            — labor overtime at {fmt(snapshot.laborOvertime)}
+                                otAlertLevel as keyof typeof OT_ALERT_LEVEL_MAP
+                            ]?.label ?? otAlertLevel}{" "}
+                            — labor overtime at {fmt(laborOvertime)}
                         </p>
                     </CardContent>
                 </Card>
@@ -87,16 +87,16 @@ export default function LiveFinancialsPage() {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Total Budget</span>
-                                <span className="font-medium">{fmt(snapshot.budgetTotal)}</span>
+                                <span className="font-medium">{fmt(budgetTotal)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Spent to Date</span>
-                                <span className="font-medium">{fmt(snapshot.spentToDate)}</span>
+                                <span className="font-medium">{fmt(spentToDate)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Committed</span>
                                 <span className="font-medium">
-                                    {fmt(snapshot.committedNotSpent)}
+                                    {fmt(committedNotSpent)}
                                 </span>
                             </div>
                             <div className="flex justify-between">
@@ -117,28 +117,24 @@ export default function LiveFinancialsPage() {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Regular</span>
-                                <span className="font-medium">{fmt(snapshot.laborRegular)}</span>
+                                <span className="font-medium">{fmt(laborRegular)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Overtime (1.5x)</span>
                                 <span className="font-medium text-warning">
-                                    {fmt(snapshot.laborOvertime)}
+                                    {fmt(laborOvertime)}
                                 </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Double Time (2x)</span>
                                 <span className="font-medium text-destructive">
-                                    {fmt(snapshot.laborDoubleTime)}
+                                    {fmt(laborDoubleTime)}
                                 </span>
                             </div>
                             <div className="flex justify-between border-t border-border pt-2 mt-2">
                                 <span className="font-medium">Total Labor</span>
                                 <span className="font-bold">
-                                    {fmt(
-                                        snapshot.laborRegular +
-                                            snapshot.laborOvertime +
-                                            snapshot.laborDoubleTime
-                                    )}
+                                    {fmt(laborRegular + laborOvertime + laborDoubleTime)}
                                 </span>
                             </div>
                         </div>
@@ -150,19 +146,19 @@ export default function LiveFinancialsPage() {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Tickets</span>
-                                <span className="font-medium">{fmt(snapshot.revenueTickets)}</span>
+                                <span className="font-medium">{fmt(revenueTickets)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">F&B</span>
-                                <span className="font-medium">{fmt(snapshot.revenueFb)}</span>
+                                <span className="font-medium">{fmt(revenueFb)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Merch</span>
-                                <span className="font-medium">{fmt(snapshot.revenueMerch)}</span>
+                                <span className="font-medium">{fmt(revenueMerch)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Other</span>
-                                <span className="font-medium">{fmt(snapshot.revenueOther)}</span>
+                                <span className="font-medium">{fmt(revenueOther)}</span>
                             </div>
                             <div className="flex justify-between border-t border-border pt-2 mt-2">
                                 <span className="font-medium">Total Revenue</span>

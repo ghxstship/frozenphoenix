@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CERTIFICATION_CONFIG } from "@/config/create-entity-configs";
 import { BadgeCheck, CheckCircle2, Clock, Loader2, Plus, XCircle } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import type { AssetCertification } from "@/types/governance";
 import { useCertifications } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -48,9 +50,7 @@ export default function CertificationsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -61,9 +61,12 @@ export default function CertificationsPage() {
                     title="Certifications"
                     description="Unified crew and asset certification tracking with expiry enforcement"
                 >
-                    <Button size="sm" onClick={openCreate}>
-                        <Plus className="h-4 w-4" /> Add Certification
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="certifications" />
+                        <Button size="sm" onClick={openCreate}>
+                            <Plus className="h-4 w-4" /> Add Certification
+                        </Button>
+                    </div>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

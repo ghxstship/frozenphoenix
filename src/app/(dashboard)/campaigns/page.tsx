@@ -1,6 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -88,9 +90,7 @@ export default function CampaignsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -128,6 +128,7 @@ export default function CampaignsPage() {
                             ]}
                             ariaLabel="View mode"
                         />
+                        <CsvExportButton entity="campaigns" />
                         <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             New Campaign

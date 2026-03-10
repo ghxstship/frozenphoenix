@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
+import { filterValue, getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 // ─── Join-aware return types ───
@@ -42,8 +42,6 @@ export type PaymentWithInvoice = WithJoin<
     { invoices: { amount: number; status: string } | null }
 >;
 export type DealWithPipeline = WithJoin<Tables<"deals">, PipelineName & CompanyName & ContactName>;
-
-export { isSupabaseConfigured };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SECTION 1: COMPANIES

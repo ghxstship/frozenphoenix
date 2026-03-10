@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useCallback, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,13 @@ function MfaVerifyForm() {
     const [code, setCode] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const codeInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        // Delay focus so screen readers can announce the page heading first
+        const timer = setTimeout(() => codeInputRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleVerify = useCallback(
         async (e: React.FormEvent) => {
@@ -116,6 +123,7 @@ function MfaVerifyForm() {
                         Verification Code
                     </label>
                     <Input
+                        ref={codeInputRef}
                         id="mfa-verify-code"
                         type="text"
                         inputMode="numeric"
@@ -125,7 +133,6 @@ function MfaVerifyForm() {
                         value={code}
                         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         autoComplete="one-time-code"
-                        autoFocus
                         className="text-center text-2xl font-mono tracking-[0.5em] h-14"
                         aria-label="6-digit verification code"
                         disabled={loading}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
@@ -79,7 +80,6 @@ export default function IncidentDetailPage() {
         useUpdateHook: useUpdateIncident,
         useDeleteHook: useDeleteIncident,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -109,9 +109,7 @@ export default function IncidentDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -243,8 +241,8 @@ export default function IncidentDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "File Insurance Claim", onClick: () => {} },
-                { label: "Close Incident", onClick: () => {} },
+                { label: "File Insurance Claim", onClick: () => router.push(`/insurance-policies/new?incidentId=${incidentId}`) },
+                { label: "Close Incident", onClick: () => handleUpdate({ status: "closed" }) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

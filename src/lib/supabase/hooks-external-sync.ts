@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type {
     CreateProviderConnectionRequest,
     CreateSyncConflictPolicyRequest,
@@ -38,7 +38,6 @@ export function useProviderConnections(filters?: ProviderConnectionFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -54,7 +53,7 @@ export function useProviderConnection(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -136,7 +135,6 @@ export function useProviderTicketMap(connectionId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -190,7 +188,6 @@ export function usePosTransactions(filters?: PosTransactionFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -206,7 +203,7 @@ export function usePosTransaction(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -232,7 +229,6 @@ export function useWebhookEvents(connectionId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -280,7 +276,6 @@ export function useSyncEvents(filters?: SyncLogFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -305,7 +300,6 @@ export function useSyncConflictPolicies(connectionId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 

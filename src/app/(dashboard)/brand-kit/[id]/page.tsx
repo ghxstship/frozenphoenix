@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import {
     useBrandKit,
     useDeleteBrandKit as useDeleteHook,
     useUpdateBrandKit as useUpdateHook,
 } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { Loader2 } from "lucide-react";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,133 +51,27 @@ interface GuidelineSection {
     content: string;
 }
 
-const mockBrand = {
-    id: "bk-nike",
-    clientName: "Nike",
-    primaryColor: "#000000",
-    secondaryColor: "#FFFFFF",
-    accentColor: "#FF6B00",
-    fontFamily: "Futura",
-    headingFont: "Futura Bold",
-    bodyFont: "Helvetica Neue",
-    logoUrl: "/brands/nike/logo.svg",
-    createdAt: "2025-09-15",
-    updatedAt: "2026-02-20",
-};
+function parseAssets(raw: unknown): BrandAsset[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((a) => ({
+        id: String(a.id ?? ""),
+        name: String(a.name ?? ""),
+        type: (a.type as BrandAsset["type"]) ?? "logo",
+        format: String(a.format ?? ""),
+        size: String(a.size ?? ""),
+        url: String(a.url ?? "#"),
+        thumbnail: String(a.thumbnail ?? ""),
+    }));
+}
 
-const mockAssets: BrandAsset[] = [
-    {
-        id: "a1",
-        name: "Primary Logo",
-        type: "logo",
-        format: "SVG",
-        size: "24 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a2",
-        name: "Logo Mark (Swoosh)",
-        type: "icon",
-        format: "SVG",
-        size: "8 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a3",
-        name: "Logo White on Dark",
-        type: "logo",
-        format: "PNG",
-        size: "156 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a4",
-        name: "Brand Pattern (Geometric)",
-        type: "pattern",
-        format: "SVG",
-        size: "42 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a5",
-        name: "Hero Photo — Air Max Launch",
-        type: "photo",
-        format: "JPG",
-        size: "2.4 MB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a6",
-        name: "Social Media Template",
-        type: "illustration",
-        format: "PNG",
-        size: "890 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a7",
-        name: "Favicon",
-        type: "icon",
-        format: "ICO",
-        size: "4 KB",
-        url: "#",
-        thumbnail: "",
-    },
-    {
-        id: "a8",
-        name: "Email Header",
-        type: "illustration",
-        format: "PNG",
-        size: "320 KB",
-        url: "#",
-        thumbnail: "",
-    },
-];
-
-const mockGuidelines: GuidelineSection[] = [
-    {
-        id: "g1",
-        title: "Brand Voice",
-        content:
-            "Nike communicates with confidence, inspiration, and directness. The tone is motivational yet grounded — empowering athletes of all levels. Avoid corporate jargon; prefer action-oriented language.",
-    },
-    {
-        id: "g2",
-        title: "Logo Usage",
-        content:
-            'The Swoosh must always have clear space equal to 50% of the logo height on all sides. Never distort, rotate, or recolor the logo outside approved color variations. Minimum size: 24px height for digital, 0.5" for print.',
-    },
-    {
-        id: "g3",
-        title: "Color Application",
-        content:
-            "Primary black (#000000) is used for headlines, key CTAs, and logo. White (#FFFFFF) is the default background. Orange accent (#FF6B00) is reserved for highlights, hover states, and promotional callouts. Never use accent as a background color for large areas.",
-    },
-    {
-        id: "g4",
-        title: "Typography Rules",
-        content:
-            "Futura Bold for headings (all caps optional for hero text). Helvetica Neue for body copy. Minimum body text size: 14px digital, 10pt print. Line height: 1.5 for body, 1.2 for headings.",
-    },
-    {
-        id: "g5",
-        title: "Photography Style",
-        content:
-            "High-contrast, dynamic imagery showing athletes in motion. Natural lighting preferred. Avoid heavily staged or overly retouched images. Diversity and inclusivity are non-negotiable in all visual content.",
-    },
-    {
-        id: "g6",
-        title: "Do Not",
-        content:
-            "• Do not place logo on busy backgrounds without a container\n• Do not use gradients on the Swoosh\n• Do not combine with competitor imagery\n• Do not use Comic Sans (or any non-approved font)\n• Do not alter brand color hex values",
-    },
-];
+function parseGuidelines(raw: unknown): GuidelineSection[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((g) => ({
+        id: String(g.id ?? ""),
+        title: String(g.title ?? ""),
+        content: String(g.content ?? ""),
+    }));
+}
 
 const ASSET_TYPE_VARIANTS: Record<
     string,
@@ -194,9 +88,9 @@ const BRAND_TAB_VALUES = ["colors", "assets", "guidelines", "chatter"] as const;
 
 export default function BrandKitDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const kitId = params.id as string;
     const { data: sbRecord, isLoading } = useBrandKit(kitId);
+    const bk = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: kitId,
         entityLabel: "Brand Kit",
@@ -204,7 +98,6 @@ export default function BrandKitDetailPage() {
         useUpdateHook,
         useDeleteHook,
     });
-    void router;
     const [activeTab, setActiveTab] = useQueryTabState<BrandTab>({
         key: "tab",
         defaultValue: "colors",
@@ -212,7 +105,25 @@ export default function BrandKitDetailPage() {
     });
     const [copiedColor, setCopiedColor] = useState<string | null>(null);
     const [assetFilter, setAssetFilter] = useState<string>("all");
-    const [guidelineSections, setGuidelineSections] = useState(mockGuidelines);
+    const [guidelineSections, setGuidelineSections] = useState<GuidelineSection[]>([]);
+    const [initialized, setInitialized] = useState(false);
+
+    const clientName = (bk?.client_name as string) ?? "";
+    const primaryColor = (bk?.primary_color as string) ?? "#000000";
+    const secondaryColor = (bk?.secondary_color as string) ?? "#FFFFFF";
+    const accentColor = (bk?.accent_color as string) ?? "#FF6B00";
+    const fontFamily = (bk?.font_family as string) ?? "";
+    const headingFont = (bk?.heading_font as string) ?? "";
+    const bodyFont = (bk?.body_font as string) ?? "";
+    const updatedAt = (bk?.updated_at as string) ?? "";
+    const assets = parseAssets(bk?.assets);
+
+    useEffect(() => {
+        if (bk && !initialized) {
+            setGuidelineSections(parseGuidelines(bk.guidelines));
+            setInitialized(true);
+        }
+    }, [bk, initialized]);
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
@@ -234,11 +145,11 @@ export default function BrandKitDetailPage() {
     };
 
     const filteredAssets =
-        assetFilter === "all" ? mockAssets : mockAssets.filter((a) => a.type === assetFilter);
+        assetFilter === "all" ? assets : assets.filter((a) => a.type === assetFilter);
 
     const tabs = [
         { id: "colors" as const, label: "Colors & Typography" },
-        { id: "assets" as const, label: "Asset Library", count: mockAssets.length },
+        { id: "assets" as const, label: "Asset Library", count: assets.length },
         { id: "guidelines" as const, label: "Brand Guidelines", count: guidelineSections.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
@@ -254,14 +165,14 @@ export default function BrandKitDetailPage() {
                         <div
                             className="h-10 w-10 rounded-xl flex items-center justify-center text-lg font-bold text-primary-foreground"
                             style={{
-                                background: `linear-gradient(135deg, ${mockBrand.primaryColor}, ${mockBrand.accentColor})`,
+                                background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
                             }}
                         >
-                            {mockBrand.clientName.charAt(0)}
+                            {clientName.charAt(0)}
                         </div>
                         <div>
-                            <p className="text-sm font-medium">{mockBrand.clientName}</p>
-                            <p className="text-xs text-muted-foreground">Updated Feb 20, 2026</p>
+                            <p className="text-sm font-medium">{clientName}</p>
+                            <p className="text-xs text-muted-foreground">{updatedAt ? `Updated ${updatedAt}` : ""}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -272,9 +183,9 @@ export default function BrandKitDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                     {[
-                        { label: "Primary", color: mockBrand.primaryColor },
-                        { label: "Secondary", color: mockBrand.secondaryColor },
-                        { label: "Accent", color: mockBrand.accentColor },
+                        { label: "Primary", color: primaryColor },
+                        { label: "Secondary", color: secondaryColor },
+                        { label: "Accent", color: accentColor },
                     ].map((c) => (
                         <button
                             key={c.label}
@@ -300,25 +211,20 @@ export default function BrandKitDetailPage() {
                 <CardContent className="space-y-1">
                     <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Heading</span>
-                        <span className="font-medium">{mockBrand.headingFont}</span>
+                        <span className="font-medium">{headingFont}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Body</span>
-                        <span className="font-medium">{mockBrand.bodyFont}</span>
+                        <span className="font-medium">{bodyFont}</span>
                     </div>
                 </CardContent>
             </Card>
         </div>
     );
 
-    const entity = (sbRecord as Record<string, unknown>) ?? mockBrand;
-    const brandName = (entity.client_name ?? entity.clientName ?? mockBrand.clientName) as string;
-
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -328,25 +234,25 @@ export default function BrandKitDetailPage() {
             backLabel="Brand Kits"
             entityType="brand-kit"
             entityId={kitId}
-            title={`${brandName} Brand Kit`}
-            subtitle="Last updated Feb 20, 2026"
+            title={`${clientName} Brand Kit`}
+            subtitle={updatedAt ? `Last updated ${updatedAt}` : ""}
             avatar={
                 <div
                     className="h-14 w-14 rounded-2xl flex items-center justify-center text-xl font-bold text-primary-foreground"
                     style={{
-                        background: `linear-gradient(135deg, ${mockBrand.primaryColor}, ${mockBrand.accentColor})`,
+                        background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
                     }}
                 >
-                    {mockBrand.clientName.charAt(0)}
+                    {clientName.charAt(0)}
                 </div>
             }
             actions={
                 <>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => console.log("Export brand kit ZIP:", kitId)}>
                         <Download className="h-4 w-4 mr-1" />
                         Export ZIP
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => console.log("Export brand kit PDF:", kitId)}>
                         <FileText className="h-4 w-4 mr-1" />
                         Export PDF
                     </Button>
@@ -370,9 +276,9 @@ export default function BrandKitDetailPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {[
-                                { label: "Primary", color: mockBrand.primaryColor },
-                                { label: "Secondary", color: mockBrand.secondaryColor },
-                                { label: "Accent", color: mockBrand.accentColor },
+                                { label: "Primary", color: primaryColor },
+                                { label: "Secondary", color: secondaryColor },
+                                { label: "Accent", color: accentColor },
                             ].map((c) => (
                                 <div key={c.label} className="flex items-center gap-4">
                                     <button
@@ -410,15 +316,15 @@ export default function BrandKitDetailPage() {
                                 <div className="h-12 rounded-lg overflow-hidden flex">
                                     <div
                                         className="flex-[3]"
-                                        style={{ backgroundColor: mockBrand.primaryColor }}
+                                        style={{ backgroundColor: primaryColor }}
                                     />
                                     <div
                                         className="flex-[2]"
-                                        style={{ backgroundColor: mockBrand.secondaryColor }}
+                                        style={{ backgroundColor: secondaryColor }}
                                     />
                                     <div
                                         className="flex-1"
-                                        style={{ backgroundColor: mockBrand.accentColor }}
+                                        style={{ backgroundColor: accentColor }}
                                     />
                                 </div>
                             </div>
@@ -438,9 +344,9 @@ export default function BrandKitDetailPage() {
                                 <div className="p-4 rounded-lg bg-secondary/30">
                                     <p
                                         className="text-3xl font-bold"
-                                        style={{ fontFamily: mockBrand.fontFamily }}
+                                        style={{ fontFamily: fontFamily }}
                                     >
-                                        {mockBrand.headingFont}
+                                        {headingFont}
                                     </p>
                                     <p className="text-sm text-muted-foreground mt-1">
                                         ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -456,7 +362,7 @@ export default function BrandKitDetailPage() {
                             <div>
                                 <OverlineText className="mb-2">Body Font</OverlineText>
                                 <div className="p-4 rounded-lg bg-secondary/30">
-                                    <p className="text-lg">{mockBrand.bodyFont}</p>
+                                    <p className="text-lg">{bodyFont}</p>
                                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                                         The quick brown fox jumps over the lazy dog. Pack my box
                                         with five dozen liquor jugs. How vexingly quick daft zebras
@@ -524,14 +430,14 @@ export default function BrandKitDetailPage() {
                                               }[type] ?? type)}
                                         {type !== "all" && (
                                             <span className="ml-1 text-xs">
-                                                ({mockAssets.filter((a) => a.type === type).length})
+                                                ({assets.filter((a) => a.type === type).length})
                                             </span>
                                         )}
                                     </Button>
                                 )
                             )}
                         </div>
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => console.log("Upload asset to brand kit:", kitId)}>
                             <Upload className="h-4 w-4 mr-1" />
                             Upload Asset
                         </Button>
@@ -547,10 +453,10 @@ export default function BrandKitDetailPage() {
                                                 <div
                                                     className="h-16 w-16 rounded-xl mx-auto flex items-center justify-center text-2xl font-bold text-primary-foreground"
                                                     style={{
-                                                        backgroundColor: mockBrand.primaryColor,
+                                                        backgroundColor: primaryColor,
                                                     }}
                                                 >
-                                                    {mockBrand.clientName.charAt(0)}
+                                                    {clientName.charAt(0)}
                                                 </div>
                                             ) : asset.type === "pattern" ? (
                                                 <Grid3X3 className="h-12 w-12 text-muted-foreground mx-auto" />
@@ -578,7 +484,7 @@ export default function BrandKitDetailPage() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="shrink-0">
+                                        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => console.log("Download asset:", asset.id)}>
                                             <Download className="h-3.5 w-3.5" />
                                         </Button>
                                     </div>
@@ -611,11 +517,11 @@ export default function BrandKitDetailPage() {
                             deliverables.
                         </p>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => console.log("Export guidelines PDF:", kitId)}>
                                 <Download className="h-4 w-4 mr-1" />
                                 Export PDF
                             </Button>
-                            <Button size="sm">
+                            <Button size="sm" onClick={() => setGuidelineSections((prev) => [...prev, { id: `g-${Date.now()}`, title: "New Section", content: "" }])}>
                                 <Plus className="h-4 w-4 mr-1" />
                                 Add Section
                             </Button>

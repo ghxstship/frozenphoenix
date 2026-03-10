@@ -9,121 +9,29 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { SearchInput } from "@/components/ui/search-input";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { CheckCircle2, Clock, Megaphone, Play, Plus } from "lucide-react";
-
-interface MockCue {
-    id: string;
-    cueNumber: string;
-    title: string;
-    department: string;
-    scheduledTime: string;
-    actualTime?: string;
-    status: string;
-    isCritical: boolean;
-    responsible: string;
-}
-
-const mockCues: MockCue[] = [
-    {
-        id: "1",
-        cueNumber: "Q001",
-        title: "House Lights to 50%",
-        department: "Lighting",
-        scheduledTime: "18:00",
-        actualTime: "18:00",
-        status: "completed",
-        isCritical: false,
-        responsible: "Alex Torres",
-    },
-    {
-        id: "2",
-        cueNumber: "Q002",
-        title: "Welcome Music Start",
-        department: "Audio",
-        scheduledTime: "18:05",
-        actualTime: "18:04",
-        status: "completed",
-        isCritical: false,
-        responsible: "Sam Chen",
-    },
-    {
-        id: "3",
-        cueNumber: "Q003",
-        title: "Doors Open",
-        department: "FOH",
-        scheduledTime: "18:15",
-        actualTime: "18:15",
-        status: "completed",
-        isCritical: true,
-        responsible: "Jordan Lee",
-    },
-    {
-        id: "4",
-        cueNumber: "Q004",
-        title: "VIP Pre-Show Greeting",
-        department: "VIP Services",
-        scheduledTime: "18:30",
-        status: "in_progress",
-        isCritical: false,
-        responsible: "Casey Kim",
-    },
-    {
-        id: "5",
-        cueNumber: "Q005",
-        title: "Stage Wash — Opening Look",
-        department: "Lighting",
-        scheduledTime: "19:00",
-        status: "standby",
-        isCritical: true,
-        responsible: "Alex Torres",
-    },
-    {
-        id: "6",
-        cueNumber: "Q006",
-        title: "MC Introduction",
-        department: "Stage",
-        scheduledTime: "19:02",
-        status: "pending",
-        isCritical: true,
-        responsible: "Pat Davis",
-    },
-    {
-        id: "7",
-        cueNumber: "Q007",
-        title: "Video Roll — Sizzle Reel",
-        department: "Video",
-        scheduledTime: "19:05",
-        status: "pending",
-        isCritical: false,
-        responsible: "Morgan Blake",
-    },
-    {
-        id: "8",
-        cueNumber: "Q008",
-        title: "Keynote Speaker Entry",
-        department: "Stage",
-        scheduledTime: "19:10",
-        status: "pending",
-        isCritical: true,
-        responsible: "Pat Davis",
-    },
-];
+import { useRosCues } from "@/lib/supabase/hooks-live-ops";
 
 export default function RunOfShowPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: cues, isLoading } = useRosCues();
 
-    const completed = mockCues.filter((c) => c.status === "completed").length;
-    const inProgress = mockCues.filter((c) =>
+    if (isLoading) return <LoadingState />;
+
+    const rows = cues ?? [];
+    const completed = rows.filter((c) => c.status === "completed").length;
+    const inProgress = rows.filter((c) =>
         ["in_progress", "standby", "called"].includes(c.status)
     ).length;
-    const upcoming = mockCues.filter((c) => c.status === "pending").length;
+    const upcoming = rows.filter((c) => c.status === "pending").length;
 
-    const filtered = mockCues.filter((c) => {
+    const filtered = rows.filter((c) => {
         const matchesSearch =
             !search ||
             c.title.toLowerCase().includes(search.toLowerCase()) ||
-            c.cueNumber.toLowerCase().includes(search.toLowerCase());
+            c.cue_number.toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === "all" || c.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -141,7 +49,7 @@ export default function RunOfShowPage() {
             </PageHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Cues" value={mockCues.length} icon={Megaphone} />
+                <StatCard title="Total Cues" value={rows.length} icon={Megaphone} />
                 <StatCard title="Completed" value={completed} icon={CheckCircle2} />
                 <StatCard title="Active / Standby" value={inProgress} icon={Play} />
                 <StatCard title="Upcoming" value={upcoming} icon={Clock} />
@@ -181,13 +89,13 @@ export default function RunOfShowPage() {
                 {filtered.map((cue, i) => (
                     <StaggerItem key={cue.id} index={i} stagger="tight">
                         <Card
-                            className={`hover:shadow-sm transition-all ${cue.isCritical ? "border-l-2 border-l-destructive" : ""}`}
+                            className={`hover:shadow-sm transition-all ${cue.is_critical ? "border-l-2 border-l-destructive" : ""}`}
                         >
                             <CardContent className="py-3">
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 text-center shrink-0">
                                         <p className="text-sm font-mono font-bold">
-                                            {cue.cueNumber}
+                                            {cue.cue_number}
                                         </p>
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -199,27 +107,29 @@ export default function RunOfShowPage() {
                                                 status={cue.status}
                                                 className="text-[10px] shrink-0"
                                             />
-                                            {cue.isCritical && (
+                                            {cue.is_critical && (
                                                 <span className="text-[10px] text-destructive font-medium shrink-0">
                                                     CRITICAL
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-                                            <span>{cue.department}</span>
-                                            <span>{cue.responsible}</span>
+                                            <span>{cue.department ?? ""}</span>
+                                            {cue.responsible_id && <span>{cue.responsible_id}</span>}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm shrink-0">
-                                        <div className="text-right">
-                                            <p className="font-medium">{cue.scheduledTime}</p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                scheduled
-                                            </p>
-                                        </div>
-                                        {cue.actualTime && (
+                                        {cue.scheduled_time && (
                                             <div className="text-right">
-                                                <p className="font-medium">{cue.actualTime}</p>
+                                                <p className="font-medium">{new Date(cue.scheduled_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    scheduled
+                                                </p>
+                                            </div>
+                                        )}
+                                        {cue.actual_time && (
+                                            <div className="text-right">
+                                                <p className="font-medium">{new Date(cue.actual_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
                                                 <p className="text-[10px] text-muted-foreground">
                                                     actual
                                                 </p>

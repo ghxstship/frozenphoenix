@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { TabBar } from "@/components/ui/tab-bar";
@@ -327,9 +328,7 @@ export default function TimeTrackingPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 

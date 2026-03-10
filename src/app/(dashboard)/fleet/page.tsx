@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_VEHICLE_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +28,7 @@ import type { BadgeVariant } from "@/config/ui-variants";
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function FleetPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbVehicles, isLoading } = useVehicles();
 
     const vehicles: Vehicle[] = (sbVehicles ?? []).map((v) => ({
@@ -41,9 +45,7 @@ export default function FleetPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -57,7 +59,7 @@ export default function FleetPage() {
                     title="Fleet Management"
                     description="Vehicle tracking, dispatch, and logistics coordination"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" />
                         Add Vehicle
                     </Button>
@@ -236,6 +238,7 @@ export default function FleetPage() {
                     </div>
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_VEHICLE_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

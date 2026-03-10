@@ -43,7 +43,7 @@ function createMockSupabase(initialData: MockTable = {}) {
         let pendingInsert: MockRow[] | null = null;
         let pendingUpdate: Partial<MockRow> | null = null;
         const filters: Array<(r: MockRow) => boolean> = [];
-        let _selectFields: string = "*"; // eslint-disable-line @typescript-eslint/no-unused-vars
+        let _selectFields: string = "*";
         let sortField: string | null = null;
         let sortAsc = true;
         let limitCount: number | null = null;
@@ -526,9 +526,8 @@ describe("Approval Engine", () => {
         });
 
         it("cancels an active workflow", async () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = await cancelWorkflow(
-                supabase as any,
+                supabase as unknown as Parameters<typeof cancelWorkflow>[0],
                 instanceId,
                 USER_ID,
                 "No longer needed"

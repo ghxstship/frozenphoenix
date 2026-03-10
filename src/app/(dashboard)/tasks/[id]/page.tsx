@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -85,9 +86,7 @@ export default function TaskDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -199,7 +198,7 @@ export default function TaskDetailPage() {
                     label: updateTask.isPending ? "Completing..." : "Mark Complete",
                     onClick: handleMarkComplete,
                 },
-                { label: "Duplicate Task", onClick: () => {} },
+                { label: "Duplicate Task", onClick: () => router.push(`/tasks/new?duplicateFrom=${taskId}`) },
                 {
                     label: deleteTask.isPending ? "Deleting..." : "Delete Task",
                     onClick: handleDeleteTask,
@@ -312,14 +311,14 @@ export default function TaskDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Subtasks</CardTitle>
-                        <Button size="sm">Add Subtask</Button>
+                        <Button size="sm" onClick={() => router.push(`/tasks/new?parentId=${taskId}`)}>Add Subtask</Button>
                     </CardHeader>
                     <CardContent>
                         <EmptyState
                             icon={CheckSquare}
                             title="No subtasks"
                             description="Break this task into smaller subtasks"
-                            action={{ label: "Add Subtask", onClick: () => {} }}
+                            action={{ label: "Add Subtask", onClick: () => router.push(`/tasks/new?parentId=${taskId}`) }}
                         />
                     </CardContent>
                 </Card>

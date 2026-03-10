@@ -61,6 +61,7 @@ import {
 } from "lucide-react";
 import { TabBar } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useToast } from "@/components/ui/toast";
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
@@ -139,6 +140,7 @@ export default function SettingsPage() {
         setAnimationSpeed,
     } = useTheme();
     const { user, profile, memberships, activeOrg } = useAuth();
+    const { addToast } = useToast();
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
 
     // Profile form state — pre-populated from auth context
@@ -236,7 +238,7 @@ export default function SettingsPage() {
                                                 {userInitials}
                                             </div>
                                             <div>
-                                                <Button variant="ghost" size="sm">
+                                                <Button variant="ghost" size="sm" onClick={() => addToast({ title: "Coming soon", description: "Profile photo upload is not yet available.", variant: "default" })}>
                                                     <Upload className="h-4 w-4" />
                                                     Upload Photo
                                                 </Button>
@@ -424,7 +426,7 @@ export default function SettingsPage() {
                                             action="write"
                                             silent
                                         >
-                                            <Button variant="ghost" className="w-full mt-3">
+                                            <Button variant="ghost" className="w-full mt-3" onClick={() => addToast({ title: "Coming soon", description: "Team invitations will be available from the onboarding flow.", variant: "default" })}>
                                                 <User className="h-4 w-4" />
                                                 Invite Team Member
                                             </Button>
@@ -600,7 +602,7 @@ export default function SettingsPage() {
                                                 placeholder="••••••••"
                                             />
                                         </div>
-                                        <Button>
+                                        <Button onClick={() => addToast({ title: "Coming soon", description: "Use the dedicated Security settings page to change your password.", variant: "default" })}>
                                             <Key className="h-4 w-4" />
                                             Update Password
                                         </Button>
@@ -621,7 +623,7 @@ export default function SettingsPage() {
                                             </div>
                                             <Badge variant="ghost">Not Enabled</Badge>
                                         </div>
-                                        <Button variant="ghost" className="mt-3">
+                                        <Button variant="ghost" className="mt-3" onClick={() => addToast({ title: "Coming soon", description: "Enable 2FA from the dedicated Security settings page.", variant: "default" })}>
                                             <Shield className="h-4 w-4" />
                                             Enable 2FA
                                         </Button>

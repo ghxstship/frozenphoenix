@@ -7,125 +7,28 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { AlertTriangle, CheckCircle2, Package, Wrench } from "lucide-react";
-
-interface MockEquipment {
-    id: string;
-    assetName: string;
-    category: string;
-    status: string;
-    deployedLocation: string;
-    department: string;
-    conditionOnArrival: string;
-    expectedQty: number;
-    receivedQty: number;
-}
-
-const mockEquipment: MockEquipment[] = [
-    {
-        id: "1",
-        assetName: "Allen & Heath SQ-7 Console",
-        category: "Audio",
-        status: "deployed",
-        deployedLocation: "Main Stage FOH",
-        department: "Audio",
-        conditionOnArrival: "excellent",
-        expectedQty: 1,
-        receivedQty: 1,
-    },
-    {
-        id: "2",
-        assetName: "Robe MegaPointe (x12)",
-        category: "Lighting",
-        status: "deployed",
-        deployedLocation: "Main Stage Truss",
-        department: "Lighting",
-        conditionOnArrival: "good",
-        expectedQty: 12,
-        receivedQty: 12,
-    },
-    {
-        id: "3",
-        assetName: "ROE CB5 LED Panels (x48)",
-        category: "Video",
-        status: "checked_in",
-        deployedLocation: "Staging Area",
-        department: "Video",
-        conditionOnArrival: "good",
-        expectedQty: 48,
-        receivedQty: 48,
-    },
-    {
-        id: "4",
-        assetName: "CM Lodestar 1-Ton (x8)",
-        category: "Rigging",
-        status: "deployed",
-        deployedLocation: "Grid",
-        department: "Rigging",
-        conditionOnArrival: "good",
-        expectedQty: 8,
-        receivedQty: 8,
-    },
-    {
-        id: "5",
-        assetName: "Barricade Sections (x20)",
-        category: "Scenic",
-        status: "deployed",
-        deployedLocation: "FOH Perimeter",
-        department: "FOH",
-        conditionOnArrival: "fair",
-        expectedQty: 20,
-        receivedQty: 20,
-    },
-    {
-        id: "6",
-        assetName: "Wireless Mic Kit (Shure AD4Q)",
-        category: "Audio",
-        status: "issue_reported",
-        deployedLocation: "Main Stage",
-        department: "Audio",
-        conditionOnArrival: "good",
-        expectedQty: 4,
-        receivedQty: 4,
-    },
-    {
-        id: "7",
-        assetName: "Follow Spot (x2)",
-        category: "Lighting",
-        status: "standby",
-        deployedLocation: "FOH Platform",
-        department: "Lighting",
-        conditionOnArrival: "excellent",
-        expectedQty: 2,
-        receivedQty: 2,
-    },
-    {
-        id: "8",
-        assetName: "Generator — 400A",
-        category: "Power",
-        status: "deployed",
-        deployedLocation: "Power Compound",
-        department: "Technical",
-        conditionOnArrival: "good",
-        expectedQty: 1,
-        receivedQty: 1,
-    },
-];
+import { useEquipmentCheckIns } from "@/lib/supabase/hooks-live-ops";
 
 export default function EquipmentPage() {
     const [search, setSearch] = useState("");
+    const { data: equipment, isLoading } = useEquipmentCheckIns();
 
-    const deployed = mockEquipment.filter((e) => e.status === "deployed").length;
-    const issues = mockEquipment.filter((e) =>
+    if (isLoading) return <LoadingState />;
+
+    const rows = equipment ?? [];
+    const deployed = rows.filter((e) => e.status === "deployed").length;
+    const issues = rows.filter((e) =>
         ["issue_reported", "failed", "being_repaired"].includes(e.status)
     ).length;
-    const totalItems = mockEquipment.reduce((s, e) => s + e.receivedQty, 0);
+    const totalItems = rows.reduce((s, e) => s + (e.received_quantity ?? 0), 0);
 
-    const filtered = mockEquipment.filter(
+    const filtered = rows.filter(
         (e) =>
             !search ||
-            e.assetName.toLowerCase().includes(search.toLowerCase()) ||
-            e.category.toLowerCase().includes(search.toLowerCase())
+            e.asset_id.toLowerCase().includes(search.toLowerCase()) ||
+            (e.department ?? "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -140,8 +43,8 @@ export default function EquipmentPage() {
                 <StatCard title="Deployed" value={deployed} icon={CheckCircle2} />
                 <StatCard title="Issues" value={issues} icon={AlertTriangle} />
                 <StatCard
-                    title="Categories"
-                    value={new Set(mockEquipment.map((e) => e.category)).size}
+                    title="Departments"
+                    value={new Set(rows.map((e) => e.department).filter(Boolean)).size}
                     icon={Wrench}
                 />
             </div>
@@ -167,7 +70,7 @@ export default function EquipmentPage() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-sm font-semibold truncate">
-                                                {item.assetName}
+                                                {item.asset_id}
                                             </h3>
                                             <StatusBadge
                                                 status={item.status}
@@ -175,14 +78,14 @@ export default function EquipmentPage() {
                                             />
                                         </div>
                                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-                                            <span>{item.category}</span>
-                                            <span>{item.deployedLocation}</span>
-                                            <span>Condition: {item.conditionOnArrival}</span>
+                                            {item.department && <span>{item.department}</span>}
+                                            {item.deployed_location && <span>{item.deployed_location}</span>}
+                                            {item.condition_on_arrival && <span>Condition: {item.condition_on_arrival}</span>}
                                         </div>
                                     </div>
                                     <div className="text-right text-sm shrink-0">
                                         <p className="font-medium">
-                                            {item.receivedQty}/{item.expectedQty}
+                                            {item.received_quantity ?? 0}/{item.expected_quantity ?? 0}
                                         </p>
                                         <p className="text-[10px] text-muted-foreground">
                                             received

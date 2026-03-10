@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +9,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Clock, ShoppingCart, Ticket, TrendingUp, Users } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { formatCurrency } from "@/lib/utils";
 import { useCredentialAssignments } from "@/lib/supabase/hooks-credentialing";
+import { useFohZoneReadings, useFohZones } from "@/lib/supabase/hooks-live-ops";
 
-interface MockZone {
+interface ZoneView {
     id: string;
     name: string;
     zoneType: string;
@@ -24,93 +27,49 @@ interface MockZone {
     incidents: number;
 }
 
-const mockZones: MockZone[] = [
-    {
-        id: "1",
-        name: "Main Entry",
-        zoneType: "entry",
-        capacity: 500,
-        occupancy: 340,
-        entryRate: 45,
-        queueLength: 120,
-        avgWaitMinutes: 8,
-        salesAmount: 0,
-        incidents: 0,
-    },
-    {
-        id: "2",
-        name: "General Admission",
-        zoneType: "general",
-        capacity: 5000,
-        occupancy: 3200,
-        entryRate: 0,
-        queueLength: 0,
-        avgWaitMinutes: 0,
-        salesAmount: 0,
-        incidents: 2,
-    },
-    {
-        id: "3",
-        name: "VIP Lounge",
-        zoneType: "vip",
-        capacity: 200,
-        occupancy: 145,
-        entryRate: 5,
-        queueLength: 0,
-        avgWaitMinutes: 0,
-        salesAmount: 8400,
-        incidents: 0,
-    },
-    {
-        id: "4",
-        name: "Main Bar",
-        zoneType: "fb",
-        capacity: 300,
-        occupancy: 210,
-        entryRate: 12,
-        queueLength: 35,
-        avgWaitMinutes: 6,
-        salesAmount: 14200,
-        incidents: 1,
-    },
-    {
-        id: "5",
-        name: "Merch Tent",
-        zoneType: "merch",
-        capacity: 150,
-        occupancy: 85,
-        entryRate: 8,
-        queueLength: 22,
-        avgWaitMinutes: 4,
-        salesAmount: 6800,
-        incidents: 0,
-    },
-    {
-        id: "6",
-        name: "Medical Station",
-        zoneType: "medical",
-        capacity: 20,
-        occupancy: 3,
-        entryRate: 1,
-        queueLength: 0,
-        avgWaitMinutes: 0,
-        salesAmount: 0,
-        incidents: 4,
-    },
-];
-
 export default function FohPage() {
+    const { data: zones, isLoading: zonesLoading } = useFohZones();
+    const { data: readings, isLoading: readingsLoading } = useFohZoneReadings();
     const { data: credentialAssignments } = useCredentialAssignments({
         status: ["approved", "issued", "checked_in", "checked_out"],
     });
+
+    const isLoading = zonesLoading || readingsLoading;
+
+    const zoneViews: ZoneView[] = useMemo(() => {
+        if (!zones) return [];
+        const readingsByZone = new Map<string, Record<string, unknown>>();
+        for (const r of (readings ?? []) as Record<string, unknown>[]) {
+            const zid = r.zone_id as string;
+            if (!readingsByZone.has(zid)) readingsByZone.set(zid, r);
+        }
+        return (zones as Record<string, unknown>[]).map((z) => {
+            const r = readingsByZone.get(z.id as string);
+            return {
+                id: z.id as string,
+                name: z.name as string,
+                zoneType: (z.zone_type as string) ?? "",
+                capacity: (z.capacity as number) ?? 0,
+                occupancy: (r?.occupancy_count as number) ?? 0,
+                entryRate: (r?.entry_rate as number) ?? 0,
+                queueLength: (r?.queue_length as number) ?? 0,
+                avgWaitMinutes: (r?.avg_wait_minutes as number) ?? 0,
+                salesAmount: (r?.sales_amount as number) ?? 0,
+                incidents: (r?.incidents_count as number) ?? 0,
+            };
+        });
+    }, [zones, readings]);
+
+    if (isLoading) return <LoadingState />;
+
     const credRows = (credentialAssignments ?? []) as Record<string, unknown>[];
     const credCheckedIn = credRows.filter((r) => r.status === "checked_in").length;
     const credIssued = credRows.filter((r) => ["approved", "issued"].includes(r.status as string)).length;
 
-    const totalOccupancy = mockZones.reduce((s, z) => s + z.occupancy, 0);
-    const totalCapacity = mockZones.reduce((s, z) => s + z.capacity, 0);
-    const totalSales = mockZones.reduce((s, z) => s + z.salesAmount, 0);
-    const totalIncidents = mockZones.reduce((s, z) => s + z.incidents, 0);
+    const totalOccupancy = zoneViews.reduce((s, z) => s + z.occupancy, 0);
+    const totalCapacity = zoneViews.reduce((s, z) => s + z.capacity, 0);
+    const totalSales = zoneViews.reduce((s, z) => s + z.salesAmount, 0);
+    const totalIncidents = zoneViews.reduce((s, z) => s + z.incidents, 0);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -127,7 +86,7 @@ export default function FohPage() {
                 />
                 <StatCard
                     title="Occupancy"
-                    value={`${Math.round((totalOccupancy / totalCapacity) * 100)}%`}
+                    value={totalCapacity > 0 ? `${Math.round((totalOccupancy / totalCapacity) * 100)}%` : "0%"}
                     icon={TrendingUp}
                 />
                 <StatCard
@@ -164,7 +123,7 @@ export default function FohPage() {
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mockZones.map((zone, i) => {
+                {zoneViews.map((zone, i) => {
                     const utilPct = Math.round((zone.occupancy / zone.capacity) * 100);
                     return (
                         <StaggerItem key={zone.id} index={i} stagger="tight">

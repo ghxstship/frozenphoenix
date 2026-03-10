@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import { fromTable, isSupabaseConfigured } from "./client";
+import { fromTable } from "./client";
 
 export const DEFAULT_PAGE_SIZE = 25;
 export const MAX_PAGE_SIZE = 100;
@@ -77,7 +77,7 @@ export function usePaginatedQuery<T>({
                 },
             } as PaginatedResult<T>;
         },
-        enabled: enabled && isSupabaseConfigured,
+        enabled,
         placeholderData: (prev) => prev,
     });
 
@@ -183,4 +183,3 @@ export function usePaginatedQuery<T>({
     };
 }
 
-export { isSupabaseConfigured };

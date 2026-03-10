@@ -3,7 +3,6 @@ import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import {
     ArrowLeft,
     Building2,
-    Copy,
     ExternalLink,
     Globe,
     Linkedin,
@@ -11,6 +10,7 @@ import {
     Users,
 } from "lucide-react";
 import Link from "next/link";
+import { CopyLinkButton } from "@/components/ui/copy-link-button";
 
 interface OrgProfileData {
     id: string;
@@ -111,13 +111,7 @@ export default async function PublicOrgProfilePage({
                         <ArrowLeft className="h-4 w-4" />
                         Back
                     </Link>
-                    <button
-                        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
-                        title="Copy organization link"
-                    >
-                        <Copy className="h-3.5 w-3.5" />
-                        Share
-                    </button>
+                    <CopyLinkButton title="Copy organization link" />
                 </div>
             </nav>
 
@@ -242,14 +236,8 @@ export default async function PublicOrgProfilePage({
                                         .toUpperCase()
                                         .slice(0, 2);
 
-                                    const href = p.username ? `/u/${p.username}` : "#";
-
-                                    return (
-                                        <Link
-                                            key={m.user_id}
-                                            href={href}
-                                            className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/5 transition-colors"
-                                        >
+                                    const memberContent = (
+                                        <>
                                             {p.avatar_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img
@@ -279,7 +267,24 @@ export default async function PublicOrgProfilePage({
                                                     </p>
                                                 )}
                                             </div>
+                                        </>
+                                    );
+
+                                    return p.username ? (
+                                        <Link
+                                            key={m.user_id}
+                                            href={`/u/${p.username}`}
+                                            className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/5 transition-colors"
+                                        >
+                                            {memberContent}
                                         </Link>
+                                    ) : (
+                                        <div
+                                            key={m.user_id}
+                                            className="flex items-center gap-3 p-3 rounded-xl border border-border"
+                                        >
+                                            {memberContent}
+                                        </div>
                                     );
                                 })}
                         </div>

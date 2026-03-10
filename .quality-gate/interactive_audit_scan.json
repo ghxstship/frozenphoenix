@@ -1,0 +1,553 @@
+{
+  "noop_handlers": [
+    [
+      "src/app/(dashboard)/activations/page.tsx",
+      186,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/activations/[id]/page.tsx",
+      227,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/activations/[id]/page.tsx",
+      228,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/shipments/page.tsx",
+      173,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/shipments/[id]/page.tsx",
+      272,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/vendors/[id]/page.tsx",
+      235,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/work-orders/[id]/page.tsx",
+      199,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/work-orders/[id]/page.tsx",
+      200,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/tasks/[id]/page.tsx",
+      202,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/tasks/[id]/page.tsx",
+      322,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/opportunities/[id]/page.tsx",
+      263,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/opportunities/[id]/page.tsx",
+      264,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/purchase-orders/[id]/page.tsx",
+      141,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/insurance-policies/[id]/page.tsx",
+      217,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/insurance-policies/[id]/page.tsx",
+      218,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      264,
+      "jsx",
+      "onClick={() => {}}"
+    ],
+    [
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      268,
+      "jsx",
+      "onClick={() => {}}"
+    ],
+    [
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      275,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      276,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/purchase-requisitions/[id]/page.tsx",
+      165,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/estimates/[id]/page.tsx",
+      226,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/estimates/[id]/page.tsx",
+      227,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/estimates/[id]/page.tsx",
+      228,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/tech-sheets/[id]/page.tsx",
+      377,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/tech-sheets/[id]/page.tsx",
+      378,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/expenses/[id]/page.tsx",
+      178,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/leads/[id]/page.tsx",
+      265,
+      "jsx",
+      "onClick={() => {}}"
+    ],
+    [
+      "src/app/(dashboard)/leads/[id]/page.tsx",
+      275,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/permits/[id]/page.tsx",
+      232,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/permits/[id]/page.tsx",
+      233,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/contracts/[id]/page.tsx",
+      319,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/projects/[id]/page.tsx",
+      323,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/projects/[id]/page.tsx",
+      515,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/scopes-of-work/[id]/page.tsx",
+      261,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/scopes-of-work/[id]/page.tsx",
+      262,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/recurring-invoices/[id]/page.tsx",
+      240,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/recurring-invoices/[id]/page.tsx",
+      241,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/change-orders/[id]/page.tsx",
+      206,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/change-orders/[id]/page.tsx",
+      207,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/decks/[id]/page.tsx",
+      351,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/service-requests/[id]/page.tsx",
+      237,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/service-requests/[id]/page.tsx",
+      238,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/knowledge-base/page.tsx",
+      209,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/knowledge-base/[id]/page.tsx",
+      369,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/knowledge-base/[id]/page.tsx",
+      370,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/locations/page.tsx",
+      175,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/locations/[id]/page.tsx",
+      344,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/budgets/[id]/page.tsx",
+      240,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/budgets/[id]/page.tsx",
+      241,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/templates/[id]/page.tsx",
+      307,
+      "jsx",
+      "onClick={() => {}}"
+    ],
+    [
+      "src/app/(dashboard)/templates/[id]/page.tsx",
+      320,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/templates/[id]/page.tsx",
+      322,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/certifications/[id]/page.tsx",
+      201,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/certifications/[id]/page.tsx",
+      202,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/call-sheets/[id]/page.tsx",
+      329,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/call-sheets/[id]/page.tsx",
+      330,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/creative-assets/[id]/page.tsx",
+      232,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/creative-assets/[id]/page.tsx",
+      233,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/digital-assets/[id]/page.tsx",
+      257,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/digital-assets/[id]/page.tsx",
+      258,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/campaigns/[id]/page.tsx",
+      248,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/campaigns/[id]/page.tsx",
+      249,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/documents/[id]/page.tsx",
+      166,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/documents/[id]/page.tsx",
+      167,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/events/page.tsx",
+      184,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/events/[id]/page.tsx",
+      244,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/approvals/[id]/page.tsx",
+      150,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/companies/[id]/page.tsx",
+      286,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/companies/[id]/page.tsx",
+      287,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/companies/[id]/page.tsx",
+      288,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/incidents/[id]/page.tsx",
+      246,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/incidents/[id]/page.tsx",
+      247,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/proposals/[id]/page.tsx",
+      488,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/proposals/[id]/page.tsx",
+      489,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/briefs/[id]/page.tsx",
+      221,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/briefs/[id]/page.tsx",
+      222,
+      "object",
+      "onClick: () => {}"
+    ],
+    [
+      "src/app/(dashboard)/briefs/[id]/page.tsx",
+      223,
+      "object",
+      "onClick: () => {}"
+    ]
+  ],
+  "href_hash": [],
+  "missing_routes": [
+    [
+      "src/app/(dashboard)/activations/[id]/page.tsx",
+      221,
+      "Router",
+      "/activations/${activationId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/shipments/[id]/page.tsx",
+      113,
+      "Router",
+      "/logistics/shipments"
+    ],
+    [
+      "src/app/(dashboard)/shipments/[id]/page.tsx",
+      267,
+      "Router",
+      "/shipments/${shipmentId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/vendors/[id]/page.tsx",
+      228,
+      "Router",
+      "/vendors/${vendorId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/tasks/[id]/page.tsx",
+      192,
+      "Router",
+      "/tasks/${taskId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/leads/[id]/page.tsx",
+      269,
+      "Router",
+      "/leads/${leadId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/crew/[id]/page.tsx",
+      245,
+      "Router",
+      "/crew/${crewId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/crew/[id]/page.tsx",
+      254,
+      "Router",
+      "/crew/${crewId}/time"
+    ],
+    [
+      "src/app/(dashboard)/deals/[id]/page.tsx",
+      267,
+      "Router",
+      "/deals/${dealId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/locations/[id]/page.tsx",
+      330,
+      "Router",
+      "/locations/${locationId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/budgets/[id]/page.tsx",
+      234,
+      "Router",
+      "/budgets/${budgetId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/events/[id]/page.tsx",
+      239,
+      "Router",
+      "/events/${eventId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/assets/[id]/page.tsx",
+      252,
+      "Router",
+      "/assets/${assetId}/edit"
+    ],
+    [
+      "src/app/(dashboard)/incidents/[id]/page.tsx",
+      240,
+      "Router",
+      "/incidents/${incidentId}/edit"
+    ]
+  ]
+}

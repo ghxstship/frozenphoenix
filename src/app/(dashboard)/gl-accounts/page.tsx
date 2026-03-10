@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_GL_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -29,6 +32,7 @@ const ACCOUNT_TYPE_VARIANTS: Record<string, string> = {
 };
 
 export default function GLAccountsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
@@ -50,9 +54,7 @@ export default function GLAccountsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -76,7 +78,7 @@ export default function GLAccountsPage() {
                     title="GL Accounts"
                     description="Chart of accounts for financial reporting — maps budgets, expenses, invoices, and payments to GL codes"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> Add Account
                     </Button>
                 </PageHeader>
@@ -190,6 +192,7 @@ export default function GLAccountsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_GL_ACCOUNT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

@@ -8,9 +8,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, isSupabaseConfigured } from "./client";
-
-export { isSupabaseConfigured };
+import { fromTable } from "./client";
 
 // ═══════════════════════════════════════════════════════════════
 // AUTOMATION EXECUTIONS (Theme F1)

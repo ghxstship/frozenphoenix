@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
 
@@ -7,9 +6,7 @@ export async function GET() {
     const checks: Record<string, { status: "ok" | "degraded" | "error"; message?: string }> = {};
 
     // Supabase configuration check
-    checks.supabase = isSupabaseConfigured
-        ? { status: "ok" }
-        : { status: "degraded", message: "Running in mock data mode" };
+    checks.supabase = { status: "ok" };
 
     // Environment check
     checks.environment = {

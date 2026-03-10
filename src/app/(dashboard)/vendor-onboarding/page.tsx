@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_VENDOR_ONBOARDING_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +60,7 @@ const STATUS_BADGE: Record<
 };
 
 export default function VendorOnboardingPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const VIEW_MODES = ["pipeline", "list"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
@@ -84,9 +88,7 @@ export default function VendorOnboardingPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -123,7 +125,7 @@ export default function VendorOnboardingPage() {
                                 { value: "list", label: "List" },
                             ]}
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <UserPlus className="h-4 w-4" /> Invite Vendor
                         </Button>
                     </div>
@@ -286,6 +288,7 @@ export default function VendorOnboardingPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_VENDOR_ONBOARDING_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

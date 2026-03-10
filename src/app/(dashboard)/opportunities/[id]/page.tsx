@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteOpportunity, useUpdateOpportunity } from "@/lib/supabase/hooks-pages";
@@ -23,7 +24,6 @@ import {
     CheckCircle2,
     DollarSign,
     FileText,
-    Loader2,
     Mail,
     Phone,
     Target,
@@ -36,43 +36,24 @@ import { useOpportunity } from "@/lib/supabase/hooks-pages";
 type TabId = "overview" | "activity" | "chatter";
 const TAB_VALUES = ["overview", "activity", "chatter"] as const;
 
-const mockActivities = [
-    {
-        id: "a1",
-        type: "stage_change",
-        description: "Stage changed from Discovery to Qualification",
-        date: "2026-02-18",
-        user: "Sarah Chen",
-    },
-    {
-        id: "a2",
-        type: "meeting",
-        description: "Client meeting — budget discussion",
-        date: "2026-02-15",
-        user: "Mike Torres",
-    },
-    {
-        id: "a3",
-        type: "email",
-        description: "Proposal draft sent to stakeholders",
-        date: "2026-02-12",
-        user: "Sarah Chen",
-    },
-    {
-        id: "a4",
-        type: "note",
-        description: "Client expressed interest in expanded scope for Q3",
-        date: "2026-02-10",
-        user: "Sarah Chen",
-    },
-    {
-        id: "a5",
-        type: "call",
-        description: "Discovery call with VP of Marketing",
-        date: "2026-02-05",
-        user: "Mike Torres",
-    },
-];
+interface ActivityItem {
+    id: string;
+    type: string;
+    description: string;
+    date: string;
+    user: string;
+}
+
+function parseActivities(raw: unknown): ActivityItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((a, i) => ({
+        id: String(a.id ?? `a-${i}`),
+        type: (a.type as string) ?? "",
+        description: (a.description as string) ?? "",
+        date: (a.date as string) ?? (a.created_at as string) ?? "",
+        user: (a.user as string) ?? (a.user_name as string) ?? "",
+    }));
+}
 
 export default function OpportunityDetailPage() {
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
@@ -85,15 +66,15 @@ export default function OpportunityDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: opp, isLoading } = useOpportunity(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Opportunity",
         listPath: "/opportunities",
         useUpdateHook: useUpdateOpportunity,
         useDeleteHook: useDeleteOpportunity,
     });
-    void router;
-    void handleUpdate;
+
+    const activities = parseActivities((opp as Record<string, unknown> | null)?.activities);
 
     const expectedClose = opp?.expectedCloseDate ?? null;
     const daysToClose = useMemo(() => {
@@ -108,9 +89,7 @@ export default function OpportunityDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -141,7 +120,7 @@ export default function OpportunityDetailPage() {
 
     const tabs = [
         { id: "overview" as const, label: "Overview" },
-        { id: "activity" as const, label: "Activity", count: mockActivities.length },
+        { id: "activity" as const, label: "Activity", count: activities.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -254,14 +233,14 @@ export default function OpportunityDetailPage() {
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => console.log("Advance stage for opportunity:", entityId)}>
                     <CheckCircle2 className="h-4 w-4 mr-1" />
                     Advance Stage
                 </Button>
             }
             menuItems={[
-                { label: "Edit Opportunity", onClick: () => {} },
-                { label: "Clone Opportunity", onClick: () => {} },
+                { label: "Edit Opportunity", onClick: () => router.push(`/opportunities/${entityId}/edit`) },
+                { label: "Clone Opportunity", onClick: () => router.push(`/opportunities/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -384,7 +363,7 @@ export default function OpportunityDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {mockActivities.map((activity) => (
+                            {activities.map((activity) => (
                                 <div
                                     key={activity.id}
                                     className="flex gap-3 p-3 rounded-lg bg-secondary/20"
@@ -414,7 +393,7 @@ export default function OpportunityDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="opportunity"
-                    recordId={opp.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

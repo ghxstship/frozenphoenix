@@ -216,7 +216,7 @@ export default function SavedViewsPage() {
                 title="Saved Views"
                 description="Manage custom filtered, sorted, and grouped views shared across your team"
             >
-                <Button>
+                <Button onClick={() => console.log("Create new saved view")}>
                     <Plus className="mr-2 h-4 w-4" /> New View
                 </Button>
             </PageHeader>
@@ -328,13 +328,13 @@ function ViewCard({ view }: { view: SavedView }) {
                         </div>
                     </div>
                     <div className="flex gap-1 shrink-0">
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => console.log("Duplicate view:", view.id)}>
                             <Copy className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => console.log("Edit view:", view.id)}>
                             <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => console.log("Delete view:", view.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                     </div>

@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_IP_RIGHT_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -45,6 +48,7 @@ const OWNER_LABELS: Record<string, string> = {
 };
 
 export default function IPRightsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
 
     const { data: sbRights, isLoading } = useIpRights();
@@ -69,9 +73,7 @@ export default function IPRightsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -90,7 +92,7 @@ export default function IPRightsPage() {
                     title="IP & Usage Rights"
                     description="Intellectual property ownership, licensing terms, and usage rights tracking across all contracts"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> Add IP Right
                     </Button>
                 </PageHeader>
@@ -202,6 +204,7 @@ export default function IPRightsPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_IP_RIGHT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { createClient } from "./client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type TableName = 
@@ -36,8 +36,6 @@ export function useRealtimeSubscription({
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -90,7 +88,7 @@ export function useNotificationsRealtime(userId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !userId) return;
+        if (!userId) return;
 
         const supabase = createClient();
         if (!supabase) return;
@@ -121,8 +119,6 @@ export function useActivityRealtime(entityType?: string, entityId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -157,7 +153,7 @@ export function useCommentsRealtime(entityType: string, entityId: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !entityType || !entityId) return;
+        if (!entityType || !entityId) return;
 
         const supabase = createClient();
         if (!supabase) return;
@@ -193,8 +189,6 @@ export function useDomainEventSubscription(
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -238,7 +232,7 @@ export function useProjectRealtime(projectId: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !projectId) return;
+        if (!projectId) return;
 
         const supabase = createClient();
         if (!supabase) return;
@@ -287,8 +281,6 @@ export function useDealsRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -313,8 +305,6 @@ export function useApprovalsRealtime(userId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -340,8 +330,6 @@ export function useBudgetsRealtime(projectId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -371,8 +359,6 @@ export function useContractsRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -396,8 +382,6 @@ export function useInvoicesRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -437,8 +421,6 @@ export function useWorkflowRealtime(workflowId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -481,8 +463,6 @@ export function useESignaturesRealtime(documentId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -508,8 +488,6 @@ export function useCrewShiftsRealtime(projectId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -536,8 +514,6 @@ export function useIncidentsRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -561,8 +537,6 @@ export function useCredentialAssignmentsRealtime(eventId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -604,8 +578,6 @@ export function useIntegrationsSyncRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -656,8 +628,6 @@ export function usePosTransactionsRealtime(eventId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -684,8 +654,6 @@ export function useCredentialPoolsRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 
@@ -710,7 +678,7 @@ export function useFullProjectRealtime(projectId: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !projectId) return;
+        if (!projectId) return;
 
         const supabase = createClient();
         if (!supabase) return;

@@ -1,8 +1,11 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { formatDate } from "@/lib/locale";
 
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DOCUMENT_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/ui/page-header";
@@ -88,6 +91,7 @@ const DOC_TYPE_LABELS: Record<DocType, string> = {
 };
 
 export default function DocumentsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const TYPE_FILTERS = [
         "all",
@@ -136,9 +140,7 @@ export default function DocumentsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -171,12 +173,13 @@ export default function DocumentsPage() {
     };
 
     return (
+        <>
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Documents"
                 description="Create, collaborate, and share documents across your team and projects"
             >
-                <Button>
+                <Button onClick={openCreate}>
                     <Plus className="mr-2 h-4 w-4" /> New Document
                 </Button>
             </PageHeader>
@@ -257,6 +260,8 @@ export default function DocumentsPage() {
                 </div>
             )}
         </div>
+        <CreateEntityDialog config={CREATE_DOCUMENT_CONFIG} open={createOpen} onClose={closeCreate} />
+        </>
     );
 }
 

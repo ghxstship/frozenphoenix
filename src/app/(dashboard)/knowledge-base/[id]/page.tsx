@@ -188,7 +188,6 @@ export default function KBArticleDetailPage() {
         useUpdateHook: useUpdateKBArticle,
         useDeleteHook: useDeleteKBArticle,
     });
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -366,8 +365,8 @@ export default function KBArticleDetailPage() {
                     </Button>
                 }
                 menuItems={[
-                    { label: "Publish New Version", onClick: () => {} },
-                    { label: "Request Acknowledgment", onClick: () => {} },
+                    { label: "Publish New Version", onClick: () => handleUpdate({ status: "published", version: (article?.version ?? 0) + 1 }) },
+                    { label: "Request Acknowledgment", onClick: () => handleUpdate({ requires_acknowledgment: true }) },
                     ...crudMenuItems,
                 ]}
             >

@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useCallback, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { formatCurrency } from "@/lib/utils";
-import { Building2, Globe, MapPin, MoreHorizontal, Plus, Star, Users } from "lucide-react";
+import { Building2, Globe, MapPin, MoreHorizontal, Plus, Star, Upload, Users } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
-import { CREATE_CONTACT_CONFIG } from "@/config/create-entity-configs";
+import { CREATE_COMPANY_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +38,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatCard } from "@/components/ui/stat-card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Loader2 } from "lucide-react";
 import { useCompanies } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -81,6 +83,7 @@ const typeVariants: Record<
 
 export default function CompaniesPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const [importOpen, setImportOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -91,7 +94,11 @@ export default function CompaniesPage() {
         validValues: VIEW_MODES,
     });
 
-    const { data: sbCompanies, isLoading } = useCompanies();
+    const { data: sbCompanies, isLoading, refetch } = useCompanies();
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const companies: Company[] = (sbCompanies ?? []).map((c: Record<string, unknown>) => ({
         id: (c.id as string) ?? "",
@@ -114,9 +121,7 @@ export default function CompaniesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -147,10 +152,17 @@ export default function CompaniesPage() {
                             Manage your clients, brands, agencies, and partners
                         </p>
                     </div>
-                    <Button onClick={openCreate}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Company
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="companies" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button onClick={openCreate}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Company
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -406,9 +418,15 @@ export default function CompaniesPage() {
                 )}
             </div>
             <CreateEntityDialog
-                config={CREATE_CONTACT_CONFIG}
+                config={CREATE_COMPANY_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+            />
+            <CsvImportDialog
+                entity="companies"
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                onImportComplete={handleImportComplete}
             />
         </PermissionGate>
     );

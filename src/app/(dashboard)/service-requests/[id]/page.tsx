@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteServiceRequest, useUpdateServiceRequest } from "@/lib/supabase/hooks-pages";
@@ -39,15 +40,13 @@ export default function ServiceRequestDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: sr, isLoading } = useServiceRequest(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Service Request",
         listPath: "/service-requests",
         useUpdateHook: useUpdateServiceRequest,
         useDeleteHook: useDeleteServiceRequest,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -65,9 +64,7 @@ export default function ServiceRequestDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -234,8 +231,8 @@ export default function ServiceRequestDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Request", onClick: () => {} },
-                { label: "Assign", onClick: () => {} },
+                { label: "Edit Request", onClick: () => router.push(`/service-requests/${entityId}/edit`) },
+                { label: "Assign", onClick: () => router.push(`/service-requests/${entityId}/edit?section=assignment`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -33,15 +34,13 @@ export default function PurchaseOrderDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: po, isLoading } = usePurchaseOrder(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Purchase Order",
         listPath: "/purchase-orders",
         useUpdateHook: useUpdatePurchaseOrder,
         useDeleteHook: useDeletePurchaseOrder,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -59,9 +58,7 @@ export default function PurchaseOrderDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -127,18 +124,18 @@ export default function PurchaseOrderDetailPage() {
             }
             actions={
                 po.status === "draft" ? (
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Issue PO:", entityId)}>
                         <Truck className="h-4 w-4 mr-1" />
                         Issue PO
                     </Button>
                 ) : po.status === "issued" ? (
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Mark received:", entityId)}>
                         <Package className="h-4 w-4 mr-1" />
                         Mark Received
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Purchase Order", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Edit Purchase Order", onClick: () => router.push(`/purchase-orders/${entityId}/edit`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

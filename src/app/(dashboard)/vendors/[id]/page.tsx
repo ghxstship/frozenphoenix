@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -123,9 +124,7 @@ export default function VendorDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -232,7 +231,7 @@ export default function VendorDetailPage() {
                 }
                 menuItems={[
                     { label: "Create Purchase Order", onClick: () => setPoDialogOpen(true) },
-                    { label: "Request Documents", onClick: () => {} },
+                    { label: "Request Documents", onClick: () => router.push(`/documents/new?entityType=vendor&entityId=${vendorId}`) },
                     {
                         label: updateVendor.isPending ? "Suspending..." : "Suspend Vendor",
                         onClick: handleSuspendVendor,

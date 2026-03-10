@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,14 +14,21 @@ import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
-import { Building, ChevronRight, DollarSign, Loader2, MapPin, Plus, Warehouse } from "lucide-react";
+import { Building, ChevronRight, DollarSign, Loader2, MapPin, Plus, Upload, Warehouse } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function LocationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
-    const { data: sbLocations, isLoading: loadingLocations } = useLocations();
+    const { data: sbLocations, isLoading: loadingLocations, refetch: refetchLocations } = useLocations();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetchLocations();
+    }, [refetchLocations]);
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
     const locations = (sbLocations ?? []).map((l) => ({
@@ -66,9 +74,7 @@ export default function LocationsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -88,12 +94,19 @@ export default function LocationsPage() {
                 title="Locations"
                 description="Manage venues, warehouses, and project locations"
                 actions={
-                    <Link href="/locations/new">
-                        <Button>
-                            <Plus className="h-4 w-4" />
-                            Add Location
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="locations" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
                         </Button>
-                    </Link>
+                        <Link href="/locations/new">
+                            <Button>
+                                <Plus className="h-4 w-4" />
+                                Add Location
+                            </Button>
+                        </Link>
+                    </div>
                 }
             >
                 {/* Filters */}
@@ -158,7 +171,7 @@ export default function LocationsPage() {
                                 : "Add your first location to get started"
                         }
                         action={
-                            !searchQuery ? { label: "Add Location", onClick: () => {} } : undefined
+                            !searchQuery ? { label: "Add Location", onClick: () => window.location.assign("/locations/new") } : undefined
                         }
                     />
                 ) : (
@@ -250,6 +263,12 @@ export default function LocationsPage() {
                     </div>
                 )}
             </PageShell>
+            <CsvImportDialog
+                entity="locations"
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                onImportComplete={handleImportComplete}
+            />
         </PermissionGate>
     );
 }

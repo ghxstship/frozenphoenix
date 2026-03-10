@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CHECKLIST_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +42,7 @@ interface ChecklistEntry {
 }
 
 export default function ChecklistsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const TAB_VALUES = ["active", "templates"] as const;
     const [tab, setTab] = useQueryTabState({
@@ -70,9 +74,7 @@ export default function ChecklistsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -111,7 +113,7 @@ export default function ChecklistsPage() {
                             size="sm"
                             variant="pill"
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />{" "}
                             {tab === "templates" ? "New Template" : "New Checklist"}
                         </Button>
@@ -256,6 +258,7 @@ export default function ChecklistsPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_CHECKLIST_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

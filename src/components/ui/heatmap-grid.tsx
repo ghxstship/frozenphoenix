@@ -80,7 +80,7 @@ export function HeatmapGrid({
 }: HeatmapGridProps) {
     return (
         <div className={cn("overflow-x-auto", className)}>
-            <table className="w-full min-w-[700px]" role="grid" aria-label="Utilization heatmap">
+            <table className="w-full min-w-[700px]" role="grid" aria-label={`${colorScale === "heat" ? "Heat" : colorScale === "divergent" ? "Divergent" : "Utilization"} heatmap`}>
                 <thead>
                     <tr className="border-b border-border">
                         <th className="text-left p-3 text-xs font-semibold text-muted-foreground w-48 sticky left-0 bg-background z-10">

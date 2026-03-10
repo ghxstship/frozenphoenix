@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { formatDate } from "@/lib/locale";
 
 import React, { useMemo, useState } from "react";
@@ -19,7 +20,7 @@ import type { Campaign } from "@/types/creative-brand";
 import { useCreativeAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
-import { CheckCircle2, Clock, Filter, Globe, Layers, Loader2, Plus, Shield } from "lucide-react";
+import { CheckCircle2, Clock, Filter, Globe, Layers, Plus, Shield } from "lucide-react";
 
 const STATUS_ORDER: CampaignAssetProductionStatus[] = [
     "briefed",
@@ -51,8 +52,9 @@ export default function CreativeAssetsPage() {
     const { data: sbAssets, isLoading } = useCreativeAssets();
 
     const assets = useMemo(() => (sbAssets ?? []) as unknown as CampaignAsset[], [sbAssets]);
-    // NEXT: Wire to useCreativeReviews/useCampaigns() when hooks are available
+    // FUTURE: Wire to useCreativeReviews() hook when available
     const reviews: CreativeReview[] = [];
+    // FUTURE: Wire to useCampaigns() hook when available
     const campaigns: Campaign[] = [];
 
     const filtered = useMemo(() => {
@@ -88,9 +90,7 @@ export default function CreativeAssetsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -240,7 +240,17 @@ function AssetCard({
     const totalGates = reviews.length;
 
     return (
-        <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+        <Card
+            className="hover:border-primary/30 transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary"
+            role="button"
+            tabIndex={0}
+            aria-label={`Asset: ${asset.name}, status: ${asset.production_status.replace(/_/g, " ")}`}
+            onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                }
+            }}
+        >
             <CardContent className="pt-3 pb-3">
                 <div className="flex items-start justify-between mb-1.5">
                     <p className="text-xs font-semibold truncate flex-1">{asset.name}</p>
@@ -341,7 +351,17 @@ function AssetListRow({
 
     return (
         <StaggerItem index={index} stagger="tight">
-            <Card className="hover:border-primary/30 transition-colors">
+            <Card
+                className="hover:border-primary/30 transition-colors focus-within:ring-2 focus-within:ring-primary"
+                role="button"
+                tabIndex={0}
+                aria-label={`Asset: ${asset.name}, status: ${asset.production_status.replace(/_/g, " ")}`}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                    }
+                }}
+            >
                 <CardContent className="py-3 flex items-center gap-4">
                     {/* Status */}
                     <Badge

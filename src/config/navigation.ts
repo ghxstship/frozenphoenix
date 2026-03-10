@@ -807,6 +807,12 @@ export const navigationConfig: NavSection[] = [
                 permission: "org_chart.read",
             },
             {
+                title: "Teams",
+                path: "/teams",
+                icon: Users,
+                permission: "teams.read",
+            },
+            {
                 title: "Knowledge Base",
                 path: "/knowledge-base",
                 icon: BookOpen,

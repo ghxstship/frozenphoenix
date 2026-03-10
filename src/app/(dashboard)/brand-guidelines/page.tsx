@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/ui/page-header";
@@ -29,7 +30,6 @@ import {
     Grid3X3,
     Layers,
     Layout,
-    Loader2,
     Mic2,
     Move,
     Palette,
@@ -102,9 +102,7 @@ export default function BrandGuidelinesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -200,6 +198,8 @@ function GuidelineNode({
                             <div className="flex items-start gap-3 flex-1 min-w-0">
                                 <button
                                     onClick={() => onToggle(isExpanded ? null : guideline.id)}
+                                    aria-expanded={isExpanded}
+                                    aria-label={`${isExpanded ? "Collapse" : "Expand"} ${guideline.name}`}
                                     className="mt-0.5 flex-shrink-0"
                                 >
                                     {isExpanded ? (

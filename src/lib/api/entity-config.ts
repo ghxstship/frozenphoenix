@@ -494,6 +494,35 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title", "licensor"],
         icon: "Scale",
     }),
+
+    team: defineEntity({
+        entityName: "team",
+        displayName: "Team",
+        displayNamePlural: "Teams",
+        table: "teams",
+        resource: "teams",
+        slug: "teams",
+        selectList: "*, user_profiles:created_by(display_name)",
+        selectDetail: "*, user_profiles:created_by(display_name, avatar_url), team_members(id, user_id, role, joined_at, user_profiles(display_name, avatar_url, email))",
+        searchColumns: ["name", "slug", "description"],
+        icon: "Users",
+        softDelete: false,
+        trackAuthor: false,
+    }),
+
+    team_member: defineEntity({
+        entityName: "team_member",
+        displayName: "Team Member",
+        displayNamePlural: "Team Members",
+        table: "team_members",
+        resource: "team_members",
+        slug: "team-members",
+        searchColumns: [],
+        icon: "UserPlus",
+        softDelete: false,
+        trackAuthor: false,
+        statusColumn: "role",
+    }),
 };
 
 // ─── Lookups ─────────────────────────────────────────────────

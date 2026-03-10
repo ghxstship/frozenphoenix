@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -40,15 +41,13 @@ export default function PurchaseRequisitionDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: req, isLoading } = usePurchaseRequisition(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Requisition",
         listPath: "/purchase-requisitions",
         useUpdateHook: useUpdatePurchaseRequisition,
         useDeleteHook: useDeletePurchaseRequisition,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -66,9 +65,7 @@ export default function PurchaseRequisitionDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -156,13 +153,13 @@ export default function PurchaseRequisitionDetailPage() {
             }
             actions={
                 req.status === "draft" ? (
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Submit requisition for approval:", entityId)}>
                         <Send className="h-4 w-4 mr-1" />
                         Submit for Approval
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Requisition", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Edit Requisition", onClick: () => router.push(`/purchase-requisitions/${entityId}/edit`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

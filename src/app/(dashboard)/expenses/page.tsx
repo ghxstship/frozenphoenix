@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useCallback, useState } from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,7 +67,12 @@ export default function ExpensesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const { data: sbExpenses, isLoading } = useExpenses();
+    const { data: sbExpenses, isLoading, refetch } = useExpenses();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const expenses: ExpenseItem[] = (sbExpenses ?? []).map((e: Record<string, unknown>) => ({
         id: (e.id as string) ?? "",
@@ -80,9 +88,7 @@ export default function ExpensesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -109,11 +115,24 @@ export default function ExpensesPage() {
                     title="Expenses"
                     description="Track and manage expense reports and reimbursements"
                 >
-                    <Button size="sm" onClick={openCreate}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Submit Expense
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="expenses" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button size="sm" onClick={openCreate}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Submit Expense
+                        </Button>
+                    </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="expenses"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
@@ -198,7 +217,7 @@ export default function ExpensesPage() {
                                                         Receipt attached
                                                     </span>
                                                 ) : (
-                                                    <button className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
+                                                    <button className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto" onClick={() => console.log("Add receipt:", expense.id)}>
                                                         <Upload className="h-3 w-3" />
                                                         Add receipt
                                                     </button>

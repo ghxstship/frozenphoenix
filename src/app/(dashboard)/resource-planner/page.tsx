@@ -373,15 +373,16 @@ export default function ResourcePlannerPage() {
                 {/* Resource Grid */}
                 <Card>
                     <div className="overflow-x-auto">
-                        <div className="min-w-[900px]">
+                        <div className="min-w-[900px]" role="grid" aria-label="Weekly resource schedule">
                             {/* Header Row */}
-                            <div className="grid grid-cols-8 border-b">
-                                <div className="p-3 font-medium text-sm border-r bg-muted/50">
+                            <div role="row" className="grid grid-cols-8 border-b">
+                                <div role="columnheader" className="p-3 font-medium text-sm border-r bg-muted/50">
                                     Team Member
                                 </div>
                                 {weekDates.map((date) => (
                                     <div
                                         key={date.toISOString()}
+                                        role="columnheader"
                                         className={cn(
                                             "p-3 text-center border-r last:border-r-0",
                                             date.getDay() === 0 || date.getDay() === 6
@@ -403,10 +404,11 @@ export default function ResourcePlannerPage() {
                             {mockCrewMembers.map((crew) => (
                                 <div
                                     key={crew.id}
+                                    role="row"
                                     className="grid grid-cols-8 border-b last:border-b-0 hover:bg-muted/20"
                                 >
                                     {/* Crew Info */}
-                                    <div className="p-3 border-r flex items-center gap-3">
+                                    <div role="rowheader" className="p-3 border-r flex items-center gap-3">
                                         <div
                                             className={cn(
                                                 "h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium",
@@ -450,6 +452,8 @@ export default function ResourcePlannerPage() {
                                         return (
                                             <div
                                                 key={dateStr}
+                                                role="gridcell"
+                                                aria-label={`${crew.name}, ${new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(date)}${bookings.length > 0 ? `: ${bookings.map((b) => b.projectName || b.bookingType.replace("_", " ")).join(", ")}` : ": Available"}`}
                                                 className={cn(
                                                     "p-1 border-r last:border-r-0 min-h-[60px] relative",
                                                     isWeekend && "bg-muted/20"

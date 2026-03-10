@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -20,7 +21,10 @@ import {
     ShieldAlert,
     ShieldCheck,
     Table2,
+    Upload,
 } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import type { CertificationType, CrewMember } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { type BoardColumn, type CardField, DataBoard } from "@/components/data-view/data-board";
@@ -182,7 +186,12 @@ export default function CrewPage() {
         defaultValue: "cards",
         validValues: VIEW_MODES,
     });
-    const { data: sbCrew, isLoading } = useCrewMembers();
+    const { data: sbCrew, isLoading, refetch } = useCrewMembers();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const crew: CrewMember[] = (sbCrew ?? []).map((c) => ({
         id: c.id,
@@ -219,9 +228,7 @@ export default function CrewPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -261,12 +268,23 @@ export default function CrewPage() {
                                 },
                             ]}
                         />
-                        <Button size="sm">
+                        <CsvExportButton entity="crew_members" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button size="sm" onClick={() => router.push("/crew/new")}>
                             <Plus className="h-4 w-4" />
                             Add Crew
                         </Button>
                     </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="crew_members"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 {/* Summary */}
                 <div className="flex items-center gap-4">

@@ -29,7 +29,7 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
                 "focus:rounded-md focus:shadow-lg",
                 "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 "font-medium text-sm",
-                "transition-none",
+                "motion-reduce:transition-none",
                 className
             )}
         >

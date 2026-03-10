@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { LoadingState } from "@/components/layouts/loading-state";
 import {
     useDeleteDigitalAsset,
     useDigitalAsset,
@@ -19,92 +20,79 @@ import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import { Calendar, Download, Eye, FileBox, History, Link2, Shield, User } from "lucide-react";
-import type { DigitalAsset } from "@/types/digital-assets";
-
 type TabId = "details" | "versions" | "links" | "chatter";
 const TAB_VALUES = ["details", "versions", "links", "chatter"] as const;
 
-const mockAsset: DigitalAsset = {
-    id: "da-1",
-    asset_class: "document",
-    asset_class_l1: "document",
-    asset_class_l2: "contract",
-    name: "Master Services Agreement — Nike",
-    filename: "nike_msa_2026_final.pdf",
-    description: "Executed MSA covering all production services for Nike 2026 campaign portfolio.",
-    scope_level: "project",
-    scope_entity_id: "p1",
-    domains: ["legal"],
-    status: "published",
-    published_at: "2026-01-15T00:00:00Z",
-    archived_at: null,
-    expires_at: "2027-01-15T00:00:00Z",
-    current_version_id: "v3",
-    owner_id: "u1",
-    created_by: "u1",
-    updated_by: "u2",
-    document_number: "DOC-2026-001",
-    last_reviewed_at: "2026-02-01T00:00:00Z",
-    next_review_date: "2026-08-01",
-    reviewer_ids: ["u2", "u3"],
-    requires_acknowledgment: true,
-    sensitivity: "confidential",
-    data_purpose: "Contractual agreement",
-    retention_policy_id: "rp-legal-7yr",
-    custom_metadata: {},
-    organization_id: "org-1",
-    created_at: "2026-01-10T00:00:00Z",
-    updated_at: "2026-02-01T00:00:00Z",
-};
+interface VersionEntry {
+    id: string;
+    version_number: number;
+    version_label: string;
+    change_type: string;
+    created_at: string;
+    created_by: string;
+}
 
-const mockVersions = [
-    {
-        id: "v3",
-        version_number: 3,
-        version_label: "Final Executed",
-        change_type: "amendment",
-        created_at: "2026-01-15",
-        created_by: "Sarah Chen",
-    },
-    {
-        id: "v2",
-        version_number: 2,
-        version_label: "Red-line Draft",
-        change_type: "revision",
-        created_at: "2026-01-12",
-        created_by: "James Park",
-    },
-    {
-        id: "v1",
-        version_number: 1,
-        version_label: "Initial Draft",
-        change_type: "create",
-        created_at: "2026-01-10",
-        created_by: "Sarah Chen",
-    },
-];
+interface LinkEntry {
+    id: string;
+    entity_type: string;
+    entity_name: string;
+    link_type: string;
+}
 
-const mockLinks = [
-    { id: "l1", entity_type: "project", entity_name: "Nike Air Max Launch", link_type: "primary" },
-    { id: "l2", entity_type: "contract", entity_name: "Nike MSA 2026", link_type: "attachment" },
-    { id: "l3", entity_type: "vendor", entity_name: "StageCraft Studios", link_type: "reference" },
-];
+function parseVersions(raw: unknown): VersionEntry[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((v) => ({
+        id: String(v.id ?? ""),
+        version_number: (v.version_number as number) ?? 0,
+        version_label: String(v.version_label ?? ""),
+        change_type: String(v.change_type ?? ""),
+        created_at: String(v.created_at ?? ""),
+        created_by: String(v.created_by ?? ""),
+    }));
+}
+
+function parseLinks(raw: unknown): LinkEntry[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((l) => ({
+        id: String(l.id ?? ""),
+        entity_type: String(l.entity_type ?? ""),
+        entity_name: String(l.entity_name ?? ""),
+        link_type: String(l.link_type ?? ""),
+    }));
+}
 
 export default function DigitalAssetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useDigitalAsset(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { data: sbRecord, isLoading } = useDigitalAsset(entityId);
+    const da = sbRecord as Record<string, unknown> | null;
+
+    const assetName = (da?.name as string) ?? "";
+    const filename = (da?.filename as string) ?? "";
+    const description = (da?.description as string) ?? "";
+    const assetStatus = (da?.status as string) ?? "draft";
+    const assetClassL1 = (da?.asset_class_l1 as string) ?? "";
+    const assetClassL2 = (da?.asset_class_l2 as string) ?? "";
+    const sensitivity = (da?.sensitivity as string) ?? "";
+    const documentNumber = (da?.document_number as string) ?? "";
+    const publishedAt = (da?.published_at as string) ?? "";
+    const expiresAt = (da?.expires_at as string) ?? "";
+    const nextReviewDate = (da?.next_review_date as string) ?? "";
+    const lastReviewedAt = (da?.last_reviewed_at as string) ?? "";
+    const requiresAcknowledgment = Boolean(da?.requires_acknowledgment);
+    const dataPurpose = (da?.data_purpose as string) ?? "";
+    const retentionPolicyId = (da?.retention_policy_id as string) ?? "";
+    const domains = Array.isArray(da?.domains) ? (da.domains as string[]) : [];
+    const versions = parseVersions(da?.versions);
+    const links = parseLinks(da?.links);
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Digital Asset",
         listPath: "/digital-assets",
         useUpdateHook: useUpdateDigitalAsset,
         useDeleteHook: useDeleteDigitalAsset,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -127,8 +115,8 @@ export default function DigitalAssetDetailPage() {
 
     const tabs = [
         { id: "details" as const, label: "Details" },
-        { id: "versions" as const, label: "Versions", count: mockVersions.length },
-        { id: "links" as const, label: "Links", count: mockLinks.length },
+        { id: "versions" as const, label: "Versions", count: versions.length },
+        { id: "links" as const, label: "Links", count: links.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -141,39 +129,39 @@ export default function DigitalAssetDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(mockAsset.status) as "default"}>
-                            {getStatusLabel(mockAsset.status)}
+                        <Badge variant={getStatusVariant(assetStatus) as "default"}>
+                            {getStatusLabel(assetStatus)}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Class</span>
                         <Badge variant="outline" className="capitalize">
-                            {mockAsset.asset_class_l1} / {mockAsset.asset_class_l2}
+                            {assetClassL1} / {assetClassL2}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Sensitivity</span>
                         <Badge
                             variant={
-                                mockAsset.sensitivity === "confidential"
+                                sensitivity === "confidential"
                                     ? "warning"
-                                    : mockAsset.sensitivity === "restricted"
+                                    : sensitivity === "restricted"
                                       ? "destructive"
                                       : "ghost"
                             }
                         >
-                            {mockAsset.sensitivity}
+                            {sensitivity}
                         </Badge>
                     </div>
-                    {mockAsset.document_number && (
+                    {documentNumber && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Doc #</span>
-                            <span className="font-mono text-xs">{mockAsset.document_number}</span>
+                            <span className="font-mono text-xs">{documentNumber}</span>
                         </div>
                     )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Filename</span>
-                        <span className="text-xs truncate max-w-[140px]">{mockAsset.filename}</span>
+                        <span className="text-xs truncate max-w-[140px]">{filename}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -183,27 +171,27 @@ export default function DigitalAssetDetailPage() {
                     <CardTitle className="text-sm">Dates</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    {mockAsset.published_at && (
+                    {publishedAt && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Published</span>
                             <span className="font-medium">
-                                {formatDate(mockAsset.published_at, "compact")}
+                                {formatDate(publishedAt, "compact")}
                             </span>
                         </div>
                     )}
-                    {mockAsset.expires_at && (
+                    {expiresAt && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Expires</span>
                             <span className="font-medium">
-                                {formatDate(mockAsset.expires_at, "compact")}
+                                {formatDate(expiresAt, "compact")}
                             </span>
                         </div>
                     )}
-                    {mockAsset.next_review_date && (
+                    {nextReviewDate && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Next Review</span>
                             <span className="font-medium">
-                                {formatDate(mockAsset.next_review_date, "compact")}
+                                {formatDate(nextReviewDate, "compact")}
                             </span>
                         </div>
                     )}
@@ -216,7 +204,7 @@ export default function DigitalAssetDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
-                        {mockAsset.domains.map((d) => (
+                        {domains.map((d) => (
                             <Chip key={d} size="sm">
                                 {d}
                             </Chip>
@@ -227,15 +215,17 @@ export default function DigitalAssetDetailPage() {
         </div>
     );
 
+    if (isLoading) return <LoadingState />;
+
     return (
         <DetailLayout
             backHref="/digital-assets"
             backLabel="Digital Assets"
             entityType="digital-assets"
             entityId={entityId}
-            title={mockAsset.name}
-            subtitle={`${mockAsset.filename} · ${mockAsset.document_number ?? mockAsset.id}`}
-            status={mockAsset.status}
+            title={assetName}
+            subtitle={`${filename} · ${documentNumber || entityId}`}
+            status={assetStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileBox className="h-7 w-7 text-primary-foreground" />
@@ -254,8 +244,8 @@ export default function DigitalAssetDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Metadata", onClick: () => {} },
-                { label: "Upload New Version", onClick: () => {} },
+                { label: "Edit Metadata", onClick: () => router.push(`/digital-assets/${entityId}/edit`) },
+                { label: "Upload New Version", onClick: () => router.push(`/digital-assets/${entityId}/edit?action=upload`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -273,7 +263,7 @@ export default function DigitalAssetDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Sensitivity</p>
                                         <p className="text-sm font-bold capitalize">
-                                            {mockAsset.sensitivity}
+                                            {sensitivity}
                                         </p>
                                     </div>
                                 </div>
@@ -286,7 +276,7 @@ export default function DigitalAssetDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Version</p>
                                         <p className="text-sm font-bold">
-                                            {mockVersions[0]?.version_label ?? "v1"}
+                                            {versions[0]?.version_label ?? "v1"}
                                         </p>
                                     </div>
                                 </div>
@@ -301,8 +291,8 @@ export default function DigitalAssetDetailPage() {
                                             Last Reviewed
                                         </p>
                                         <p className="text-sm font-semibold">
-                                            {mockAsset.last_reviewed_at
-                                                ? formatDate(mockAsset.last_reviewed_at, "compact")
+                                            {lastReviewedAt
+                                                ? formatDate(lastReviewedAt, "compact")
                                                 : "Never"}
                                         </p>
                                     </div>
@@ -311,14 +301,14 @@ export default function DigitalAssetDetailPage() {
                         </Card>
                     </div>
 
-                    {mockAsset.description && (
+                    {description && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Description</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {mockAsset.description}
+                                    {description}
                                 </p>
                             </CardContent>
                         </Card>
@@ -334,22 +324,22 @@ export default function DigitalAssetDetailPage() {
                                     Requires Acknowledgment
                                 </span>
                                 <Badge
-                                    variant={mockAsset.requires_acknowledgment ? "info" : "ghost"}
+                                    variant={requiresAcknowledgment ? "info" : "ghost"}
                                 >
-                                    {mockAsset.requires_acknowledgment ? "Yes" : "No"}
+                                    {requiresAcknowledgment ? "Yes" : "No"}
                                 </Badge>
                             </div>
-                            {mockAsset.data_purpose && (
+                            {dataPurpose && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Data Purpose</span>
-                                    <span className="font-medium">{mockAsset.data_purpose}</span>
+                                    <span className="font-medium">{dataPurpose}</span>
                                 </div>
                             )}
-                            {mockAsset.retention_policy_id && (
+                            {retentionPolicyId && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Retention Policy</span>
                                     <span className="font-mono text-xs">
-                                        {mockAsset.retention_policy_id}
+                                        {retentionPolicyId}
                                     </span>
                                 </div>
                             )}
@@ -362,12 +352,12 @@ export default function DigitalAssetDetailPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">
-                            Version History ({mockVersions.length})
+                            Version History ({versions.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockVersions.map((v, i) => (
+                            {versions.map((v, i) => (
                                 <div
                                     key={v.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
@@ -405,12 +395,12 @@ export default function DigitalAssetDetailPage() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <Link2 className="h-4 w-4" />
-                            Entity Links ({mockLinks.length})
+                            Entity Links ({links.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockLinks.map((link) => (
+                            {links.map((link) => (
                                 <div
                                     key={link.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
@@ -437,7 +427,7 @@ export default function DigitalAssetDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="digital_asset"
-                    recordId={mockAsset.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

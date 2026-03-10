@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
@@ -64,7 +65,6 @@ export default function ActivationDetailPage() {
         useUpdateHook: useUpdateActivation,
         useDeleteHook: useDeleteActivation,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -89,9 +89,7 @@ export default function ActivationDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -224,8 +222,8 @@ export default function ActivationDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Duplicate", onClick: () => {} },
-                { label: "Archive", onClick: () => {} },
+                { label: "Duplicate", onClick: () => router.push(`/activations/new?duplicateFrom=${activationId}`) },
+                { label: "Archive", onClick: () => handleUpdate({ status: "archived" }) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

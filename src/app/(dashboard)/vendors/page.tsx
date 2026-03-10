@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,7 @@ import {
     Star,
     Store,
     Table2,
+    Upload,
 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
@@ -29,6 +32,8 @@ import {
     RatingField,
 } from "@/components/data-view/field-renderers";
 import { PermissionGate } from "@/components/permission-guard";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type ViewMode = "cards" | "table";
@@ -113,13 +118,19 @@ const vendorColumns: ColumnDef<Vendor>[] = [
 ];
 
 export default function VendorsPage() {
+    const router = useRouter();
     const VIEW_MODES = ["cards", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
         defaultValue: "cards",
         validValues: VIEW_MODES,
     });
-    const { data: supabaseVendors, isLoading } = useVendors();
+    const { data: supabaseVendors, isLoading, refetch } = useVendors();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     // Use Supabase data if configured and available, otherwise fall back to mock data
     const vendors = (supabaseVendors ?? []).map((v) => ({
@@ -142,9 +153,7 @@ export default function VendorsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -175,11 +184,22 @@ export default function VendorsPage() {
                                 },
                             ]}
                         />
-                        <Button size="sm">
+                        <CsvExportButton entity="vendors" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button size="sm" onClick={() => router.push("/vendors/new")}>
                             <Plus className="h-4 w-4" /> Add Vendor
                         </Button>
                     </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="vendors"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <StatCard title="Active Vendors" value={activeVendors.length} icon={Store} />

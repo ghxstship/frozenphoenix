@@ -116,10 +116,18 @@ export interface PasswordInputProps
     error?: string;
 }
 
+function generateDescribedBy(id: string | undefined, error: string | undefined, showStrength: boolean, password: string): string | undefined {
+    const ids: string[] = [];
+    if (error && id) ids.push(`${id}-error`);
+    if (showStrength && password && id) ids.push(`${id}-strength`);
+    return ids.length > 0 ? ids.join(" ") : undefined;
+}
+
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-    ({ className, showStrengthMeter = false, showIcon = true, error, value, ...props }, ref) => {
+    ({ className, showStrengthMeter = false, showIcon = true, error, value, id, "aria-required": ariaRequired, required, ...props }, ref) => {
         const [visible, setVisible] = React.useState(false);
         const passwordValue = typeof value === "string" ? value : "";
+        const describedBy = generateDescribedBy(id, error, showStrengthMeter, passwordValue);
 
         return (
             <div className="space-y-2">
@@ -133,6 +141,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                     <input
                         ref={ref}
                         type={visible ? "text" : "password"}
+                        id={id}
                         className={cn(
                             "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors",
                             "placeholder:text-muted-foreground",
@@ -145,6 +154,9 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                         )}
                         value={value}
                         aria-invalid={!!error}
+                        aria-describedby={describedBy}
+                        aria-required={ariaRequired ?? required}
+                        required={required}
                         {...props}
                     />
                     <button
@@ -161,7 +173,16 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                         )}
                     </button>
                 </div>
-                {showStrengthMeter && <StrengthMeter password={passwordValue} />}
+                {error && id && (
+                    <p id={`${id}-error`} className="text-xs text-destructive" role="alert">
+                        {error}
+                    </p>
+                )}
+                {showStrengthMeter && (
+                    <div id={id ? `${id}-strength` : undefined}>
+                        <StrengthMeter password={passwordValue} />
+                    </div>
+                )}
             </div>
         );
     }

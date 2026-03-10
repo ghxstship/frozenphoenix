@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CREDENTIAL_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +12,6 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useCredentialPools, useCredentialTypes } from "@/lib/supabase/hooks-credentialing";
 import {
     AlertTriangle,
-    Loader2,
     Package,
     Plus,
     Ticket,
@@ -112,6 +114,7 @@ const typeColumns: ColumnDef<CredentialTypeRow>[] = [
 ];
 
 export default function CredentialsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: types, isLoading: loadingTypes } = useCredentialTypes(false);
     const { data: pools, isLoading: loadingPools } = useCredentialPools();
 
@@ -119,9 +122,7 @@ export default function CredentialsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -141,7 +142,7 @@ export default function CredentialsPage() {
                     title="Credentials & Ticketing"
                     description="Manage credential types, inventory pools, and assignment policies"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" />
                         New Credential Type
                     </Button>
@@ -227,7 +228,14 @@ export default function CredentialsPage() {
                                                         <span>{pool.allocated_count} allocated</span>
                                                         <span>{pool.total_quantity} total</span>
                                                     </div>
-                                                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-2 bg-muted rounded-full overflow-hidden"
+                                                        role="progressbar"
+                                                        aria-valuenow={pct}
+                                                        aria-valuemin={0}
+                                                        aria-valuemax={100}
+                                                        aria-label={`${pool.credential_types?.name ?? "Pool"} utilization: ${pct}%`}
+                                                    >
                                                         <div
                                                             className={`h-full rounded-full transition-all ${
                                                                 pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-warning" : "bg-primary"
@@ -245,6 +253,7 @@ export default function CredentialsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_CREDENTIAL_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

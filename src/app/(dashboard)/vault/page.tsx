@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_VAULT_DOCUMENT_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +32,7 @@ const categoryIcons: Record<string, typeof FileText> = {
 };
 
 export default function VaultPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbDocs, isLoading } = useVaultDocuments();
 
     const docs = (sbDocs ?? []).map((doc) => ({
@@ -46,9 +50,7 @@ export default function VaultPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -59,7 +61,7 @@ export default function VaultPage() {
                     title="Secure Document Vault"
                     description="Encrypted storage with expiring view-only links for external stakeholders"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> Upload Document
                     </Button>
                 </PageHeader>
@@ -125,6 +127,7 @@ export default function VaultPage() {
                     })}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_VAULT_DOCUMENT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

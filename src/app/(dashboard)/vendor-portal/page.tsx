@@ -268,7 +268,7 @@ export default function VendorPortalPage() {
                     description="Self-service portal: work orders, invoicing, compliance documents, and scheduling"
                 >
                     <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => console.log("Open messages")}>
                             <MessageSquare className="h-4 w-4" /> Messages
                         </Button>
                         <Badge variant="warning" className="text-sm px-3 py-1">
@@ -499,7 +499,7 @@ export default function VendorPortalPage() {
                                 <ShieldCheck className="h-4 w-4" />
                                 Compliance Documents
                             </CardTitle>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => console.log("Upload compliance document")}>
                                 <Upload className="h-3 w-3" /> Upload Document
                             </Button>
                         </div>
@@ -536,7 +536,7 @@ export default function VendorPortalPage() {
                                         {doc.status}
                                     </Badge>
                                     {doc.status === "pending" && (
-                                        <Button size="sm">
+                                        <Button size="sm" onClick={() => console.log("Upload document:", doc.id)}>
                                             <Upload className="mr-2 h-3 w-3" />
                                             Upload
                                         </Button>

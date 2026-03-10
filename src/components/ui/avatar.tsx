@@ -25,7 +25,11 @@ export function Avatar({ name, src, size = "md", className, children }: AvatarPr
     if (children) {
         return (
             <AvatarContext.Provider value={{ imgLoaded, setImgLoaded }}>
-                <div className={cn("relative flex shrink-0 overflow-hidden rounded-full", className)}>
+                <div
+                    role="img"
+                    aria-label={name ?? undefined}
+                    className={cn("relative flex shrink-0 overflow-hidden rounded-full", className)}
+                >
                     {children}
                 </div>
             </AvatarContext.Provider>

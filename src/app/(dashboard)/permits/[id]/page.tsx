@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeletePermit, useUpdatePermit } from "@/lib/supabase/hooks-pages";
@@ -41,23 +42,19 @@ export default function PermitDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: permit, isLoading } = usePermit(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Permit",
         listPath: "/permits",
         useUpdateHook: useUpdatePermit,
         useDeleteHook: useDeletePermit,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -218,19 +215,19 @@ export default function PermitDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => console.log("Renew permit:", entityId)}>
                         <Calendar className="h-4 w-4 mr-1" />
                         Renew
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Mark permit approved:", entityId)}>
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Mark Approved
                     </Button>
                 </div>
             }
             menuItems={[
-                { label: "Edit Permit", onClick: () => {} },
-                { label: "Upload Document", onClick: () => {} },
+                { label: "Edit Permit", onClick: () => router.push(`/permits/${entityId}/edit`) },
+                { label: "Upload Document", onClick: () => router.push(`/documents/new?entityType=permit&entityId=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

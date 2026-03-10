@@ -1,9 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "./database.types";
-import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
+import { supabaseAnonKey, supabaseUrl } from "./config";
 import { logger } from "@/lib/logger";
-
-export { isSupabaseConfigured };
 
 // ─── No-op query builder (returned when Supabase is not configured) ───
 
@@ -37,7 +35,7 @@ function createNoOpQueryBuilder(isWrite: boolean) {
                 return (resolve: (v: typeof result) => void) => resolve(result);
             }
             // Every chained method (.select, .eq, .order, etc.) returns the proxy
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return (..._args: any[]) => new Proxy(() => {}, handler);
         },
     };
@@ -53,7 +51,7 @@ function createNoOpClient(): any {
     const handler: ProxyHandler<any> = {
         get(_target, prop) {
             if (prop === "from") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (_table: any) => {
                     if (!warnedOnce) {
                         logger.warn("Supabase not configured — queries return empty results.", {
@@ -71,7 +69,7 @@ function createNoOpClient(): any {
                                 method === "update" ||
                                 method === "delete" ||
                                 method === "upsert";
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             return (..._a: any[]) => createNoOpQueryBuilder(isWrite);
                         },
                     };
@@ -80,7 +78,7 @@ function createNoOpClient(): any {
             }
 
             if (prop === "rpc") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (..._args: any[]) => createNoOpQueryBuilder(false);
             }
 
@@ -94,7 +92,7 @@ function createNoOpClient(): any {
             }
 
             // Fallback: return a no-op function for any unknown property
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return (..._args: any[]) => new Proxy(() => {}, handler);
         },
     };

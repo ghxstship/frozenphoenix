@@ -7,9 +7,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, isSupabaseConfigured } from "./client";
-
-export { isSupabaseConfigured };
+import { fromTable } from "./client";
 
 // ═══════════════════════════════════════════════════════════════
 // BUDGET PROFITABILITY VIEW
@@ -50,7 +48,6 @@ export function useBudgetProfitability(projectId?: string) {
             if (error) throw error;
             return (data ?? []) as BudgetProfitabilityRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -83,7 +80,6 @@ export function useCrewUtilization() {
             if (error) throw error;
             return (data ?? []) as CrewUtilizationRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -114,7 +110,6 @@ export function useBudgetAlerts(projectId?: string) {
             if (error) throw error;
             return (data ?? []) as BudgetAlertRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -162,7 +157,7 @@ export function useRecordComments(entityType: string, entityId: string) {
             if (error) throw error;
             return (data ?? []) as RecordCommentRow[];
         },
-        enabled: isSupabaseConfigured && !!entityId,
+        enabled: !!entityId,
     });
 }
 
@@ -221,7 +216,7 @@ export function useRecordActivityLog(entityType: string, entityId: string) {
             if (error) throw error;
             return (data ?? []) as RecordActivityRow[];
         },
-        enabled: isSupabaseConfigured && !!entityId,
+        enabled: !!entityId,
     });
 }
 
@@ -252,7 +247,6 @@ export function useQualityCheckTemplates(entityType?: string) {
             if (error) throw error;
             return (data ?? []) as QualityCheckTemplateRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -283,7 +277,7 @@ export function useQualityChecks(entityType: string, entityId: string) {
             if (error) throw error;
             return (data ?? []) as QualityCheckRow[];
         },
-        enabled: isSupabaseConfigured && !!entityId,
+        enabled: !!entityId,
     });
 }
 
@@ -327,7 +321,6 @@ export function useReviewCycles() {
             if (error) throw error;
             return (data ?? []) as ReviewCycleRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -358,7 +351,6 @@ export function useReviewFeedback(cycleId?: string, revieweeId?: string) {
             if (error) throw error;
             return (data ?? []) as ReviewFeedbackRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -393,7 +385,6 @@ export function useGoals(ownerId?: string) {
             if (error) throw error;
             return (data ?? []) as GoalRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -456,7 +447,6 @@ export function useKnowledgeArticles(category?: string) {
             if (error) throw error;
             return (data ?? []) as KnowledgeArticleRow[];
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -471,7 +461,7 @@ export function useKnowledgeArticle(id: string) {
             if (error) throw error;
             return data as KnowledgeArticleRow;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -533,7 +523,7 @@ export function useArticleLinks(entityType: string, entityId: string) {
             if (error) throw error;
             return (data ?? []) as ArticleLinkRow[];
         },
-        enabled: isSupabaseConfigured && !!entityId,
+        enabled: !!entityId,
     });
 }
 

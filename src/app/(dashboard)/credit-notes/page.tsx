@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CREDIT_NOTE_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -28,6 +31,7 @@ interface CreditNote {
 }
 
 export default function CreditNotesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
 
     const { data: sbCreditNotes, isLoading } = useCreditNotes();
@@ -47,9 +51,7 @@ export default function CreditNotesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -77,7 +79,7 @@ export default function CreditNotesPage() {
                     title="Credit Notes"
                     description="Issue and track credit notes against client invoices"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New Credit Note
                     </Button>
                 </PageHeader>
@@ -149,6 +151,7 @@ export default function CreditNotesPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_CREDIT_NOTE_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 
 // ─── Typing Indicator (Supabase Broadcast — ephemeral, no DB) ───
 
@@ -17,7 +17,7 @@ export function useTypingIndicator(conversationId: string | undefined) {
     const timeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
     useEffect(() => {
-        if (!conversationId || !isSupabaseConfigured) return;
+        if (!conversationId) return;
 
         const supabase = getSupabase();
         const channel = supabase.channel(`typing:${conversationId}`);
@@ -105,8 +105,6 @@ export function usePresence(channelName = "global-presence") {
     const channelRef = useRef<ReturnType<ReturnType<typeof getSupabase>["channel"]> | null>(null);
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = getSupabase();
         const channel = supabase.channel(channelName, {
             config: { presence: { key: "user" } },
@@ -156,7 +154,7 @@ export function useMessagesRealtime(conversationId: string | undefined) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!conversationId || !isSupabaseConfigured) return;
+        if (!conversationId) return;
 
         const supabase = getSupabase();
         const channel = supabase
@@ -202,8 +200,6 @@ export function useConversationsRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = getSupabase();
         const channel = supabase
             .channel("conversations-realtime")

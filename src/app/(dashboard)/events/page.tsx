@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -17,7 +18,9 @@ import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
-import { Calendar, ChevronRight, Clock, Loader2, MapPin, Play, Plus, Users } from "lucide-react";
+import { Calendar, ChevronRight, Clock, Loader2, MapPin, Play, Plus, Upload, Users } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PermissionGate } from "@/components/permission-guard";
 
 const STATUS_VARIANTS: Record<string, string> = {
@@ -34,7 +37,12 @@ export default function EventsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const { data: sbEvents, isLoading: loadingEvents } = useEvents();
+    const { data: sbEvents, isLoading: loadingEvents, refetch: refetchEvents } = useEvents();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetchEvents();
+    }, [refetchEvents]);
     const { data: sbLocations, isLoading: loadingLocations } = useLocations();
     const { data: sbActivations, isLoading: loadingActivations } = useActivations();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
@@ -85,9 +93,7 @@ export default function EventsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -105,10 +111,17 @@ export default function EventsPage() {
                 title="Events"
                 description="Manage shows, rehearsals, and scheduled activities"
                 actions={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        Schedule Event
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="events" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Schedule Event
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}
@@ -167,7 +180,7 @@ export default function EventsPage() {
                         }
                         action={
                             !searchQuery
-                                ? { label: "Schedule Event", onClick: () => {} }
+                                ? { label: "Schedule Event", onClick: openCreate }
                                 : undefined
                         }
                     />
@@ -286,6 +299,12 @@ export default function EventsPage() {
                 config={CREATE_EVENT_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+            />
+            <CsvImportDialog
+                entity="events"
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                onImportComplete={handleImportComplete}
             />
         </PermissionGate>
     );

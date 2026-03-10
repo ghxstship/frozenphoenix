@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "./auth-context";
-import { isSupabaseConfigured } from "./client";
 
 /**
  * Multi-tenant organization hook.
@@ -12,7 +11,6 @@ import { isSupabaseConfigured } from "./client";
  */
 export function useOrgId(): string | null {
     const { activeOrg } = useAuth();
-    if (!isSupabaseConfigured) return null;
 
     // activeOrg is derived from org_memberships — the canonical tenant boundary.
     // Returns null when no membership exists; RLS policies are the last line of defense.

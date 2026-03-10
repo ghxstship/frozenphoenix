@@ -9,118 +9,24 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock, Gauge, XCircle } from "lucide-react";
 import { READINESS_GATE_STATUS_MAP } from "@/config/domain-config";
 import { StaggerItem } from "@/components/ui/stagger-container";
-
-interface MockGate {
-    id: string;
-    gateNumber: number;
-    name: string;
-    verifierRole: string;
-    status: string;
-    isBlocking: boolean;
-    verifiedBy?: string;
-    verifiedAt?: string;
-}
-
-const mockGates: MockGate[] = [
-    {
-        id: "1",
-        gateNumber: 1,
-        name: "Venue Access Confirmed",
-        verifierRole: "Event Commander",
-        status: "passed",
-        isBlocking: true,
-        verifiedBy: "Dana Wright",
-        verifiedAt: "2026-02-24T14:00:00Z",
-    },
-    {
-        id: "2",
-        gateNumber: 2,
-        name: "Power & Utilities Verified",
-        verifierRole: "Technical Director",
-        status: "passed",
-        isBlocking: true,
-        verifiedBy: "Alex Torres",
-        verifiedAt: "2026-02-24T15:30:00Z",
-    },
-    {
-        id: "3",
-        gateNumber: 3,
-        name: "Rigging Inspection Complete",
-        verifierRole: "Safety Officer",
-        status: "passed",
-        isBlocking: true,
-        verifiedBy: "Kim Park",
-        verifiedAt: "2026-02-24T16:00:00Z",
-    },
-    {
-        id: "4",
-        gateNumber: 4,
-        name: "Audio System Check",
-        verifierRole: "Audio Lead",
-        status: "in_progress",
-        isBlocking: true,
-    },
-    {
-        id: "5",
-        gateNumber: 5,
-        name: "Video System Check",
-        verifierRole: "Video Lead",
-        status: "in_progress",
-        isBlocking: true,
-    },
-    {
-        id: "6",
-        gateNumber: 6,
-        name: "Fire Safety Walkthrough",
-        verifierRole: "Safety Officer",
-        status: "not_started",
-        isBlocking: true,
-    },
-    {
-        id: "7",
-        gateNumber: 7,
-        name: "Catering Setup Verified",
-        verifierRole: "FOH Manager",
-        status: "not_started",
-        isBlocking: false,
-    },
-    {
-        id: "8",
-        gateNumber: 8,
-        name: "Security Briefing Complete",
-        verifierRole: "Security Lead",
-        status: "not_started",
-        isBlocking: true,
-    },
-    {
-        id: "9",
-        gateNumber: 9,
-        name: "VIP Areas Prepared",
-        verifierRole: "FOH Manager",
-        status: "waived",
-        isBlocking: false,
-    },
-    {
-        id: "10",
-        gateNumber: 10,
-        name: "Comms Check All Channels",
-        verifierRole: "Production Coordinator",
-        status: "not_started",
-        isBlocking: true,
-    },
-];
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useReadinessGates } from "@/lib/supabase/hooks-live-ops";
 
 export default function ReadinessGatesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { data: gates, isLoading } = useReadinessGates();
 
-    const passed = mockGates.filter((g) => g.status === "passed").length;
-    const inProgress = mockGates.filter((g) => g.status === "in_progress").length;
-    const notStarted = mockGates.filter((g) => g.status === "not_started").length;
-    const blockingRemaining = mockGates.filter(
-        (g) => g.isBlocking && !["passed", "waived"].includes(g.status)
+    if (isLoading) return <LoadingState />;
+
+    const rows = gates ?? [];
+    const passed = rows.filter((g) => g.status === "passed").length;
+    const inProgress = rows.filter((g) => g.status === "in_progress").length;
+    const notStarted = rows.filter((g) => g.status === "not_started").length;
+    const blockingRemaining = rows.filter(
+        (g) => g.is_blocking && !["passed", "waived"].includes(g.status)
     ).length;
 
-    const filtered = mockGates.filter((g) => statusFilter === "all" || g.status === statusFilter);
+    const filtered = rows.filter((g) => statusFilter === "all" || g.status === statusFilter);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -173,12 +79,12 @@ export default function ReadinessGatesPage() {
                 {filtered.map((gate, i) => (
                     <StaggerItem key={gate.id} index={i} stagger="tight">
                         <Card
-                            className={`hover:shadow-sm transition-all ${gate.isBlocking && !["passed", "waived"].includes(gate.status) ? "border-l-2 border-l-destructive" : ""}`}
+                            className={`hover:shadow-sm transition-all ${gate.is_blocking && !["passed", "waived"].includes(gate.status) ? "border-l-2 border-l-destructive" : ""}`}
                         >
                             <CardContent className="py-3">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">
-                                        G{gate.gateNumber}
+                                        G{gate.gate_number}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
@@ -189,22 +95,22 @@ export default function ReadinessGatesPage() {
                                                 status={gate.status}
                                                 className="text-[10px] shrink-0"
                                             />
-                                            {gate.isBlocking && (
+                                            {gate.is_blocking && (
                                                 <span className="text-[10px] text-destructive font-medium shrink-0">
                                                     BLOCKING
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            Verifier: {gate.verifierRole}
+                                            Verifier: {gate.verifier_role}
                                         </p>
                                     </div>
-                                    {gate.verifiedBy && (
+                                    {gate.verified_by_id && (
                                         <div className="text-right text-xs shrink-0">
-                                            <p className="font-medium">{gate.verifiedBy}</p>
+                                            <p className="font-medium">{gate.verified_by_id}</p>
                                             <p className="text-[10px] text-muted-foreground">
-                                                {gate.verifiedAt
-                                                    ? new Date(gate.verifiedAt).toLocaleTimeString(
+                                                {gate.verified_at
+                                                    ? new Date(gate.verified_at).toLocaleTimeString(
                                                           [],
                                                           { hour: "2-digit", minute: "2-digit" }
                                                       )

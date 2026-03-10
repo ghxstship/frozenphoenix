@@ -1,9 +1,11 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import { formatDate } from "@/lib/locale";
 
 import React from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +115,7 @@ interface LifecycleStageItem {
     completedAt?: string;
 }
 
+// FUTURE: Replace mockLifecycleStages with useLifecycleStages() hook when available
 const mockLifecycleStages: LifecycleStageItem[] = LIFECYCLE_STAGES.map((ls, i) => ({
     stage: ls.value,
     label: ls.label,
@@ -187,9 +190,7 @@ export default function ApprovalsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -223,6 +224,7 @@ export default function ApprovalsPage() {
                         onValueChange={(v) => setActiveTab(v as "approvals" | "lifecycle")}
                         ariaLabel="Approvals page sections"
                     />
+                    <CsvExportButton entity="approvals" />
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -247,6 +249,10 @@ export default function ApprovalsPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
+                            <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-warning/40 bg-warning/5 px-3 py-2 text-xs text-warning">
+                                <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                <span>Lifecycle stages shown below are placeholder data. Live stage tracking will be available once the approval engine is wired.</span>
+                            </div>
                             <div className="space-y-1">
                                 {mockLifecycleStages.map((stage, i) => {
                                     const statusColors: Record<LifecycleStatus, string> = {

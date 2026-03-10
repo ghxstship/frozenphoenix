@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,76 @@ interface InviteRow {
 let rowCounter = 0;
 function createRow(): InviteRow {
     return { id: `row-${++rowCounter}`, email: "", role: "member" };
+}
+
+const INVITE_OPTIONS: { value: InviteType; label: string; icon: typeof Users }[] = [
+    { value: "org_invite", label: "Team Invite", icon: Users },
+    { value: "referral", label: "Referral Invite", icon: Link2 },
+];
+
+function InviteTypeToggle({
+    inviteType,
+    onChange,
+}: {
+    inviteType: InviteType;
+    onChange: (v: InviteType) => void;
+}) {
+    const groupRef = useRef<HTMLDivElement>(null);
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            const idx = INVITE_OPTIONS.findIndex((o) => o.value === inviteType);
+            let next = idx;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                next = (idx + 1) % INVITE_OPTIONS.length;
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                next = (idx - 1 + INVITE_OPTIONS.length) % INVITE_OPTIONS.length;
+            } else {
+                return;
+            }
+            e.preventDefault();
+            const nextOption = INVITE_OPTIONS[next];
+            if (!nextOption) return;
+            onChange(nextOption.value);
+            // Focus the newly active radio
+            const buttons = groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+            buttons?.[next]?.focus();
+        },
+        [inviteType, onChange]
+    );
+
+    return (
+        <div
+            ref={groupRef}
+            className="flex rounded-lg border border-input p-1 gap-1"
+            role="radiogroup"
+            aria-label="Invitation type"
+            onKeyDown={handleKeyDown}
+        >
+            {INVITE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const isActive = inviteType === opt.value;
+                return (
+                    <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={isActive}
+                        tabIndex={isActive ? 0 : -1}
+                        onClick={() => onChange(opt.value)}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                            isActive
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                        {opt.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
 }
 
 export default function InviteTeamPage() {
@@ -170,7 +240,14 @@ export default function InviteTeamPage() {
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
             <div className="w-full max-w-lg space-y-8">
                 {/* Progress indicator */}
-                <div className="flex items-center gap-2 justify-center">
+                <div
+                    className="flex items-center gap-2 justify-center"
+                    role="progressbar"
+                    aria-valuenow={2}
+                    aria-valuemin={1}
+                    aria-valuemax={3}
+                    aria-label="Onboarding step 2 of 3"
+                >
                     <div className="h-2 w-12 rounded-full bg-primary" />
                     <div className="h-2 w-12 rounded-full bg-primary" />
                     <div className="h-2 w-12 rounded-full bg-muted" />
@@ -190,40 +267,7 @@ export default function InviteTeamPage() {
                 </div>
 
                 {/* Invite type toggle */}
-                <div
-                    className="flex rounded-lg border border-input p-1 gap-1"
-                    role="radiogroup"
-                    aria-label="Invitation type"
-                >
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={inviteType === "org_invite"}
-                        onClick={() => setInviteType("org_invite")}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                            inviteType === "org_invite"
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                        <Users className="h-4 w-4" aria-hidden="true" />
-                        Team Invite
-                    </button>
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={inviteType === "referral"}
-                        onClick={() => setInviteType("referral")}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                            inviteType === "referral"
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                        <Link2 className="h-4 w-4" aria-hidden="true" />
-                        Referral Invite
-                    </button>
-                </div>
+                <InviteTypeToggle inviteType={inviteType} onChange={setInviteType} />
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                     {error && (

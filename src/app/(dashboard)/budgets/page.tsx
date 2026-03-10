@@ -1,6 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -106,9 +108,7 @@ export default function BudgetsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -138,10 +138,13 @@ export default function BudgetsPage() {
                 title="Budgets"
                 description="Manage project budgets and track spending"
                 actions={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        New Budget
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="budgets" />
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            New Budget
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}

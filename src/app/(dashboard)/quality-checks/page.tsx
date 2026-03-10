@@ -223,7 +223,7 @@ export default function QualityChecksPage() {
                     title="Quality Checks"
                     description="Inspection checklists, safety verifications, and client sign-off tracking"
                 >
-                    <Button>
+                    <Button onClick={() => console.log("Create new inspection")}>
                         <Plus className="mr-2 h-4 w-4" /> New Inspection
                     </Button>
                 </PageHeader>
@@ -399,24 +399,24 @@ export default function QualityChecksPage() {
 
                                             <div className="flex items-center gap-2 pt-2 border-t">
                                                 {qc.status === "in_progress" && (
-                                                    <Button size="sm">
+                                                    <Button size="sm" onClick={() => console.log("Complete inspection:", qc.id)}>
                                                         <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Complete Inspection
                                                     </Button>
                                                 )}
                                                 {qc.status === "failed" && (
-                                                    <Button size="sm" variant="outline">
+                                                    <Button size="sm" variant="outline" onClick={() => console.log("Schedule re-inspection:", qc.id)}>
                                                         <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Schedule Re-Inspection
                                                     </Button>
                                                 )}
                                                 {qc.status === "pending" && (
-                                                    <Button size="sm">
+                                                    <Button size="sm" onClick={() => console.log("Start inspection:", qc.id)}>
                                                         <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Start Inspection
                                                     </Button>
                                                 )}
-                                                <Button variant="outline" size="sm">
+                                                <Button variant="outline" size="sm" onClick={() => console.log("Add photos to inspection:", qc.id)}>
                                                     <Camera className="mr-1.5 h-3.5 w-3.5" /> Add
                                                     Photos
                                                 </Button>

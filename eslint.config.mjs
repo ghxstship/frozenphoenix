@@ -10,6 +10,14 @@ const eslintConfig = defineConfig([
   // M-002: Enforce import ordering (members within a single import statement).
   {
     rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "no-console": "warn",
       "sort-imports": [
         "warn",

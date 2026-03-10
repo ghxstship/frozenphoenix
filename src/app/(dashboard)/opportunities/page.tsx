@@ -1,6 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -177,9 +179,7 @@ export default function OpportunitiesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -190,9 +190,12 @@ export default function OpportunitiesPage() {
                     title="Opportunities"
                     description="Sales pipeline — track opportunities from discovery to close"
                 >
-                    <Button size="sm" onClick={openCreate}>
-                        <Plus className="mr-2 h-4 w-4" /> New Opportunity
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="opportunities" />
+                        <Button size="sm" onClick={openCreate}>
+                            <Plus className="mr-2 h-4 w-4" /> New Opportunity
+                        </Button>
+                    </div>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

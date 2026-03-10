@@ -4,7 +4,6 @@ import {
     ArrowLeft,
     Briefcase,
     Building2,
-    Copy,
     ExternalLink,
     Globe,
     Linkedin,
@@ -12,6 +11,7 @@ import {
     Shield,
 } from "lucide-react";
 import Link from "next/link";
+import { CopyLinkButton } from "@/components/ui/copy-link-button";
 
 interface ProfileData {
     id: string;
@@ -100,7 +100,7 @@ export default async function PublicUserProfilePage({
                         Back
                     </Link>
                     <div className="flex items-center gap-2">
-                        <CopyLinkButton />
+                        <CopyLinkButton title="Copy profile link" />
                     </div>
                 </div>
             </nav>
@@ -240,17 +240,6 @@ export default async function PublicUserProfilePage({
     );
 }
 
-function CopyLinkButton() {
-    return (
-        <button
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
-            title="Copy profile link"
-        >
-            <Copy className="h-3.5 w-3.5" />
-            Share
-        </button>
-    );
-}
 
 export function generateMetadata({ params }: { params: { username: string } }) {
     return {

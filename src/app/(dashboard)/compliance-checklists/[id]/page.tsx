@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useComplianceChecklist,
     useDeleteComplianceChecklist,
@@ -22,18 +23,15 @@ const TAB_VALUES = ["overview", "items", "chatter"] as const;
 
 export default function ComplianceChecklistDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: checklist, isLoading } = useComplianceChecklist(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Compliance Checklist",
         listPath: "/compliance-checklists",
         useUpdateHook: useUpdateComplianceChecklist,
         useDeleteHook: useDeleteComplianceChecklist,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -44,9 +42,7 @@ export default function ComplianceChecklistDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -129,16 +125,12 @@ export default function ComplianceChecklistDetailPage() {
                 </div>
             )}
             {activeTab === "items" && (
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <CheckSquare className="h-4 w-4" /> Items
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Checklist items coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={CheckSquare}
+                    title="No checklist items yet"
+                    description="Individual compliance checklist items will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

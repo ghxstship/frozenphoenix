@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_INTEGRATION_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,13 +52,12 @@ const STATUS_CONFIG: Record<string, { variant: "success" | "warning" | "destruct
 };
 
 export default function IntegrationsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: connections, isLoading } = useProviderConnections();
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -71,7 +73,7 @@ export default function IntegrationsPage() {
                     title="Integrations"
                     description="Manage external provider connections for ticketing, POS, and data sync"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" />
                         Add Connection
                     </Button>
@@ -166,6 +168,7 @@ export default function IntegrationsPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_INTEGRATION_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

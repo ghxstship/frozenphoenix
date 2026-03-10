@@ -29,6 +29,7 @@ function MfaSetupForm() {
     const [verifying, setVerifying] = useState(false);
     const [success, setSuccess] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [qrError, setQrError] = useState(false);
 
     // Enroll MFA on mount
     useEffect(() => {
@@ -178,13 +179,22 @@ function MfaSetupForm() {
                                 Scan this QR code with your authenticator app
                             </div>
                             <div className="flex justify-center p-4 bg-white rounded-xl">
-                                {/* Data URI from Supabase TOTP enrollment — not optimizable by next/image */}
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={enrollment.totp.qr_code}
-                                    alt="MFA QR Code — scan with your authenticator app"
-                                    className="w-48 h-48"
-                                />
+                                {qrError ? (
+                                    <div className="w-48 h-48 flex items-center justify-center text-center p-4">
+                                        <p className="text-sm text-muted-foreground">
+                                            QR code failed to load. Use the secret key below to set up your authenticator manually.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    /* Data URI from Supabase TOTP enrollment — not optimizable by next/image */
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        src={enrollment.totp.qr_code}
+                                        alt="MFA QR Code — scan with your authenticator app"
+                                        className="w-48 h-48"
+                                        onError={() => setQrError(true)}
+                                    />
+                                )}
                             </div>
                             <div className="text-center">
                                 <p className="text-xs text-muted-foreground mb-1">
@@ -200,14 +210,17 @@ function MfaSetupForm() {
                                         size="icon"
                                         className="h-6 w-6"
                                         onClick={copySecret}
-                                        aria-label="Copy secret key"
+                                        aria-label={copied ? "Secret key copied" : "Copy secret key"}
                                     >
                                         {copied ? (
-                                            <Check className="h-3 w-3 text-success" />
+                                            <Check className="h-3 w-3 text-success" aria-hidden="true" />
                                         ) : (
-                                            <Copy className="h-3 w-3" />
+                                            <Copy className="h-3 w-3" aria-hidden="true" />
                                         )}
                                     </Button>
+                                    <span className="sr-only" aria-live="polite">
+                                        {copied ? "Secret key copied to clipboard" : ""}
+                                    </span>
                                 </div>
                             </div>
                         </div>

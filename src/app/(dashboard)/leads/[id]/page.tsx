@@ -125,14 +125,13 @@ export default function LeadDetailPage() {
     const params = useParams();
     const router = useRouter();
     const leadId = params.id as string;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: leadId,
         entityLabel: "Lead",
         listPath: "/leads",
         useUpdateHook: useUpdateLead,
         useDeleteHook: useDeleteLead,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -227,17 +226,16 @@ export default function LeadDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                        <Mail className="h-4 w-4 mr-2" />
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.open(`mailto:${lead.email}`)}>                        <Mail className="h-4 w-4 mr-2" />
                         Send Email
                     </Button>
                     {lead.phone && (
-                        <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.open(`tel:${lead.phone}`)}>
                             <Phone className="h-4 w-4 mr-2" />
                             Call
                         </Button>
                     )}
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => router.push(`/deals/new?fromLead=${leadId}`)}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Convert to Deal
                     </Button>
@@ -262,7 +260,7 @@ export default function LeadDetailPage() {
             }
             actions={
                 <>
-                    <Button variant="outline" onClick={() => {}}>
+                    <Button variant="outline" onClick={() => setActiveTab("activity" as TabId)}>
                         <MessageSquare className="h-4 w-4" />
                         Log Activity
                     </Button>
@@ -272,7 +270,7 @@ export default function LeadDetailPage() {
                     </Button>
                 </>
             }
-            menuItems={[{ label: "Convert to Deal", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Convert to Deal", onClick: () => router.push(`/deals/new?fromLead=${leadId}`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
@@ -37,8 +37,6 @@ export type WorkflowStepApprovalWithJoins = WithJoin<
 >;
 export type ESignatureRow = Tables<"e_signatures">;
 export type NotificationPreferencesRow = Tables<"notification_preferences">;
-
-export { isSupabaseConfigured };
 
 // ═══════════════════════════════════════════════════════════════
 // CALL SHEETS

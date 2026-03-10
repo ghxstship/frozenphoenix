@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo, useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_USER_INVITE_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +51,7 @@ function formatRelativeTime(dateStr?: string): string {
 }
 
 export default function UserManagementPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<UserLifecycleStatus | "all">("all");
     const [roleFilter, setRoleFilter] = useState<PermissionLevel | "all">("all");
@@ -89,9 +93,7 @@ export default function UserManagementPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -102,7 +104,7 @@ export default function UserManagementPage() {
                     title="User Management"
                     description="Manage users, roles, and access across your organization"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <UserPlus className="mr-2 h-4 w-4" />
                         Invite User
                     </Button>
@@ -247,6 +249,7 @@ export default function UserManagementPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_USER_INVITE_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

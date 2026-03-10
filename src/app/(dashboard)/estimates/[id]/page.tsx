@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteEstimate, useUpdateEstimate } from "@/lib/supabase/hooks-pages";
@@ -20,7 +21,6 @@ import {
     DollarSign,
     FileSignature,
     FileText,
-    Loader2,
     Send,
     User,
 } from "lucide-react";
@@ -30,50 +30,24 @@ import { useEstimate } from "@/lib/supabase/hooks-pages";
 type TabId = "details" | "line-items" | "chatter";
 const TAB_VALUES = ["details", "line-items", "chatter"] as const;
 
-const mockLineItems = [
-    {
-        id: "li1",
-        description: "Production Management",
-        quantity: 1,
-        unitPrice: 15000,
-        total: 15000,
-    },
-    {
-        id: "li2",
-        description: "Technical Direction — Audio & Lighting",
-        quantity: 1,
-        unitPrice: 12000,
-        total: 12000,
-    },
-    {
-        id: "li3",
-        description: "Stage Fabrication & Build",
-        quantity: 1,
-        unitPrice: 45000,
-        total: 45000,
-    },
-    {
-        id: "li4",
-        description: "AV Equipment Rental (3 days)",
-        quantity: 3,
-        unitPrice: 8000,
-        total: 24000,
-    },
-    {
-        id: "li5",
-        description: "Crew Labor — Load In/Out",
-        quantity: 24,
-        unitPrice: 450,
-        total: 10800,
-    },
-    {
-        id: "li6",
-        description: "Transportation & Logistics",
-        quantity: 1,
-        unitPrice: 5200,
-        total: 5200,
-    },
-];
+interface EstLineItem {
+    id: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+}
+
+function parseLineItems(raw: unknown): EstLineItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((li, i) => ({
+        id: String(li.id ?? `li-${i}`),
+        description: (li.description as string) ?? "",
+        quantity: (li.quantity as number) ?? 0,
+        unitPrice: (li.unit_price as number) ?? (li.unitPrice as number) ?? 0,
+        total: (li.total as number) ?? 0,
+    }));
+}
 
 export default function EstimateDetailPage() {
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
@@ -85,7 +59,8 @@ export default function EstimateDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: estimate, isLoading } = useEstimate(entityId);
+    const { data: sbRecord, isLoading } = useEstimate(entityId);
+    const estimate = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Estimate",
@@ -93,8 +68,7 @@ export default function EstimateDetailPage() {
         useUpdateHook: useUpdateEstimate,
         useDeleteHook: useDeleteEstimate,
     });
-    void router;
-    void handleUpdate;
+
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -112,11 +86,20 @@ export default function EstimateDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
+
+    const estNumber = (estimate?.number as string) ?? "";
+    const estTitle = (estimate?.title as string) ?? "";
+    const estStatus = (estimate?.status as string) ?? "draft";
+    const estTotal = (estimate?.total as number) ?? 0;
+    const estCreatedAt = (estimate?.created_at as string) ?? (estimate?.createdAt as string) ?? "";
+    const validUntil = (estimate?.valid_until as string) ?? (estimate?.validUntil as string) ?? "";
+    const companyName = (estimate?.company_name as string) ?? (estimate?.companyName as string) ?? "";
+    const contactName = (estimate?.contact_name as string) ?? (estimate?.contactName as string) ?? "";
+    const clientNotes = (estimate?.client_notes as string) ?? (estimate?.clientNotes as string) ?? "";
+    const lineItems = parseLineItems(estimate?.line_items ?? estimate?.lineItems);
 
     if (!estimate) {
         return (
@@ -128,7 +111,7 @@ export default function EstimateDetailPage() {
 
     const tabs = [
         { id: "details" as const, label: "Details" },
-        { id: "line-items" as const, label: "Line Items", count: mockLineItems.length },
+        { id: "line-items" as const, label: "Line Items", count: lineItems.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -139,28 +122,32 @@ export default function EstimateDetailPage() {
                     <CardTitle className="text-sm">Estimate Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Number</span>
-                        <span className="font-mono font-medium">{estimate.number}</span>
-                    </div>
+                    {estNumber && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Number</span>
+                            <span className="font-mono font-medium">{estNumber}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(estimate.status)}>
-                            {getStatusLabel(estimate.status)}
+                        <Badge variant={getStatusVariant(estStatus)}>
+                            {getStatusLabel(estStatus)}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Total</span>
-                        <span className="font-bold">{formatCurrency(estimate.total)}</span>
+                        <span className="font-bold">{formatCurrency(estTotal)}</span>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Created</span>
-                        <span className="font-medium">{formatDate(estimate.createdAt)}</span>
-                    </div>
-                    {estimate.validUntil && (
+                    {estCreatedAt && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Created</span>
+                            <span className="font-medium">{formatDate(estCreatedAt)}</span>
+                        </div>
+                    )}
+                    {validUntil && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Valid Until</span>
-                            <span className="font-medium">{formatDate(estimate.validUntil)}</span>
+                            <span className="font-medium">{formatDate(validUntil)}</span>
                         </div>
                     )}
                 </CardContent>
@@ -173,12 +160,12 @@ export default function EstimateDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span>{estimate.companyName}</span>
+                        <span>{companyName || "—"}</span>
                     </div>
-                    {estimate.contactName && (
+                    {contactName && (
                         <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{estimate.contactName}</span>
+                            <span>{contactName}</span>
                         </div>
                     )}
                 </CardContent>
@@ -189,11 +176,11 @@ export default function EstimateDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "sent" })}>
                         <Send className="mr-2 h-4 w-4" />
                         Send to Client
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => router.push(`/invoices/new?fromEstimate=${entityId}`)}>
                         <FileText className="mr-2 h-4 w-4" />
                         Convert to Invoice
                     </Button>
@@ -208,24 +195,24 @@ export default function EstimateDetailPage() {
             backLabel="Estimates"
             entityType="estimates"
             entityId={entityId}
-            title={estimate.title}
-            subtitle={`${estimate.number} · ${estimate.companyName}`}
-            status={estimate.status}
+            title={estTitle}
+            subtitle={`${estNumber} · ${companyName}`}
+            status={estStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileSignature className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => handleUpdate({ status: "sent" })}>
                     <Send className="h-4 w-4 mr-1" />
                     Send
                 </Button>
             }
             menuItems={[
-                { label: "Edit Estimate", onClick: () => {} },
-                { label: "Duplicate", onClick: () => {} },
-                { label: "Convert to Invoice", onClick: () => {} },
+                { label: "Edit Estimate", onClick: () => router.push(`/estimates/${entityId}/edit`) },
+                { label: "Duplicate", onClick: () => router.push(`/estimates/new?duplicateFrom=${entityId}`) },
+                { label: "Convert to Invoice", onClick: () => router.push(`/invoices/new?fromEstimate=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -243,7 +230,7 @@ export default function EstimateDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Total</p>
                                         <p className="text-lg font-bold">
-                                            {formatCurrency(estimate.total)}
+                                            {formatCurrency(estTotal)}
                                         </p>
                                     </div>
                                 </div>
@@ -256,7 +243,7 @@ export default function EstimateDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Created</p>
                                         <p className="text-sm font-semibold">
-                                            {formatDate(estimate.createdAt)}
+                                            {estCreatedAt ? formatDate(estCreatedAt) : "—"}
                                         </p>
                                     </div>
                                 </div>
@@ -269,8 +256,8 @@ export default function EstimateDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Valid Until</p>
                                         <p className="text-sm font-semibold">
-                                            {estimate.validUntil
-                                                ? formatDate(estimate.validUntil)
+                                            {validUntil
+                                                ? formatDate(validUntil)
                                                 : "No expiry"}
                                         </p>
                                     </div>
@@ -279,14 +266,14 @@ export default function EstimateDetailPage() {
                         </Card>
                     </div>
 
-                    {estimate.clientNotes && (
+                    {clientNotes && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Notes</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {estimate.clientNotes}
+                                    {clientNotes}
                                 </p>
                             </CardContent>
                         </Card>
@@ -298,7 +285,7 @@ export default function EstimateDetailPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">
-                            Line Items ({mockLineItems.length})
+                            Line Items ({lineItems.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -309,7 +296,7 @@ export default function EstimateDetailPage() {
                                 <span className="col-span-2 text-right">Unit Price</span>
                                 <span className="col-span-3 text-right">Total</span>
                             </div>
-                            {mockLineItems.map((item) => (
+                            {lineItems.map((item) => (
                                 <div
                                     key={item.id}
                                     className="grid grid-cols-12 gap-2 px-3 py-2.5 rounded-lg bg-secondary/20 text-sm"
@@ -331,7 +318,7 @@ export default function EstimateDetailPage() {
                             <div className="grid grid-cols-12 gap-2 px-3 py-3 border-t font-semibold text-sm">
                                 <span className="col-span-9">Total</span>
                                 <span className="col-span-3 text-right">
-                                    {formatCurrency(mockLineItems.reduce((s, i) => s + i.total, 0))}
+                                    {formatCurrency(lineItems.reduce((s, li) => s + li.total, 0))}
                                 </span>
                             </div>
                         </div>
@@ -342,7 +329,7 @@ export default function EstimateDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="estimate"
-                    recordId={estimate.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

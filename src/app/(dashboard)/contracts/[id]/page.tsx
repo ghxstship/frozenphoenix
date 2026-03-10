@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
@@ -37,100 +38,48 @@ import {
     Shield,
 } from "lucide-react";
 
-interface ContractDetail {
-    id: string;
-    title: string;
-    contractNumber: string;
-    type: ContractType;
-    status: ContractStatusType;
-    vendorName?: string;
-    clientName?: string;
-    value: number;
-    effectiveDate: string;
-    expirationDate: string;
-    autoRenew: boolean;
-    description: string;
-    clauses: { title: string; summary: string }[];
-    signatures: {
-        name: string;
-        email: string;
-        role: string;
-        status: SignatureStatusType;
-        signedAt?: string;
-    }[];
-    amendments: { id: string; title: string; date: string; value: number }[];
-    relatedDocuments: { name: string; type: string; uploadedAt: string }[];
+interface ClauseItem { title: string; summary: string }
+interface SignatureItem { name: string; email: string; role: string; status: SignatureStatusType; signedAt?: string }
+interface AmendmentItem { id: string; title: string; date: string; value: number }
+interface DocItem { name: string; type: string; uploadedAt: string }
+
+function parseClauses(raw: unknown): ClauseItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((c) => ({
+        title: (c.title as string) ?? "",
+        summary: (c.summary as string) ?? "",
+    }));
 }
 
-const mockContract: ContractDetail = {
-    id: "1",
-    title: "Nike Master Services Agreement",
-    contractNumber: "CTR-2026-0001",
-    type: "msa",
-    status: "active",
-    clientName: "Nike",
-    value: 2500000,
-    effectiveDate: "2025-06-01",
-    expirationDate: "2027-05-31",
-    autoRenew: true,
-    description:
-        "Master Services Agreement covering all experiential marketing and brand activation services for Nike North America. Includes standard terms for fabrication, logistics, and on-site production management.",
-    clauses: [
-        {
-            title: "Scope of Services",
-            summary:
-                "Full-service experiential marketing including design, fabrication, logistics, and on-site management.",
-        },
-        {
-            title: "Payment Terms",
-            summary:
-                "Net 30 from invoice date. 50% deposit required for projects exceeding $100,000.",
-        },
-        {
-            title: "Intellectual Property",
-            summary:
-                "All creative work produced under this agreement is owned by Client upon full payment.",
-        },
-        {
-            title: "Limitation of Liability",
-            summary: "Liability capped at total contract value. Excludes consequential damages.",
-        },
-        {
-            title: "Termination",
-            summary:
-                "Either party may terminate with 90 days written notice. Immediate termination for material breach.",
-        },
-        {
-            title: "Insurance Requirements",
-            summary:
-                "$5M general liability, $2M professional liability, workers' compensation as required by law.",
-        },
-    ],
-    signatures: [
-        {
-            name: "Sarah Chen",
-            email: "sarah.chen@company.com",
-            role: "CEO",
-            status: "signed",
-            signedAt: "2025-05-28",
-        },
-        {
-            name: "John Smith",
-            email: "john.smith@nike.com",
-            role: "VP Brand Experiences",
-            status: "signed",
-            signedAt: "2025-05-30",
-        },
-    ],
-    amendments: [
-        { id: "6", title: "Amendment #1 — Scope Extension", date: "2026-02-15", value: 350000 },
-    ],
-    relatedDocuments: [
-        { name: "Nike MSA - Executed Copy.pdf", type: "contract", uploadedAt: "2025-06-01" },
-        { name: "Insurance Certificate 2026.pdf", type: "insurance", uploadedAt: "2026-01-15" },
-        { name: "W-9 Form.pdf", type: "tax", uploadedAt: "2025-05-20" },
-    ],
-};
+function parseSignatures(raw: unknown): SignatureItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((s) => ({
+        name: (s.name as string) ?? "",
+        email: (s.email as string) ?? "",
+        role: (s.role as string) ?? "",
+        status: ((s.status as string) ?? "pending") as SignatureStatusType,
+        signedAt: (s.signed_at as string) ?? (s.signedAt as string) ?? undefined,
+    }));
+}
+
+function parseAmendments(raw: unknown): AmendmentItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((a, i) => ({
+        id: String(a.id ?? `a-${i}`),
+        title: (a.title as string) ?? "",
+        date: (a.date as string) ?? "",
+        value: (a.value as number) ?? 0,
+    }));
+}
+
+function parseDocs(raw: unknown): DocItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((d) => ({
+        name: (d.name as string) ?? "",
+        type: (d.type as string) ?? "",
+        uploadedAt: (d.uploaded_at as string) ?? (d.uploadedAt as string) ?? "",
+    }));
+}
 
 type TabId = "details" | "signatures" | "documents" | "chatter";
 const TAB_VALUES = ["details", "signatures", "documents", "chatter"] as const;
@@ -139,31 +88,44 @@ export default function ContractDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useContract(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { data: sbRecord, isLoading } = useContract(entityId);
+    const ct = sbRecord as Record<string, unknown> | null;
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Contract",
         listPath: "/contracts",
         useUpdateHook: useUpdateContract,
         useDeleteHook: useDeleteContract,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
         validValues: TAB_VALUES,
     });
-    const contract = mockContract;
-    const statusCfg = CONTRACT_STATUS_MAP[contract.status];
-    const typeCfg = CONTRACT_TYPE_MAP[contract.type];
+    const contractTitle = (ct?.title as string) ?? "";
+    const contractNumber = (ct?.contract_number as string) ?? (ct?.contractNumber as string) ?? "";
+    const contractType = ((ct?.type as string) ?? (ct?.contract_type as string) ?? "msa") as ContractType;
+    const contractStatus = ((ct?.status as string) ?? "draft") as ContractStatusType;
+    const vendorName = (ct?.vendor_name as string) ?? (ct?.vendorName as string) ?? "";
+    const clientName = (ct?.client_name as string) ?? (ct?.clientName as string) ?? "";
+    const contractValue = (ct?.value as number) ?? 0;
+    const effectiveDate = (ct?.effective_date as string) ?? (ct?.effectiveDate as string) ?? "";
+    const expirationDate = (ct?.expiration_date as string) ?? (ct?.expirationDate as string) ?? "";
+    const autoRenew = (ct?.auto_renew as boolean) ?? (ct?.autoRenew as boolean) ?? false;
+    const contractDescription = (ct?.description as string) ?? "";
+    const clauses = parseClauses(ct?.clauses);
+    const signatures = parseSignatures(ct?.signatures);
+    const amendments = parseAmendments(ct?.amendments);
+    const relatedDocuments = parseDocs(ct?.related_documents ?? ct?.relatedDocuments);
+
+    const statusCfg = CONTRACT_STATUS_MAP[contractStatus];
+    const typeCfg = CONTRACT_TYPE_MAP[contractType];
     const { addToast } = useToast();
 
     const handleExportPDF = () => {
         addToast({
             title: "Export Started",
-            description: `Generating PDF for ${contract.contractNumber}. This may take a moment.`,
+            description: `Generating PDF for ${contractNumber}. This may take a moment.`,
             variant: "info",
         });
     };
@@ -171,17 +133,18 @@ export default function ContractDetailPage() {
     const handleSendForSignature = () => {
         addToast({
             title: "Signature Request Sent",
-            description: `Signature request has been sent for ${contract.contractNumber}.`,
+            description: `Signature request has been sent for ${contractNumber}.`,
             variant: "success",
         });
     };
 
     const daysUntilExpiry = useMemo(() => {
+        if (!expirationDate) return Infinity;
         const now = new Date();
         return Math.ceil(
-            (new Date(contract.expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            (new Date(expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
         );
-    }, [contract.expirationDate]);
+    }, [expirationDate]);
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -197,10 +160,12 @@ export default function ContractDetailPage() {
         ]);
     };
 
+    if (isLoading) return <LoadingState />;
+
     const tabs = [
         { id: "details" as const, label: "Details" },
-        { id: "signatures" as const, label: "Signatures", count: contract.signatures.length },
-        { id: "documents" as const, label: "Documents", count: contract.relatedDocuments.length },
+        { id: "signatures" as const, label: "Signatures", count: signatures.length },
+        { id: "documents" as const, label: "Documents", count: relatedDocuments.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -221,15 +186,15 @@ export default function ContractDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Value</span>
-                        <span className="font-bold">{formatCurrency(contract.value)}</span>
+                        <span className="font-bold">{formatCurrency(contractValue)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Counterparty</span>
                         <span className="font-medium">
-                            {contract.clientName || contract.vendorName}
+                            {clientName || vendorName || "—"}
                         </span>
                     </div>
-                    {contract.autoRenew && (
+                    {autoRenew && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Auto-Renew</span>
                             <Badge variant="success">Yes</Badge>
@@ -247,14 +212,14 @@ export default function ContractDetailPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Effective Date</p>
-                            <p className="font-medium">{formatDate(contract.effectiveDate)}</p>
+                            <p className="font-medium">{effectiveDate ? formatDate(effectiveDate) : "TBD"}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Expiration Date</p>
-                            <p className="font-medium">{formatDate(contract.expirationDate)}</p>
+                            <p className="font-medium">{expirationDate ? formatDate(expirationDate) : "TBD"}</p>
                         </div>
                     </div>
                     {daysUntilExpiry <= 90 && daysUntilExpiry > 0 && (
@@ -300,9 +265,9 @@ export default function ContractDetailPage() {
             backLabel="Contracts"
             entityType="contracts"
             entityId={entityId}
-            title={contract.title}
-            subtitle={`${contract.contractNumber} · ${typeCfg?.label}`}
-            status={contract.status}
+            title={contractTitle}
+            subtitle={`${contractNumber} · ${typeCfg?.label}`}
+            status={contractStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileSignature className="h-7 w-7 text-primary-foreground" />
@@ -316,7 +281,7 @@ export default function ContractDetailPage() {
             }
             menuItems={[
                 { label: "Export PDF", onClick: handleExportPDF },
-                { label: "Duplicate Contract", onClick: () => {} },
+                { label: "Duplicate Contract", onClick: () => router.push(`/contracts/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -338,7 +303,7 @@ export default function ContractDetailPage() {
                                             Contract Value
                                         </p>
                                         <p className="text-lg font-bold">
-                                            {formatCurrency(contract.value)}
+                                            {formatCurrency(contractValue)}
                                         </p>
                                     </div>
                                 </div>
@@ -355,8 +320,8 @@ export default function ContractDetailPage() {
                                             Effective Period
                                         </p>
                                         <p className="text-sm font-semibold">
-                                            {formatDate(contract.effectiveDate)} —{" "}
-                                            {formatDate(contract.expirationDate)}
+                                            {effectiveDate ? formatDate(effectiveDate) : "TBD"} —{" "}
+                                            {expirationDate ? formatDate(expirationDate) : "TBD"}
                                         </p>
                                     </div>
                                 </div>
@@ -373,7 +338,7 @@ export default function ContractDetailPage() {
                                             Counterparty
                                         </p>
                                         <p className="text-sm font-semibold">
-                                            {contract.clientName || contract.vendorName}
+                                            {clientName || vendorName || "—"}
                                         </p>
                                     </div>
                                 </div>
@@ -387,7 +352,7 @@ export default function ContractDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                {contract.description}
+                                {contractDescription || "No description provided."}
                             </p>
                         </CardContent>
                     </Card>
@@ -401,7 +366,7 @@ export default function ContractDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {contract.clauses.map((clause, i) => (
+                                {clauses.map((clause, i) => (
                                     <div key={i} className="p-3 rounded-lg bg-secondary/30">
                                         <h4 className="text-sm font-semibold">{clause.title}</h4>
                                         <p className="text-xs text-muted-foreground mt-1">
@@ -413,7 +378,7 @@ export default function ContractDetailPage() {
                         </CardContent>
                     </Card>
 
-                    {contract.amendments.length > 0 && (
+                    {amendments.length > 0 && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base flex items-center gap-2">
@@ -423,7 +388,7 @@ export default function ContractDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {contract.amendments.map((amend) => (
+                                    {amendments.map((amend) => (
                                         <Link key={amend.id} href={`/contracts/${amend.id}`}>
                                             <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer">
                                                 <div>
@@ -457,7 +422,7 @@ export default function ContractDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {contract.signatures.map((sig, i) => {
+                            {signatures.map((sig, i) => {
                                 const sigStatus = SIGNATURE_STATUSES.find(
                                     (s) => s.value === sig.status
                                 );
@@ -505,7 +470,7 @@ export default function ContractDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            {contract.relatedDocuments.map((doc, i) => (
+                            {relatedDocuments.map((doc, i) => (
                                 <div
                                     key={i}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
@@ -519,7 +484,7 @@ export default function ContractDetailPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="sm">
+                                    <Button variant="ghost" size="sm" onClick={() => console.log("Download document:", doc.name)}>
                                         <Download className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -532,7 +497,7 @@ export default function ContractDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="contract"
-                    recordId={contract.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

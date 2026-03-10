@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useCallSheet, useDeleteCallSheet, useUpdateCallSheet } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -27,26 +28,6 @@ import {
     Users,
 } from "lucide-react";
 
-const mockCallSheet = {
-    id: "cs-001",
-    title: "Air Max Launch — Day 1 Load-In",
-    projectName: "Nike Air Max Launch Experience",
-    status: "published" as const,
-    date: "2026-03-13",
-    venue: "Barclays Center, Brooklyn, NY",
-    venueAddress: "620 Atlantic Ave, Brooklyn, NY 11217",
-    callTime: "06:00",
-    wrapTime: "18:00",
-    weatherForecast: "Partly Cloudy, 48°F / 9°C, 15% chance of rain",
-    productionNotes:
-        "All crew must check in at loading dock entrance (Gate C). Hard hats required in rigging areas. Lunch break 12:00-12:45.",
-    emergencyContact: "Sarah Chen (PM): +1 (212) 555-0142",
-    parkingInstructions:
-        "Crew parking at Atlantic Terminal Garage, Level P2. Validate at production office.",
-    createdBy: "Sarah Chen",
-    updatedAt: "2026-03-10",
-};
-
 interface CrewMember {
     id: string;
     name: string;
@@ -57,95 +38,33 @@ interface CrewMember {
     confirmed: boolean;
 }
 
-const mockCrew: CrewMember[] = [
-    {
-        id: "1",
-        name: "Mike Johnson",
-        role: "Technical Director",
-        department: "Production",
-        callTime: "06:00",
-        phone: "+1 (212) 555-0101",
-        confirmed: true,
-    },
-    {
-        id: "2",
-        name: "Emily Rodriguez",
-        role: "Stage Manager",
-        department: "Production",
-        callTime: "06:00",
-        phone: "+1 (212) 555-0102",
-        confirmed: true,
-    },
-    {
-        id: "3",
-        name: "David Kim",
-        role: "Lead Rigger",
-        department: "Rigging",
-        callTime: "06:30",
-        phone: "+1 (212) 555-0103",
-        confirmed: true,
-    },
-    {
-        id: "4",
-        name: "Lisa Wang",
-        role: "Lighting Designer",
-        department: "Lighting",
-        callTime: "07:00",
-        phone: "+1 (212) 555-0104",
-        confirmed: false,
-    },
-    {
-        id: "5",
-        name: "James Brown",
-        role: "Audio Engineer",
-        department: "Audio",
-        callTime: "07:00",
-        phone: "+1 (212) 555-0105",
-        confirmed: true,
-    },
-    {
-        id: "6",
-        name: "Ana Petrova",
-        role: "LED Tech",
-        department: "Video",
-        callTime: "08:00",
-        phone: "+1 (212) 555-0106",
-        confirmed: false,
-    },
-    {
-        id: "7",
-        name: "Tom Harris",
-        role: "Carpenter",
-        department: "Scenic",
-        callTime: "06:00",
-        phone: "+1 (212) 555-0107",
-        confirmed: true,
-    },
-    {
-        id: "8",
-        name: "Rachel Green",
-        role: "Props Master",
-        department: "Scenic",
-        callTime: "09:00",
-        phone: "+1 (212) 555-0108",
-        confirmed: true,
-    },
-];
+interface ScheduleEntry {
+    time: string;
+    activity: string;
+    department: string;
+}
 
-const mockSchedule = [
-    { time: "06:00", activity: "Crew call — Loading dock opens", department: "All" },
-    { time: "06:30", activity: "Rigging begins — Main stage points", department: "Rigging" },
-    { time: "07:00", activity: "Lighting rig focus begins", department: "Lighting" },
-    { time: "08:00", activity: "LED wall build begins (Stage Left)", department: "Video" },
-    { time: "09:00", activity: "Scenic install — Stage facades", department: "Scenic" },
-    { time: "10:00", activity: "Audio system fly + line check", department: "Audio" },
-    { time: "12:00", activity: "LUNCH BREAK (45 min)", department: "All" },
-    { time: "12:45", activity: "Resume — All departments", department: "All" },
-    { time: "14:00", activity: "System integration test", department: "Production" },
-    { time: "16:00", activity: "Walk-through with client", department: "Production" },
-    { time: "17:30", activity: "Wrap prep — Secure all equipment", department: "All" },
-    { time: "18:00", activity: "WRAP", department: "All" },
-];
+function parseCrew(raw: unknown): CrewMember[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((c) => ({
+        id: String(c.id ?? ""),
+        name: String(c.name ?? ""),
+        role: String(c.role ?? ""),
+        department: String(c.department ?? ""),
+        callTime: String(c.call_time ?? c.callTime ?? ""),
+        phone: String(c.phone ?? ""),
+        confirmed: Boolean(c.confirmed),
+    }));
+}
+
+function parseSchedule(raw: unknown): ScheduleEntry[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((s) => ({
+        time: String(s.time ?? ""),
+        activity: String(s.activity ?? ""),
+        department: String(s.department ?? ""),
+    }));
+}
 
 type TabId = "schedule" | "crew" | "chatter";
 const TAB_VALUES = ["schedule", "crew", "chatter"] as const;
@@ -154,7 +73,22 @@ export default function CallSheetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useCallSheet(entityId);
+    const { data: sbRecord, isLoading } = useCallSheet(entityId);
+    const cs = sbRecord as Record<string, unknown> | null;
+
+    const csTitle = (cs?.title as string) ?? "";
+    const projectName = (cs?.project_name as string) ?? "";
+    const csStatus = (cs?.status as string) ?? "draft";
+    const csDate = (cs?.date as string) ?? "";
+    const venue = (cs?.venue as string) ?? "";
+    const venueAddress = (cs?.venue_address as string) ?? "";
+    const callTime = (cs?.call_time as string) ?? "";
+    const wrapTime = (cs?.wrap_time as string) ?? "";
+    const productionNotes = (cs?.production_notes as string) ?? "";
+    const emergencyContact = (cs?.emergency_contact as string) ?? "";
+    const parkingInstructions = (cs?.parking_instructions as string) ?? "";
+    const crew = parseCrew(cs?.crew);
+    const schedule = parseSchedule(cs?.schedule);
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Call Sheet",
@@ -162,16 +96,13 @@ export default function CallSheetDetailPage() {
         useUpdateHook: useUpdateCallSheet,
         useDeleteHook: useDeleteCallSheet,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "schedule",
         validValues: TAB_VALUES,
     });
-    const confirmed = mockCrew.filter((c) => c.confirmed).length;
-    const departments = [...new Set(mockCrew.map((c) => c.department))];
+    const confirmed = crew.filter((c) => c.confirmed).length;
+    const departments = [...new Set(crew.map((c) => c.department))];
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
@@ -187,8 +118,8 @@ export default function CallSheetDetailPage() {
     };
 
     const tabs = [
-        { id: "schedule" as const, label: "Schedule", count: mockSchedule.length },
-        { id: "crew" as const, label: "Crew", count: mockCrew.length },
+        { id: "schedule" as const, label: "Schedule", count: schedule.length },
+        { id: "crew" as const, label: "Crew", count: crew.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -203,7 +134,7 @@ export default function CallSheetDetailPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Date</p>
-                            <p className="font-medium">{formatDate(mockCallSheet.date)}</p>
+                            <p className="font-medium">{csDate ? formatDate(csDate) : "—"}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -211,7 +142,7 @@ export default function CallSheetDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground">Call / Wrap</p>
                             <p className="font-medium">
-                                {mockCallSheet.callTime} — {mockCallSheet.wrapTime}
+                                {callTime} — {wrapTime}
                             </p>
                         </div>
                     </div>
@@ -220,7 +151,7 @@ export default function CallSheetDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground">Crew</p>
                             <p className="font-medium">
-                                {confirmed}/{mockCrew.length} confirmed
+                                {confirmed}/{crew.length} confirmed
                             </p>
                         </div>
                     </div>
@@ -235,13 +166,13 @@ export default function CallSheetDetailPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    <p className="text-sm font-semibold">{mockCallSheet.venue}</p>
-                    <p className="text-xs text-muted-foreground">{mockCallSheet.venueAddress}</p>
+                    <p className="text-sm font-semibold">{venue}</p>
+                    <p className="text-xs text-muted-foreground">{venueAddress}</p>
                     <div className="h-32 bg-secondary/30 rounded-lg flex items-center justify-center">
                         <MapPin className="h-8 w-8 text-muted-foreground/30" />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        <strong>Parking:</strong> {mockCallSheet.parkingInstructions}
+                        <strong>Parking:</strong> {parkingInstructions}
                     </p>
                 </CardContent>
             </Card>
@@ -256,13 +187,13 @@ export default function CallSheetDetailPage() {
                 <CardContent className="space-y-3">
                     <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
                         <p className="text-xs font-semibold text-warning mb-1">Production Notes</p>
-                        <p className="text-xs">{mockCallSheet.productionNotes}</p>
+                        <p className="text-xs">{productionNotes}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                         <p className="text-xs font-semibold text-destructive mb-1">
                             Emergency Contact
                         </p>
-                        <p className="text-xs">{mockCallSheet.emergencyContact}</p>
+                        <p className="text-xs">{emergencyContact}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -292,11 +223,11 @@ export default function CallSheetDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.print()}>
                         <Download className="mr-2 h-4 w-4" />
                         Download PDF
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "distributed" })}>
                         <Send className="mr-2 h-4 w-4" />
                         Distribute
                     </Button>
@@ -305,15 +236,17 @@ export default function CallSheetDetailPage() {
         </div>
     );
 
+    if (isLoading) return <LoadingState />;
+
     return (
         <DetailLayout
             backHref="/call-sheets"
             backLabel="Call Sheets"
             entityType="call-sheets"
             entityId={entityId}
-            title={mockCallSheet.title}
-            subtitle={`${mockCallSheet.projectName} — ${formatDate(mockCallSheet.date)}`}
-            status={mockCallSheet.status}
+            title={csTitle}
+            subtitle={`${projectName} — ${csDate ? formatDate(csDate) : ""}`}
+            status={csStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Calendar className="h-7 w-7 text-primary-foreground" />
@@ -326,8 +259,8 @@ export default function CallSheetDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Download PDF", onClick: () => {} },
-                { label: "Duplicate Call Sheet", onClick: () => {} },
+                { label: "Download PDF", onClick: () => window.print() },
+                { label: "Duplicate Call Sheet", onClick: () => router.push(`/call-sheets/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -345,7 +278,7 @@ export default function CallSheetDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-1">
-                            {mockSchedule.map((entry, i) => (
+                            {schedule.map((entry, i) => (
                                 <div
                                     key={i}
                                     className={`flex items-start gap-3 p-2 rounded-lg ${entry.activity.includes("LUNCH") || entry.activity === "WRAP" ? "bg-warning/10 font-semibold" : "hover:bg-secondary/30"} transition-colors`}
@@ -369,7 +302,7 @@ export default function CallSheetDetailPage() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            Crew List ({mockCrew.length})
+                            Crew List ({crew.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -377,7 +310,7 @@ export default function CallSheetDetailPage() {
                             <div key={dept} className="mb-4 last:mb-0">
                                 <OverlineText className="mb-2">{dept}</OverlineText>
                                 <div className="space-y-2">
-                                    {mockCrew
+                                    {crew
                                         .filter((c) => c.department === dept)
                                         .map((member) => (
                                             <div
@@ -421,7 +354,7 @@ export default function CallSheetDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="call_sheet"
-                    recordId={mockCallSheet.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -88,9 +89,7 @@ export default function VendorCompliancePage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -123,7 +122,7 @@ export default function VendorCompliancePage() {
                     title="Vendor Compliance"
                     description="Document tracking, verification status, and compliance requirement management for all vendors"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Sync vendor compliance status")}>
                         <RefreshCw className="h-4 w-4" /> Sync Status
                     </Button>
                 </PageHeader>
@@ -149,7 +148,7 @@ export default function VendorCompliancePage() {
                                         `${expiringSoon} document(s) expiring within 30 days.`}
                                 </p>
                             </div>
-                            <Button size="sm" variant="destructive">
+                            <Button size="sm" variant="destructive" onClick={() => console.log("View compliance alerts")}>
                                 View Alerts
                             </Button>
                         </CardContent>

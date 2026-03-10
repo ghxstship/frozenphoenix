@@ -137,7 +137,7 @@ export default function AuditLogPage() {
                 title="Audit Log"
                 description="Immutable log of authentication events, role changes, and access modifications"
             >
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => console.log("Export audit log")}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
                 </Button>

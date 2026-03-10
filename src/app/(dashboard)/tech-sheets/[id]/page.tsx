@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDeleteTechSheet, useTechSheet, useUpdateTechSheet } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -46,147 +47,29 @@ interface PowerCircuit {
     department: string;
 }
 
-const mockTechSheet = {
-    id: "ts-001",
-    title: "Air Max Launch — Technical Rider",
-    projectName: "Nike Air Max Launch Experience",
-    venue: "Barclays Center, Brooklyn, NY",
-    status: "approved" as const,
-    date: "2026-03-13",
-    totalPowerDraw: "480A @ 208V 3-Phase",
-    networkRequirements: "Dedicated 1Gbps fiber + backup LTE",
-    riggingPoints: 24,
-    maxRiggingWeight: "2,400 lbs per point",
-    createdBy: "Mike Johnson",
-    approvedBy: "Technical Director",
-    updatedAt: "2026-03-08",
-};
+function parseEquipment(raw: unknown): EquipmentItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((e) => ({
+        id: String(e.id ?? ""),
+        name: String(e.name ?? ""),
+        category: String(e.category ?? ""),
+        quantity: (e.quantity as number) ?? 0,
+        specs: String(e.specs ?? ""),
+        status: (e.status as EquipmentItem["status"]) ?? "pending",
+    }));
+}
 
-const mockEquipment: EquipmentItem[] = [
-    {
-        id: "1",
-        name: "ROE CB5 LED Panel",
-        category: "Video",
-        quantity: 50,
-        specs: "2.5mm pixel pitch, 500x500mm, HDR",
-        status: "confirmed",
-    },
-    {
-        id: "2",
-        name: "Novastar MCTRL4K Processor",
-        category: "Video",
-        quantity: 2,
-        specs: "4K input, 16 output ports",
-        status: "confirmed",
-    },
-    {
-        id: "3",
-        name: "Martin MAC Aura XB",
-        category: "Lighting",
-        quantity: 32,
-        specs: "Wash, RGBW, 1170 lumen",
-        status: "confirmed",
-    },
-    {
-        id: "4",
-        name: "Robe MegaPointe",
-        category: "Lighting",
-        quantity: 16,
-        specs: "Beam/spot/wash, 11,000 lumen",
-        status: "pending",
-    },
-    {
-        id: "5",
-        name: "d&b audiotechnik SL-Series",
-        category: "Audio",
-        quantity: 24,
-        specs: "Line array, 145 dB SPL max",
-        status: "confirmed",
-    },
-    {
-        id: "6",
-        name: "d&b SL-Sub",
-        category: "Audio",
-        quantity: 12,
-        specs: 'Cardioid sub, 21" driver',
-        status: "confirmed",
-    },
-    {
-        id: "7",
-        name: "DiGiCo SD7 Console",
-        category: "Audio",
-        quantity: 1,
-        specs: "FOH console, 128 channels",
-        status: "confirmed",
-    },
-    {
-        id: "8",
-        name: "grandMA3 Full-Size",
-        category: "Lighting",
-        quantity: 2,
-        specs: "Lighting control, 250K params",
-        status: "confirmed",
-    },
-    {
-        id: "9",
-        name: "CM Lodestar 1-Ton",
-        category: "Rigging",
-        quantity: 24,
-        specs: "1-ton capacity, 60 fpm",
-        status: "confirmed",
-    },
-    {
-        id: "10",
-        name: "Cisco Catalyst 9300",
-        category: "Network",
-        quantity: 4,
-        specs: "48-port PoE+, 10G uplink",
-        status: "pending",
-    },
-];
-
-const mockPowerCircuits: PowerCircuit[] = [
-    {
-        id: "1",
-        label: "LED Wall Main",
-        amperage: 200,
-        voltage: 208,
-        phase: "3-Phase",
-        department: "Video",
-    },
-    {
-        id: "2",
-        label: "Lighting Rig",
-        amperage: 150,
-        voltage: 208,
-        phase: "3-Phase",
-        department: "Lighting",
-    },
-    {
-        id: "3",
-        label: "Audio FOH + Amps",
-        amperage: 60,
-        voltage: 208,
-        phase: "3-Phase",
-        department: "Audio",
-    },
-    {
-        id: "4",
-        label: "Network + Control",
-        amperage: 30,
-        voltage: 120,
-        phase: "Single",
-        department: "IT",
-    },
-    {
-        id: "5",
-        label: "Scenic Motors",
-        amperage: 40,
-        voltage: 208,
-        phase: "3-Phase",
-        department: "Scenic",
-    },
-];
+function parsePowerCircuits(raw: unknown): PowerCircuit[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((c) => ({
+        id: String(c.id ?? ""),
+        label: String(c.label ?? ""),
+        amperage: (c.amperage as number) ?? 0,
+        voltage: (c.voltage as number) ?? 0,
+        phase: String(c.phase ?? ""),
+        department: String(c.department ?? ""),
+    }));
+}
 
 type TechSheetTabId = "equipment" | "power" | "chatter";
 const TECH_SHEET_TAB_VALUES = ["equipment", "power", "chatter"] as const;
@@ -195,7 +78,23 @@ export default function TechSheetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const sheetId = params.id as string;
-    const { data: sbRecord } = useTechSheet(sheetId);
+    const { data: sbRecord, isLoading } = useTechSheet(sheetId);
+    const ts = sbRecord as Record<string, unknown> | null;
+
+    const tsTitle = (ts?.title as string) ?? "";
+    const projectName = (ts?.project_name as string) ?? "";
+    const tsVenue = (ts?.venue as string) ?? "";
+    const tsStatus = (ts?.status as string) ?? "draft";
+    const tsDate = (ts?.date as string) ?? "";
+    const totalPowerDraw = (ts?.total_power_draw as string) ?? "";
+    const networkRequirements = (ts?.network_requirements as string) ?? "";
+    const riggingPoints = (ts?.rigging_points as number) ?? 0;
+    const maxRiggingWeight = (ts?.max_rigging_weight as string) ?? "";
+    const createdBy = (ts?.created_by as string) ?? "";
+    const approvedBy = (ts?.approved_by as string) ?? "";
+    const updatedAt = (ts?.updated_at as string) ?? "";
+    const equipment = parseEquipment(ts?.equipment);
+    const powerCircuits = parsePowerCircuits(ts?.power_circuits);
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: sheetId,
         entityLabel: "Tech Sheet",
@@ -203,9 +102,6 @@ export default function TechSheetDetailPage() {
         useUpdateHook: useUpdateTechSheet,
         useDeleteHook: useDeleteTechSheet,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TechSheetTabId>({
         key: "tab",
@@ -213,9 +109,9 @@ export default function TechSheetDetailPage() {
         validValues: TECH_SHEET_TAB_VALUES,
     });
 
-    const categories = [...new Set(mockEquipment.map((e) => e.category))];
-    const confirmedItems = mockEquipment.filter((e) => e.status === "confirmed").length;
-    const totalAmps = mockPowerCircuits.reduce((sum, c) => sum + c.amperage, 0);
+    const categories = [...new Set(equipment.map((e) => e.category))];
+    const confirmedItems = equipment.filter((e) => e.status === "confirmed").length;
+    const totalAmps = powerCircuits.reduce((sum, c) => sum + c.amperage, 0);
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
@@ -231,8 +127,8 @@ export default function TechSheetDetailPage() {
     };
 
     const tabs = [
-        { id: "equipment" as const, label: "Equipment", count: mockEquipment.length },
-        { id: "power" as const, label: "Power", count: mockPowerCircuits.length },
+        { id: "equipment" as const, label: "Equipment", count: equipment.length },
+        { id: "power" as const, label: "Power", count: powerCircuits.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -256,7 +152,7 @@ export default function TechSheetDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground">Equipment</p>
                             <p className="text-sm font-semibold">
-                                {confirmedItems}/{mockEquipment.length} confirmed
+                                {confirmedItems}/{equipment.length} confirmed
                             </p>
                         </div>
                     </div>
@@ -265,7 +161,7 @@ export default function TechSheetDetailPage() {
                         <div>
                             <p className="text-xs text-muted-foreground">Rigging</p>
                             <p className="text-sm font-semibold">
-                                {mockTechSheet.riggingPoints} points
+                                {riggingPoints} points
                             </p>
                         </div>
                     </div>
@@ -286,22 +182,22 @@ export default function TechSheetDetailPage() {
                 <CardContent className="space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Total Power Draw</span>
-                        <span className="text-sm font-medium">{mockTechSheet.totalPowerDraw}</span>
+                        <span className="text-sm font-medium">{totalPowerDraw}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Network</span>
                         <span className="text-sm font-medium">
-                            {mockTechSheet.networkRequirements}
+                            {networkRequirements}
                         </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Rigging Points</span>
-                        <span className="text-sm font-medium">{mockTechSheet.riggingPoints}</span>
+                        <span className="text-sm font-medium">{riggingPoints}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Max Weight/Point</span>
                         <span className="text-sm font-medium">
-                            {mockTechSheet.maxRiggingWeight}
+                            {maxRiggingWeight}
                         </span>
                     </div>
                 </CardContent>
@@ -315,21 +211,21 @@ export default function TechSheetDetailPage() {
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Date</span>
                         <span className="text-sm font-medium">
-                            {formatDate(mockTechSheet.date)}
+                            {tsDate ? formatDate(tsDate) : "—"}
                         </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Created By</span>
-                        <span className="text-sm font-medium">{mockTechSheet.createdBy}</span>
+                        <span className="text-sm font-medium">{createdBy}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Approved By</span>
-                        <span className="text-sm font-medium">{mockTechSheet.approvedBy}</span>
+                        <span className="text-sm font-medium">{approvedBy}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Last Updated</span>
                         <span className="text-sm font-medium">
-                            {formatDate(mockTechSheet.updatedAt)}
+                            {updatedAt ? formatDate(updatedAt) : "—"}
                         </span>
                     </div>
                 </CardContent>
@@ -339,11 +235,11 @@ export default function TechSheetDetailPage() {
                 <CardContent className="py-4">
                     <p className="text-xs text-muted-foreground font-medium mb-2">Quick Actions</p>
                     <div className="space-y-2">
-                        <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "sent" })}>
                             <Send className="mr-2 h-3.5 w-3.5" />
                             Send to Venue
                         </Button>
-                        <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.print()}>
                             <Download className="mr-2 h-3.5 w-3.5" />
                             Export PDF
                         </Button>
@@ -353,29 +249,31 @@ export default function TechSheetDetailPage() {
         </div>
     );
 
+    if (isLoading) return <LoadingState />;
+
     return (
         <DetailLayout
             backHref="/tech-sheets"
             backLabel="Tech Sheets"
             entityType="tech-sheets"
             entityId={sheetId}
-            title={mockTechSheet.title}
-            subtitle={`${mockTechSheet.projectName} — ${mockTechSheet.venue}`}
-            status={mockTechSheet.status}
+            title={tsTitle}
+            subtitle={`${projectName} — ${tsVenue}`}
+            status={tsStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Cpu className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => handleUpdate({ status: "sent" })}>
                     <Send className="h-4 w-4 mr-1" />
                     Send to Venue
                 </Button>
             }
             menuItems={[
-                { label: "Download PDF", onClick: () => {} },
-                { label: "Duplicate Tech Sheet", onClick: () => {} },
+                { label: "Download PDF", onClick: () => window.print() },
+                { label: "Duplicate Tech Sheet", onClick: () => router.push(`/tech-sheets/new?duplicateFrom=${sheetId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -388,7 +286,7 @@ export default function TechSheetDetailPage() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <Cpu className="h-4 w-4" />
-                            Equipment List ({mockEquipment.length} items)
+                            Equipment List ({equipment.length} items)
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -403,7 +301,7 @@ export default function TechSheetDetailPage() {
                                     {cat}
                                 </OverlineText>
                                 <div className="space-y-2">
-                                    {mockEquipment
+                                    {equipment
                                         .filter((e) => e.category === cat)
                                         .map((item) => (
                                             <div
@@ -465,7 +363,7 @@ export default function TechSheetDetailPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {mockPowerCircuits.map((circuit) => (
+                                {powerCircuits.map((circuit) => (
                                     <tr key={circuit.id} className="border-b border-border/50">
                                         <td className="py-2.5 font-medium">{circuit.label}</td>
                                         <td className="py-2.5 text-right">{circuit.amperage}A</td>
@@ -494,7 +392,7 @@ export default function TechSheetDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="tech_sheet"
-                    recordId={mockTechSheet.id}
+                    recordId={sheetId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
@@ -64,14 +65,13 @@ export default function ShipmentDetailPage() {
     const params = useParams();
     const router = useRouter();
     const shipmentId = params.id as string;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: shipmentId,
         entityLabel: "Shipment",
         listPath: "/shipments",
         useUpdateHook: useUpdateShipment,
         useDeleteHook: useDeleteShipment,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -96,9 +96,7 @@ export default function ShipmentDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -269,7 +267,7 @@ export default function ShipmentDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[{ label: "Print BOL", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Print BOL", onClick: () => window.print() }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

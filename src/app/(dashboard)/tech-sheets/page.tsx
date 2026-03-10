@@ -1,10 +1,13 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_TECH_SHEET_CONFIG } from "@/config/create-entity-configs";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -45,6 +48,7 @@ export default function TechSheetsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbSheets, isLoading } = useTechSheets();
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const techSheets: TechSheetListItem[] = (sbSheets ?? []).map((ts: Record<string, unknown>) => ({
         id: (ts.id as string) ?? "",
@@ -63,9 +67,7 @@ export default function TechSheetsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -87,7 +89,7 @@ export default function TechSheetsPage() {
                     title="Tech Sheets"
                     description="Technical riders and equipment specifications for venues and events"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         New Tech Sheet
                     </Button>
@@ -233,6 +235,7 @@ export default function TechSheetsPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_TECH_SHEET_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

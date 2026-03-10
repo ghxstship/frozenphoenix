@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_ONBOARDING_RUN_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +25,7 @@ import {
 } from "lucide-react";
 import type { WorkerOffboardingRun, WorkerOnboardingRun } from "@/types/workforce";
 import type { LifecycleStepStatus } from "@/types/workforce";
+import { PermissionGate } from "@/components/permission-guard";
 
 const STEP_ICONS: Record<LifecycleStepStatus, { icon: typeof CheckCircle2; color: string }> = {
     not_started: { icon: Circle, color: "text-muted-foreground" },
@@ -36,6 +39,7 @@ const STEP_ICONS: Record<LifecycleStepStatus, { icon: typeof CheckCircle2; color
 type TabMode = "onboarding" | "offboarding";
 
 export default function WorkforceOnboardingPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const TAB_MODES = ["onboarding", "offboarding"] as const;
     const [tab, setTab] = useQueryTabState({
@@ -59,12 +63,13 @@ export default function WorkforceOnboardingPage() {
     );
 
     return (
+        <PermissionGate resource="workforce" action="read">
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Onboarding & Offboarding"
                 description="Classification-aware lifecycle workflows for all worker types — employees, contractors, freelancers, and vendors"
             >
-                <Button size="sm">
+                <Button size="sm" onClick={openCreate}>
                     <Plus className="h-4 w-4" /> Start Onboarding
                 </Button>
             </PageHeader>
@@ -294,6 +299,8 @@ export default function WorkforceOnboardingPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_ONBOARDING_RUN_CONFIG} open={createOpen} onClose={closeCreate} />
         </div>
+        </PermissionGate>
     );
 }

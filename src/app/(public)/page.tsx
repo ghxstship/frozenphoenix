@@ -82,7 +82,15 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background scroll-smooth">
+            {/* Skip navigation */}
+            <a
+                href="#contact"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-primary-foreground focus:text-sm focus:font-medium"
+            >
+                Skip to contact form
+            </a>
+
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -169,6 +177,8 @@ export default function LandingPage() {
                                                 name: e.target.value,
                                             }))
                                         }
+                                        aria-required="true"
+                                        aria-label="Your name"
                                     />
                                     <Input
                                         placeholder="Company"
@@ -188,6 +198,8 @@ export default function LandingPage() {
                                     onChange={(e) =>
                                         setFormData((prev) => ({ ...prev, email: e.target.value }))
                                     }
+                                    aria-required="true"
+                                    aria-label="Email address"
                                 />
                                 <select
                                     className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm text-muted-foreground"
@@ -290,7 +302,7 @@ export default function LandingPage() {
                             },
                         ].map((service, i) => (
                             <StaggerItem key={service.title} index={i} stagger="relaxed">
-                                <div className="spatial-card p-6 group cursor-pointer">
+                                <div className="spatial-card p-6 group">
                                     <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                                         <service.icon className="h-6 w-6 text-primary" />
                                     </div>

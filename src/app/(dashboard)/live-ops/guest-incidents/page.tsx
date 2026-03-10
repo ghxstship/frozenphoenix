@@ -7,77 +7,9 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
-
-interface MockGuestIncident {
-    id: string;
-    type: string;
-    severity: string;
-    status: string;
-    description: string;
-    zoneName: string;
-    reportedAt: string;
-    guestName?: string;
-    assignedTo?: string;
-    resolution?: string;
-}
-
-const mockIncidents: MockGuestIncident[] = [
-    {
-        id: "GI-001",
-        type: "complaint",
-        severity: "minor",
-        status: "resolved",
-        description: "Long wait time at Main Bar — guest unhappy with 15min queue",
-        zoneName: "Main Bar",
-        reportedAt: "17:30",
-        guestName: "Anonymous",
-        assignedTo: "Jordan Lee",
-        resolution: "Opened express lane",
-    },
-    {
-        id: "GI-002",
-        type: "injury",
-        severity: "moderate",
-        status: "investigating",
-        description: "Guest twisted ankle on uneven ground near VIP entrance",
-        zoneName: "VIP Lounge",
-        reportedAt: "18:05",
-        guestName: "Rachel Kim",
-        assignedTo: "Medical Team",
-    },
-    {
-        id: "GI-003",
-        type: "lost_item",
-        severity: "minor",
-        status: "reported",
-        description: "Guest lost phone near Merch Tent — black iPhone 16",
-        zoneName: "Merch Tent",
-        reportedAt: "18:20",
-        guestName: "Tom Harris",
-    },
-    {
-        id: "GI-004",
-        type: "disturbance",
-        severity: "major",
-        status: "investigating",
-        description: "Altercation between two guests near stage barrier",
-        zoneName: "General Admission",
-        reportedAt: "18:35",
-        assignedTo: "Security Lead",
-    },
-    {
-        id: "GI-005",
-        type: "accessibility",
-        severity: "moderate",
-        status: "resolved",
-        description: "Wheelchair ramp blocked by equipment near South Entry",
-        zoneName: "Main Entry",
-        reportedAt: "16:45",
-        assignedTo: "Logistics Lead",
-        resolution: "Ramp cleared, barrier installed",
-    },
-];
+import { useGuestIncidents } from "@/lib/supabase/hooks-live-ops";
 
 const SEVERITY_BORDERS: Record<string, string> = {
     minor: "",
@@ -87,17 +19,21 @@ const SEVERITY_BORDERS: Record<string, string> = {
 
 export default function GuestIncidentsPage() {
     const [search, setSearch] = useState("");
+    const { data: incidents, isLoading } = useGuestIncidents();
 
-    const active = mockIncidents.filter(
+    if (isLoading) return <LoadingState />;
+
+    const rows = incidents ?? [];
+    const active = rows.filter(
         (i) => i.status !== "resolved" && i.status !== "closed"
     ).length;
-    const resolved = mockIncidents.filter((i) => i.status === "resolved").length;
+    const resolved = rows.filter((i) => i.status === "resolved").length;
 
-    const filtered = mockIncidents.filter(
+    const filtered = rows.filter(
         (i) =>
             !search ||
             i.description.toLowerCase().includes(search.toLowerCase()) ||
-            i.zoneName.toLowerCase().includes(search.toLowerCase())
+            (i.guest_name ?? "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -110,14 +46,14 @@ export default function GuestIncidentsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                     title="Total Incidents"
-                    value={mockIncidents.length}
+                    value={rows.length}
                     icon={AlertTriangle}
                 />
                 <StatCard title="Active" value={active} icon={Clock} />
                 <StatCard title="Resolved" value={resolved} icon={CheckCircle2} />
                 <StatCard
                     title="Major"
-                    value={mockIncidents.filter((i) => i.severity === "major").length}
+                    value={rows.filter((i) => i.severity === "major").length}
                     icon={AlertTriangle}
                 />
             </div>
@@ -139,7 +75,7 @@ export default function GuestIncidentsPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="shrink-0 mt-0.5">
                                         <span className="text-xs font-mono font-bold bg-secondary px-1.5 py-0.5 rounded">
-                                            {incident.id}
+                                            {incident.id.slice(0, 8)}
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -159,13 +95,15 @@ export default function GuestIncidentsPage() {
                                         </div>
                                         <p className="text-sm mt-1">{incident.description}</p>
                                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
-                                            <span>{incident.zoneName}</span>
-                                            <span>{incident.reportedAt}</span>
-                                            {incident.guestName && (
-                                                <span>Guest: {incident.guestName}</span>
+                                            {incident.foh_zone_id && <span>{incident.foh_zone_id}</span>}
+                                            {incident.reported_at && (
+                                                <span>{new Date(incident.reported_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                                             )}
-                                            {incident.assignedTo && (
-                                                <span>Assigned: {incident.assignedTo}</span>
+                                            {incident.guest_name && (
+                                                <span>Guest: {incident.guest_name}</span>
+                                            )}
+                                            {incident.assigned_to_id && (
+                                                <span>Assigned: {incident.assigned_to_id}</span>
                                             )}
                                         </div>
                                         {incident.resolution && (

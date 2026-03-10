@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useAccount, useDeleteAccount, useUpdateAccount } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -18,18 +19,15 @@ const TAB_VALUES = ["overview", "contacts", "chatter"] as const;
 
 export default function AccountDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: account, isLoading } = useAccount(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Account",
         listPath: "/accounts",
         useUpdateHook: useUpdateAccount,
         useDeleteHook: useDeleteAccount,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -40,9 +38,7 @@ export default function AccountDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -155,11 +151,12 @@ export default function AccountDetailPage() {
                 </div>
             )}
             {activeTab === "contacts" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Contact list coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={User}
+                    title="No contacts yet"
+                    description="Contacts associated with this account will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

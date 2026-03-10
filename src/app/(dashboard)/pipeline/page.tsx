@@ -1,6 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -98,6 +100,7 @@ const tableColumns: ColumnDef<Deal>[] = [
 ];
 
 export default function PipelinePage() {
+    const router = useRouter();
     const VIEW_MODES = ["board", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -124,9 +127,7 @@ export default function PipelinePage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -160,7 +161,7 @@ export default function PipelinePage() {
                             ]}
                             ariaLabel="View mode"
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => router.push("/pipeline/new")}>
                             <Plus className="h-4 w-4" />
                             New Deal
                         </Button>

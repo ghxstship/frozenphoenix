@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import {
-    isSupabaseConfigured,
     useMarkAllNotificationsRead,
     useMarkNotificationRead,
     useNotifications,
     useUnreadNotificationCount,
 } from "@/lib/supabase/hooks-v2-features";
 
-interface MockNotification {
+interface NotificationItem {
     id: string;
     type: string;
     title: string;
@@ -24,84 +23,6 @@ interface MockNotification {
     is_read: boolean;
     created_at: string;
 }
-
-const PLACEHOLDER_NOTIFICATIONS: MockNotification[] = [
-    {
-        id: "n1",
-        type: "mention",
-        title: "@you in Project Discussion",
-        body: "Sarah Chen mentioned you in the Nike Air Max Launch project",
-        entity_type: "project",
-        entity_id: "p-001",
-        action_url: "/projects/p-001",
-        is_read: false,
-        created_at: "2026-03-01T12:30:00Z",
-    },
-    {
-        id: "n2",
-        type: "approval",
-        title: "Budget Approval Required",
-        body: "Red Bull Festival budget ($45,000) needs your approval",
-        entity_type: "budget",
-        entity_id: "b-012",
-        action_url: "/approvals",
-        is_read: false,
-        created_at: "2026-03-01T11:15:00Z",
-    },
-    {
-        id: "n3",
-        type: "automation",
-        title: "Automation: Task Created",
-        body: "Follow-up task auto-created for overdue deliverable",
-        entity_type: "task",
-        entity_id: "t-200",
-        action_url: "/tasks",
-        is_read: false,
-        created_at: "2026-03-01T09:00:00Z",
-    },
-    {
-        id: "n4",
-        type: "assignment",
-        title: "New Task Assigned",
-        body: "You've been assigned to 'Finalize venue layout' on Samsung Pop-Up",
-        entity_type: "task",
-        entity_id: "t-312",
-        action_url: "/tasks",
-        is_read: true,
-        created_at: "2026-02-28T16:42:00Z",
-    },
-    {
-        id: "n5",
-        type: "sla_breach",
-        title: "SLA Warning: Response Due",
-        body: "Service request SR-0045 response SLA expires in 2 hours",
-        entity_type: "service_request",
-        entity_id: "sr-045",
-        action_url: "/service-requests",
-        is_read: false,
-        created_at: "2026-02-28T14:00:00Z",
-    },
-    {
-        id: "n6",
-        type: "alert",
-        title: "Budget Threshold Reached",
-        body: "Adidas Festival project budget at 85% utilization",
-        entity_type: "project",
-        entity_id: "p-008",
-        action_url: "/projects/p-008",
-        is_read: true,
-        created_at: "2026-02-28T10:20:00Z",
-    },
-    {
-        id: "n7",
-        type: "reminder",
-        title: "Timesheet Reminder",
-        body: "You have 3 unlogged days this week",
-        action_url: "/time-tracking",
-        is_read: false,
-        created_at: "2026-02-27T17:00:00Z",
-    },
-];
 
 const TYPE_COLORS: Record<string, string> = {
     mention: "bg-info/10 text-info",
@@ -129,7 +50,6 @@ function timeAgo(dateStr: string): string {
 
 export function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
-    const [localNotifications, setLocalNotifications] = useState(PLACEHOLDER_NOTIFICATIONS);
     const panelRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -138,14 +58,10 @@ export function NotificationBell() {
     const markRead = useMarkNotificationRead();
     const markAllRead = useMarkAllNotificationsRead();
 
-    const notifications: MockNotification[] =
-        isSupabaseConfigured && sbNotifications
-            ? (sbNotifications as unknown as MockNotification[])
-            : localNotifications;
+    const notifications: NotificationItem[] =
+        (sbNotifications as unknown as NotificationItem[]) ?? [];
 
-    const unreadCount = isSupabaseConfigured
-        ? (sbUnreadCount ?? 0)
-        : localNotifications.filter((n) => !n.is_read).length;
+    const unreadCount = sbUnreadCount ?? 0;
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
@@ -167,27 +83,17 @@ export function NotificationBell() {
 
     const handleMarkRead = useCallback(
         (id: string) => {
-            if (isSupabaseConfigured) {
-                markRead.mutate(id);
-            } else {
-                setLocalNotifications((prev) =>
-                    prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-                );
-            }
+            markRead.mutate(id);
         },
         [markRead]
     );
 
     const handleMarkAllRead = useCallback(() => {
-        if (isSupabaseConfigured) {
-            markAllRead.mutate();
-        } else {
-            setLocalNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-        }
+        markAllRead.mutate();
     }, [markAllRead]);
 
     const handleClick = useCallback(
-        (notif: MockNotification) => {
+        (notif: NotificationItem) => {
             handleMarkRead(notif.id);
             if (notif.action_url) {
                 router.push(notif.action_url);

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteProposal, useProposal, useUpdateProposal } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,170 +58,30 @@ interface ProposalSection {
     items: LineItem[];
 }
 
-const mockProposal = {
-    id: "1",
-    number: "PROP-2026-0001",
-    title: "Nike Air Max Launch Experience",
-    companyName: "Nike",
-    contactName: "John Smith",
-    contactEmail: "john.smith@nike.com",
-    status: "draft" as const,
-    validUntil: "2026-03-15",
-    createdAt: "2026-02-08",
-    version: 2,
-    currency: "USD",
-    notes: "This proposal includes all production, fabrication, and logistics for the Air Max Launch Experience activation.",
-    terms: "Net 30. 50% deposit required upon acceptance. Balance due upon project completion.",
-    sections: [
-        {
-            id: "s1",
-            title: "Creative & Design",
-            items: [
-                {
-                    id: "i1",
-                    description: "Creative Direction & Concept Development",
-                    quantity: 1,
-                    unit: "lot",
-                    unitPrice: 45000,
-                    total: 45000,
-                },
-                {
-                    id: "i2",
-                    description: "3D Rendering & Visualization (4 views)",
-                    quantity: 4,
-                    unit: "ea",
-                    unitPrice: 3500,
-                    total: 14000,
-                },
-                {
-                    id: "i3",
-                    description: "Brand Guidelines Application & Adaptation",
-                    quantity: 1,
-                    unit: "lot",
-                    unitPrice: 8000,
-                    total: 8000,
-                },
-            ],
-        },
-        {
-            id: "s2",
-            title: "Fabrication & Build",
-            items: [
-                {
-                    id: "i4",
-                    description: "Custom Activation Booth (20x30ft)",
-                    quantity: 1,
-                    unit: "ea",
-                    unitPrice: 125000,
-                    total: 125000,
-                },
-                {
-                    id: "i5",
-                    description: "LED Video Wall (16x9ft, 2.5mm pitch)",
-                    quantity: 1,
-                    unit: "ea",
-                    unitPrice: 65000,
-                    total: 65000,
-                },
-                {
-                    id: "i6",
-                    description: "Interactive Product Display Pedestals",
-                    quantity: 8,
-                    unit: "ea",
-                    unitPrice: 4500,
-                    total: 36000,
-                },
-                {
-                    id: "i7",
-                    description: "Branded Signage & Graphics Package",
-                    quantity: 1,
-                    unit: "lot",
-                    unitPrice: 18000,
-                    total: 18000,
-                },
-            ],
-        },
-        {
-            id: "s3",
-            title: "Technology & Interactive",
-            items: [
-                {
-                    id: "i8",
-                    description: "RFID Experience Tracking System",
-                    quantity: 1,
-                    unit: "lot",
-                    unitPrice: 35000,
-                    total: 35000,
-                },
-                {
-                    id: "i9",
-                    description: "AR Photo Activation (Custom Filter)",
-                    quantity: 1,
-                    unit: "ea",
-                    unitPrice: 28000,
-                    total: 28000,
-                },
-                {
-                    id: "i10",
-                    description: "Social Media Integration Wall",
-                    quantity: 1,
-                    unit: "ea",
-                    unitPrice: 22000,
-                    total: 22000,
-                },
-            ],
-        },
-        {
-            id: "s4",
-            title: "Production & Logistics",
-            items: [
-                {
-                    id: "i11",
-                    description: "Project Management (8 weeks)",
-                    quantity: 8,
-                    unit: "wk",
-                    unitPrice: 5000,
-                    total: 40000,
-                },
-                {
-                    id: "i12",
-                    description: "Shipping & Freight (LA → NYC)",
-                    quantity: 1,
-                    unit: "lot",
-                    unitPrice: 18000,
-                    total: 18000,
-                },
-                {
-                    id: "i13",
-                    description: "Install & Strike Crew (12 ppl × 3 days)",
-                    quantity: 36,
-                    unit: "man-day",
-                    unitPrice: 850,
-                    total: 30600,
-                },
-                {
-                    id: "i14",
-                    description: "On-Site Production Manager (4 days)",
-                    quantity: 4,
-                    unit: "day",
-                    unitPrice: 2500,
-                    total: 10000,
-                },
-            ],
-        },
-    ],
-    activity: [
-        { date: "2026-02-24", action: "Version 2 saved", user: "Alex Rivera" },
-        {
-            date: "2026-02-20",
-            action: "Line items updated — added AR photo activation",
-            user: "Alex Rivera",
-        },
-        { date: "2026-02-15", action: "Client feedback received", user: "John Smith (Nike)" },
-        { date: "2026-02-10", action: "Version 1 sent to client", user: "Alex Rivera" },
-        { date: "2026-02-08", action: "Proposal created", user: "Alex Rivera" },
-    ],
-};
+function parseSections(raw: unknown): ProposalSection[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((s) => ({
+        id: String(s.id ?? ""),
+        title: String(s.title ?? ""),
+        items: (Array.isArray(s.items) ? s.items : []).map((li: Record<string, unknown>) => ({
+            id: String(li.id ?? ""),
+            description: String(li.description ?? ""),
+            quantity: (li.quantity as number) ?? 0,
+            unit: String(li.unit ?? "ea"),
+            unitPrice: (li.unit_price as number) ?? (li.unitPrice as number) ?? 0,
+            total: ((li.quantity as number) ?? 0) * ((li.unit_price as number) ?? (li.unitPrice as number) ?? 0),
+        })),
+    }));
+}
+
+function parseActivity(raw: unknown): { date: string; action: string; user: string }[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((a) => ({
+        date: String(a.date ?? ""),
+        action: String(a.action ?? ""),
+        user: String(a.user ?? ""),
+    }));
+}
 
 const PROPOSAL_TAB_VALUES = ["editor", "preview", "activity", "chatter"] as const;
 
@@ -228,7 +89,8 @@ export default function ProposalDetailPage() {
     const params = useParams();
     const router = useRouter();
     const proposalId = params.id as string;
-    const { data: sbRecord } = useProposal(proposalId);
+    const { data: sbRecord, isLoading } = useProposal(proposalId);
+    const prop = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: proposalId,
         entityLabel: "Proposal",
@@ -236,19 +98,38 @@ export default function ProposalDetailPage() {
         useUpdateHook: useUpdateProposal,
         useDeleteHook: useDeleteProposal,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<ProposalTab>({
         key: "tab",
         defaultValue: "editor",
         validValues: PROPOSAL_TAB_VALUES,
     });
-    const [sections, setSections] = useState<ProposalSection[]>(mockProposal.sections);
-    const [title, setTitle] = useState(mockProposal.title);
-    const [notes, setNotes] = useState(mockProposal.notes);
-    const [terms, setTerms] = useState(mockProposal.terms);
+
+    const proposalNumber = (prop?.number as string) ?? "";
+    const companyName = (prop?.company_name as string) ?? "";
+    const contactName = (prop?.contact_name as string) ?? "";
+    const contactEmail = (prop?.contact_email as string) ?? "";
+    const proposalStatus = (prop?.status as string) ?? "draft";
+    const validUntil = (prop?.valid_until as string) ?? "";
+    const createdAt = (prop?.created_at as string) ?? "";
+    const version = (prop?.version as number) ?? 1;
+    const activity = parseActivity(prop?.activity);
+
+    const [sections, setSections] = useState<ProposalSection[]>([]);
+    const [title, setTitle] = useState("");
+    const [notes, setNotes] = useState("");
+    const [terms, setTerms] = useState("");
+    const [initialized, setInitialized] = useState(false);
     const counterRef = useRef(100);
+
+    useEffect(() => {
+        if (prop && !initialized) {
+            setSections(parseSections(prop.sections));
+            setTitle((prop.title as string) ?? "");
+            setNotes((prop.notes as string) ?? "");
+            setTerms((prop.terms as string) ?? "");
+            setInitialized(true);
+        }
+    }, [prop, initialized]);
 
     // ─── Share link state ───
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -257,8 +138,13 @@ export default function ProposalDetailPage() {
 
     // ─── E-sign state ───
     const [eSignDialogOpen, setESignDialogOpen] = useState(false);
-    const [signerName, setSignerName] = useState(mockProposal.contactName);
-    const [signerEmail, setSignerEmail] = useState(mockProposal.contactEmail);
+    const [signerName, setSignerName] = useState("");
+    const [signerEmail, setSignerEmail] = useState("");
+
+    useEffect(() => {
+        if (prop && !signerName && contactName) setSignerName(contactName);
+        if (prop && !signerEmail && contactEmail) setSignerEmail(contactEmail);
+    }, [prop, contactName, contactEmail, signerName, signerEmail]);
     const [signatureAgreed, setSignatureAgreed] = useState(false);
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddChatterComment = async (content: string) => {
@@ -375,7 +261,7 @@ export default function ProposalDetailPage() {
     const tabs = [
         { id: "editor" as const, label: "Editor" },
         { id: "preview" as const, label: "Preview" },
-        { id: "activity" as const, label: "Activity", count: mockProposal.activity.length },
+        { id: "activity" as const, label: "Activity", count: activity.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -388,22 +274,22 @@ export default function ProposalDetailPage() {
                 <CardContent className="space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Number</span>
-                        <span className="text-sm font-mono">{mockProposal.number}</span>
+                        <span className="text-sm font-mono">{proposalNumber}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Version</span>
-                        <span className="text-sm font-medium">v{mockProposal.version}</span>
+                        <span className="text-sm font-medium">v{version}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Valid Until</span>
                         <span className="text-sm font-medium">
-                            {formatDate(mockProposal.validUntil)}
+                            {validUntil ? formatDate(validUntil) : "—"}
                         </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Created</span>
                         <span className="text-sm font-medium">
-                            {formatDate(mockProposal.createdAt)}
+                            {createdAt ? formatDate(createdAt) : "—"}
                         </span>
                     </div>
                 </CardContent>
@@ -415,10 +301,10 @@ export default function ProposalDetailPage() {
                 <CardContent className="space-y-2">
                     <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{mockProposal.companyName}</span>
+                        <span className="text-sm font-medium">{companyName}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{mockProposal.contactName}</p>
-                    <p className="text-xs text-muted-foreground">{mockProposal.contactEmail}</p>
+                    <p className="text-xs text-muted-foreground">{contactName}</p>
+                    <p className="text-xs text-muted-foreground">{contactEmail}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -445,6 +331,8 @@ export default function ProposalDetailPage() {
         </div>
     );
 
+    if (isLoading) return <LoadingState />;
+
     return (
         <>
             <DetailLayout
@@ -453,8 +341,8 @@ export default function ProposalDetailPage() {
                 entityType="proposals"
                 entityId={proposalId}
                 title={title}
-                subtitle={`${mockProposal.companyName} — ${formatCurrency(grandTotal)}`}
-                status={mockProposal.status}
+                subtitle={`${companyName} — ${formatCurrency(grandTotal)}`}
+                status={proposalStatus}
                 avatar={
                     <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                         <FileText className="h-7 w-7 text-primary-foreground" />
@@ -485,8 +373,8 @@ export default function ProposalDetailPage() {
                     </>
                 }
                 menuItems={[
-                    { label: "Duplicate", onClick: () => {} },
-                    { label: "Save Draft", onClick: () => {} },
+                    { label: "Duplicate", onClick: () => router.push(`/proposals/new?duplicateFrom=${proposalId}`) },
+                    { label: "Save Draft", onClick: () => handleUpdate({ status: "draft" }) },
                     ...crudMenuItems,
                 ]}
                 tabs={tabs}
@@ -515,7 +403,7 @@ export default function ProposalDetailPage() {
                                         <label className="text-sm font-medium">
                                             Client Contact
                                         </label>
-                                        <Input value={mockProposal.contactName} disabled />
+                                        <Input value={contactName} disabled />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -728,12 +616,12 @@ export default function ProposalDetailPage() {
                                     <div>
                                         <h2 className="text-2xl font-bold">{title}</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            {mockProposal.number} · Version {mockProposal.version}
+                                            {proposalNumber} · Version {version}
                                         </p>
                                     </div>
                                     <div className="text-right text-sm text-muted-foreground">
-                                        <p>Date: {formatDate(mockProposal.createdAt)}</p>
-                                        <p>Valid Until: {formatDate(mockProposal.validUntil)}</p>
+                                        <p>Date: {createdAt ? formatDate(createdAt) : "—"}</p>
+                                        <p>Valid Until: {validUntil ? formatDate(validUntil) : "—"}</p>
                                     </div>
                                 </div>
                             </div>
@@ -742,12 +630,12 @@ export default function ProposalDetailPage() {
                             <div className="grid grid-cols-2 gap-8 text-sm">
                                 <div>
                                     <p className="font-semibold mb-1">Prepared For</p>
-                                    <p>{mockProposal.contactName}</p>
+                                    <p>{contactName}</p>
                                     <p className="text-muted-foreground">
-                                        {mockProposal.companyName}
+                                        {companyName}
                                     </p>
                                     <p className="text-muted-foreground">
-                                        {mockProposal.contactEmail}
+                                        {contactEmail}
                                     </p>
                                 </div>
                                 <div>
@@ -870,7 +758,7 @@ export default function ProposalDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {mockProposal.activity.map((event, i) => (
+                                {activity.map((event, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <div className="mt-0.5 h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
                                             {i === 0 ? (

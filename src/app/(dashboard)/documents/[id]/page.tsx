@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteDocument, useDocument, useUpdateDocument } from "@/lib/supabase/hooks-pages";
@@ -53,15 +54,13 @@ export default function DocumentDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: doc, isLoading } = useDocument(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Document",
         listPath: "/documents",
         useUpdateHook: useUpdateDocument,
         useDeleteHook: useDeleteDocument,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -79,9 +78,7 @@ export default function DocumentDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -163,8 +160,8 @@ export default function DocumentDetailPage() {
                 ) : undefined
             }
             menuItems={[
-                { label: "Edit Document", onClick: () => {} },
-                { label: "Change Access Level", onClick: () => {} },
+                { label: "Edit Document", onClick: () => router.push(`/documents/${entityId}/edit`) },
+                { label: "Change Access Level", onClick: () => router.push(`/documents/${entityId}/edit?section=access`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

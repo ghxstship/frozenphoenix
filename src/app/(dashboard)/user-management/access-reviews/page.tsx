@@ -57,7 +57,7 @@ export default function AccessReviewsPage() {
                 title="Access Reviews"
                 description="Periodic review of user permissions, stale access, and temporary grants"
             >
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => console.log("Export access review report")}>
                     <Eye className="mr-2 h-4 w-4" />
                     Export Report
                 </Button>
@@ -104,7 +104,7 @@ export default function AccessReviewsPage() {
                                         <span className="text-xs text-muted-foreground">
                                             Expires {new Date(grant.expiresAt).toLocaleDateString()}
                                         </span>
-                                        <Button variant="ghost" size="sm">
+                                        <Button variant="ghost" size="sm" onClick={() => console.log("Revoke temp grant:", grant.id)}>
                                             Revoke
                                         </Button>
                                     </div>
@@ -242,6 +242,7 @@ export default function AccessReviewsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             className="text-xs h-7"
+                                                            onClick={() => console.log("Confirm access review:", review.userId)}
                                                         >
                                                             <CheckCircle2 className="h-3 w-3 mr-1" />
                                                             Confirm

@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_OBLIGATION_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -38,6 +41,7 @@ const PARTY_VARIANTS: Record<string, "info" | "warning" | "secondary" | "default
 };
 
 export default function ObligationsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -61,9 +65,7 @@ export default function ObligationsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -86,7 +88,7 @@ export default function ObligationsPage() {
                     title="Contract Obligations"
                     description="Track what each party must do — deadlines, recurring obligations, and fulfillment evidence"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> Add Obligation
                     </Button>
                 </PageHeader>
@@ -208,6 +210,7 @@ export default function ObligationsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_OBLIGATION_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

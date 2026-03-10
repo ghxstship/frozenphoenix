@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteBrief, useUpdateBrief } from "@/lib/supabase/hooks-pages";
@@ -52,16 +53,13 @@ export default function BriefDetailPage() {
         useUpdateHook: useUpdateBrief,
         useDeleteHook: useDeleteBrief,
     });
-    void router;
-    void handleUpdate;
+
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -184,11 +182,11 @@ export default function BriefDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "in_review" })}>
                         <Send className="mr-2 h-4 w-4" />
                         Submit for Review
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => router.push(`/campaigns/new?briefId=${entityId}`)}>
                         <FileText className="mr-2 h-4 w-4" />
                         Create Campaign
                     </Button>
@@ -212,15 +210,15 @@ export default function BriefDetailPage() {
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => handleUpdate({ status: "approved" })}>
                     <CheckCircle2 className="h-4 w-4 mr-1" />
                     Approve
                 </Button>
             }
             menuItems={[
-                { label: "Edit Brief", onClick: () => {} },
-                { label: "Duplicate", onClick: () => {} },
-                { label: "Create Amendment", onClick: () => {} },
+                { label: "Edit Brief", onClick: () => router.push(`/briefs/${entityId}/edit`) },
+                { label: "Duplicate", onClick: () => router.push(`/briefs/new?duplicateFrom=${entityId}`) },
+                { label: "Create Amendment", onClick: () => handleUpdate({ status: "amendment_requested" }) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

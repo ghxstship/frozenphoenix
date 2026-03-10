@@ -12,6 +12,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
 
 export type ConsentCategory = "essential" | "analytics" | "functional";
 
@@ -72,13 +73,18 @@ export function CookieConsent() {
         [analytics, functional]
     );
 
+    const trapRef = useFocusTrap(visible);
+    useFocusReturn();
+    useEscapeKey(() => saveConsent("essential"), visible);
+
     if (!visible) return null;
 
     return (
         <div
+            ref={trapRef as React.RefObject<HTMLDivElement>}
             role="dialog"
+            aria-modal="true"
             aria-label="Cookie consent"
-            aria-live="polite"
             className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
         >
             <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card shadow-lg p-6">

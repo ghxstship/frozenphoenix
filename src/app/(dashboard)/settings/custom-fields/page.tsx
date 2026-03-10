@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import {
     Type,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { useToast } from "@/components/ui/toast";
 
 interface CustomFieldDefinition {
     id: string;
@@ -166,6 +169,8 @@ const PLACEHOLDER_FIELDS: CustomFieldDefinition[] = [
 const ENTITY_TYPES = ["all", ...new Set(PLACEHOLDER_FIELDS.map((f) => f.entityType))];
 
 export default function CustomFieldsPage() {
+    const { addToast } = useToast();
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [entityFilter, setEntityFilter] = useState("all");
 
@@ -188,7 +193,7 @@ export default function CustomFieldsPage() {
                     title="Custom Property Fields"
                     description="Define custom fields on any entity type — projects, companies, assets, events, and more"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> New Field
                     </Button>
                 </PageHeader>
@@ -306,6 +311,7 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0"
+                                                onClick={() => addToast({ title: "Coming soon", description: `Editing ${field.name} is not yet available.`, variant: "default" })}
                                             >
                                                 <Pencil className="h-3.5 w-3.5" />
                                             </Button>
@@ -313,6 +319,7 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0 text-destructive"
+                                                onClick={() => addToast({ title: "Coming soon", description: `Deleting ${field.name} is not yet available.`, variant: "default" })}
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
@@ -332,6 +339,7 @@ export default function CustomFieldsPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_CUSTOM_FIELD_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

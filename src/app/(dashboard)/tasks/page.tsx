@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,9 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { LayoutGrid, List, Loader2, Plus, Table2 } from "lucide-react";
+import { LayoutGrid, List, Loader2, Plus, Table2, Upload } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_TASK_CONFIG } from "@/config/create-entity-configs";
 import {
@@ -179,7 +182,12 @@ export default function TasksPage() {
     });
     const [filterProject, setFilterProject] = useState<string>("all");
 
-    const { data: sbTasks, isLoading: loadingTasks } = useTasks();
+    const { data: sbTasks, isLoading: loadingTasks, refetch: refetchTasks } = useTasks();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetchTasks();
+    }, [refetchTasks]);
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
     const allTasks = (sbTasks ?? []).map((t) => ({
@@ -225,9 +233,7 @@ export default function TasksPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -279,12 +285,23 @@ export default function TasksPage() {
                             ]}
                             ariaLabel="View mode"
                         />
+                        <CsvExportButton entity="tasks" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
                         <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             New Task
                         </Button>
                     </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="tasks"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 {/* Table View - using DataTable component */}
                 {view === "table" && (

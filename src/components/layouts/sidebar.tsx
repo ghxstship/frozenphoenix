@@ -12,11 +12,11 @@ import {
     type NavItem,
 } from "@/config/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { getActiveBrand } from "@/config/brands";
 import { LAYOUT } from "@/config/design-tokens";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
 import { Tooltip } from "@/components/ui/tooltip";
+import { OrgSwitcher, TeamSwitcher } from "@/components/context-switcher";
 import type { PermissionLevel } from "@/types";
 import {
     ChevronDown,
@@ -27,13 +27,11 @@ import {
     PanelLeftClose,
     Pin,
     PinOff,
-    Play,
     Search,
     Star,
     X,
 } from "lucide-react";
 
-const brandConfig = getActiveBrand();
 const SIDEBAR_WIDTH = LAYOUT.sidebar;
 
 // ─── Nested NavItem with children support ───────────────────────────
@@ -400,7 +398,7 @@ export function Sidebar() {
             <aside
                 ref={mobileNavRef}
                 id="main-navigation"
-                role="navigation"
+                role={isMobile && isOpen ? "dialog" : "navigation"}
                 aria-label="Main navigation"
                 className={cn(
                     "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-all duration-300",
@@ -408,48 +406,40 @@ export function Sidebar() {
                 )}
                 style={{ width: isMobile ? mobileSidebarWidth : sidebarWidth }}
                 aria-hidden={isMobile && !isOpen}
+                aria-modal={isMobile && isOpen ? "true" : undefined}
             >
-                {/* Logo */}
+                {/* Org + Team Switcher Header */}
                 <div
-                    className="flex items-center justify-between px-4 border-b border-sidebar-border shrink-0"
-                    style={{ height: LAYOUT.topbar.height }}
+                    className="flex flex-col border-b border-sidebar-border shrink-0"
                 >
-                    <Link href="/dashboard" className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-                            <Play className="h-4.5 w-4.5 text-primary-foreground fill-primary-foreground" />
-                        </div>
-                        <span
-                            className={cn(
-                                "text-base font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent transition-[opacity,transform] duration-200 motion-reduce:transition-none origin-left",
-                                collapsed && !isMobile
-                                    ? "opacity-0 scale-x-0 w-0 pointer-events-none"
-                                    : "opacity-100 scale-x-100"
-                            )}
-                        >
-                            {brandConfig.name}
-                        </span>
-                    </Link>
-                    {isMobile ? (
-                        <button
-                            onClick={closeMobileSidebar}
-                            className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                            aria-label="Close sidebar"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={toggleCollapse}
-                            className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        >
-                            {collapsed ? (
-                                <PanelLeft className="h-4 w-4" />
-                            ) : (
-                                <PanelLeftClose className="h-4 w-4" />
-                            )}
-                        </button>
-                    )}
+                    <div
+                        className="flex items-center justify-between px-3"
+                        style={{ height: LAYOUT.topbar.height }}
+                    >
+                        <OrgSwitcher collapsed={collapsed} isMobile={isMobile} />
+                        {isMobile ? (
+                            <button
+                                onClick={closeMobileSidebar}
+                                className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0"
+                                aria-label="Close sidebar"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={toggleCollapse}
+                                className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0"
+                                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            >
+                                {collapsed ? (
+                                    <PanelLeft className="h-4 w-4" />
+                                ) : (
+                                    <PanelLeftClose className="h-4 w-4" />
+                                )}
+                            </button>
+                        )}
+                    </div>
+                    <TeamSwitcher collapsed={collapsed} isMobile={isMobile} />
                 </div>
 
                 {/* Inline Search */}

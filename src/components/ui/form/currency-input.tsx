@@ -14,7 +14,16 @@ export interface CurrencyInputProps extends Omit<
 
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     ({ className, value, onChange, currency = "USD", ...props }, ref) => {
-        const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
+        const currencySymbol = React.useMemo(() => {
+            try {
+                return new Intl.NumberFormat(undefined, { style: "currency", currency, currencyDisplay: "narrowSymbol" })
+                    .formatToParts(0)
+                    .find((p) => p.type === "currency")?.value ?? currency;
+            } catch {
+                return currency;
+            }
+        }, [currency]);
+
         const [displayValue, setDisplayValue] = useState(
             value !== undefined ? formatCurrency(value) : ""
         );
@@ -68,7 +77,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 CurrencyInput.displayName = "CurrencyInput";
 
 function formatCurrency(value: number): string {
-    return value.toLocaleString("en-US", {
+    return value.toLocaleString(undefined, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
     });

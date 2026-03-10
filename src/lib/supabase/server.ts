@@ -2,9 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "./database.types";
-import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
-
-export { isSupabaseConfigured };
+import { supabaseAnonKey, supabaseUrl } from "./config";
 
 /**
  * Service-role admin client that bypasses RLS.

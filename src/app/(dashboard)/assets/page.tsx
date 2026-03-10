@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ import {
     QrCode,
     Table2,
     Truck,
+    Upload,
 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ASSET_CONDITION_MAP as ASSET_CONDITION_CONFIG } from "@/config/domain-config";
@@ -32,6 +35,8 @@ import {
     PhoneField,
 } from "@/components/data-view/field-renderers";
 import { PermissionGate } from "@/components/permission-guard";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
 function computeDaysUntilReturn(dateStr: string): number {
@@ -221,13 +226,19 @@ const vehicleColumns: ColumnDef<Vehicle>[] = [
 ];
 
 export default function AssetsPage() {
+    const router = useRouter();
     const VIEW_MODES = ["table", "cards"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
         defaultValue: "table",
         validValues: VIEW_MODES,
     });
-    const { data: sbAssets, isLoading: loadingAssets } = useAssets();
+    const { data: sbAssets, isLoading: loadingAssets, refetch: refetchAssets } = useAssets();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetchAssets();
+    }, [refetchAssets]);
     const { data: sbVehicles, isLoading: loadingVehicles } = useVehicles();
 
     const assets: Asset[] = (sbAssets ?? []).map((a) => ({
@@ -261,9 +272,7 @@ export default function AssetsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -300,12 +309,23 @@ export default function AssetsPage() {
                                 },
                             ]}
                         />
-                        <Button size="sm">
+                        <CsvExportButton entity="assets" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button size="sm" onClick={() => router.push("/assets/new")}>
                             <Plus className="h-4 w-4" />
                             Add Asset
                         </Button>
                     </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="assets"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 {/* KPIs */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

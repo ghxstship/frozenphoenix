@@ -146,7 +146,14 @@ export default function OrgSetupPage() {
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
             <div className="w-full max-w-lg space-y-8">
                 {/* Progress indicator */}
-                <div className="flex items-center gap-2 justify-center">
+                <div
+                    className="flex items-center gap-2 justify-center"
+                    role="progressbar"
+                    aria-valuenow={1}
+                    aria-valuemin={1}
+                    aria-valuemax={3}
+                    aria-label="Onboarding step 1 of 3"
+                >
                     <div className="h-2 w-12 rounded-full bg-primary" />
                     <div className="h-2 w-12 rounded-full bg-muted" />
                     <div className="h-2 w-12 rounded-full bg-muted" />
@@ -199,7 +206,7 @@ export default function OrgSetupPage() {
                                 id="org-industry"
                                 value={industry}
                                 onChange={(e) => setIndustry(e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                 disabled={loading}
                             >
                                 <option value="">Select your industry…</option>
@@ -225,7 +232,7 @@ export default function OrgSetupPage() {
                                 id="org-timezone"
                                 value={timezone}
                                 onChange={(e) => setTimezone(e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                 disabled={loading}
                             >
                                 {TIMEZONES.map((tz) => (

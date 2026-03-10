@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_INVENTORY_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +32,7 @@ interface InventoryItem {
 }
 
 export default function InventoryPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -50,9 +54,7 @@ export default function InventoryPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -79,7 +81,7 @@ export default function InventoryPage() {
                     title="Inventory"
                     description="Track stock levels, consumables, and reorder points"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Item
                     </Button>
@@ -207,6 +209,7 @@ export default function InventoryPage() {
                     </Card>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_INVENTORY_ITEM_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

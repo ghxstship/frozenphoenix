@@ -57,7 +57,7 @@ const AVAILABLE_VARIABLES = [
 
 export default function TemplateEditorPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
-    void resolvedParams.id;
+    const templateId = resolvedParams.id;
 
     const [templateName, setTemplateName] = useState("Standard Invoice Template");
     const [templateCategory, setTemplateCategory] = useState("invoice");
@@ -101,7 +101,7 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
         <div className="space-y-6 animate-fade-in">
             <PageHeader title="Template Editor" description={`Editing: ${templateName}`}>
                 <div className="flex gap-2">
-                    <Link href="/templates">
+                    <Link href={`/templates/${templateId}`}>
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back

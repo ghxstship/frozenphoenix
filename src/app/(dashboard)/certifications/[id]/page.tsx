@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteCertification, useUpdateCertification } from "@/lib/supabase/hooks-pages";
@@ -31,23 +32,19 @@ export default function CertificationDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: cert, isLoading } = useCertification(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Certification",
         listPath: "/certifications",
         useUpdateHook: useUpdateCertification,
         useDeleteHook: useDeleteCertification,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -198,8 +195,8 @@ export default function CertificationDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Certification", onClick: () => {} },
-                { label: "Upload Document", onClick: () => {} },
+                { label: "Edit Certification", onClick: () => router.push(`/certifications/${entityId}/edit`) },
+                { label: "Upload Document", onClick: () => router.push(`/documents/new?entityType=certification&entityId=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

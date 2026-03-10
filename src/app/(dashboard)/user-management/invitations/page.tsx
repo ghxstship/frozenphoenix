@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_USER_INVITE_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ function daysUntil(dateStr: string): number {
 export default function InvitationsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<InvitationStatus | "all">("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     // NEXT: Wire to useInvitations() when hook is available
     const invitations = useMemo<Invitation[]>(() => [], []);
@@ -54,7 +57,7 @@ export default function InvitationsPage() {
                 title="Invitations"
                 description="Manage pending, accepted, and expired user invitations"
             >
-                <Button>
+                <Button onClick={openCreate}>
                     <Send className="mr-2 h-4 w-4" />
                     Send Invitation
                 </Button>
@@ -153,6 +156,7 @@ export default function InvitationsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             title="Resend"
+                                                            onClick={() => console.log("Resend invitation:", inv.id)}
                                                         >
                                                             <RotateCcw className="h-3 w-3" />
                                                         </Button>
@@ -160,6 +164,7 @@ export default function InvitationsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             title="Revoke"
+                                                            onClick={() => console.log("Revoke invitation:", inv.id)}
                                                         >
                                                             <XCircle className="h-3 w-3" />
                                                         </Button>
@@ -181,6 +186,7 @@ export default function InvitationsPage() {
                     </div>
                 </CardContent>
             </Card>
+            <CreateEntityDialog config={CREATE_USER_INVITE_CONFIG} open={createOpen} onClose={closeCreate} />
         </div>
     );
 }

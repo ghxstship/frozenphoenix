@@ -7,6 +7,7 @@ import {
     useScopeOfWork,
     useUpdateScopeOfWork,
 } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
@@ -24,89 +25,31 @@ import { Building2, Calendar, CheckCircle2, Clock, DollarSign, FileText, Send } 
 type TabId = "overview" | "deliverables" | "chatter";
 const TAB_VALUES = ["overview", "deliverables", "chatter"] as const;
 
-const mockSOW = {
-    id: "1",
-    number: "SOW-2026-001",
-    title: "Nike Air Max Launch — Full Production",
-    project: "Nike Air Max Launch",
-    client: "Nike",
-    status: "active" as const,
-    totalValue: 485000,
-    invoiced: 242500,
-    deliverableCount: 8,
-    completedDeliverables: 4,
-    effectiveDate: "2026-01-15",
-    expirationDate: "2026-06-30",
-    billingType: "fixed_price",
-    paymentTerms: "Net 30",
-    description:
-        "Full production services for the Nike Air Max 2026 launch event including stage design, AV, fabrication, and on-site production management.",
-};
+interface DeliverableItem {
+    id: string;
+    name: string;
+    status: string;
+    dueDate: string;
+    value: number;
+}
 
-const mockDeliverables = [
-    {
-        id: "d1",
-        name: "Stage Design & CAD Drawings",
-        status: "completed",
-        dueDate: "2026-01-30",
-        value: 35000,
-    },
-    {
-        id: "d2",
-        name: "AV System Design & Procurement",
-        status: "completed",
-        dueDate: "2026-02-10",
-        value: 85000,
-    },
-    {
-        id: "d3",
-        name: "Stage Fabrication",
-        status: "completed",
-        dueDate: "2026-02-28",
-        value: 120000,
-    },
-    {
-        id: "d4",
-        name: "Load-In & Technical Rehearsal",
-        status: "completed",
-        dueDate: "2026-03-05",
-        value: 45000,
-    },
-    {
-        id: "d5",
-        name: "Show Day Production Management",
-        status: "in_progress",
-        dueDate: "2026-03-10",
-        value: 60000,
-    },
-    {
-        id: "d6",
-        name: "Post-Event Strike & Wrap",
-        status: "pending",
-        dueDate: "2026-03-12",
-        value: 40000,
-    },
-    {
-        id: "d7",
-        name: "Digital Content Capture",
-        status: "in_progress",
-        dueDate: "2026-03-10",
-        value: 55000,
-    },
-    {
-        id: "d8",
-        name: "Post-Production & Deliverables",
-        status: "pending",
-        dueDate: "2026-03-30",
-        value: 45000,
-    },
-];
+function parseDeliverables(raw: unknown): DeliverableItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((d, i) => ({
+        id: String(d.id ?? `d-${i}`),
+        name: (d.name as string) ?? "",
+        status: (d.status as string) ?? "pending",
+        dueDate: (d.due_date as string) ?? (d.dueDate as string) ?? "",
+        value: (d.value as number) ?? 0,
+    }));
+}
 
 export default function ScopeOfWorkDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useScopeOfWork(entityId);
+    const { data: sbRecord, isLoading } = useScopeOfWork(entityId);
+    const sow = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Scope of Work",
@@ -114,21 +57,34 @@ export default function ScopeOfWorkDetailPage() {
         useUpdateHook: useUpdateScopeOfWork,
         useDeleteHook: useDeleteScopeOfWork,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
 
+    const sowNumber = (sow?.number as string) ?? "";
+    const sowTitle = (sow?.title as string) ?? "";
+    const project = (sow?.project as string) ?? (sow?.project_name as string) ?? "";
+    const client = (sow?.client as string) ?? (sow?.client_name as string) ?? "";
+    const sowStatus = (sow?.status as string) ?? "draft";
+    const totalValue = (sow?.total_value as number) ?? (sow?.totalValue as number) ?? 0;
+    const invoiced = (sow?.invoiced as number) ?? 0;
+    const effectiveDate = (sow?.effective_date as string) ?? (sow?.effectiveDate as string) ?? "";
+    const expirationDate = (sow?.expiration_date as string) ?? (sow?.expirationDate as string) ?? "";
+    const billingType = (sow?.billing_type as string) ?? (sow?.billingType as string) ?? "";
+    const paymentTerms = (sow?.payment_terms as string) ?? (sow?.paymentTerms as string) ?? "";
+    const sowDescription = (sow?.description as string) ?? "";
+    const deliverables = parseDeliverables(sow?.deliverables);
+    const completedDeliverables = deliverables.filter((d) => d.status === "completed").length;
+    const deliverableCount = deliverables.length;
+
     const deliverableProgress =
-        mockSOW.deliverableCount > 0
-            ? Math.round((mockSOW.completedDeliverables / mockSOW.deliverableCount) * 100)
+        deliverableCount > 0
+            ? Math.round((completedDeliverables / deliverableCount) * 100)
             : 0;
     const invoicedPct =
-        mockSOW.totalValue > 0 ? Math.round((mockSOW.invoiced / mockSOW.totalValue) * 100) : 0;
+        totalValue > 0 ? Math.round((invoiced / totalValue) * 100) : 0;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -144,9 +100,11 @@ export default function ScopeOfWorkDetailPage() {
         ]);
     };
 
+    if (isLoading) return <LoadingState />;
+
     const tabs = [
         { id: "overview" as const, label: "Overview" },
-        { id: "deliverables" as const, label: "Deliverables", count: mockDeliverables.length },
+        { id: "deliverables" as const, label: "Deliverables", count: deliverableCount },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -157,26 +115,32 @@ export default function ScopeOfWorkDetailPage() {
                     <CardTitle className="text-sm">SOW Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Number</span>
-                        <span className="font-mono font-medium">{mockSOW.number}</span>
-                    </div>
+                    {sowNumber && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Number</span>
+                            <span className="font-mono font-medium">{sowNumber}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(mockSOW.status)}>
-                            {getStatusLabel(mockSOW.status)}
+                        <Badge variant={getStatusVariant(sowStatus)}>
+                            {getStatusLabel(sowStatus)}
                         </Badge>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Billing</span>
-                        <span className="font-medium capitalize">
-                            {mockSOW.billingType.replace(/_/g, " ")}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Payment Terms</span>
-                        <span className="font-medium">{mockSOW.paymentTerms}</span>
-                    </div>
+                    {billingType && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Billing</span>
+                            <span className="font-medium capitalize">
+                                {billingType.replace(/_/g, " ")}
+                            </span>
+                        </div>
+                    )}
+                    {paymentTerms && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Payment Terms</span>
+                            <span className="font-medium">{paymentTerms}</span>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
@@ -187,9 +151,9 @@ export default function ScopeOfWorkDetailPage() {
                 <CardContent className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{mockSOW.client}</span>
+                        <span className="font-medium">{client || "—"}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{mockSOW.project}</p>
+                    {project && <p className="text-xs text-muted-foreground">{project}</p>}
                 </CardContent>
             </Card>
 
@@ -200,16 +164,16 @@ export default function ScopeOfWorkDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Total Value</span>
-                        <span className="font-bold">{formatCurrency(mockSOW.totalValue)}</span>
+                        <span className="font-bold">{formatCurrency(totalValue)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Invoiced</span>
-                        <span className="font-medium">{formatCurrency(mockSOW.invoiced)}</span>
+                        <span className="font-medium">{formatCurrency(invoiced)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Remaining</span>
                         <span className="font-medium">
-                            {formatCurrency(mockSOW.totalValue - mockSOW.invoiced)}
+                            {formatCurrency(totalValue - invoiced)}
                         </span>
                     </div>
                     <ProgressBar value={invoicedPct} size="sm" />
@@ -224,11 +188,11 @@ export default function ScopeOfWorkDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "pending_approval" })}>
                         <Send className="mr-2 h-4 w-4" />
                         Send for Approval
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => router.push(`/invoices/new?fromSow=${entityId}`)}>
                         <FileText className="mr-2 h-4 w-4" />
                         Generate Invoice
                     </Button>
@@ -243,23 +207,23 @@ export default function ScopeOfWorkDetailPage() {
             backLabel="Scopes of Work"
             entityType="scopes-of-work"
             entityId={entityId}
-            title={mockSOW.title}
-            subtitle={`${mockSOW.number} · ${mockSOW.client}`}
-            status={mockSOW.status}
+            title={sowTitle}
+            subtitle={`${sowNumber} · ${client}`}
+            status={sowStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileText className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => handleUpdate({ status: "pending_approval" })}>
                     <Send className="h-4 w-4 mr-1" />
                     Send for Approval
                 </Button>
             }
             menuItems={[
-                { label: "Edit SOW", onClick: () => {} },
-                { label: "Create Amendment", onClick: () => {} },
+                { label: "Edit SOW", onClick: () => router.push(`/scopes-of-work/${entityId}/edit`) },
+                { label: "Create Amendment", onClick: () => handleUpdate({ status: "amendment_requested" }) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -277,7 +241,7 @@ export default function ScopeOfWorkDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Total Value</p>
                                         <p className="text-lg font-bold">
-                                            {formatCurrency(mockSOW.totalValue)}
+                                            {formatCurrency(totalValue)}
                                         </p>
                                     </div>
                                 </div>
@@ -292,8 +256,8 @@ export default function ScopeOfWorkDetailPage() {
                                             Deliverables
                                         </p>
                                         <p className="text-lg font-bold">
-                                            {mockSOW.completedDeliverables}/
-                                            {mockSOW.deliverableCount}
+                                            {completedDeliverables}/
+                                            {deliverableCount}
                                         </p>
                                     </div>
                                 </div>
@@ -308,7 +272,7 @@ export default function ScopeOfWorkDetailPage() {
                                             Effective Date
                                         </p>
                                         <p className="text-sm font-semibold">
-                                            {formatDate(mockSOW.effectiveDate, "compact")}
+                                            {effectiveDate ? formatDate(effectiveDate, "compact") : "TBD"}
                                         </p>
                                     </div>
                                 </div>
@@ -323,20 +287,20 @@ export default function ScopeOfWorkDetailPage() {
                         <CardContent>
                             <ProgressBar value={deliverableProgress} size="md" className="mb-2" />
                             <p className="text-sm text-muted-foreground">
-                                {deliverableProgress}% complete — {mockSOW.completedDeliverables} of{" "}
-                                {mockSOW.deliverableCount} deliverables finished
+                                {deliverableProgress}% complete — {completedDeliverables} of{" "}
+                                {deliverableCount} deliverables finished
                             </p>
                         </CardContent>
                     </Card>
 
-                    {mockSOW.description && (
+                    {sowDescription && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Description</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {mockSOW.description}
+                                    {sowDescription}
                                 </p>
                             </CardContent>
                         </Card>
@@ -354,14 +318,14 @@ export default function ScopeOfWorkDetailPage() {
                                 <div>
                                     <p className="text-xs text-muted-foreground">Effective</p>
                                     <p className="font-medium">
-                                        {formatDate(mockSOW.effectiveDate, "long")}
+                                        {effectiveDate ? formatDate(effectiveDate, "long") : "TBD"}
                                     </p>
                                 </div>
                                 <span className="text-muted-foreground">→</span>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Expiration</p>
                                     <p className="font-medium">
-                                        {formatDate(mockSOW.expirationDate, "long")}
+                                        {expirationDate ? formatDate(expirationDate, "long") : "TBD"}
                                     </p>
                                 </div>
                             </div>
@@ -374,12 +338,12 @@ export default function ScopeOfWorkDetailPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">
-                            Deliverables ({mockDeliverables.length})
+                            Deliverables ({deliverableCount})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockDeliverables.map((del) => (
+                            {deliverables.map((del) => (
                                 <div
                                     key={del.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
@@ -417,7 +381,7 @@ export default function ScopeOfWorkDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="scope_of_work"
-                    recordId={mockSOW.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

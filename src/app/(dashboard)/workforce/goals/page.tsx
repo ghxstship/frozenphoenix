@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_GOAL_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -252,6 +254,7 @@ export default function GoalsPage() {
     });
     const [expandedId, setExpandedId] = useState<string | null>("g1");
 
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const filtered = useMemo(
         () =>
             PLACEHOLDER_GOALS.filter((g) => {
@@ -283,7 +286,7 @@ export default function GoalsPage() {
                     title="Goals & OKRs"
                     description="Track individual and team objectives with measurable key results"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New Goal
                     </Button>
                 </PageHeader>
@@ -446,11 +449,11 @@ export default function GoalsPage() {
                                             </div>
 
                                             <div className="flex items-center gap-2 pt-2 border-t">
-                                                <Button size="sm" variant="outline">
+                                                <Button size="sm" variant="outline" onClick={() => console.log("Update progress:", goal.id)}>
                                                     Update Progress
                                                 </Button>
                                                 {goal.status !== "completed" && (
-                                                    <Button size="sm" variant="outline">
+                                                    <Button size="sm" variant="outline" onClick={() => console.log("Mark goal complete:", goal.id)}>
                                                         <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Mark Complete
                                                     </Button>
@@ -471,6 +474,7 @@ export default function GoalsPage() {
                     </div>
                 )}
             </div>
+            <CreateEntityDialog config={CREATE_GOAL_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

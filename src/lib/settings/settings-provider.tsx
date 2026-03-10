@@ -8,7 +8,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { fromTable, isSupabaseConfigured } from "@/lib/supabase/client";
+import { fromTable } from "@/lib/supabase/client";
 import { evaluateAllFlags } from "./feature-flags";
 import type {
     FeatureFlag,
@@ -136,10 +136,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const userRole = activeOrg?.role ?? null;
 
     const fetchSettings = useCallback(async () => {
-        if (!isSupabaseConfigured) {
-            setLoading(false);
-            return;
-        }
 
         try {
             // Fetch setting definitions
@@ -229,7 +225,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const updateSetting = useCallback(
         async (category: SettingCategory, key: string, value: unknown): Promise<void> => {
-            if (!isSupabaseConfigured || !userId) return;
+            if (!userId) return;
 
             const resolved = settings.get(`${category}:${key}`);
             if (!resolved || !resolved.can_edit) return;

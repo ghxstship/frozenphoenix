@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
+import { filterValue, getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 // ─── Join-aware return types ───
@@ -33,8 +33,6 @@ export type InvoiceLineItemWithDeliverable = WithJoin<
 export type InvoiceTimeEntryRow = Tables<"invoice_time_entries">;
 export type SOWChangeLogWithProfile = WithJoin<Tables<"sow_change_log">, ProfileName>;
 export type DeliverableProgressSnapshotRow = Tables<"deliverable_progress_snapshots">;
-
-export { isSupabaseConfigured };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SCOPES OF WORK

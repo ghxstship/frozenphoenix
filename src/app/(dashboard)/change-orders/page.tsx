@@ -1,6 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -174,9 +176,7 @@ export default function ChangeOrdersPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -187,11 +187,14 @@ export default function ChangeOrdersPage() {
                     title="Change Orders"
                     description="Track and manage post-contract scope modifications"
                 >
-                    <Link href="/change-orders/new">
-                        <Button size="sm">
-                            <Plus className="mr-2 h-4 w-4" /> New Change Order
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="change_orders" />
+                        <Link href="/change-orders/new">
+                            <Button size="sm">
+                                <Plus className="mr-2 h-4 w-4" /> New Change Order
+                            </Button>
+                        </Link>
+                    </div>
                 </PageHeader>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

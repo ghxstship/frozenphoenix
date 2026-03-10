@@ -366,6 +366,7 @@ export default function NewInvoicePage() {
                 ) : (
                     <Button
                         disabled={!client.companyName || lineItems.every((li) => !li.description)}
+                        onClick={() => console.log("Create invoice:", { client, lineItems, terms })}
                     >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Create Invoice

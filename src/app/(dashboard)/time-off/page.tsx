@@ -164,7 +164,7 @@ export default function TimeOffPage() {
                     title="Time Off"
                     description="Manage leave requests, approvals, and PTO balances"
                 >
-                    <Button>
+                    <Button onClick={() => console.log("Request time off")}>
                         <Plus className="mr-2 h-4 w-4" /> Request Time Off
                     </Button>
                 </PageHeader>
@@ -285,6 +285,7 @@ export default function TimeOffPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0 text-success hover:bg-success/10"
+                                                onClick={() => console.log("Approve leave request:", req.id)}
                                             >
                                                 <CheckCircle2 className="h-4 w-4" />
                                             </Button>
@@ -292,6 +293,7 @@ export default function TimeOffPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                                                onClick={() => console.log("Reject leave request:", req.id)}
                                             >
                                                 <XCircle className="h-4 w-4" />
                                             </Button>

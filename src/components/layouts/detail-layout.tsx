@@ -61,13 +61,43 @@ export function DetailLayout({
     const tabIdPrefix = `detail-layout-${React.useId().replace(/:/g, "")}`;
     const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
 
-    // Escape key to close overflow menu
+    // Keyboard handling for overflow menu (Escape, ArrowUp/Down, Home/End)
     useEffect(() => {
         if (!menuOpen) return;
+
+        // Auto-focus first menu item on open
+        requestAnimationFrame(() => {
+            const firstItem = menuRef.current?.querySelector('[role="menuitem"]') as HTMLElement | null;
+            firstItem?.focus();
+        });
+
         const handleKey = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
-                setMenuOpen(false);
-                menuButtonRef.current?.focus();
+            const items = Array.from(
+                menuRef.current?.querySelectorAll('[role="menuitem"]') ?? []
+            ) as HTMLElement[];
+            const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+
+            switch (e.key) {
+                case "Escape":
+                    setMenuOpen(false);
+                    menuButtonRef.current?.focus();
+                    break;
+                case "ArrowDown":
+                    e.preventDefault();
+                    items[currentIndex + 1 < items.length ? currentIndex + 1 : 0]?.focus();
+                    break;
+                case "ArrowUp":
+                    e.preventDefault();
+                    items[currentIndex - 1 >= 0 ? currentIndex - 1 : items.length - 1]?.focus();
+                    break;
+                case "Home":
+                    e.preventDefault();
+                    items[0]?.focus();
+                    break;
+                case "End":
+                    e.preventDefault();
+                    items[items.length - 1]?.focus();
+                    break;
             }
         };
         document.addEventListener("keydown", handleKey);
@@ -144,6 +174,7 @@ export function DetailLayout({
                                         <button
                                             key={i}
                                             role="menuitem"
+                                            tabIndex={-1}
                                             onClick={() => {
                                                 item.onClick();
                                                 setMenuOpen(false);

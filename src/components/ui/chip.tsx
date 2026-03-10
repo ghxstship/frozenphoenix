@@ -56,7 +56,7 @@ export function Chip({
                         onRemove();
                     }}
                     className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    aria-label="Remove"
+                    aria-label={`Remove ${children}`}
                 >
                     <X className="h-2.5 w-2.5" />
                 </button>

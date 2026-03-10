@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -25,8 +26,11 @@ import {
     Phone,
     Plus,
     TrendingUp,
+    Upload,
     Users,
 } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PermissionGate } from "@/components/permission-guard";
 
 const BUDGET_LABELS: Record<string, string> = {
@@ -94,10 +98,15 @@ export default function LeadsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const { data: sbLeads, isLoading } = useLeads(
+    const [importOpen, setImportOpen] = useState(false);
+    const { data: sbLeads, isLoading, refetch } = useLeads(
         statusFilter !== "all" ? statusFilter : undefined
     );
     const { data: pipelineStats } = useLeadPipelineStats();
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const leads = sbLeads ?? DEMO_LEADS;
 
@@ -125,9 +134,7 @@ export default function LeadsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -137,10 +144,17 @@ export default function LeadsPage() {
                 title="Leads"
                 description="Manage incoming leads and opportunities"
                 actions={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        Add Lead
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="leads" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Add Lead
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}
@@ -332,6 +346,12 @@ export default function LeadsPage() {
                 config={CREATE_LEAD_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+            />
+            <CsvImportDialog
+                entity="leads"
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                onImportComplete={handleImportComplete}
             />
         </PermissionGate>
     );

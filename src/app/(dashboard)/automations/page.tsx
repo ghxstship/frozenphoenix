@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_AUTOMATION_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +72,7 @@ const LOG_STATUS_CONFIG: Record<
     skipped: { label: "Skipped", variant: "ghost" },
 };
 
+// FUTURE: Replace mockLogs with useAutomationLogs() hook when available
 const mockLogs: ExecutionLog[] = [
     {
         id: "l1",
@@ -222,6 +226,7 @@ function formatDateTime(dateStr: string): string {
 const AUTOMATIONS_TAB_VALUES = ["builder", "logs"] as const;
 
 export default function AutomationsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [activeTab, setActiveTab] = useQueryTabState<AutomationsTab>({
@@ -250,9 +255,7 @@ export default function AutomationsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -283,7 +286,7 @@ export default function AutomationsPage() {
                     title="Automation Builder"
                     description="Configure trigger-action automations for workflows, notifications, and business logic"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         New Automation
                     </Button>
@@ -359,7 +362,18 @@ export default function AutomationsPage() {
 
                             return (
                                 <StaggerItem key={automation.id} index={i} stagger="relaxed">
-                                    <Card className="hover:shadow-md transition-all">
+                                    <Card
+                                        className="hover:shadow-md transition-all"
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`Automation: ${automation.name}, status: ${statusCfg?.label ?? automation.status}`}
+                                        onKeyDown={(e: React.KeyboardEvent) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                console.log("Open automation:", automation.id);
+                                            }
+                                        }}
+                                    >
                                         <CardContent className="py-4">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -425,11 +439,19 @@ export default function AutomationsPage() {
                                                     )}
                                                     <div className="flex gap-1 justify-end mt-2">
                                                         {automation.status === "active" ? (
-                                                            <Button variant="outline" size="sm">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                aria-label={`Pause automation: ${automation.name}`}
+                                                            >
                                                                 <Pause className="h-3 w-3" />
                                                             </Button>
                                                         ) : (
-                                                            <Button variant="outline" size="sm">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                aria-label={`Enable automation: ${automation.name}`}
+                                                            >
                                                                 <Play className="h-3 w-3" />
                                                             </Button>
                                                         )}
@@ -488,6 +510,10 @@ export default function AutomationsPage() {
                         </div>
                     </div>
 
+                    <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-warning/40 bg-warning/5 px-3 py-2 text-xs text-warning">
+                        <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <span>Execution logs shown below are placeholder data. Live log streaming will be available once the automation engine is wired.</span>
+                    </div>
                     <div className="space-y-3">
                         {filteredLogs.map((log, i) => {
                             const statusCfg = LOG_STATUS_CONFIG[log.status];
@@ -593,6 +619,7 @@ export default function AutomationsPage() {
                     )}
                 </TabPanel>
             </div>
+            <CreateEntityDialog config={CREATE_AUTOMATION_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

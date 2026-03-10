@@ -59,5 +59,5 @@ export function NumberTicker({ value, duration = 600, formatFn, className }: Num
                 maximumFractionDigits: 1,
             });
 
-    return <span className={className}>{formatted}</span>;
+    return <span className={className} aria-live="polite" aria-atomic="true">{formatted}</span>;
 }

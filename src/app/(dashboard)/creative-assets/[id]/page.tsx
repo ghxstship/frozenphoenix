@@ -7,6 +7,7 @@ import {
     useDeleteCreativeAsset,
     useUpdateCreativeAsset,
 } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
@@ -23,58 +24,45 @@ import { Calendar, Download, Eye, MessageSquare, Palette, User } from "lucide-re
 type TabId = "details" | "reviews" | "chatter";
 const TAB_VALUES = ["details", "reviews", "chatter"] as const;
 
-const mockCreativeAsset = {
-    id: "ca-1",
-    name: "Hero Banner — Nike Air Max 2026",
-    asset_role: "hero" as const,
-    production_status: "approved" as const,
-    target_channels: ["social_media", "digital_display"],
-    brand_compliance_score: 92,
-    locale: "en-US",
-    specs: { width: 1920, height: 1080, format: "PNG", dpi: 300 },
-    due_date: "2026-03-01",
-    approved_at: "2026-02-28T14:00:00Z",
-    assigned_to: "Maya Rodriguez",
-    campaign_name: "Nike Air Max 2026 Launch",
-    description:
-        "Primary hero banner for the Air Max 2026 launch campaign. Features product shot with dynamic motion blur and brand palette gradient.",
-};
+interface ReviewItem {
+    id: string;
+    reviewer: string;
+    gate: string;
+    status: string;
+    score: number | null;
+    feedback: string | null;
+    reviewed_at: string | null;
+}
 
-const mockReviews = [
-    {
-        id: "r1",
-        reviewer: "Creative Director",
-        gate: "brand_review",
-        status: "approved",
-        score: 95,
-        feedback: "Excellent brand alignment. Approved.",
-        reviewed_at: "2026-02-27",
-    },
-    {
-        id: "r2",
-        reviewer: "Marketing Lead",
-        gate: "client_review",
-        status: "approved",
-        score: 88,
-        feedback: "Minor color tweak needed on CTA. Updated and approved.",
-        reviewed_at: "2026-02-28",
-    },
-    {
-        id: "r3",
-        reviewer: "Legal Review",
-        gate: "legal_review",
-        status: "pending",
-        score: null,
-        feedback: null,
-        reviewed_at: null,
-    },
-];
+function parseReviews(raw: unknown): ReviewItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((r, i) => ({
+        id: String(r.id ?? `r-${i}`),
+        reviewer: String(r.reviewer ?? ""),
+        gate: String(r.gate ?? ""),
+        status: String(r.status ?? "pending"),
+        score: typeof r.score === "number" ? r.score : null,
+        feedback: typeof r.feedback === "string" ? r.feedback : null,
+        reviewed_at: typeof r.reviewed_at === "string" ? r.reviewed_at : null,
+    }));
+}
+
+function parseSpecs(raw: unknown): { width: number; height: number; format: string; dpi: number } {
+    const s = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+    return {
+        width: (s.width as number) ?? 0,
+        height: (s.height as number) ?? 0,
+        format: (s.format as string) ?? "",
+        dpi: (s.dpi as number) ?? 0,
+    };
+}
 
 export default function CreativeAssetDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useCreativeAsset(entityId);
+    const { data: sbRecord, isLoading } = useCreativeAsset(entityId);
+    const ca = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Creative Asset",
@@ -82,9 +70,6 @@ export default function CreativeAssetDetailPage() {
         useUpdateHook: useUpdateCreativeAsset,
         useDeleteHook: useDeleteCreativeAsset,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
@@ -105,9 +90,25 @@ export default function CreativeAssetDetailPage() {
         ]);
     };
 
+    const assetName = (ca?.name as string) ?? "";
+    const assetRole = (ca?.asset_role as string) ?? "";
+    const productionStatus = (ca?.production_status as string) ?? "draft";
+    const targetChannels = Array.isArray(ca?.target_channels) ? (ca.target_channels as string[]) : [];
+    const brandComplianceScore = typeof ca?.brand_compliance_score === "number" ? ca.brand_compliance_score : null;
+    const locale = (ca?.locale as string) ?? "";
+    const specs = parseSpecs(ca?.specs);
+    const dueDate = (ca?.due_date as string) ?? "";
+    const approvedAt = (ca?.approved_at as string) ?? "";
+    const assignedTo = (ca?.assigned_to as string) ?? "";
+    const campaignName = (ca?.campaign_name as string) ?? "";
+    const description = (ca?.description as string) ?? "";
+    const reviews = parseReviews(ca?.reviews);
+
+    if (isLoading) return <LoadingState />;
+
     const tabs = [
         { id: "details" as const, label: "Details" },
-        { id: "reviews" as const, label: "Reviews", count: mockReviews.length },
+        { id: "reviews" as const, label: "Reviews", count: reviews.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -122,41 +123,43 @@ export default function CreativeAssetDetailPage() {
                         <span className="text-muted-foreground">Status</span>
                         <Badge
                             variant={
-                                getStatusVariant(mockCreativeAsset.production_status) as "default"
+                                getStatusVariant(productionStatus) as "default"
                             }
                         >
-                            {getStatusLabel(mockCreativeAsset.production_status)}
+                            {getStatusLabel(productionStatus)}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Role</span>
                         <Badge variant="outline" className="capitalize">
-                            {mockCreativeAsset.asset_role}
+                            {assetRole}
                         </Badge>
                     </div>
-                    {mockCreativeAsset.brand_compliance_score !== null && (
+                    {brandComplianceScore !== null && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Brand Score</span>
                             <Badge
                                 variant={
-                                    mockCreativeAsset.brand_compliance_score >= 80
+                                    brandComplianceScore >= 80
                                         ? "success"
                                         : "warning"
                                 }
                             >
-                                {mockCreativeAsset.brand_compliance_score}%
+                                {brandComplianceScore}%
                             </Badge>
                         </div>
                     )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Locale</span>
-                        <span className="font-mono text-xs">{mockCreativeAsset.locale}</span>
-                    </div>
-                    {mockCreativeAsset.due_date && (
+                    {locale && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Locale</span>
+                            <span className="font-mono text-xs">{locale}</span>
+                        </div>
+                    )}
+                    {dueDate && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Due</span>
                             <span className="font-medium">
-                                {formatDate(mockCreativeAsset.due_date, "compact")}
+                                {formatDate(dueDate, "compact")}
                             </span>
                         </div>
                     )}
@@ -169,7 +172,7 @@ export default function CreativeAssetDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
-                        {mockCreativeAsset.target_channels.map((ch) => (
+                        {targetChannels.map((ch) => (
                             <Chip key={ch} size="sm">
                                 {ch.replace(/_/g, " ")}
                             </Chip>
@@ -183,20 +186,26 @@ export default function CreativeAssetDetailPage() {
                     <CardTitle className="text-sm">Specs</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dimensions</span>
-                        <span className="font-mono text-xs">
-                            {mockCreativeAsset.specs.width}×{mockCreativeAsset.specs.height}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Format</span>
-                        <span className="font-medium">{mockCreativeAsset.specs.format}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">DPI</span>
-                        <span className="font-medium">{mockCreativeAsset.specs.dpi}</span>
-                    </div>
+                    {(specs.width > 0 || specs.height > 0) && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Dimensions</span>
+                            <span className="font-mono text-xs">
+                                {specs.width}×{specs.height}
+                            </span>
+                        </div>
+                    )}
+                    {specs.format && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Format</span>
+                            <span className="font-medium">{specs.format}</span>
+                        </div>
+                    )}
+                    {specs.dpi > 0 && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">DPI</span>
+                            <span className="font-medium">{specs.dpi}</span>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
@@ -208,9 +217,9 @@ export default function CreativeAssetDetailPage() {
             backLabel="Creative Assets"
             entityType="creative-assets"
             entityId={entityId}
-            title={mockCreativeAsset.name}
-            subtitle={`${mockCreativeAsset.campaign_name} · ${mockCreativeAsset.asset_role}`}
-            status={mockCreativeAsset.production_status}
+            title={assetName}
+            subtitle={`${campaignName} · ${assetRole}`}
+            status={productionStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Palette className="h-7 w-7 text-primary-foreground" />
@@ -229,8 +238,8 @@ export default function CreativeAssetDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Asset", onClick: () => {} },
-                { label: "Submit for Review", onClick: () => {} },
+                { label: "Edit Asset", onClick: () => router.push(`/creative-assets/${entityId}/edit`) },
+                { label: "Submit for Review", onClick: () => handleUpdate({ status: "in_review" }) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -248,7 +257,7 @@ export default function CreativeAssetDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Brand Score</p>
                                         <p className="text-lg font-bold">
-                                            {mockCreativeAsset.brand_compliance_score}%
+                                            {brandComplianceScore ?? "—"}%
                                         </p>
                                     </div>
                                 </div>
@@ -261,9 +270,9 @@ export default function CreativeAssetDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Approved</p>
                                         <p className="text-sm font-semibold">
-                                            {mockCreativeAsset.approved_at
+                                            {approvedAt
                                                 ? formatDate(
-                                                      mockCreativeAsset.approved_at,
+                                                      approvedAt,
                                                       "compact"
                                                   )
                                                 : "Pending"}
@@ -279,7 +288,7 @@ export default function CreativeAssetDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Assigned To</p>
                                         <p className="text-sm font-semibold">
-                                            {mockCreativeAsset.assigned_to ?? "Unassigned"}
+                                            {assignedTo || "Unassigned"}
                                         </p>
                                     </div>
                                 </div>
@@ -287,14 +296,14 @@ export default function CreativeAssetDetailPage() {
                         </Card>
                     </div>
 
-                    {mockCreativeAsset.description && (
+                    {description && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Description</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {mockCreativeAsset.description}
+                                    {description}
                                 </p>
                             </CardContent>
                         </Card>
@@ -320,12 +329,12 @@ export default function CreativeAssetDetailPage() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <MessageSquare className="h-4 w-4" />
-                            Reviews ({mockReviews.length})
+                            Reviews ({reviews.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockReviews.map((review) => (
+                            {reviews.map((review) => (
                                 <div
                                     key={review.id}
                                     className="p-3 rounded-lg bg-secondary/20 space-y-2"
@@ -378,7 +387,7 @@ export default function CreativeAssetDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="creative_asset"
-                    recordId={mockCreativeAsset.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -4,102 +4,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Lock, MessageSquare, Radio } from "lucide-react";
+import { Lock, Radio } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
-
-interface MockChannel {
-    id: string;
-    channelNumber: number;
-    name: string;
-    priority: string;
-    assignment: string;
-    discipline: string;
-    isRestricted: boolean;
-    recentMessages: number;
-}
-
-const mockChannels: MockChannel[] = [
-    {
-        id: "1",
-        channelNumber: 1,
-        name: "Command",
-        priority: "emergency",
-        assignment: "Event Commander + Safety",
-        discipline: "Command",
-        isRestricted: true,
-        recentMessages: 12,
-    },
-    {
-        id: "2",
-        channelNumber: 2,
-        name: "Production",
-        priority: "high",
-        assignment: "SM + All Dept Leads",
-        discipline: "Production",
-        isRestricted: false,
-        recentMessages: 45,
-    },
-    {
-        id: "3",
-        channelNumber: 3,
-        name: "Audio",
-        priority: "medium",
-        assignment: "Audio Team",
-        discipline: "Audio",
-        isRestricted: false,
-        recentMessages: 18,
-    },
-    {
-        id: "4",
-        channelNumber: 4,
-        name: "Lighting",
-        priority: "medium",
-        assignment: "Lighting Team",
-        discipline: "Lighting",
-        isRestricted: false,
-        recentMessages: 22,
-    },
-    {
-        id: "5",
-        channelNumber: 5,
-        name: "Video",
-        priority: "medium",
-        assignment: "Video Team",
-        discipline: "Video",
-        isRestricted: false,
-        recentMessages: 14,
-    },
-    {
-        id: "6",
-        channelNumber: 6,
-        name: "Rigging",
-        priority: "high",
-        assignment: "Rigging + Safety",
-        discipline: "Rigging",
-        isRestricted: true,
-        recentMessages: 8,
-    },
-    {
-        id: "7",
-        channelNumber: 7,
-        name: "FOH / Security",
-        priority: "high",
-        assignment: "FOH + Security Leads",
-        discipline: "FOH",
-        isRestricted: false,
-        recentMessages: 31,
-    },
-    {
-        id: "8",
-        channelNumber: 8,
-        name: "Logistics",
-        priority: "medium",
-        assignment: "Logistics + Loading Dock",
-        discipline: "Logistics",
-        isRestricted: false,
-        recentMessages: 9,
-    },
-];
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useCommChannels } from "@/lib/supabase/hooks-live-ops";
 
 const PRIORITY_COLORS: Record<string, string> = {
     emergency: "border-l-destructive",
@@ -110,8 +18,12 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export default function CommsPage() {
-    const restricted = mockChannels.filter((c) => c.isRestricted).length;
-    const totalMessages = mockChannels.reduce((s, c) => s + c.recentMessages, 0);
+    const { data: channels, isLoading } = useCommChannels();
+
+    if (isLoading) return <LoadingState />;
+
+    const rows = channels ?? [];
+    const restricted = rows.filter((c) => c.is_restricted).length;
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -121,14 +33,14 @@ export default function CommsPage() {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Active Channels" value={mockChannels.length} icon={Radio} />
+                <StatCard title="Active Channels" value={rows.length} icon={Radio} />
                 <StatCard title="Restricted" value={restricted} icon={Lock} />
-                <StatCard title="Messages (1hr)" value={totalMessages} icon={MessageSquare} />
-                <StatCard title="Emergency Channel" value="CH 1" icon={Radio} />
+                <StatCard title="Total Channels" value={rows.length} icon={Radio} />
+                <StatCard title="Emergency" value={rows.filter((c) => c.priority === "emergency").length} icon={Radio} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {mockChannels.map((ch, i) => (
+                {rows.map((ch, i) => (
                     <StaggerItem key={ch.id} index={i} stagger="tight">
                         <Card
                             className={`hover:shadow-sm transition-all border-l-2 ${PRIORITY_COLORS[ch.priority] ?? ""}`}
@@ -137,7 +49,7 @@ export default function CommsPage() {
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-mono font-bold bg-secondary px-1.5 py-0.5 rounded">
-                                            CH {ch.channelNumber}
+                                            CH {ch.channel_number}
                                         </span>
                                         <h3 className="text-sm font-semibold">{ch.name}</h3>
                                     </div>
@@ -148,9 +60,9 @@ export default function CommsPage() {
                                 </p>
                                 <div className="flex items-center justify-between text-[10px]">
                                     <span className="text-muted-foreground">
-                                        {ch.recentMessages} messages
+                                        {ch.discipline ?? ""}
                                     </span>
-                                    {ch.isRestricted && (
+                                    {ch.is_restricted && (
                                         <span className="flex items-center gap-0.5 text-warning">
                                             <Lock className="h-2.5 w-2.5" />
                                             Restricted

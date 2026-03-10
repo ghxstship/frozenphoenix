@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,8 +24,11 @@ import {
     List,
     Loader2,
     Plus,
+    Upload,
     Users,
 } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import {
     PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
     PROJECT_PHASE_ORDER,
@@ -162,13 +167,19 @@ const boardCardFields: CardField<Project>[] = [
 ];
 
 export default function ProjectsPage() {
+    const router = useRouter();
     const VIEW_MODES = ["cards", "table", "board"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
         defaultValue: "cards",
         validValues: VIEW_MODES,
     });
-    const { data: sbProjects, isLoading } = useProjects();
+    const { data: sbProjects, isLoading, refetch } = useProjects();
+    const [importOpen, setImportOpen] = useState(false);
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const projects: Project[] = (sbProjects ?? []).map((p) => ({
         id: p.id,
@@ -192,9 +203,7 @@ export default function ProjectsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -231,12 +240,23 @@ export default function ProjectsPage() {
                             ]}
                             ariaLabel="View mode"
                         />
-                        <Button size="sm">
+                        <CsvExportButton entity="projects" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
+                        </Button>
+                        <Button size="sm" onClick={() => router.push("/projects/new")}>
                             <Plus className="h-4 w-4" />
                             New Project
                         </Button>
                     </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="projects"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 {/* Phase Legend - only show in cards view */}
                 {viewMode === "cards" && (

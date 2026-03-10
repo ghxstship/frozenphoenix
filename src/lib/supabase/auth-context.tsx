@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { createClient, isSupabaseConfigured } from "./client";
+import { createClient } from "./client";
+import { clearWorkspaceContext } from "@/hooks/use-workspace-context";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database, Tables } from "./database.types";
 
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return null;
     });
-    const [loading, setLoading] = useState(!isSupabaseConfigured ? false : true);
+    const [loading, setLoading] = useState(true);
 
     const supabase = useMemo(() => createClient(), []);
 
@@ -68,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [memberships, activeOrgId]);
 
     const switchOrg = useCallback((orgId: string) => {
+        clearWorkspaceContext();
         setActiveOrgId(orgId);
         if (typeof window !== "undefined") {
             localStorage.setItem(AUTH_ACTIVE_ORG_KEY, orgId);
@@ -216,7 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [supabase]);
 
     useEffect(() => {
-        if (!supabase || !isSupabaseConfigured) {
+        if (!supabase) {
             return;
         }
 

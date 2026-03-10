@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -22,6 +23,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { AlertTriangle, ChevronRight, Clock, Loader2, MapPin, Plus, Shield } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 
 export default function IncidentsPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -73,9 +75,7 @@ export default function IncidentsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -100,10 +100,13 @@ export default function IncidentsPage() {
                 title="Incidents"
                 description="Track and manage safety incidents, issues, and resolutions"
                 actions={
-                    <Button variant="destructive" onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        Report Incident
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="incidents" />
+                        <Button variant="destructive" onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Report Incident
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}

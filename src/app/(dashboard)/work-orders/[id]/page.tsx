@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteWorkOrder, useUpdateWorkOrder } from "@/lib/supabase/hooks-pages";
@@ -19,7 +20,6 @@ import {
     ClipboardList,
     Clock,
     DollarSign,
-    Loader2,
     MapPin,
     Play,
     User,
@@ -30,29 +30,24 @@ import { useWorkOrder } from "@/lib/supabase/hooks-pages";
 type TabId = "details" | "bids" | "chatter";
 const TAB_VALUES = ["details", "bids", "chatter"] as const;
 
-const mockBids = [
-    {
-        id: "b1",
-        vendorName: "StageCraft Studios",
-        amount: 42000,
-        submittedAt: "2026-02-15",
-        status: "accepted",
-    },
-    {
-        id: "b2",
-        vendorName: "Premier AV Solutions",
-        amount: 48500,
-        submittedAt: "2026-02-14",
-        status: "rejected",
-    },
-    {
-        id: "b3",
-        vendorName: "EventTech Pro",
-        amount: 44200,
-        submittedAt: "2026-02-16",
-        status: "pending",
-    },
-];
+interface BidItem {
+    id: string;
+    vendorName: string;
+    amount: number;
+    submittedAt: string;
+    status: string;
+}
+
+function parseBids(raw: unknown): BidItem[] {
+    if (!Array.isArray(raw)) return [];
+    return (raw as Record<string, unknown>[]).map((b, i) => ({
+        id: String(b.id ?? `b-${i}`),
+        vendorName: (b.vendor_name as string) ?? (b.vendorName as string) ?? "",
+        amount: (b.amount as number) ?? 0,
+        submittedAt: (b.submitted_at as string) ?? (b.submittedAt as string) ?? "",
+        status: (b.status as string) ?? "pending",
+    }));
+}
 
 export default function WorkOrderDetailPage() {
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
@@ -64,7 +59,8 @@ export default function WorkOrderDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: wo, isLoading } = useWorkOrder(entityId);
+    const { data: woRecord, isLoading } = useWorkOrder(entityId);
+    const wo = woRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Work Order",
@@ -72,8 +68,6 @@ export default function WorkOrderDetailPage() {
         useUpdateHook: useUpdateWorkOrder,
         useDeleteHook: useDeleteWorkOrder,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -91,11 +85,23 @@ export default function WorkOrderDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
+
+    const woTitle = (wo?.title as string) ?? "";
+    const woNumber = (wo?.number as string) ?? "";
+    const woStatus = (wo?.status as string) ?? "draft";
+    const woPriority = (wo?.priority as string) ?? "medium";
+    const woEstimatedCost = (wo?.estimated_cost as number) ?? (wo?.estimatedCost as number) ?? 0;
+    const woScheduledStart = (wo?.scheduled_start as string) ?? (wo?.scheduledStart as string) ?? "";
+    const woScheduledEnd = (wo?.scheduled_end as string) ?? (wo?.scheduledEnd as string) ?? "";
+    const woVendorName = (wo?.vendor_name as string) ?? (wo?.vendorName as string) ?? "";
+    const woLocationName = (wo?.location_name as string) ?? (wo?.locationName as string) ?? "";
+    const woDescription = (wo?.description as string) ?? "";
+    const woCompletionNotes = (wo?.completion_notes as string) ?? (wo?.completionNotes as string) ?? "";
+    const woIsOpenForBids = (wo?.is_open_for_bids as boolean) ?? (wo?.isOpenForBids as boolean) ?? false;
+    const bids = parseBids(wo?.bids);
 
     if (!wo) {
         return (
@@ -107,7 +113,7 @@ export default function WorkOrderDetailPage() {
 
     const tabs = [
         { id: "details" as const, label: "Details" },
-        { id: "bids" as const, label: "Bids", count: mockBids.length },
+        { id: "bids" as const, label: "Bids", count: bids.length },
         { id: "chatter" as const, label: "Chatter" },
     ];
 
@@ -118,36 +124,38 @@ export default function WorkOrderDetailPage() {
                     <CardTitle className="text-sm">Work Order Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Number</span>
-                        <span className="font-mono font-medium">{wo.number}</span>
-                    </div>
+                    {woNumber && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Number</span>
+                            <span className="font-mono font-medium">{woNumber}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(wo.status)}>
-                            {getStatusLabel(wo.status)}
+                        <Badge variant={getStatusVariant(woStatus)}>
+                            {getStatusLabel(woStatus)}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Priority</span>
-                        <Badge variant={getPriorityVariant(wo.priority)}>{wo.priority}</Badge>
+                        <Badge variant={getPriorityVariant(woPriority)}>{woPriority}</Badge>
                     </div>
-                    {wo.estimatedCost && (
+                    {woEstimatedCost > 0 && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Est. Cost</span>
-                            <span className="font-bold">{formatCurrency(wo.estimatedCost)}</span>
+                            <span className="font-bold">{formatCurrency(woEstimatedCost)}</span>
                         </div>
                     )}
-                    {wo.scheduledStart && (
+                    {woScheduledStart && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Start</span>
-                            <span className="font-medium">{formatDate(wo.scheduledStart)}</span>
+                            <span className="font-medium">{formatDate(woScheduledStart)}</span>
                         </div>
                     )}
-                    {wo.scheduledEnd && (
+                    {woScheduledEnd && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">End</span>
-                            <span className="font-medium">{formatDate(wo.scheduledEnd)}</span>
+                            <span className="font-medium">{formatDate(woScheduledEnd)}</span>
                         </div>
                     )}
                 </CardContent>
@@ -158,16 +166,16 @@ export default function WorkOrderDetailPage() {
                     <CardTitle className="text-sm">Assignment</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    {wo.vendorName && (
+                    {woVendorName && (
                         <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-muted-foreground" />
-                            <span>{wo.vendorName}</span>
+                            <span>{woVendorName}</span>
                         </div>
                     )}
-                    {wo.locationName && (
+                    {woLocationName && (
                         <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-xs">{wo.locationName}</span>
+                            <span className="text-xs">{woLocationName}</span>
                         </div>
                     )}
                 </CardContent>
@@ -181,23 +189,23 @@ export default function WorkOrderDetailPage() {
             backLabel="Work Orders"
             entityType="work-orders"
             entityId={entityId}
-            title={wo.title}
-            subtitle={`${wo.number} · ${wo.vendorName ?? "Unassigned"}`}
-            status={wo.status}
+            title={woTitle}
+            subtitle={`${woNumber}${woVendorName ? ` · ${woVendorName}` : " · Unassigned"}`}
+            status={woStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <ClipboardList className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
             actions={
-                <Button size="sm">
+                <Button size="sm" onClick={() => handleUpdate({ status: "in_progress" })}>
                     <Play className="h-4 w-4 mr-1" />
                     Start Work
                 </Button>
             }
             menuItems={[
-                { label: "Edit Work Order", onClick: () => {} },
-                { label: "Reassign Vendor", onClick: () => {} },
+                { label: "Edit Work Order", onClick: () => router.push(`/work-orders/${entityId}/edit`) },
+                { label: "Reassign Vendor", onClick: () => router.push(`/work-orders/${entityId}/edit?section=vendor`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -217,8 +225,8 @@ export default function WorkOrderDetailPage() {
                                             Estimated Cost
                                         </p>
                                         <p className="text-lg font-bold">
-                                            {wo.estimatedCost
-                                                ? formatCurrency(wo.estimatedCost)
+                                            {woEstimatedCost
+                                                ? formatCurrency(woEstimatedCost)
                                                 : "TBD"}
                                         </p>
                                     </div>
@@ -232,8 +240,8 @@ export default function WorkOrderDetailPage() {
                                     <div>
                                         <p className="text-xs text-muted-foreground">Timeline</p>
                                         <p className="text-sm font-semibold">
-                                            {wo.scheduledStart
-                                                ? formatDate(wo.scheduledStart)
+                                            {woScheduledStart
+                                                ? formatDate(woScheduledStart)
                                                 : "TBD"}
                                         </p>
                                     </div>
@@ -249,7 +257,7 @@ export default function WorkOrderDetailPage() {
                                             Open for Bids
                                         </p>
                                         <p className="text-sm font-semibold">
-                                            {wo.isOpenForBids ? "Yes" : "No"}
+                                            {woIsOpenForBids ? "Yes" : "No"}
                                         </p>
                                     </div>
                                 </div>
@@ -257,27 +265,27 @@ export default function WorkOrderDetailPage() {
                         </Card>
                     </div>
 
-                    {wo.description && (
+                    {woDescription && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Description</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {wo.description}
+                                    {woDescription}
                                 </p>
                             </CardContent>
                         </Card>
                     )}
 
-                    {wo.completionNotes && (
+                    {woCompletionNotes && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Completion Notes</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {wo.completionNotes}
+                                    {woCompletionNotes}
                                 </p>
                             </CardContent>
                         </Card>
@@ -288,11 +296,11 @@ export default function WorkOrderDetailPage() {
             {activeTab === "bids" && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Vendor Bids ({mockBids.length})</CardTitle>
+                        <CardTitle className="text-base">Vendor Bids ({bids.length})</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockBids.map((bid) => (
+                            {bids.map((bid) => (
                                 <div
                                     key={bid.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
@@ -328,7 +336,7 @@ export default function WorkOrderDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="work_order"
-                    recordId={wo.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

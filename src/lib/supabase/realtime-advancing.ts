@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { createClient, isSupabaseConfigured } from "./client";
+import { createClient } from "./client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // ═══════════════════════════════════════════════════════════════
@@ -14,7 +14,7 @@ export function useAdvancesRealtime(organizationId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !organizationId) return;
+        if (!organizationId) return;
 
         const supabase = createClient();
         if (!supabase) return;
@@ -67,7 +67,7 @@ export function useAdvanceStatusHistoryRealtime(entityId?: string) {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !entityId) return;
+        if (!entityId) return;
 
         const supabase = createClient();
         if (!supabase) return;
@@ -98,8 +98,6 @@ export function useCatalogRealtime() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
-
         const supabase = createClient();
         if (!supabase) return;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type { AuthError, AuthResponse, Provider, UserResponse } from "@supabase/supabase-js";
 
 // ─── Helpers ───
@@ -409,4 +409,3 @@ export function useUnenrollMFA() {
     });
 }
 
-export { isSupabaseConfigured };

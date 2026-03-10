@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useState } from "react";
+import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
@@ -67,49 +68,72 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
                             onClick={handleCancel}
                             aria-hidden="true"
                         />
-                        <motion.div
-                            className="relative bg-background border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                            role="alertdialog"
-                            aria-modal="true"
-                            aria-labelledby="confirm-title"
-                            aria-describedby="confirm-desc"
-                        >
-                            {state.options.variant === "destructive" && (
-                                <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center mb-4">
-                                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                                </div>
-                            )}
-                            <h2 id="confirm-title" className="text-base font-bold">
-                                {state.options.title}
-                            </h2>
-                            <p id="confirm-desc" className="text-sm text-muted-foreground mt-2">
-                                {state.options.description}
-                            </p>
-                            <div className="flex gap-2 justify-end mt-6">
-                                <Button variant="outline" size="sm" onClick={handleCancel}>
-                                    {state.options.cancelLabel ?? "Cancel"}
-                                </Button>
-                                <Button
-                                    variant={
-                                        state.options.variant === "destructive"
-                                            ? "destructive"
-                                            : "default"
-                                    }
-                                    size="sm"
-                                    onClick={handleConfirm}
-                                    autoFocus
-                                >
-                                    {state.options.confirmLabel ?? "Confirm"}
-                                </Button>
-                            </div>
-                        </motion.div>
+                        <ConfirmDialogContent
+                            options={state.options}
+                            onConfirm={handleConfirm}
+                            onCancel={handleCancel}
+                        />
                     </div>
                 )}
             </AnimatePresence>
         </ConfirmContext.Provider>
+    );
+}
+
+function ConfirmDialogContent({
+    options,
+    onConfirm,
+    onCancel,
+}: {
+    options: ConfirmOptions;
+    onConfirm: () => void;
+    onCancel: () => void;
+}) {
+    const trapRef = useFocusTrap(true);
+    useFocusReturn();
+    useEscapeKey(onCancel);
+
+    return (
+        <motion.div
+            ref={trapRef as React.RefObject<HTMLDivElement>}
+            className="relative bg-background border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="confirm-title"
+            aria-describedby="confirm-desc"
+        >
+            {options.variant === "destructive" && (
+                <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center mb-4">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+            )}
+            <h2 id="confirm-title" className="text-base font-bold">
+                {options.title}
+            </h2>
+            <p id="confirm-desc" className="text-sm text-muted-foreground mt-2">
+                {options.description}
+            </p>
+            <div className="flex gap-2 justify-end mt-6">
+                <Button variant="outline" size="sm" onClick={onCancel}>
+                    {options.cancelLabel ?? "Cancel"}
+                </Button>
+                <Button
+                    variant={
+                        options.variant === "destructive"
+                            ? "destructive"
+                            : "default"
+                    }
+                    size="sm"
+                    onClick={onConfirm}
+                    autoFocus
+                >
+                    {options.confirmLabel ?? "Confirm"}
+                </Button>
+            </div>
+        </motion.div>
     );
 }

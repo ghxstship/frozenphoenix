@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { useBrandKits, useProjects } from "@/lib/supabase/hooks";
-
-import { Loader2 } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
@@ -71,26 +70,31 @@ export default function BrandKitPage() {
         createdAt: p.created_at ?? new Date().toISOString(),
     }));
 
+    const [copyAnnouncement, setCopyAnnouncement] = useState("");
     const isLoading = loadingKits || loadingProjects;
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
-
     const copyToClipboard = (color: string) => {
         navigator.clipboard.writeText(color);
         setCopiedColor(color);
-        setTimeout(() => setCopiedColor(null), 2000);
+        setCopyAnnouncement(`Copied ${color} to clipboard`);
+        setTimeout(() => {
+            setCopiedColor(null);
+            setCopyAnnouncement("");
+        }, 2000);
     };
 
     const wizardSteps = ["Client", "Colors", "Typography", "Review"];
 
     return (
         <PermissionGate resource="brand_kit" action="read">
+            <div aria-live="polite" aria-atomic="true" className="sr-only">
+                {copyAnnouncement}
+            </div>
             <div className="space-y-6 animate-fade-in">
                 <PageHeader
                     title="Brand Kit Library"
@@ -328,7 +332,7 @@ export default function BrandKitPage() {
                                         Next <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 ) : (
-                                    <Button disabled={!wizardData.clientName}>
+                                    <Button disabled={!wizardData.clientName} onClick={() => console.log("Create brand kit:", wizardData)}>
                                         <CheckCircle2 className="mr-2 h-4 w-4" />
                                         Create Brand Kit
                                     </Button>
@@ -380,6 +384,7 @@ export default function BrandKitPage() {
                                                 size="icon"
                                                 className="h-8 w-8"
                                                 aria-label="View asset details"
+                                                onClick={() => console.log("View brand kit:", kit.id)}
                                             >
                                                 <ExternalLink className="h-4 w-4" />
                                             </Button>
@@ -452,6 +457,7 @@ export default function BrandKitPage() {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="flex-1 text-xs"
+                                                    onClick={() => console.log("View assets for kit:", kit.id)}
                                                 >
                                                     <ImageIcon className="h-3.5 w-3.5" />
                                                     Assets
@@ -460,6 +466,7 @@ export default function BrandKitPage() {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="flex-1 text-xs"
+                                                    onClick={() => console.log("Export kit:", kit.id)}
                                                 >
                                                     <Download className="h-3.5 w-3.5" />
                                                     Export

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type {
     AdvanceListFilters,
     CatalogSearchFilters,
@@ -34,7 +34,6 @@ export function useCatalogCategories(parentId?: string | null) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -50,7 +49,7 @@ export function useCatalogCategory(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -98,7 +97,6 @@ export function useCatalogItems(filters?: CatalogSearchFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -115,7 +113,7 @@ export function useCatalogItemSearch(searchQuery: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && searchQuery.length >= 2,
+        enabled: searchQuery.length >= 2,
     });
 }
 
@@ -131,7 +129,7 @@ export function useCatalogItem(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -152,7 +150,7 @@ export function useCatalogItemModifiers(catalogItemId: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!catalogItemId,
+        enabled: !!catalogItemId,
     });
 }
 
@@ -172,7 +170,7 @@ export function useCatalogOrgOverrides(organizationId: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!organizationId,
+        enabled: !!organizationId,
     });
 }
 
@@ -190,7 +188,7 @@ export function useCatalogOrgOverride(organizationId: string, catalogItemId: str
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!organizationId && !!catalogItemId,
+        enabled: !!organizationId && !!catalogItemId,
     });
 }
 
@@ -244,7 +242,6 @@ export function useAdvances(filters?: AdvanceListFilters) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -267,7 +264,7 @@ export function useAdvance(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 
@@ -423,7 +420,7 @@ export function useAdvanceItems(advanceId: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!advanceId,
+        enabled: !!advanceId,
     });
 }
 
@@ -553,7 +550,7 @@ export function useAdvanceStatusHistory(entityType: "advance" | "advance_item", 
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!entityId,
+        enabled: !!entityId,
     });
 }
 
@@ -577,7 +574,6 @@ export function useAdvanceTemplates(organizationId?: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -593,7 +589,7 @@ export function useAdvanceTemplate(id: string) {
             if (error) throw error;
             return data;
         },
-        enabled: isSupabaseConfigured && !!id,
+        enabled: !!id,
     });
 }
 

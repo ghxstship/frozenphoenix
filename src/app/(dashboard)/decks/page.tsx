@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { BadgeVariant } from "@/config/ui-variants";
@@ -23,7 +25,6 @@ import {
     FileText,
     LayoutGrid,
     List,
-    Loader2,
     Play,
     Plus,
     Presentation,
@@ -44,7 +45,7 @@ interface Deck {
     presentedAt?: string;
 }
 
-const PLACEHOLDER_DECKS: Deck[] = [
+const _PLACEHOLDER_DECKS: Deck[] = [
     {
         id: "dk1",
         projectId: "p1",
@@ -91,6 +92,7 @@ const typeConfig: Record<DeckType, { label: string; color: string }> = {
 };
 
 export default function DecksPage() {
+    const { addToast } = useToast();
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["grid", "list"] as const;
     const [view, setView] = useQueryTabState({
@@ -137,9 +139,7 @@ export default function DecksPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -209,7 +209,7 @@ export default function DecksPage() {
                     {(
                         Object.entries(typeConfig) as [DeckType, (typeof typeConfig)[DeckType]][]
                     ).map(([type, config]) => {
-                        const count = PLACEHOLDER_DECKS.filter((d) => d.type === type).length;
+                        const count = decks.filter((d) => d.type === type).length;
                         return (
                             <div
                                 key={type}
@@ -244,10 +244,10 @@ export default function DecksPage() {
                                                 </Badge>
                                             </div>
                                             <div className="absolute bottom-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors">
+                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors" onClick={(e) => { e.stopPropagation(); addToast({ title: "Presenting deck", description: deck.title, variant: "default" }); }}>
                                                     <Play className="h-4 w-4 text-primary-foreground" />
                                                 </button>
-                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors">
+                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors" onClick={(e) => { e.stopPropagation(); addToast({ title: "Download started", description: deck.title, variant: "default" }); }}>
                                                     <Download className="h-4 w-4 text-primary-foreground" />
                                                 </button>
                                             </div>
@@ -295,7 +295,7 @@ export default function DecksPage() {
                             );
                         })}
 
-                        <Card className="border-dashed border-2 flex items-center justify-center min-h-[280px] cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors">
+                        <Card className="border-dashed border-2 flex items-center justify-center min-h-[280px] cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors" onClick={openCreate}>
                             <div className="text-center">
                                 <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
                                     <Plus className="h-6 w-6 text-muted-foreground" />
@@ -387,13 +387,13 @@ export default function DecksPage() {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center gap-1">
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors">
+                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Presenting deck", description: deck.title, variant: "default" })}>
                                                             <Play className="h-3.5 w-3.5" />
                                                         </button>
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors">
+                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Download started", description: deck.title, variant: "default" })}>
                                                             <Download className="h-3.5 w-3.5" />
                                                         </button>
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors">
+                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Opening deck", description: deck.title, variant: "default" })}>
                                                             <ExternalLink className="h-3.5 w-3.5" />
                                                         </button>
                                                     </div>

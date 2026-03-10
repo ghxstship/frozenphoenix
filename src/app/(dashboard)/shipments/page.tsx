@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -28,6 +29,7 @@ import {
     Truck,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
 
 export default function ShipmentsPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -83,9 +85,7 @@ export default function ShipmentsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -105,10 +105,13 @@ export default function ShipmentsPage() {
                 title="Shipments"
                 description="Track and manage logistics and freight"
                 actions={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        New Shipment
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="shipments" />
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            New Shipment
+                        </Button>
+                    </div>
                 }
             >
                 {/* Filters */}
@@ -166,7 +169,7 @@ export default function ShipmentsPage() {
                             searchQuery ? "Try adjusting your search" : "Create your first shipment"
                         }
                         action={
-                            !searchQuery ? { label: "New Shipment", onClick: () => {} } : undefined
+                            !searchQuery ? { label: "New Shipment", onClick: openCreate } : undefined
                         }
                     />
                 ) : (

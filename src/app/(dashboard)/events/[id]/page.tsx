@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
@@ -56,14 +57,13 @@ export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
     const eventId = params.id as string;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: eventId,
         entityLabel: "Event",
         listPath: "/events",
         useUpdateHook: useUpdateEvent,
         useDeleteHook: useDeleteEvent,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -92,9 +92,7 @@ export default function EventDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -241,7 +239,7 @@ export default function EventDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[{ label: "Duplicate", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Duplicate", onClick: () => router.push(`/events/new?duplicateFrom=${eventId}`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

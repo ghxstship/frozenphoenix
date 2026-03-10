@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useDeletePerson, usePerson, useUpdatePerson } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -18,18 +19,15 @@ const TAB_VALUES = ["overview", "projects", "chatter"] as const;
 
 export default function PersonDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: person, isLoading } = usePerson(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Person",
         listPath: "/people",
         useUpdateHook: useUpdatePerson,
         useDeleteHook: useDeletePerson,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -40,9 +38,7 @@ export default function PersonDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -132,11 +128,12 @@ export default function PersonDetailPage() {
                 </div>
             )}
             {activeTab === "projects" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Project assignments coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={User}
+                    title="No project assignments"
+                    description="Projects this person is assigned to will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

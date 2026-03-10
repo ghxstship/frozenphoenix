@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApproval } from "@/lib/supabase/hooks-pages";
@@ -31,15 +32,13 @@ export default function ApprovalDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: approval, isLoading } = useApproval(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Approval",
         listPath: "/approvals",
         useUpdateHook: useUpdateApproval,
         useDeleteHook: useDeleteApproval,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
@@ -57,9 +56,7 @@ export default function ApprovalDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -147,7 +144,7 @@ export default function ApprovalDetailPage() {
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Approval", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Edit Approval", onClick: () => router.push(`/approvals/${entityId}/edit`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

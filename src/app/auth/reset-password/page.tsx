@@ -2,11 +2,12 @@
 
 import React, { Suspense, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AuthLayout, PasswordInput } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/lib/auth-utils";
-import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -160,6 +161,16 @@ function ResetPasswordForm() {
                         "Update Password"
                     )}
                 </Button>
+
+                <div className="text-center">
+                    <Link
+                        href="/auth/login"
+                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                        Back to login
+                    </Link>
+                </div>
             </form>
         </AuthLayout>
     );

@@ -71,6 +71,39 @@ export function RadioGroupItem({
     const isChecked = selectedValue === value;
     const isDisabled = itemDisabled || groupDisabled;
 
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+        const group = (e.currentTarget as HTMLElement).closest("[role='radiogroup']");
+        if (!group) return;
+        const items = Array.from(
+            group.querySelectorAll<HTMLElement>("[role='radio']:not([disabled])")
+        );
+        const currentIndex = items.indexOf(e.currentTarget as HTMLElement);
+        if (currentIndex < 0) return;
+
+        let nextIndex: number | null = null;
+        switch (e.key) {
+            case "ArrowDown":
+            case "ArrowRight":
+                e.preventDefault();
+                nextIndex = (currentIndex + 1) % items.length;
+                break;
+            case "ArrowUp":
+            case "ArrowLeft":
+                e.preventDefault();
+                nextIndex = (currentIndex - 1 + items.length) % items.length;
+                break;
+            default:
+                return;
+        }
+
+        const nextItem = items[nextIndex];
+        if (nextItem) {
+            const nextValue = nextItem.dataset.radioValue;
+            if (nextValue) onValueChange(nextValue);
+            nextItem.focus();
+        }
+    }, [onValueChange]);
+
     return (
         <button
             type="button"
@@ -79,7 +112,10 @@ export function RadioGroupItem({
             id={id}
             name={name}
             disabled={isDisabled}
+            data-radio-value={value}
+            tabIndex={isChecked ? 0 : -1}
             onClick={() => !isDisabled && onValueChange(value)}
+            onKeyDown={handleKeyDown}
             className={cn(
                 "aspect-square h-4 w-4 rounded-full border border-input text-primary ring-offset-background",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

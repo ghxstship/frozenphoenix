@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { filterValue, getSupabase, isSupabaseConfigured } from "./client";
+import { filterValue, getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 // ─── Join-aware return types ───
@@ -51,8 +51,6 @@ export type OrganizationRow = Tables<"organizations">;
 export type ActivityRow = Tables<"activities">;
 export type AutomationLogRow = Tables<"automation_logs">;
 export type StakeholderProjectRow = Tables<"stakeholder_projects">;
-
-export { isSupabaseConfigured };
 
 // ═══════════════════════════════════════════════════════════════
 // CREDIT NOTES

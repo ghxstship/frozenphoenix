@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_PAYMENT_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/ui/page-header";
@@ -40,6 +43,7 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 };
 
 export default function PaymentsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const DIR_FILTERS = ["all", "incoming", "outgoing"] as const;
     const [dirFilter, setDirFilter] = useQueryTabState({
@@ -65,9 +69,7 @@ export default function PaymentsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -97,7 +99,7 @@ export default function PaymentsPage() {
                     title="Payments"
                     description="Track incoming and outgoing payments across all projects"
                 >
-                    <Button>
+                    <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> Record Payment
                     </Button>
                 </PageHeader>
@@ -192,6 +194,7 @@ export default function PaymentsPage() {
                     ))}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_PAYMENT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

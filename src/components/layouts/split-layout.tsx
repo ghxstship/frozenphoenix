@@ -50,7 +50,7 @@ export function SplitLayout({
                             className="lg:hidden flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors px-4 pt-3 pb-1"
                             aria-label="Back to list"
                         >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                             </svg>
                             Back

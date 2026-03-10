@@ -64,6 +64,10 @@ import {
     shipmentUpdateSchema,
     sowCreateSchema,
     sowUpdateSchema,
+    teamCreateSchema,
+    teamMemberCreateSchema,
+    teamMemberUpdateSchema,
+    teamUpdateSchema,
     timeEntryCreateSchema,
     timeEntryUpdateSchema,
     workOrderCreateSchema,
@@ -110,6 +114,8 @@ const SCHEMA_REGISTRY: Record<string, SchemaEntry> = {
     estimate: { create: estimateCreateSchema, update: estimateUpdateSchema },
     rental_agreement: { create: rentalAgreementCreateSchema, update: rentalAgreementUpdateSchema },
     rights: { create: rightsCreateSchema, update: rightsUpdateSchema },
+    team: { create: teamCreateSchema, update: teamUpdateSchema },
+    team_member: { create: teamMemberCreateSchema, update: teamMemberUpdateSchema },
 };
 
 /**

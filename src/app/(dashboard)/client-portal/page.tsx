@@ -1,5 +1,7 @@
 "use client";
 
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SERVICE_REQUEST_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -144,6 +146,7 @@ const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success
     };
 
 export default function ClientPortalPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const totalOutstanding = mockInvoices
         .filter((i) => i.status !== "paid")
         .reduce((sum, i) => sum + i.amount, 0);
@@ -160,7 +163,7 @@ export default function ClientPortalPage() {
                         <Button size="sm" variant="outline">
                             <MessageSquare className="h-4 w-4" /> Messages
                         </Button>
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" /> Request Work
                         </Button>
                         <Badge variant="info" className="text-sm px-3 py-1">
@@ -387,6 +390,7 @@ export default function ClientPortalPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_SERVICE_REQUEST_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

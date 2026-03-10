@@ -1,17 +1,25 @@
 "use client";
 
-import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useMemo, useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CASE_STUDY_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
 import { useCaseStudies } from "@/lib/supabase/hooks";
-import { Award, ExternalLink, Globe, Loader2 } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { Award, ExternalLink, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function CaseStudiesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "published">("all");
     const { data: sbCaseStudies, isLoading } = useCaseStudies();
 
     const caseStudies = (sbCaseStudies ?? []).map((cs) => ({
@@ -35,11 +43,17 @@ export default function CaseStudiesPage() {
         createdAt: cs.created_at,
     }));
 
+    const filtered = useMemo(() => {
+        return caseStudies.filter((cs) => {
+            const matchesSearch = !search || cs.title.toLowerCase().includes(search.toLowerCase()) || cs.client.toLowerCase().includes(search.toLowerCase());
+            const matchesStatus = statusFilter === "all" || cs.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
+    }, [caseStudies, search, statusFilter]);
+
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
     return (
@@ -49,13 +63,42 @@ export default function CaseStudiesPage() {
                     title="Case Studies"
                     description="Auto-published from completed productions"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Award className="h-4 w-4" /> Publish New
                     </Button>
                 </PageHeader>
 
+                <div className="flex items-center gap-3 mb-2">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search case studies..."
+                        className="flex-1 max-w-sm"
+                    />
+                    <div className="flex gap-1">
+                        {(["all", "draft", "published"] as const).map((s) => (
+                            <Button
+                                key={s}
+                                variant={statusFilter === s ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setStatusFilter(s)}
+                            >
+                                {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Award}
+                        title="No case studies found"
+                        description={search || statusFilter !== "all" ? "Try adjusting your filters" : "Publish your first case study from a completed production"}
+                        action={!search && statusFilter === "all" ? { label: "Publish New", onClick: openCreate } : undefined}
+                    />
+                ) : (
                 <div className="space-y-4">
-                    {caseStudies.map((cs, i) => (
+                    {filtered.map((cs, i) => (
                         <StaggerItem key={cs.id} index={i} stagger="relaxed">
                             <Card>
                                 <CardContent>
@@ -100,7 +143,9 @@ export default function CaseStudiesPage() {
                         </StaggerItem>
                     ))}
                 </div>
+                )}
             </div>
+            <CreateEntityDialog config={CREATE_CASE_STUDY_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

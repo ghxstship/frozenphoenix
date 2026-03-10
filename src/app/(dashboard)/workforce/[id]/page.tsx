@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useDeleteWorkerProfile,
     useUpdateWorkerProfile,
@@ -15,25 +16,23 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { Briefcase, HardHat, Loader2, Mail, Phone } from "lucide-react";
+import { Briefcase, HardHat, Mail, Phone } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type TabId = "overview" | "assignments" | "chatter";
 const TAB_VALUES = ["overview", "assignments", "chatter"] as const;
 
 export default function WorkforceDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: worker, isLoading } = useWorkerProfile(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Worker Profile",
         listPath: "/workforce",
         useUpdateHook: useUpdateWorkerProfile,
         useDeleteHook: useDeleteWorkerProfile,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -44,9 +43,7 @@ export default function WorkforceDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -106,6 +103,7 @@ export default function WorkforceDetailPage() {
     );
 
     return (
+        <PermissionGate resource="workforce" action="read">
         <DetailLayout
             backHref="/workforce"
             backLabel="Workforce"
@@ -150,11 +148,12 @@ export default function WorkforceDetailPage() {
                 </div>
             )}
             {activeTab === "assignments" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Project assignments and shift history coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={Briefcase}
+                    title="No assignments yet"
+                    description="Project assignments and shift history for this worker will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter
@@ -165,5 +164,6 @@ export default function WorkforceDetailPage() {
                 />
             )}
         </DetailLayout>
+        </PermissionGate>
     );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -75,9 +76,7 @@ export default function KnowledgeBasePage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -206,7 +205,7 @@ export default function KnowledgeBasePage() {
                             searchQuery ? "Try adjusting your search" : "Create your first article"
                         }
                         action={
-                            !searchQuery ? { label: "New Article", onClick: () => {} } : undefined
+                            !searchQuery ? { label: "New Article", onClick: () => window.location.assign("/knowledge-base/new") } : undefined
                         }
                     />
                 ) : (

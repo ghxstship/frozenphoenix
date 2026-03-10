@@ -131,7 +131,7 @@ export default function ProjectTemplatesPage() {
                     title="Project Templates"
                     description="Create projects from predefined templates with tasks, milestones, and role assignments"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => console.log("Create new template")}>
                         <Plus className="h-4 w-4" /> New Template
                     </Button>
                 </PageHeader>
@@ -237,10 +237,10 @@ export default function ProjectTemplatesPage() {
                                 </div>
 
                                 <div className="flex items-center gap-2 pt-2 border-t">
-                                    <Button size="sm" className="flex-1">
+                                    <Button size="sm" className="flex-1" onClick={() => console.log("Create project from template:", template.id)}>
                                         <ArrowRight className="h-3.5 w-3.5" /> Create Project
                                     </Button>
-                                    <Button size="sm" variant="outline">
+                                    <Button size="sm" variant="outline" onClick={() => console.log("Duplicate template:", template.id)}>
                                         <Copy className="h-3.5 w-3.5" />
                                     </Button>
                                 </div>

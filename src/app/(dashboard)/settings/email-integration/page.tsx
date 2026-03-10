@@ -24,6 +24,7 @@ import {
     Users,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { useToast } from "@/components/ui/toast";
 
 type EmailTab = "inbox" | "linked" | "settings";
 
@@ -162,6 +163,7 @@ const ENTITY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function EmailIntegrationPage() {
+    const { addToast } = useToast();
     const [activeTab, setActiveTab] = useQueryTabState<EmailTab>({
         key: "tab",
         defaultValue: "inbox",
@@ -201,7 +203,7 @@ export default function EmailIntegrationPage() {
                     title="Email Integration"
                     description="Bi-directional email sync with automatic record linking"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => addToast({ title: "Syncing", description: "Email sync started for all accounts.", variant: "default" })}>
                         <RefreshCw className="h-4 w-4" /> Sync Now
                     </Button>
                 </PageHeader>
@@ -361,7 +363,7 @@ export default function EmailIntegrationPage() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold">Connected Accounts</h3>
-                            <Button size="sm">
+                            <Button size="sm" onClick={() => addToast({ title: "Coming soon", description: "Email account connection is not yet available.", variant: "default" })}>
                                 <Plus className="h-4 w-4" /> Add Account
                             </Button>
                         </div>
@@ -413,10 +415,10 @@ export default function EmailIntegrationPage() {
                                             <span className="text-[10px] text-muted-foreground">
                                                 Last sync: {formatDate(account.lastSyncAt)}
                                             </span>
-                                            <Button size="sm" variant="outline">
+                                            <Button size="sm" variant="outline" onClick={() => addToast({ title: "Syncing", description: `Syncing ${account.email}…`, variant: "default" })}>
                                                 <RefreshCw className="h-3.5 w-3.5" />
                                             </Button>
-                                            <Button size="sm" variant="outline">
+                                            <Button size="sm" variant="outline" onClick={() => addToast({ title: "Coming soon", description: `Account settings for ${account.email} coming soon.`, variant: "default" })}>
                                                 <Settings className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>

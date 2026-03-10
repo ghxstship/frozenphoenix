@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -204,9 +205,7 @@ export default function ProjectDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -320,7 +319,7 @@ export default function ProjectDetailPage() {
                     </Button>
                 }
                 menuItems={[
-                    { label: "Duplicate Project", onClick: () => {} },
+                    { label: "Duplicate Project", onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`) },
                     {
                         label: updateProject.isPending ? "Archiving..." : "Archive Project",
                         onClick: handleArchive,
@@ -502,7 +501,7 @@ export default function ProjectDetailPage() {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Team Members</CardTitle>
-                            <Button size="sm">Add Member</Button>
+                            <Button size="sm" onClick={() => router.push(`/crew/new?projectId=${projectId}`)}>Add Member</Button>
                         </CardHeader>
                         <CardContent>
                             {projectStakeholders.length === 0 ? (
@@ -512,7 +511,7 @@ export default function ProjectDetailPage() {
                                     description="Add team members to this project"
                                     action={{
                                         label: "Add Member",
-                                        onClick: () => {} /* NEXT: wire add member dialog */,
+                                        onClick: () => router.push(`/crew/new?projectId=${projectId}`),
                                     }}
                                 />
                             ) : (

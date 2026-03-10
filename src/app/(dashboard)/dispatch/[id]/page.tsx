@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useDeleteDispatchRecord,
     useDispatchRecord,
@@ -22,18 +23,15 @@ const TAB_VALUES = ["overview", "tracking", "chatter"] as const;
 
 export default function DispatchDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: record, isLoading } = useDispatchRecord(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Dispatch",
         listPath: "/dispatch",
         useUpdateHook: useUpdateDispatchRecord,
         useDeleteHook: useDeleteDispatchRecord,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -44,9 +42,7 @@ export default function DispatchDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -162,11 +158,12 @@ export default function DispatchDetailPage() {
                 </div>
             )}
             {activeTab === "tracking" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Tracking timeline coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={MapPin}
+                    title="No tracking updates"
+                    description="Tracking timeline and status updates for this dispatch will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,9 @@ import type { DealStage } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useDeals } from "@/lib/supabase/hooks";
 import { PermissionGate } from "@/components/permission-guard";
-import { ArrowRight, Building2, Calendar, DollarSign, Plus, TrendingUp, User } from "lucide-react";
+import { ArrowRight, Building2, Calendar, DollarSign, Plus, TrendingUp, Upload, User } from "lucide-react";
+import { CsvExportButton } from "@/components/csv/csv-export-button";
+import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 
 interface DealListItem {
     id: string;
@@ -31,7 +33,12 @@ interface DealListItem {
 export default function DealsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [stageFilter, setStageFilter] = useState<string>("all");
-    const { data: sbDeals } = useDeals();
+    const [importOpen, setImportOpen] = useState(false);
+    const { data: sbDeals, refetch } = useDeals();
+
+    const handleImportComplete = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const deals: DealListItem[] = (sbDeals ?? []).map((d) => ({
         id: d.id,
@@ -65,13 +72,26 @@ export default function DealsPage() {
         <PermissionGate resource="deals" action="read">
             <div className="space-y-6 animate-fade-in">
                 <PageHeader title="Deals" description="Track and manage your sales pipeline">
-                    <Link href="/pipeline/new">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Deal
+                    <div className="flex items-center gap-2">
+                        <CsvExportButton entity="deals" />
+                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                            <Upload className="h-4 w-4" />
+                            Import CSV
                         </Button>
-                    </Link>
+                        <Link href="/pipeline/new">
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Deal
+                            </Button>
+                        </Link>
+                    </div>
                 </PageHeader>
+                <CsvImportDialog
+                    entity="deals"
+                    open={importOpen}
+                    onOpenChange={setImportOpen}
+                    onImportComplete={handleImportComplete}
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard

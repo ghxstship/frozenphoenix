@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     useDeleteVendorReview,
     useUpdateVendorReview,
@@ -22,18 +23,15 @@ const TAB_VALUES = ["overview", "scores", "chatter"] as const;
 
 export default function VendorReviewDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const entityId = params.id as string;
     const { data: review, isLoading } = useVendorReview(entityId);
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Vendor Review",
         listPath: "/vendor-reviews",
         useUpdateHook: useUpdateVendorReview,
         useDeleteHook: useDeleteVendorReview,
     });
-    void router;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
@@ -44,9 +42,7 @@ export default function VendorReviewDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -146,11 +142,12 @@ export default function VendorReviewDetailPage() {
                 </div>
             )}
             {activeTab === "scores" && (
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        Detailed scoring breakdown coming soon.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={Star}
+                    title="No scores recorded"
+                    description="Detailed scoring breakdown for this vendor review will appear here."
+                    compact
+                />
             )}
             {activeTab === "chatter" && (
                 <RecordChatter

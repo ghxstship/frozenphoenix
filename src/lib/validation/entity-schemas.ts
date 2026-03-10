@@ -459,3 +459,30 @@ export const rightsCreateSchema = z.object({
 });
 
 export const rightsUpdateSchema = rightsCreateSchema.partial();
+
+// ─── Teams ──────────────────────────────────────────────────
+
+export const teamCreateSchema = z.object({
+    name: nonEmptyString.max(100),
+    slug: z
+        .string()
+        .min(1)
+        .max(100)
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase alphanumeric with hyphens"),
+    description: optionalString.pipe(z.string().max(500)),
+    avatar_url: optionalString,
+    is_default: z.boolean().default(false),
+});
+
+export const teamUpdateSchema = teamCreateSchema.partial();
+
+// ─── Team Members ───────────────────────────────────────────
+
+export const teamMemberCreateSchema = z.object({
+    user_id: uuidField,
+    role: z.enum(["lead", "member"]).default("member"),
+});
+
+export const teamMemberUpdateSchema = z.object({
+    role: z.enum(["lead", "member"]),
+});

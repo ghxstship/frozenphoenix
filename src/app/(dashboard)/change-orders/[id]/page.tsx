@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteChangeOrder, useUpdateChangeOrder } from "@/lib/supabase/hooks-pages";
@@ -41,16 +42,12 @@ export default function ChangeOrderDetailPage() {
         useUpdateHook: useUpdateChangeOrder,
         useDeleteHook: useDeleteChangeOrder,
     });
-    void router;
-    void handleUpdate;
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -192,19 +189,19 @@ export default function ChangeOrderDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleUpdate({ status: "in_review" })}>
                         <User className="h-4 w-4 mr-1" />
                         Request Review
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => handleUpdate({ status: "approved" })}>
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Approve
                     </Button>
                 </div>
             }
             menuItems={[
-                { label: "Edit Change Order", onClick: () => {} },
-                { label: "Duplicate", onClick: () => {} },
+                { label: "Edit Change Order", onClick: () => router.push(`/change-orders/${entityId}/edit`) },
+                { label: "Duplicate", onClick: () => router.push(`/change-orders/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

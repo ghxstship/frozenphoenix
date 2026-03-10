@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +65,7 @@ export default function RecurringInvoicesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -198,6 +197,7 @@ export default function RecurringInvoicesPage() {
                                                 size="sm"
                                                 className="h-8 w-8 p-0"
                                                 title="Pause"
+                                                onClick={() => console.log("Pause recurring invoice:", r.id)}
                                             >
                                                 <Pause className="h-4 w-4" />
                                             </Button>
@@ -208,6 +208,7 @@ export default function RecurringInvoicesPage() {
                                                 size="sm"
                                                 className="h-8 w-8 p-0"
                                                 title="Resume"
+                                                onClick={() => console.log("Resume recurring invoice:", r.id)}
                                             >
                                                 <Play className="h-4 w-4" />
                                             </Button>

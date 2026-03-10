@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_BUDGET_LINE_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteBudget, useUpdateBudget } from "@/lib/supabase/hooks-pages";
@@ -70,17 +73,17 @@ const PLACEHOLDER_COMMENTS: CommentItem[] = [
 ];
 
 export default function BudgetDetailPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const params = useParams();
     const router = useRouter();
     const budgetId = params.id as string;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: budgetId,
         entityLabel: "Budget",
         listPath: "/budgets",
         useUpdateHook: useUpdateBudget,
         useDeleteHook: useDeleteBudget,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -116,9 +119,7 @@ export default function BudgetDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -237,8 +238,8 @@ export default function BudgetDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Export PDF", onClick: () => {} },
-                { label: "Create New Version", onClick: () => {} },
+                { label: "Export PDF", onClick: () => window.print() },
+                { label: "Create New Version", onClick: () => router.push(`/budgets/new?duplicateFrom=${budgetId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -333,7 +334,7 @@ export default function BudgetDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Line Items</CardTitle>
-                        <Button size="sm">Add Line Item</Button>
+                        <Button size="sm" onClick={openCreate}>Add Line Item</Button>
                     </CardHeader>
                     <CardContent>
                         {lineItems.length === 0 ? (
@@ -433,6 +434,7 @@ export default function BudgetDetailPage() {
                     onAddComment={handleAddComment}
                 />
             )}
+            <CreateEntityDialog config={CREATE_BUDGET_LINE_ITEM_CONFIG} open={createOpen} onClose={closeCreate} />
         </DetailLayout>
     );
 }

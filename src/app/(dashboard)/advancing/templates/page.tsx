@@ -31,7 +31,7 @@ export default function AdvanceTemplatesPage() {
                 title="Advance Templates"
                 description="Create and manage reusable advance templates"
                 actions={
-                    <Button disabled>
+                    <Button disabled onClick={() => console.log("Create advance template")}>
                         <Plus className="h-4 w-4" />
                         New Template
                     </Button>
@@ -79,7 +79,7 @@ export default function AdvanceTemplatesPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="sm" disabled>
+                                            <Button variant="ghost" size="sm" disabled onClick={() => console.log("Delete template:", tpl.id)}>
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>

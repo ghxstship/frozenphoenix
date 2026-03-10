@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
 import { NotificationBell } from "@/components/notifications";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/supabase/auth-context";
@@ -21,6 +21,7 @@ import {
     getNavigationContext,
     getNavigationSectionsForRole,
 } from "@/config/navigation";
+import { EntityBreadcrumb } from "@/components/context-switcher";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -185,12 +186,9 @@ function ThemeSwitcher() {
 // ─── Connection Status Indicator ───
 
 function ConnectionIndicator() {
-    const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">(() =>
-        isSupabaseConfigured ? "connecting" : "disconnected"
-    );
+    const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">("connecting");
 
     useEffect(() => {
-        if (!isSupabaseConfigured) return;
         const supabase = createClient();
         if (!supabase) return;
 
@@ -870,13 +868,21 @@ export function Topbar() {
         const shell = document.getElementById("shell-main-content")?.parentElement;
         const target = shell || window;
 
+        let rafId = 0;
         const handleScroll = () => {
-            const scrollTop = shell ? shell.scrollTop : window.scrollY;
-            setIsScrolled(scrollTop > 24);
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const scrollTop = shell ? shell.scrollTop : window.scrollY;
+                setIsScrolled(scrollTop > 24);
+                rafId = 0;
+            });
         };
 
         target.addEventListener("scroll", handleScroll, { passive: true });
-        return () => target.removeEventListener("scroll", handleScroll);
+        return () => {
+            target.removeEventListener("scroll", handleScroll);
+            cancelAnimationFrame(rafId);
+        };
     }, [reducedMotion]);
 
     // Open command bar via Cmd+K
@@ -990,6 +996,11 @@ export function Topbar() {
                             </li>
                         ))}
                     </ol>
+
+                    {/* Entity-aware context switcher breadcrumbs — md+ only to prevent overflow on small tablets */}
+                    <span className="hidden md:contents">
+                        <EntityBreadcrumb pathname={pathname} />
+                    </span>
                 </nav>
 
                 {/* Mobile: Show only current page */}

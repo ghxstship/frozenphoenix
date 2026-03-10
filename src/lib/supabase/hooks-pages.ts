@@ -6,9 +6,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, isSupabaseConfigured } from "./client";
-
-export { isSupabaseConfigured };
+import { fromTable } from "./client";
 
 // ═══════════════════════════════════════════════════════════════
 // CAMPAIGNS
@@ -2386,5 +2384,123 @@ export function useDeleteDocument() {
             if (error) throw error;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEAMS (page-level CRUD — complements hooks-switcher.ts)
+// ═══════════════════════════════════════════════════════════════
+
+export function useTeams(orgId?: string | null) {
+    return useQuery({
+        queryKey: ["teams", orgId],
+        queryFn: async () => {
+            let query = fromTable("teams")
+                .select("*, user_profiles:created_by(display_name)")
+                .order("is_default", { ascending: false })
+                .order("name");
+            if (orgId) query = query.eq("organization_id", orgId);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!orgId,
+    });
+}
+
+export function useTeamDetail(teamId?: string | null) {
+    return useQuery({
+        queryKey: ["teams", "detail", teamId],
+        queryFn: async () => {
+            const { data, error } = await fromTable("teams")
+                .select("*, team_members(id, user_id, role, joined_at, user_profiles(display_name, avatar_url, email))")
+                .eq("id", teamId!)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!teamId,
+    });
+}
+
+export function useCreateTeam() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: Record<string, unknown>) => {
+            const res = await fetch("/api/teams", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to create team");
+            return (await res.json()).data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+    });
+}
+
+export function useUpdateTeam() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const res = await fetch(`/api/teams/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updates),
+            });
+            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to update team");
+            return (await res.json()).data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+    });
+}
+
+export function useDeleteTeam() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`/api/teams/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to delete team");
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+    });
+}
+
+export function useTeamMembersPage(teamId?: string | null) {
+    return useQuery({
+        queryKey: ["team_members", teamId],
+        queryFn: async () => {
+            const res = await fetch(`/api/teams/${teamId}/members`);
+            if (!res.ok) throw new Error("Failed to fetch team members");
+            return (await res.json()).data;
+        },
+        enabled: !!teamId,
+    });
+}
+
+export function useAddTeamMember() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ teamId, ...payload }: { teamId: string; user_id: string; role?: string }) => {
+            const res = await fetch(`/api/teams/${teamId}/members`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to add member");
+            return (await res.json()).data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+    });
+}
+
+export function useRemoveTeamMember() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ teamId, memberId }: { teamId: string; memberId: string }) => {
+            const res = await fetch(`/api/teams/${teamId}/members/${memberId}`, { method: "DELETE" });
+            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to remove member");
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
     });
 }

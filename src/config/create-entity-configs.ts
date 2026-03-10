@@ -310,6 +310,38 @@ export const CREATE_OPPORTUNITY_CONFIG: CreateEntityConfig = {
     ],
 };
 
+export const CREATE_COMPANY_CONFIG: CreateEntityConfig = {
+    entityName: "Company",
+    description: "Add a new client, brand, agency, or partner.",
+    fields: [
+        {
+            key: "name",
+            label: "Company Name",
+            type: "text",
+            placeholder: "e.g. Acme Corp",
+            required: true,
+        },
+        {
+            key: "company_type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "client", label: "Client" },
+                { value: "brand", label: "Brand" },
+                { value: "agency", label: "Agency" },
+                { value: "vendor", label: "Vendor" },
+                { value: "partner", label: "Partner" },
+            ],
+            defaultValue: "client",
+            required: true,
+        },
+        { key: "industry", label: "Industry", type: "text", placeholder: "e.g. Technology" },
+        { key: "website", label: "Website", type: "text", placeholder: "https://example.com" },
+        { key: "email", label: "Email", type: "email", placeholder: "info@company.com" },
+        { key: "phone", label: "Phone", type: "text", placeholder: "+1 (555) 000-0000" },
+    ],
+};
+
 export const CREATE_CONTACT_CONFIG: CreateEntityConfig = {
     entityName: "Contact",
     description: "Create a new contact or company.",
@@ -1485,5 +1517,739 @@ export const CREATE_VENDOR_REVIEW_CONFIG: CreateEntityConfig = {
             placeholder: "Performance notes...",
             required: true,
         },
+    ],
+};
+
+// ─── Automations ───
+
+export const CREATE_AUTOMATION_CONFIG: CreateEntityConfig = {
+    entityName: "Automation",
+    description: "Create a new trigger-action automation.",
+    fields: [
+        { key: "name", label: "Automation Name", type: "text", placeholder: "e.g. Auto-assign on task creation", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What does this automation do?" },
+        {
+            key: "entity_type",
+            label: "Entity Type",
+            type: "select",
+            options: [
+                { value: "project", label: "Project" },
+                { value: "task", label: "Task" },
+                { value: "deal", label: "Deal" },
+                { value: "invoice", label: "Invoice" },
+                { value: "event", label: "Event" },
+            ],
+            required: true,
+        },
+    ],
+};
+
+// ─── Call Sheets ───
+
+export const CREATE_CALL_SHEET_CONFIG: CreateEntityConfig = {
+    entityName: "Call Sheet",
+    description: "Create a new daily call sheet for a production.",
+    fields: [
+        { key: "title", label: "Title", type: "text", placeholder: "e.g. Day 1 — Main Stage Load-In", required: true },
+        { key: "date", label: "Date", type: "date", required: true },
+        { key: "venue_name", label: "Venue Name", type: "text", placeholder: "Venue or location name" },
+        { key: "venue_address", label: "Venue Address", type: "text", placeholder: "Full address" },
+        { key: "special_instructions", label: "Special Instructions", type: "textarea", placeholder: "Parking, load-in notes, etc." },
+    ],
+};
+
+// ─── Case Studies ───
+
+export const CREATE_CASE_STUDY_CONFIG: CreateEntityConfig = {
+    entityName: "Case Study",
+    description: "Draft a new case study for a completed project.",
+    fields: [
+        { key: "title", label: "Title", type: "text", placeholder: "e.g. Nike Air Max Global Launch", required: true },
+        { key: "client", label: "Client", type: "text", placeholder: "Client name", required: true },
+        { key: "summary", label: "Summary", type: "textarea", placeholder: "Brief overview of the project and outcomes", required: true },
+    ],
+};
+
+// ─── Checklists ───
+
+export const CREATE_CHECKLIST_CONFIG: CreateEntityConfig = {
+    entityName: "Checklist",
+    description: "Create a new checklist template.",
+    fields: [
+        { key: "title", label: "Title", type: "text", placeholder: "e.g. Pre-Event Safety Checklist", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Purpose and scope of this checklist" },
+        {
+            key: "type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "custom", label: "Custom" },
+                { value: "safety", label: "Safety" },
+                { value: "quality", label: "Quality" },
+                { value: "setup", label: "Setup" },
+                { value: "teardown", label: "Teardown" },
+            ],
+            defaultValue: "custom",
+        },
+    ],
+};
+
+// ─── Clause Library ───
+
+export const CREATE_CLAUSE_CONFIG: CreateEntityConfig = {
+    entityName: "Contract Clause",
+    description: "Add a reusable clause to the library.",
+    fields: [
+        { key: "description", label: "Clause Text", type: "textarea", placeholder: "Full clause language...", required: true },
+        { key: "clause_reference", label: "Reference Code", type: "text", placeholder: "e.g. IP-001" },
+        {
+            key: "party",
+            label: "Obligated Party",
+            type: "select",
+            options: [
+                { value: "client", label: "Client" },
+                { value: "vendor", label: "Vendor" },
+                { value: "company", label: "Company" },
+                { value: "both", label: "Both Parties" },
+            ],
+            required: true,
+        },
+    ],
+};
+
+// ─── Credentials ───
+
+export const CREATE_CREDENTIAL_CONFIG: CreateEntityConfig = {
+    entityName: "Credential Type",
+    description: "Define a new credential type for event access.",
+    fields: [
+        { key: "name", label: "Credential Name", type: "text", placeholder: "e.g. All-Access Pass", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Access level and restrictions" },
+    ],
+};
+
+// ─── Credit Notes ───
+
+export const CREATE_CREDIT_NOTE_CONFIG: CreateEntityConfig = {
+    entityName: "Credit Note",
+    description: "Issue a new credit note against an invoice.",
+    fields: [
+        { key: "number", label: "Credit Note Number", type: "text", placeholder: "e.g. CN-001", required: true },
+        { key: "amount", label: "Amount", type: "number", min: 0, step: 0.01, required: true },
+        { key: "reason", label: "Reason", type: "textarea", placeholder: "Reason for the credit note", required: true },
+    ],
+};
+
+// ─── Dashboards ───
+
+export const CREATE_DASHBOARD_CONFIG: CreateEntityConfig = {
+    entityName: "Dashboard",
+    description: "Create a new custom dashboard.",
+    fields: [
+        { key: "name", label: "Dashboard Name", type: "text", placeholder: "e.g. Executive Overview", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What data should this dashboard display?" },
+    ],
+};
+
+// ─── Documents ───
+
+export const CREATE_DOCUMENT_CONFIG: CreateEntityConfig = {
+    entityName: "Document",
+    description: "Create a new document.",
+    fields: [
+        { key: "title", label: "Title", type: "text", placeholder: "e.g. Production Brief — Q4 Campaign", required: true },
+        {
+            key: "document_type",
+            label: "Document Type",
+            type: "select",
+            options: [
+                { value: "doc", label: "Document" },
+                { value: "wiki", label: "Wiki" },
+                { value: "meeting_notes", label: "Meeting Notes" },
+                { value: "sow", label: "Scope of Work" },
+                { value: "template", label: "Template" },
+            ],
+            defaultValue: "doc",
+        },
+    ],
+};
+
+// ─── Engineering Approvals ───
+
+export const CREATE_ENGINEERING_APPROVAL_CONFIG: CreateEntityConfig = {
+    entityName: "Engineering Approval",
+    description: "Request a new engineering approval.",
+    fields: [
+        { key: "engineer_name", label: "Engineer Name", type: "text", placeholder: "Licensed engineer", required: true },
+        { key: "engineering_firm", label: "Engineering Firm", type: "text", placeholder: "Firm name" },
+        {
+            key: "entity_type",
+            label: "Entity Type",
+            type: "select",
+            options: [
+                { value: "activation", label: "Activation" },
+                { value: "location", label: "Location" },
+                { value: "asset", label: "Asset" },
+                { value: "event", label: "Event" },
+            ],
+            required: true,
+        },
+        { key: "conditions", label: "Conditions / Notes", type: "textarea", placeholder: "Any special conditions..." },
+    ],
+};
+
+// ─── Fleet / Vehicles ───
+
+export const CREATE_VEHICLE_CONFIG: CreateEntityConfig = {
+    entityName: "Vehicle",
+    description: "Add a new vehicle to the fleet.",
+    fields: [
+        { key: "name", label: "Vehicle Name", type: "text", placeholder: "e.g. Box Truck #3", required: true },
+        {
+            key: "type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "box_truck", label: "Box Truck" },
+                { value: "sprinter_van", label: "Sprinter Van" },
+                { value: "flatbed", label: "Flatbed" },
+                { value: "pickup", label: "Pickup" },
+                { value: "trailer", label: "Trailer" },
+                { value: "other", label: "Other" },
+            ],
+            required: true,
+        },
+        { key: "license_plate", label: "License Plate", type: "text", placeholder: "ABC-1234", required: true },
+        { key: "driver_name", label: "Driver Name", type: "text", placeholder: "Assigned driver", required: true },
+        { key: "driver_phone", label: "Driver Phone", type: "text", placeholder: "+1 555-0100", required: true },
+        { key: "dock_height", label: "Dock Height", type: "text", placeholder: "e.g. 48\"", required: true },
+    ],
+};
+
+// ─── GL Accounts ───
+
+export const CREATE_GL_ACCOUNT_CONFIG: CreateEntityConfig = {
+    entityName: "GL Account",
+    description: "Add a new general ledger account.",
+    fields: [
+        { key: "code", label: "Account Code", type: "text", placeholder: "e.g. 5100", required: true },
+        { key: "name", label: "Account Name", type: "text", placeholder: "e.g. Cost of Goods Sold", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Purpose of this account" },
+    ],
+};
+
+// ─── Goods Receipts ───
+
+export const CREATE_GOODS_RECEIPT_CONFIG: CreateEntityConfig = {
+    entityName: "Goods Receipt",
+    description: "Record receipt of goods from a purchase order.",
+    fields: [
+        { key: "receipt_number", label: "Receipt Number", type: "text", placeholder: "e.g. GR-001", required: true },
+        { key: "delivery_location", label: "Delivery Location", type: "text", placeholder: "Where goods were received" },
+        { key: "condition_notes", label: "Condition Notes", type: "textarea", placeholder: "Note any damage or discrepancies" },
+    ],
+};
+
+// ─── Integrations ───
+
+export const CREATE_INTEGRATION_CONFIG: CreateEntityConfig = {
+    entityName: "Integration",
+    description: "Connect a new external service.",
+    fields: [
+        { key: "name", label: "Connection Name", type: "text", placeholder: "e.g. Main QuickBooks", required: true },
+        {
+            key: "type",
+            label: "Service",
+            type: "select",
+            options: [
+                { value: "quickbooks", label: "QuickBooks" },
+                { value: "xero", label: "Xero" },
+                { value: "slack", label: "Slack" },
+                { value: "google_calendar", label: "Google Calendar" },
+                { value: "dropbox", label: "Dropbox" },
+                { value: "google_drive", label: "Google Drive" },
+                { value: "zapier", label: "Zapier" },
+            ],
+            required: true,
+        },
+    ],
+};
+
+// ─── Inventory ───
+
+export const CREATE_INVENTORY_ITEM_CONFIG: CreateEntityConfig = {
+    entityName: "Inventory Item",
+    description: "Add a new item to inventory.",
+    fields: [
+        { key: "name", label: "Item Name", type: "text", placeholder: "e.g. LED Panel 4×8", required: true },
+        { key: "category", label: "Category", type: "text", placeholder: "e.g. Lighting", required: true },
+        { key: "barcode", label: "Barcode / SKU", type: "text", placeholder: "Scan or enter barcode", required: true },
+        { key: "location", label: "Location", type: "text", placeholder: "Storage location", required: true },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional details..." },
+    ],
+};
+
+// ─── IP Rights ───
+
+export const CREATE_IP_RIGHT_CONFIG: CreateEntityConfig = {
+    entityName: "IP Right",
+    description: "Register a new intellectual property right.",
+    fields: [
+        { key: "asset_description", label: "Asset Description", type: "textarea", placeholder: "Describe the IP asset", required: true },
+        { key: "territory", label: "Territory", type: "text", placeholder: "e.g. Worldwide", defaultValue: "worldwide" },
+        { key: "duration", label: "Duration", type: "text", placeholder: "e.g. In perpetuity" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional terms..." },
+    ],
+};
+
+// ─── Obligations ───
+
+export const CREATE_OBLIGATION_CONFIG: CreateEntityConfig = {
+    entityName: "Obligation",
+    description: "Track a new contractual obligation.",
+    fields: [
+        { key: "description", label: "Description", type: "textarea", placeholder: "What must be delivered or performed", required: true },
+        { key: "clause_reference", label: "Clause Reference", type: "text", placeholder: "e.g. Section 4.2" },
+        { key: "due_date", label: "Due Date", type: "date" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional context..." },
+    ],
+};
+
+// ─── Payments ───
+
+export const CREATE_PAYMENT_CONFIG: CreateEntityConfig = {
+    entityName: "Payment",
+    description: "Record a new payment against an invoice.",
+    fields: [
+        { key: "amount", label: "Amount", type: "number", min: 0, step: 0.01, required: true },
+        { key: "payment_date", label: "Payment Date", type: "date", required: true },
+        { key: "reference_number", label: "Reference Number", type: "text", placeholder: "Check/wire reference" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Payment details..." },
+    ],
+};
+
+// ─── Quality Checks ───
+
+export const CREATE_QUALITY_CHECK_CONFIG: CreateEntityConfig = {
+    entityName: "Quality Inspection",
+    description: "Start a new quality inspection.",
+    fields: [
+        {
+            key: "entity_type",
+            label: "Entity Type",
+            type: "select",
+            options: [
+                { value: "asset", label: "Asset" },
+                { value: "shipment", label: "Shipment" },
+                { value: "activation", label: "Activation" },
+                { value: "warehouse", label: "Warehouse" },
+            ],
+            required: true,
+        },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Inspection scope and objectives..." },
+    ],
+};
+
+// ─── Rate Cards ───
+
+export const CREATE_RATE_CARD_CONFIG: CreateEntityConfig = {
+    entityName: "Rate Card",
+    description: "Create a new rate card for pricing.",
+    fields: [
+        { key: "name", label: "Rate Card Name", type: "text", placeholder: "e.g. 2026 Standard Rates", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Applicable services and terms" },
+        { key: "currency", label: "Currency", type: "text", placeholder: "USD", defaultValue: "USD" },
+        { key: "effective_date", label: "Effective Date", type: "date" },
+        { key: "expiration_date", label: "Expiration Date", type: "date" },
+    ],
+};
+
+// ─── Resource Bookings ───
+
+export const CREATE_RESOURCE_BOOKING_CONFIG: CreateEntityConfig = {
+    entityName: "Resource Booking",
+    description: "Book a crew member for a project.",
+    fields: [
+        { key: "placeholder_name", label: "Resource / Name", type: "text", placeholder: "Crew member or placeholder name", required: true },
+        { key: "role", label: "Role", type: "text", placeholder: "e.g. Lead Technician" },
+        { key: "start_date", label: "Start Date", type: "date", required: true },
+        { key: "end_date", label: "End Date", type: "date", required: true },
+        { key: "hours_per_day", label: "Hours per Day", type: "number", min: 0, max: 24, step: 0.5, defaultValue: "8" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Booking details..." },
+    ],
+};
+
+// ─── Saved Views ───
+
+export const CREATE_SAVED_VIEW_CONFIG: CreateEntityConfig = {
+    entityName: "Saved View",
+    description: "Save a custom view configuration.",
+    fields: [
+        { key: "name", label: "View Name", type: "text", placeholder: "e.g. My Active Projects", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What does this view show?" },
+        {
+            key: "view_type",
+            label: "View Type",
+            type: "select",
+            options: [
+                { value: "table", label: "Table" },
+                { value: "board", label: "Board" },
+                { value: "list", label: "List" },
+                { value: "calendar", label: "Calendar" },
+                { value: "timeline", label: "Timeline" },
+                { value: "gantt", label: "Gantt" },
+            ],
+            defaultValue: "table",
+            required: true,
+        },
+    ],
+};
+
+// ─── Scenarios ───
+
+export const CREATE_SCENARIO_CONFIG: CreateEntityConfig = {
+    entityName: "Scenario",
+    description: "Create a new what-if scenario.",
+    fields: [
+        { key: "name", label: "Scenario Name", type: "text", placeholder: "e.g. Headcount +20%", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What assumptions does this scenario explore?" },
+        {
+            key: "scenario_type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "combined", label: "Combined" },
+                { value: "budget", label: "Budget" },
+                { value: "resource", label: "Resource" },
+                { value: "timeline", label: "Timeline" },
+            ],
+            defaultValue: "combined",
+        },
+    ],
+};
+
+// ─── Scheduling / Shifts ───
+
+export const CREATE_SHIFT_CONFIG: CreateEntityConfig = {
+    entityName: "Shift",
+    description: "Schedule a new crew shift.",
+    fields: [
+        { key: "date", label: "Date", type: "date", required: true },
+        { key: "start_time", label: "Start Time", type: "text", placeholder: "e.g. 08:00", required: true },
+        { key: "end_time", label: "End Time", type: "text", placeholder: "e.g. 18:00", required: true },
+        { key: "role", label: "Role", type: "text", placeholder: "e.g. Stage Manager" },
+    ],
+};
+
+// ─── SOPs ───
+
+export const CREATE_SOP_CONFIG: CreateEntityConfig = {
+    entityName: "SOP",
+    description: "Create a new Standard Operating Procedure.",
+    fields: [
+        { key: "title", label: "Title", type: "text", placeholder: "e.g. Emergency Evacuation Procedure", required: true },
+        { key: "role", label: "Applicable Role", type: "text", placeholder: "e.g. All Crew", required: true },
+        { key: "content", label: "Content", type: "textarea", placeholder: "Step-by-step instructions...", required: true },
+        { key: "version", label: "Version", type: "text", placeholder: "1.0", defaultValue: "1.0" },
+    ],
+};
+
+// ─── Surveys ───
+
+export const CREATE_SURVEY_CONFIG: CreateEntityConfig = {
+    entityName: "Survey Template",
+    description: "Create a new survey template.",
+    fields: [
+        { key: "name", label: "Survey Name", type: "text", placeholder: "e.g. Post-Event Satisfaction", required: true },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Purpose and audience" },
+        {
+            key: "survey_type",
+            label: "Survey Type",
+            type: "select",
+            options: [
+                { value: "csat", label: "CSAT" },
+                { value: "nps", label: "NPS" },
+                { value: "post_event", label: "Post-Event" },
+                { value: "post_project", label: "Post-Project" },
+                { value: "custom", label: "Custom" },
+            ],
+            defaultValue: "csat",
+        },
+    ],
+};
+
+// ─── Time Off ───
+
+export const CREATE_TIME_OFF_REQUEST_CONFIG: CreateEntityConfig = {
+    entityName: "Time Off Request",
+    description: "Submit a new time off request.",
+    fields: [
+        { key: "start_date", label: "Start Date", type: "date", required: true },
+        { key: "end_date", label: "End Date", type: "date", required: true },
+        { key: "reason", label: "Reason", type: "textarea", placeholder: "Reason for time off" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional context..." },
+    ],
+};
+
+// ─── Time Tracking ───
+
+export const CREATE_TIME_ENTRY_CONFIG: CreateEntityConfig = {
+    entityName: "Time Entry",
+    description: "Log a new time entry.",
+    fields: [
+        { key: "date", label: "Date", type: "date", required: true },
+        { key: "hours_worked", label: "Hours", type: "number", min: 0.25, max: 24, step: 0.25, required: true },
+        { key: "hourly_rate", label: "Hourly Rate", type: "number", min: 0, step: 0.01, required: true },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "What did you work on?" },
+    ],
+};
+
+// ─── User Invitations ───
+
+export const CREATE_USER_INVITE_CONFIG: CreateEntityConfig = {
+    entityName: "User Invitation",
+    description: "Invite a new team member.",
+    fields: [
+        { key: "email", label: "Email", type: "text", placeholder: "name@company.com", required: true },
+        { key: "full_name", label: "Full Name", type: "text", placeholder: "First and last name", required: true },
+        {
+            key: "role",
+            label: "Role",
+            type: "select",
+            options: [
+                { value: "exec", label: "Executive" },
+                { value: "director", label: "Director" },
+                { value: "pm", label: "Project Manager" },
+                { value: "member", label: "Member" },
+                { value: "client", label: "Client" },
+                { value: "collaborator", label: "Collaborator" },
+            ],
+            defaultValue: "member",
+            required: true,
+        },
+    ],
+};
+
+// ─── Vault Documents ───
+
+export const CREATE_VAULT_DOCUMENT_CONFIG: CreateEntityConfig = {
+    entityName: "Vault Document",
+    description: "Upload a document to the vault.",
+    fields: [
+        { key: "name", label: "Document Name", type: "text", placeholder: "e.g. Venue NDA — Nike", required: true },
+        {
+            key: "category",
+            label: "Category",
+            type: "select",
+            options: [
+                { value: "contract", label: "Contract" },
+                { value: "nda", label: "NDA" },
+                { value: "permit", label: "Permit" },
+                { value: "blueprint", label: "Blueprint" },
+                { value: "site_map", label: "Site Map" },
+                { value: "other", label: "Other" },
+            ],
+            defaultValue: "other",
+            required: true,
+        },
+    ],
+};
+
+// ─── Vendor Onboarding ───
+
+export const CREATE_VENDOR_ONBOARDING_CONFIG: CreateEntityConfig = {
+    entityName: "Vendor Invitation",
+    description: "Invite a vendor to begin onboarding.",
+    fields: [
+        { key: "name", label: "Vendor Name", type: "text", placeholder: "Company or contractor name", required: true },
+        { key: "contact_name", label: "Contact Name", type: "text", placeholder: "Primary contact", required: true },
+        { key: "email", label: "Email", type: "text", placeholder: "vendor@company.com", required: true },
+        { key: "specialty", label: "Specialty", type: "text", placeholder: "e.g. AV, Rigging, Catering", required: true },
+    ],
+};
+
+// ─── Warehouses ───
+
+export const CREATE_WAREHOUSE_CONFIG: CreateEntityConfig = {
+    entityName: "Warehouse",
+    description: "Add a new warehouse or storage facility.",
+    fields: [
+        { key: "name", label: "Warehouse Name", type: "text", placeholder: "e.g. Main Warehouse — Brooklyn", required: true },
+        {
+            key: "type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "primary", label: "Primary" },
+                { value: "satellite", label: "Satellite" },
+                { value: "staging", label: "Staging" },
+                { value: "vendor", label: "Vendor" },
+            ],
+            defaultValue: "primary",
+        },
+        { key: "address_street1", label: "Street Address", type: "text", placeholder: "Street address" },
+        { key: "address_city", label: "City", type: "text", placeholder: "City" },
+        { key: "address_state", label: "State", type: "text", placeholder: "State" },
+        { key: "address_postal_code", label: "Postal Code", type: "text", placeholder: "Zip code" },
+    ],
+};
+
+// ── Budget Line Items ──
+export const CREATE_BUDGET_LINE_ITEM_CONFIG: CreateEntityConfig = {
+    entityName: "Budget Line Item",
+    description: "Add a new line item to this budget.",
+    fields: [
+        {
+            key: "category",
+            label: "Category",
+            type: "select",
+            required: true,
+            options: [
+                { value: "labor", label: "Labor" },
+                { value: "materials", label: "Materials" },
+                { value: "equipment", label: "Equipment" },
+                { value: "rentals", label: "Rentals" },
+                { value: "travel", label: "Travel" },
+                { value: "shipping", label: "Shipping" },
+                { value: "permits", label: "Permits" },
+                { value: "contingency", label: "Contingency" },
+                { value: "overhead", label: "Overhead" },
+            ],
+        },
+        { key: "description", label: "Description", type: "text", required: true, placeholder: "Line item description" },
+        { key: "estimated_amount", label: "Estimated Amount", type: "number", required: true, placeholder: "0.00" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional notes" },
+    ],
+};
+
+// ── Project Members ──
+export const CREATE_PROJECT_MEMBER_CONFIG: CreateEntityConfig = {
+    entityName: "Project Member",
+    description: "Add a team member to this project.",
+    fields: [
+        { key: "profile_id", label: "Team Member", type: "text", required: true, placeholder: "Member profile ID" },
+        {
+            key: "role",
+            label: "Role",
+            type: "select",
+            options: [
+                { value: "member", label: "Member" },
+                { value: "lead", label: "Lead" },
+                { value: "reviewer", label: "Reviewer" },
+                { value: "contributor", label: "Contributor" },
+            ],
+            defaultValue: "member",
+        },
+    ],
+};
+
+export const CREATE_CUSTOM_FIELD_CONFIG: CreateEntityConfig = {
+    entityName: "Custom Field",
+    description: "Define a new custom property field on an entity type.",
+    fields: [
+        { key: "name", label: "Field Name", type: "text", required: true, placeholder: "e.g. Priority Score" },
+        { key: "field_key", label: "Field Key", type: "text", required: true, placeholder: "e.g. priority_score" },
+        {
+            key: "entity_type",
+            label: "Entity Type",
+            type: "select",
+            required: true,
+            options: [
+                { value: "project", label: "Project" },
+                { value: "event", label: "Event" },
+                { value: "vendor", label: "Vendor" },
+                { value: "asset", label: "Asset" },
+                { value: "contact", label: "Contact" },
+                { value: "invoice", label: "Invoice" },
+            ],
+        },
+        {
+            key: "field_type",
+            label: "Field Type",
+            type: "select",
+            required: true,
+            options: [
+                { value: "text", label: "Text" },
+                { value: "number", label: "Number" },
+                { value: "date", label: "Date" },
+                { value: "boolean", label: "Toggle" },
+                { value: "select", label: "Dropdown" },
+                { value: "multi_select", label: "Multi-Select" },
+            ],
+            defaultValue: "text",
+        },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What is this field for?" },
+    ],
+};
+
+export const CREATE_GOAL_CONFIG: CreateEntityConfig = {
+    entityName: "Goal",
+    description: "Create a new goal or OKR.",
+    fields: [
+        { key: "title", label: "Title", type: "text", required: true, placeholder: "Goal title" },
+        { key: "description", label: "Description", type: "textarea", placeholder: "What does success look like?" },
+        {
+            key: "goal_type",
+            label: "Type",
+            type: "select",
+            required: true,
+            options: [
+                { value: "individual", label: "Individual" },
+                { value: "team", label: "Team" },
+                { value: "company", label: "Company" },
+                { value: "project", label: "Project" },
+            ],
+            defaultValue: "individual",
+        },
+        { key: "target_value", label: "Target Value", type: "number", placeholder: "100" },
+        { key: "unit", label: "Unit", type: "text", placeholder: "e.g. count, %, hours" },
+        { key: "due_date", label: "Due Date", type: "date" },
+    ],
+};
+
+export const CREATE_ONBOARDING_RUN_CONFIG: CreateEntityConfig = {
+    entityName: "Onboarding Run",
+    description: "Start a new onboarding workflow for a worker.",
+    fields: [
+        { key: "worker_profile_id", label: "Worker", type: "text", required: true, placeholder: "Worker profile ID" },
+        { key: "target_completion_date", label: "Target Completion", type: "date" },
+        { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional context" },
+    ],
+};
+
+export const CREATE_WORKER_REVIEW_CONFIG: CreateEntityConfig = {
+    entityName: "Performance Review",
+    description: "Create a new worker performance review.",
+    fields: [
+        { key: "worker_profile_id", label: "Worker", type: "text", required: true, placeholder: "Worker profile ID" },
+        {
+            key: "target_type",
+            label: "Worker Type",
+            type: "select",
+            required: true,
+            options: [
+                { value: "employee", label: "Employee" },
+                { value: "contractor", label: "Contractor" },
+                { value: "vendor", label: "Vendor" },
+                { value: "freelancer", label: "Freelancer" },
+                { value: "intern", label: "Intern" },
+            ],
+            defaultValue: "employee",
+        },
+        {
+            key: "review_type",
+            label: "Review Type",
+            type: "select",
+            required: true,
+            options: [
+                { value: "periodic", label: "Periodic" },
+                { value: "project_end", label: "End of Project" },
+                { value: "mid_project", label: "Mid-Project" },
+            ],
+            defaultValue: "periodic",
+        },
+        { key: "overall_rating", label: "Overall Rating (1-5)", type: "number", required: true, placeholder: "1-5" },
+        { key: "strengths", label: "Strengths", type: "textarea", placeholder: "Key strengths observed" },
+        { key: "areas_for_improvement", label: "Areas for Improvement", type: "textarea", placeholder: "Growth opportunities" },
     ],
 };

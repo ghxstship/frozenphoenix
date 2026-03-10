@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 
 // ─── Bucket Constants ───
 // Canonical bucket names used across the platform.
@@ -248,7 +248,6 @@ export function useListFiles(
     return useQuery({
         queryKey: ["storage", bucket, folderPath, options],
         queryFn: () => listFiles(bucket, folderPath, options),
-        enabled: isSupabaseConfigured,
     });
 }
 
@@ -266,7 +265,7 @@ export function useSignedUrl(
                 expiresIn: options?.expiresIn,
                 transform: options?.transform,
             }),
-        enabled: isSupabaseConfigured && !!path,
+        enabled: !!path,
         staleTime: ((options?.expiresIn ?? 3600) - 60) * 1000, // Refetch 60s before expiry
     });
 }

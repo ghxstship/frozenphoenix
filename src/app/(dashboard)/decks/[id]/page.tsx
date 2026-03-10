@@ -54,7 +54,7 @@ export default function DeckEditorPage() {
     const params = useParams();
     const router = useRouter();
     const deckId = params.id as string;
-    const { data: sbRecord } = useDeck(deckId);
+    const { data: _sbRecord } = useDeck(deckId);
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: deckId,
         entityLabel: "Deck",
@@ -62,9 +62,6 @@ export default function DeckEditorPage() {
         useUpdateHook: useUpdateDeck,
         useDeleteHook: useDeleteDeck,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
 
     const [activeTab, setActiveTab] = useQueryTabState<DeckTabId>({
         key: "tab",
@@ -334,7 +331,7 @@ export default function DeckEditorPage() {
             }
             actions={
                 <>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => console.log("Export deck:", deckId)}>
                         <Download className="h-4 w-4 mr-1" />
                         Export
                     </Button>
@@ -342,13 +339,13 @@ export default function DeckEditorPage() {
                         <Play className="h-4 w-4 mr-1" />
                         Present
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => handleUpdate({ title: deckTitle })}>
                         <Save className="h-4 w-4 mr-1" />
                         Save
                     </Button>
                 </>
             }
-            menuItems={[{ label: "Duplicate Deck", onClick: () => {} }, ...crudMenuItems]}
+            menuItems={[{ label: "Duplicate Deck", onClick: () => router.push(`/decks/new?duplicateFrom=${deckId}`) }, ...crudMenuItems]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as DeckTabId)}

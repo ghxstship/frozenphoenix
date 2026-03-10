@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import React, { useCallback, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useApprovals, useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { Loader2 } from "lucide-react";
 import type {
     Approval,
     FabricationStatus,
@@ -52,6 +54,7 @@ const eventTypeConfig: Record<EventType, { color: string; icon: typeof CalendarI
 };
 
 export default function CalendarPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [currentDate, setCurrentDate] = useState(new Date());
     const VIEW_MODES = ["month", "week"] as const;
     const [view, setView] = useQueryTabState({
@@ -118,9 +121,7 @@ export default function CalendarPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -211,7 +212,7 @@ export default function CalendarPage() {
                             ]}
                             ariaLabel="Calendar view"
                         />
-                        <Button size="sm">
+                        <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             Add Event
                         </Button>
@@ -224,15 +225,17 @@ export default function CalendarPage() {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => navigateMonth(-1)}
+                                    aria-label="Previous month"
                                     className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </button>
-                                <h2 className="text-lg font-bold min-w-48 text-center">
+                                <h2 className="text-lg font-bold min-w-48 text-center" id="calendar-month-label">
                                     {monthName}
                                 </h2>
                                 <button
                                     onClick={() => navigateMonth(1)}
+                                    aria-label="Next month"
                                     className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
                                 >
                                     <ChevronRight className="h-4 w-4" />
@@ -243,54 +246,13 @@ export default function CalendarPage() {
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-7 gap-px bg-border rounded-xl overflow-hidden">
-                            {weekDays.map((day) => (
-                                <div
-                                    key={day}
-                                    className="bg-secondary/50 p-2 text-center text-xs font-semibold text-muted-foreground"
-                                >
-                                    {day}
-                                </div>
-                            ))}
-
-                            {calendarDays.map((day, index) => {
-                                const dayEvents = day ? getEventsForDate(day) : [];
-                                return (
-                                    <div
-                                        key={index}
-                                        className={`bg-card min-h-28 p-1.5 ${day ? "hover:bg-secondary/30 cursor-pointer transition-colors" : "bg-muted/30"}`}
-                                    >
-                                        {day && (
-                                            <>
-                                                <div
-                                                    className={`text-xs font-medium mb-1 h-6 w-6 flex items-center justify-center rounded-full ${isToday(day) ? "bg-primary text-primary-foreground" : ""}`}
-                                                >
-                                                    {day}
-                                                </div>
-                                                <div className="space-y-0.5">
-                                                    {dayEvents.slice(0, 3).map((event) => {
-                                                        const config = eventTypeConfig[event.type];
-                                                        return (
-                                                            <div
-                                                                key={event.id}
-                                                                className={`text-[10px] px-1.5 py-0.5 rounded truncate ${config.color} text-primary-foreground`}
-                                                            >
-                                                                {event.title}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    {dayEvents.length > 3 && (
-                                                        <div className="text-[10px] text-muted-foreground px-1">
-                                                            +{dayEvents.length - 3} more
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <CalendarGrid
+                            weekDays={weekDays}
+                            calendarDays={calendarDays}
+                            getEventsForDate={getEventsForDate}
+                            isToday={isToday}
+                            monthName={monthName}
+                        />
 
                         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
                             {(
@@ -405,6 +367,151 @@ export default function CalendarPage() {
                     </Card>
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_EVENT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
+    );
+}
+
+function CalendarGrid({
+    weekDays,
+    calendarDays,
+    getEventsForDate,
+    isToday,
+    monthName,
+}: {
+    weekDays: string[];
+    calendarDays: (number | null)[];
+    getEventsForDate: (day: number) => CalendarEvent[];
+    isToday: (day: number) => boolean;
+    monthName: string;
+}) {
+    const gridRef = useRef<HTMLDivElement>(null);
+    const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
+    const focusableIndices = calendarDays
+        .map((day, i) => (day !== null ? i : -1))
+        .filter((i) => i !== -1);
+
+    const handleGridKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (focusedIndex === null) return;
+
+            let nextIndex: number | null = null;
+
+            switch (e.key) {
+                case "ArrowRight":
+                    nextIndex = focusableIndices.find((i) => i > focusedIndex) ?? null;
+                    break;
+                case "ArrowLeft":
+                    nextIndex = [...focusableIndices].reverse().find((i) => i < focusedIndex) ?? null;
+                    break;
+                case "ArrowDown":
+                    nextIndex = focusableIndices.find((i) => i >= focusedIndex + 7) ?? null;
+                    break;
+                case "ArrowUp":
+                    nextIndex = [...focusableIndices].reverse().find((i) => i <= focusedIndex - 7) ?? null;
+                    break;
+                case "Home":
+                    nextIndex = focusableIndices[0] ?? null;
+                    break;
+                case "End":
+                    nextIndex = focusableIndices[focusableIndices.length - 1] ?? null;
+                    break;
+                default:
+                    return;
+            }
+
+            if (nextIndex !== null) {
+                e.preventDefault();
+                setFocusedIndex(nextIndex);
+                const cell = gridRef.current?.querySelector(`[data-cell-index="${nextIndex}"]`) as HTMLElement | null;
+                cell?.focus();
+            }
+        },
+        [focusedIndex, focusableIndices]
+    );
+
+    const rows: (number | null)[][] = [];
+    for (let i = 0; i < calendarDays.length; i += 7) {
+        rows.push(calendarDays.slice(i, i + 7));
+    }
+
+    return (
+        <div
+            ref={gridRef}
+            role="grid"
+            aria-labelledby="calendar-month-label"
+            aria-label={`Calendar for ${monthName}`}
+            className="rounded-xl overflow-hidden border border-border"
+            onKeyDown={handleGridKeyDown}
+        >
+            <div role="rowgroup">
+                <div role="row" className="grid grid-cols-7 gap-px bg-border">
+                    {weekDays.map((day) => (
+                        <div
+                            key={day}
+                            role="columnheader"
+                            className="bg-secondary/50 p-2 text-center text-xs font-semibold text-muted-foreground"
+                        >
+                            {day}
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div role="rowgroup" className="bg-border">
+                {rows.map((row, rowIdx) => (
+                    <div key={rowIdx} role="row" className="grid grid-cols-7 gap-px">
+                        {row.map((day, colIdx) => {
+                            const cellIndex = rowIdx * 7 + colIdx;
+                            const dayEvents = day ? getEventsForDate(day) : [];
+                            const dateLabel = day
+                                ? `${monthName.split(" ")[0]} ${day}${dayEvents.length > 0 ? `, ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`
+                                : undefined;
+
+                            return (
+                                <div
+                                    key={cellIndex}
+                                    role="gridcell"
+                                    tabIndex={day ? (focusedIndex === cellIndex || (focusedIndex === null && isToday(day)) ? 0 : -1) : undefined}
+                                    aria-label={dateLabel}
+                                    aria-selected={day ? isToday(day) : undefined}
+                                    data-cell-index={cellIndex}
+                                    onFocus={() => day && setFocusedIndex(cellIndex)}
+                                    className={`bg-card min-h-28 p-1.5 ${day ? "hover:bg-secondary/30 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset" : "bg-muted/30"}`}
+                                >
+                                    {day && (
+                                        <>
+                                            <div
+                                                className={`text-xs font-medium mb-1 h-6 w-6 flex items-center justify-center rounded-full ${isToday(day) ? "bg-primary text-primary-foreground" : ""}`}
+                                            >
+                                                {day}
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {dayEvents.slice(0, 3).map((event) => {
+                                                    const config = eventTypeConfig[event.type];
+                                                    return (
+                                                        <div
+                                                            key={event.id}
+                                                            className={`text-[10px] px-1.5 py-0.5 rounded truncate ${config.color} text-primary-foreground`}
+                                                        >
+                                                            {event.title}
+                                                        </div>
+                                                    );
+                                                })}
+                                                {dayEvents.length > 3 && (
+                                                    <div className="text-[10px] text-muted-foreground px-1">
+                                                        +{dayEvents.length - 3} more
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }

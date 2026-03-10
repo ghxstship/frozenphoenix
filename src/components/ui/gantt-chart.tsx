@@ -66,7 +66,7 @@ export function GanttChart({
     const todayOffset = daysBetween(startDate, todayStr);
 
     return (
-        <div className={cn("overflow-x-auto border rounded-lg", className)}>
+        <div className={cn("overflow-x-auto border rounded-lg", className)} data-gantt-chart>
             <div style={{ minWidth: 240 + gridWidth }}>
                 {/* Header */}
                 <div className="flex border-b bg-muted/30 sticky top-0 z-10">
@@ -144,6 +144,7 @@ export function GanttChart({
                                 {/* Task bar */}
                                 <button
                                     type="button"
+                                    data-gantt-bar
                                     className={cn(
                                         "absolute top-2 h-6 rounded-md transition-all group",
                                         task.hasConflict
@@ -157,6 +158,28 @@ export function GanttChart({
                                     }}
                                     onClick={() => onTaskClick?.(task)}
                                     aria-label={`${task.label}: ${formatShortDate(task.startDate)} to ${formatShortDate(task.endDate)}, ${progress}% complete`}
+                                    onKeyDown={(e) => {
+                                        const bars = Array.from(
+                                            (e.currentTarget.closest("[data-gantt-chart]") ?? document).querySelectorAll<HTMLElement>("[data-gantt-bar]")
+                                        );
+                                        const idx = bars.indexOf(e.currentTarget);
+                                        if (idx < 0) return;
+                                        let next: number | null = null;
+                                        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                                            e.preventDefault();
+                                            next = idx < bars.length - 1 ? idx + 1 : 0;
+                                        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                                            e.preventDefault();
+                                            next = idx > 0 ? idx - 1 : bars.length - 1;
+                                        } else if (e.key === "Home") {
+                                            e.preventDefault();
+                                            next = 0;
+                                        } else if (e.key === "End") {
+                                            e.preventDefault();
+                                            next = bars.length - 1;
+                                        }
+                                        if (next !== null) bars[next]?.focus();
+                                    }}
                                 >
                                     {/* Progress fill */}
                                     <div

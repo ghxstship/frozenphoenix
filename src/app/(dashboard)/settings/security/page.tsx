@@ -51,6 +51,7 @@ export default function SecuritySettingsPage() {
     const [mfaFactors, setMfaFactors] = useState<MfaFactor[]>([]);
     const [mfaLoading, setMfaLoading] = useState(true);
     const [mfaRemoving, setMfaRemoving] = useState<string | null>(null);
+    const [mfaConfirmId, setMfaConfirmId] = useState<string | null>(null);
 
     // Sessions state
     const [sessions, setSessions] = useState<ActiveSession[]>([]);
@@ -146,6 +147,17 @@ export default function SecuritySettingsPage() {
                     return;
                 }
 
+                // Re-authenticate with current password before allowing change
+                const { error: reauthError } = await supabase.auth.signInWithPassword({
+                    email: user?.email || "",
+                    password: currentPassword,
+                });
+
+                if (reauthError) {
+                    setPwError("Current password is incorrect.");
+                    return;
+                }
+
                 const { error } = await supabase.auth.updateUser({
                     password: newPassword,
                 });
@@ -165,11 +177,12 @@ export default function SecuritySettingsPage() {
                 setPwLoading(false);
             }
         },
-        [newPassword, confirmPassword]
+        [currentPassword, newPassword, confirmPassword, user?.email]
     );
 
     const handleRemoveMfa = useCallback(async (factorId: string) => {
         setMfaRemoving(factorId);
+        setMfaConfirmId(null);
 
         try {
             const supabase = createClient();
@@ -332,7 +345,7 @@ export default function SecuritySettingsPage() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => handleRemoveMfa(factor.id)}
+                                        onClick={() => setMfaConfirmId(factor.id)}
                                         disabled={mfaRemoving === factor.id}
                                         aria-label={`Remove ${factor.friendly_name}`}
                                     >
@@ -342,6 +355,32 @@ export default function SecuritySettingsPage() {
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         )}
                                     </Button>
+                                    {mfaConfirmId === factor.id && (
+                                        <div
+                                            className="flex items-center gap-2 mt-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5"
+                                            role="alertdialog"
+                                            aria-label="Confirm MFA removal"
+                                        >
+                                            <p className="text-xs text-destructive flex-1">
+                                                Remove this factor? You will no longer need a code to sign in.
+                                            </p>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => handleRemoveMfa(factor.id)}
+                                                disabled={mfaRemoving === factor.id}
+                                            >
+                                                Confirm
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setMfaConfirmId(null)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </>

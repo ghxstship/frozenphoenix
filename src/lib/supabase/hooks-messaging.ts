@@ -1,7 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabase, isSupabaseConfigured } from "./client";
+import { getSupabase } from "./client";
 import type {
     Conversation,
     ConversationListItem,
@@ -95,7 +95,6 @@ export function useConversations() {
                 } as ConversationListItem;
             });
         },
-        enabled: isSupabaseConfigured,
         staleTime: 30_000,
     });
 }
@@ -114,7 +113,7 @@ export function useConversation(conversationId: string | undefined) {
             if (error || !data) return null;
             return data as unknown as Conversation;
         },
-        enabled: isSupabaseConfigured && !!conversationId,
+        enabled: !!conversationId,
     });
 }
 
@@ -139,7 +138,7 @@ export function useConversationMembers(conversationId: string | undefined) {
                 };
             });
         },
-        enabled: isSupabaseConfigured && !!conversationId,
+        enabled: !!conversationId,
     });
 }
 
@@ -173,7 +172,7 @@ export function useMessages(conversationId: string | undefined) {
             if (lastPage.length < PAGE_SIZE) return undefined;
             return lastPage[lastPage.length - 1]?.created_at ?? undefined;
         },
-        enabled: isSupabaseConfigured && !!conversationId,
+        enabled: !!conversationId,
     });
 }
 
@@ -193,7 +192,7 @@ export function useEntityMessages(entityType: string | undefined, entityId: stri
             if (error || !data) return [];
             return (data as Record<string, unknown>[]).map(mapMessageWithSender);
         },
-        enabled: isSupabaseConfigured && !!entityType && !!entityId,
+        enabled: !!entityType && !!entityId,
     });
 }
 
@@ -212,7 +211,7 @@ export function useThreadMessages(parentMessageId: string | undefined) {
             if (error || !data) return [];
             return (data as Record<string, unknown>[]).map(mapMessageWithSender);
         },
-        enabled: isSupabaseConfigured && !!parentMessageId,
+        enabled: !!parentMessageId,
     });
 }
 
@@ -250,7 +249,6 @@ export function useUnreadCounts() {
             }
             return total;
         },
-        enabled: isSupabaseConfigured,
         staleTime: 60_000,
         refetchInterval: 60_000,
     });
@@ -272,7 +270,7 @@ export function usePinnedMessages(conversationId: string | undefined) {
             if (error || !data) return [];
             return (data as Record<string, unknown>[]).map(mapMessageWithSender);
         },
-        enabled: isSupabaseConfigured && !!conversationId,
+        enabled: !!conversationId,
     });
 }
 

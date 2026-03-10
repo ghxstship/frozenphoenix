@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
@@ -42,14 +43,13 @@ export default function LocationDetailPage() {
     const params = useParams();
     const router = useRouter();
     const locationId = params.id as string;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId: locationId,
         entityLabel: "Location",
         listPath: "/locations",
         useUpdateHook: useUpdateLocation,
         useDeleteHook: useDeleteLocation,
     });
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "overview",
@@ -167,9 +167,7 @@ export default function LocationDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -341,7 +339,7 @@ export default function LocationDetailPage() {
                         label: "Schedule Event",
                         onClick: () => router.push(`/events/new?locationId=${locationId}`),
                     },
-                    { label: "View on Map", onClick: () => {} },
+                    { label: "View on Map", onClick: () => window.open(`https://maps.google.com/?q=${encodeURIComponent(location?.name ?? "")}`, "_blank") },
                     ...crudMenuItems,
                 ]}
                 tabs={tabs}
@@ -689,16 +687,12 @@ export default function LocationDetailPage() {
                 )}
 
                 {activeTab === "schedule" && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Location Schedule</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                                Calendar view coming soon
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <EmptyState
+                        icon={Calendar}
+                        title="No scheduled events"
+                        description="A calendar view of events and bookings at this location will appear here."
+                        compact
+                    />
                 )}
                 {activeTab === "chatter" && (
                     <RecordChatter

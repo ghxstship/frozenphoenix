@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_WAREHOUSE_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +42,7 @@ interface WarehouseItem {
 }
 
 export default function WarehousesPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
 
     const { data: sbWarehouses, isLoading } = useWarehouses();
@@ -59,9 +63,7 @@ export default function WarehousesPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -81,7 +83,7 @@ export default function WarehousesPage() {
                     title="Warehouses"
                     description="Manage storage facilities and inventory locations"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Warehouse
                     </Button>
@@ -171,6 +173,7 @@ export default function WarehousesPage() {
                     })}
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_WAREHOUSE_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

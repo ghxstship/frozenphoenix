@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
@@ -45,72 +46,6 @@ interface PaymentRecord {
     reference: string;
 }
 
-const mockInvoice = {
-    id: "inv-001",
-    invoiceNumber: "INV-2026-0042",
-    companyName: "Nike Inc.",
-    companyAddress: "One Bowerman Drive, Beaverton, OR 97005",
-    projectName: "Air Max Launch Experience",
-    status: "sent" as InvoiceDeliveryStatusType,
-    issueDate: "2026-02-01",
-    dueDate: "2026-03-03",
-    amount: 125000,
-    paidAmount: 50000,
-    currency: "USD",
-    taxRate: 8.875,
-    notes: "Payment terms: Net 30. Late payments subject to 1.5% monthly interest.",
-    poNumber: "PO-NIKE-2026-0089",
-    createdBy: "Sarah Chen",
-};
-
-const mockLineItems: InvoiceLineItem[] = [
-    {
-        id: "1",
-        description: "Stage Design & Fabrication",
-        quantity: 1,
-        unitPrice: 45000,
-        total: 45000,
-    },
-    {
-        id: "2",
-        description: "LED Panel Rental (50x P2.5 Indoor)",
-        quantity: 50,
-        unitPrice: 800,
-        total: 40000,
-    },
-    {
-        id: "3",
-        description: "Lighting Package — Wash + Spot",
-        quantity: 1,
-        unitPrice: 18000,
-        total: 18000,
-    },
-    {
-        id: "4",
-        description: "Audio System — Line Array + Subs",
-        quantity: 1,
-        unitPrice: 12000,
-        total: 12000,
-    },
-    {
-        id: "5",
-        description: "Project Management (160 hrs @ $62.50)",
-        quantity: 160,
-        unitPrice: 62.5,
-        total: 10000,
-    },
-];
-
-const mockPayments: PaymentRecord[] = [
-    {
-        id: "1",
-        date: "2026-02-15",
-        amount: 50000,
-        method: "Wire Transfer",
-        reference: "WT-2026-4421",
-    },
-];
-
 type TabId = "details" | "payments" | "chatter";
 const TAB_VALUES = ["details", "payments", "chatter"] as const;
 
@@ -118,7 +53,8 @@ export default function InvoiceDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
-    const { data: sbRecord } = useInvoice(entityId);
+    const { data: sbRecord, isLoading } = useInvoice(entityId);
+    const inv = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Invoice",
@@ -126,19 +62,48 @@ export default function InvoiceDetailPage() {
         useUpdateHook: useUpdateInvoice,
         useDeleteHook: useDeleteInvoice,
     });
-    void router;
-    void sbRecord;
-    void handleUpdate;
     const [activeTab, setActiveTab] = useQueryTabState<TabId>({
         key: "tab",
         defaultValue: "details",
         validValues: TAB_VALUES,
     });
 
-    const subtotal = useMemo(() => mockLineItems.reduce((sum, item) => sum + item.total, 0), []);
-    const taxAmount = useMemo(() => subtotal * (mockInvoice.taxRate / 100), [subtotal]);
+    const lineItems = ((inv?.line_items ?? []) as Record<string, unknown>[]).map(
+        (li): InvoiceLineItem => ({
+            id: (li.id as string) ?? "",
+            description: (li.description as string) ?? "",
+            quantity: (li.quantity as number) ?? 0,
+            unitPrice: (li.unit_price as number) ?? 0,
+            total: ((li.quantity as number) ?? 0) * ((li.unit_price as number) ?? 0),
+        })
+    );
+    const payments = ((inv?.payments ?? []) as Record<string, unknown>[]).map(
+        (p): PaymentRecord => ({
+            id: (p.id as string) ?? "",
+            date: (p.date as string) ?? "",
+            amount: (p.amount as number) ?? 0,
+            method: (p.method as string) ?? "",
+            reference: (p.reference as string) ?? "",
+        })
+    );
+    const invoiceNumber = (inv?.number as string) ?? "";
+    const companyName = (inv?.company_name as string) ?? "";
+    const companyAddress = (inv?.company_address as string) ?? "";
+    const projectName = (inv?.project_name as string) ?? "";
+    const invoiceStatus = (inv?.delivery_status as InvoiceDeliveryStatusType) ?? "draft";
+    const issueDate = (inv?.issued_date as string) ?? "";
+    const dueDate = (inv?.due_date as string) ?? "";
+    const currency = (inv?.currency as string) ?? "USD";
+    const taxRate = (inv?.tax_rate as number) ?? 0;
+    const paidAmount = (inv?.paid_amount as number) ?? 0;
+    const invoiceNotes = (inv?.notes as string) ?? "";
+    const poNumber = (inv?.po_number as string) ?? "";
+    const createdBy = (inv?.created_by_name as string) ?? "";
+
+    const subtotal = useMemo(() => lineItems.reduce((sum, item) => sum + item.total, 0), [lineItems]);
+    const taxAmount = useMemo(() => subtotal * (taxRate / 100), [subtotal, taxRate]);
     const total = subtotal + taxAmount;
-    const balance = total - mockInvoice.paidAmount;
+    const balance = total - paidAmount;
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
     const handleAddComment = async (content: string) => {
         setChatterComments((prev) => [
@@ -153,11 +118,11 @@ export default function InvoiceDetailPage() {
         ]);
     };
 
-    const statusCfg = INVOICE_DELIVERY_STATUS_MAP[mockInvoice.status as InvoiceDeliveryStatusType];
+    const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoiceStatus];
 
     const tabs = [
-        { id: "details" as const, label: "Details", count: mockLineItems.length },
-        { id: "payments" as const, label: "Payments", count: mockPayments.length },
+        { id: "details" as const, label: "Details", count: lineItems.length },
+        { id: "payments" as const, label: "Payments", count: payments.length },
         { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
     ];
 
@@ -170,12 +135,12 @@ export default function InvoiceDetailPage() {
                         <p className="text-3xl font-bold mt-1">{formatCurrency(balance)}</p>
                     </div>
                     <ProgressBar
-                        value={(mockInvoice.paidAmount / total) * 100}
+                        value={total > 0 ? (paidAmount / total) * 100 : 0}
                         size="md"
                         variant="success"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Paid: {formatCurrency(mockInvoice.paidAmount)}</span>
+                        <span>Paid: {formatCurrency(paidAmount)}</span>
                         <span>Total: {formatCurrency(total)}</span>
                     </div>
                 </CardContent>
@@ -193,32 +158,32 @@ export default function InvoiceDetailPage() {
                         <span className="text-muted-foreground">Issued</span>
                         <span className="flex items-center gap-1">
                             <Calendar className="h-3.5 w-3.5" />
-                            {formatDate(mockInvoice.issueDate)}
+                            {issueDate ? formatDate(issueDate) : "—"}
                         </span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Due</span>
                         <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
-                            {formatDate(mockInvoice.dueDate)}
+                            {dueDate ? formatDate(dueDate) : "—"}
                         </span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Currency</span>
-                        <span>{mockInvoice.currency}</span>
+                        <span>{currency}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Tax Rate</span>
-                        <span>{mockInvoice.taxRate}%</span>
+                        <span>{taxRate}%</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Terms</span>
                         <span>Net 30</span>
                     </div>
-                    {mockInvoice.poNumber && (
+                    {poNumber && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">PO Number</span>
-                            <span className="font-mono text-xs">{mockInvoice.poNumber}</span>
+                            <span className="font-mono text-xs">{poNumber}</span>
                         </div>
                     )}
                 </CardContent>
@@ -228,15 +193,15 @@ export default function InvoiceDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "reminder_sent" })}>
                         <Send className="mr-2 h-3.5 w-3.5" />
                         Send Reminder
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setActiveTab("payments" as TabId)}>
                         <CreditCard className="mr-2 h-3.5 w-3.5" />
                         Record Payment
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.print()}>
                         <Download className="mr-2 h-3.5 w-3.5" />
                         Export PDF
                     </Button>
@@ -245,15 +210,17 @@ export default function InvoiceDetailPage() {
         </div>
     );
 
+    if (isLoading) return <LoadingState />;
+
     return (
         <DetailLayout
             backHref="/invoices"
             backLabel="Invoices"
             entityType="invoices"
             entityId={entityId}
-            title={`Invoice ${mockInvoice.invoiceNumber}`}
-            subtitle={`${mockInvoice.companyName} · ${mockInvoice.projectName}`}
-            status={mockInvoice.status}
+            title={`Invoice ${invoiceNumber}`}
+            subtitle={`${companyName} · ${projectName}`}
+            status={invoiceStatus}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     <DollarSign className="h-6 w-6" />
@@ -261,19 +228,19 @@ export default function InvoiceDetailPage() {
             }
             actions={
                 <>
-                    <Button variant="outline" onClick={() => {}}>
+                    <Button variant="outline" onClick={() => window.print()}>
                         <Download className="h-4 w-4" />
                         PDF
                     </Button>
-                    <Button onClick={() => {}}>
+                    <Button onClick={() => router.push(`/invoices/${entityId}/edit?section=send`)}>
                         <Send className="h-4 w-4" />
                         Send
                     </Button>
                 </>
             }
             menuItems={[
-                { label: "Record Payment", onClick: () => {} },
-                { label: "Duplicate", onClick: () => {} },
+                { label: "Record Payment", onClick: () => router.push(`/invoices/${entityId}/edit?section=payments`) },
+                { label: "Duplicate", onClick: () => router.push(`/invoices/new?duplicateFrom=${entityId}`) },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -297,10 +264,10 @@ export default function InvoiceDetailPage() {
                                         Bill To
                                     </p>
                                     <p className="text-sm font-semibold">
-                                        {mockInvoice.companyName}
+                                        {companyName}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        {mockInvoice.companyAddress}
+                                        {companyAddress}
                                     </p>
                                 </div>
                                 <div>
@@ -308,10 +275,10 @@ export default function InvoiceDetailPage() {
                                         Project
                                     </p>
                                     <p className="text-sm font-semibold">
-                                        {mockInvoice.projectName}
+                                        {projectName}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Created by {mockInvoice.createdBy}
+                                        {createdBy ? `Created by ${createdBy}` : ""}
                                     </p>
                                 </div>
                             </div>
@@ -335,7 +302,7 @@ export default function InvoiceDetailPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mockLineItems.map((item) => (
+                                    {lineItems.map((item) => (
                                         <tr key={item.id} className="border-b border-border/50">
                                             <td className="py-2.5">{item.description}</td>
                                             <td className="py-2.5 text-right">{item.quantity}</td>
@@ -365,7 +332,7 @@ export default function InvoiceDetailPage() {
                                             colSpan={3}
                                             className="py-2 text-right text-muted-foreground"
                                         >
-                                            Tax ({mockInvoice.taxRate}%)
+                                            Tax ({taxRate}%)
                                         </td>
                                         <td className="py-2 text-right font-medium">
                                             {formatCurrency(taxAmount)}
@@ -381,12 +348,12 @@ export default function InvoiceDetailPage() {
                                     </tr>
                                 </tfoot>
                             </table>
-                            {mockInvoice.notes && (
+                            {invoiceNotes && (
                                 <div className="mt-4 p-3 rounded-lg bg-secondary/30">
                                     <p className="text-xs text-muted-foreground font-medium mb-1">
                                         Notes
                                     </p>
-                                    <p className="text-xs">{mockInvoice.notes}</p>
+                                    <p className="text-xs">{invoiceNotes}</p>
                                 </div>
                             )}
                         </CardContent>
@@ -401,15 +368,15 @@ export default function InvoiceDetailPage() {
                             <CreditCard className="h-4 w-4" />
                             Payment History
                         </CardTitle>
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => console.log("Record payment for invoice:", entityId)}>
                             <CreditCard className="h-4 w-4 mr-1" />
                             Record Payment
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        {mockPayments.length > 0 ? (
+                        {payments.length > 0 ? (
                             <div className="space-y-3">
-                                {mockPayments.map((payment) => (
+                                {payments.map((payment) => (
                                     <div
                                         key={payment.id}
                                         className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20"
@@ -443,7 +410,7 @@ export default function InvoiceDetailPage() {
             {activeTab === "chatter" && (
                 <RecordChatter
                     recordType="invoice"
-                    recordId={mockInvoice.id}
+                    recordId={entityId}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

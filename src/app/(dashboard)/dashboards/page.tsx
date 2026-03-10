@@ -1,5 +1,7 @@
 "use client";
 
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DASHBOARD_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { TabBar } from "@/components/ui/tab-bar";
 import {
@@ -105,6 +107,7 @@ const pipelineStages = [
 ];
 
 export default function DashboardsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const DASHBOARD_TABS = ["overview", "projects", "sales", "resources"] as const;
     const [selectedDashboard, setSelectedDashboard] = useQueryTabState({
         key: "tab",
@@ -125,7 +128,7 @@ export default function DashboardsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline">Edit Dashboard</Button>
-                        <Button>
+                        <Button onClick={openCreate}>
                             <Plus className="mr-2 h-4 w-4" />
                             New Dashboard
                         </Button>
@@ -391,6 +394,7 @@ export default function DashboardsPage() {
                     </Card>
                 </div>
             </div>
+            <CreateEntityDialog config={CREATE_DASHBOARD_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

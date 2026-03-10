@@ -1,6 +1,9 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_GOODS_RECEIPT_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -29,6 +32,7 @@ const GR_STATUSES: GoodsReceiptStatus[] = [
 ];
 
 export default function GoodsReceiptsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -51,9 +55,7 @@ export default function GoodsReceiptsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingState />
         );
     }
 
@@ -76,7 +78,7 @@ export default function GoodsReceiptsPage() {
                     title="Goods Receipts"
                     description="Delivery confirmation for 3-way matching — PO + goods receipt + vendor invoice"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> Record Receipt
                     </Button>
                 </PageHeader>
@@ -167,6 +169,7 @@ export default function GoodsReceiptsPage() {
                     </CardContent>
                 </Card>
             </div>
+            <CreateEntityDialog config={CREATE_GOODS_RECEIPT_CONFIG} open={createOpen} onClose={closeCreate} />
         </PermissionGate>
     );
 }

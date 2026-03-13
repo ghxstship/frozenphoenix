@@ -14,7 +14,6 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import {
     AlertTriangle,
     CheckCircle2,
-    Loader2,
     MapPin,
     Navigation,
     Phone,
@@ -44,9 +43,7 @@ export default function FleetPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const availableCount = vehicles.filter((v) => v.status === "available").length;
@@ -238,7 +235,11 @@ export default function FleetPage() {
                     </div>
                 </div>
             </div>
-            <CreateEntityDialog config={CREATE_VEHICLE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_VEHICLE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

@@ -29,6 +29,7 @@ import {
     Plus,
     Presentation,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 
 type DeckType = "pitch" | "progress" | "wrap";
@@ -44,46 +45,6 @@ interface Deck {
     lastUpdated: string;
     presentedAt?: string;
 }
-
-const _PLACEHOLDER_DECKS: Deck[] = [
-    {
-        id: "dk1",
-        projectId: "p1",
-        type: "progress",
-        title: "Coachella Week 8 Update",
-        status: "ready",
-        slideCount: 12,
-        lastUpdated: "2026-02-22",
-    },
-    {
-        id: "dk2",
-        projectId: "p1",
-        type: "pitch",
-        title: "Coachella Initial Proposal",
-        status: "presented",
-        slideCount: 24,
-        lastUpdated: "2025-11-15",
-        presentedAt: "2025-11-20",
-    },
-    {
-        id: "dk3",
-        projectId: "p2",
-        type: "progress",
-        title: "Glossier Pop-Up Status",
-        status: "draft",
-        slideCount: 8,
-        lastUpdated: "2026-02-20",
-    },
-    {
-        id: "dk4",
-        projectId: "p3",
-        type: "pitch",
-        title: "Nike SXSW Concept Deck",
-        status: "draft",
-        slideCount: 18,
-        lastUpdated: "2026-02-18",
-    },
-];
 
 const typeConfig: Record<DeckType, { label: string; color: string }> = {
     pitch: { label: "Pitch Deck", color: "bg-primary" },
@@ -138,9 +99,7 @@ export default function DecksPage() {
     const isLoading = loadingDecks || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredDecks = decks.filter((deck) => {
@@ -224,89 +183,121 @@ export default function DecksPage() {
                 </div>
 
                 {view === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredDecks.map((deck, i) => {
-                            const project = projects.find((p) => p.id === deck.projectId);
-                            const type = typeConfig[deck.type];
-                            return (
-                                <StaggerItem key={deck.id} index={i} stagger="relaxed">
-                                    <Card className="group cursor-pointer hover:border-primary/30 overflow-hidden">
-                                        <div className={`h-32 ${type.color} relative`}>
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <Presentation className="h-12 w-12 text-primary-foreground/30" />
-                                            </div>
-                                            <div className="absolute top-3 left-3">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="text-[9px] bg-foreground/20 text-primary-foreground border-0"
-                                                >
-                                                    {type.label}
-                                                </Badge>
-                                            </div>
-                                            <div className="absolute bottom-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors" onClick={(e) => { e.stopPropagation(); addToast({ title: "Presenting deck", description: deck.title, variant: "default" }); }}>
-                                                    <Play className="h-4 w-4 text-primary-foreground" />
-                                                </button>
-                                                <button className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors" onClick={(e) => { e.stopPropagation(); addToast({ title: "Download started", description: deck.title, variant: "default" }); }}>
-                                                    <Download className="h-4 w-4 text-primary-foreground" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <CardContent className="pt-4">
-                                            <div className="flex items-start justify-between mb-2">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-sm font-bold truncate group-hover:text-primary transition-colors">
-                                                        {deck.title}
-                                                    </h3>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {project?.name}
-                                                    </p>
+                    filteredDecks.length === 0 ? (
+                        <EmptyState
+                            icon={Presentation}
+                            title="No decks found"
+                            description="Create your first presentation deck"
+                            action={{ label: "New Deck", onClick: openCreate }}
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filteredDecks.map((deck, i) => {
+                                const project = projects.find((p) => p.id === deck.projectId);
+                                const type = typeConfig[deck.type];
+                                return (
+                                    <StaggerItem key={deck.id} index={i} stagger="relaxed">
+                                        <Card className="group cursor-pointer hover:border-primary/30 overflow-hidden">
+                                            <div className={`h-32 ${type.color} relative`}>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <Presentation className="h-12 w-12 text-primary-foreground/30" />
                                                 </div>
-                                                <Badge
-                                                    variant={
-                                                        getStatusVariant(
-                                                            deck.status
-                                                        ) as BadgeVariant
-                                                    }
-                                                    className="text-[9px] shrink-0"
-                                                >
-                                                    {getStatusLabel(deck.status)}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <FileText className="h-3 w-3" />
-                                                    {deck.slideCount} slides
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    {formatDate(deck.lastUpdated)}
-                                                </span>
-                                            </div>
-                                            {deck.presentedAt && (
-                                                <div className="mt-2 flex items-center gap-1 text-[10px] text-success">
-                                                    <CheckCircle2 className="h-3 w-3" />
-                                                    Presented {formatDate(deck.presentedAt)}
+                                                <div className="absolute top-3 left-3">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-[9px] bg-foreground/20 text-primary-foreground border-0"
+                                                    >
+                                                        {type.label}
+                                                    </Badge>
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
+                                                <div className="absolute bottom-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            addToast({
+                                                                title: "Presenting deck",
+                                                                description: deck.title,
+                                                                variant: "default",
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Play className="h-4 w-4 text-primary-foreground" />
+                                                    </button>
+                                                    <button
+                                                        className="h-8 w-8 rounded-lg bg-foreground/20 backdrop-blur-sm flex items-center justify-center hover:bg-foreground/30 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            addToast({
+                                                                title: "Download started",
+                                                                description: deck.title,
+                                                                variant: "default",
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Download className="h-4 w-4 text-primary-foreground" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <CardContent className="pt-4">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-sm font-bold truncate group-hover:text-primary transition-colors">
+                                                            {deck.title}
+                                                        </h3>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {project?.name}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant={
+                                                            getStatusVariant(
+                                                                deck.status
+                                                            ) as BadgeVariant
+                                                        }
+                                                        className="text-[9px] shrink-0"
+                                                    >
+                                                        {getStatusLabel(deck.status)}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                                    <span className="flex items-center gap-1">
+                                                        <FileText className="h-3 w-3" />
+                                                        {deck.slideCount} slides
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        {formatDate(deck.lastUpdated)}
+                                                    </span>
+                                                </div>
+                                                {deck.presentedAt && (
+                                                    <div className="mt-2 flex items-center gap-1 text-[10px] text-success">
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        Presented {formatDate(deck.presentedAt)}
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
 
-                        <Card className="border-dashed border-2 flex items-center justify-center min-h-[280px] cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors" onClick={openCreate}>
-                            <div className="text-center">
-                                <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
-                                    <Plus className="h-6 w-6 text-muted-foreground" />
+                            <Card
+                                className="border-dashed border-2 flex items-center justify-center min-h-[280px] cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors"
+                                onClick={openCreate}
+                            >
+                                <div className="text-center">
+                                    <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
+                                        <Plus className="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                    <p className="text-sm font-medium">Create New Deck</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Auto-populate with project data
+                                    </p>
                                 </div>
-                                <p className="text-sm font-medium">Create New Deck</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Auto-populate with project data
-                                </p>
-                            </div>
-                        </Card>
-                    </div>
+                            </Card>
+                        </div>
+                    )
                 ) : (
                     <Card>
                         <CardContent className="p-0">
@@ -337,70 +328,117 @@ export default function DecksPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredDecks.map((deck) => {
-                                        const project = projects.find(
-                                            (p) => p.id === deck.projectId
-                                        );
-                                        const type = typeConfig[deck.type];
-                                        return (
-                                            <tr
-                                                key={deck.id}
-                                                className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
-                                            >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div
-                                                            className={`h-8 w-8 rounded-lg ${type.color} flex items-center justify-center`}
-                                                        >
-                                                            <Presentation className="h-4 w-4 text-primary-foreground" />
+                                    {filteredDecks.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={Presentation}
+                                                    title="No decks found"
+                                                    description="Create your first presentation deck"
+                                                    action={{
+                                                        label: "New Deck",
+                                                        onClick: openCreate,
+                                                    }}
+                                                    compact
+                                                />
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredDecks.map((deck) => {
+                                            const project = projects.find(
+                                                (p) => p.id === deck.projectId
+                                            );
+                                            const type = typeConfig[deck.type];
+                                            return (
+                                                <tr
+                                                    key={deck.id}
+                                                    className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
+                                                >
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className={`h-8 w-8 rounded-lg ${type.color} flex items-center justify-center`}
+                                                            >
+                                                                <Presentation className="h-4 w-4 text-primary-foreground" />
+                                                            </div>
+                                                            <span className="text-sm font-medium">
+                                                                {deck.title}
+                                                            </span>
                                                         </div>
-                                                        <span className="text-sm font-medium">
-                                                            {deck.title}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-xs text-muted-foreground">
-                                                    {project?.name}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <Badge variant="ghost" className="text-[10px]">
-                                                        {type.label}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <Badge
-                                                        variant={
-                                                            getStatusVariant(
-                                                                deck.status
-                                                            ) as BadgeVariant
-                                                        }
-                                                        className="text-[10px]"
-                                                    >
-                                                        {getStatusLabel(deck.status)}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-4 py-3 text-xs">
-                                                    {deck.slideCount}
-                                                </td>
-                                                <td className="px-4 py-3 text-xs text-muted-foreground">
-                                                    {formatDate(deck.lastUpdated)}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-1">
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Presenting deck", description: deck.title, variant: "default" })}>
-                                                            <Play className="h-3.5 w-3.5" />
-                                                        </button>
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Download started", description: deck.title, variant: "default" })}>
-                                                            <Download className="h-3.5 w-3.5" />
-                                                        </button>
-                                                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors" onClick={() => addToast({ title: "Opening deck", description: deck.title, variant: "default" })}>
-                                                            <ExternalLink className="h-3.5 w-3.5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                                                        {project?.name}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <Badge
+                                                            variant="ghost"
+                                                            className="text-[10px]"
+                                                        >
+                                                            {type.label}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <Badge
+                                                            variant={
+                                                                getStatusVariant(
+                                                                    deck.status
+                                                                ) as BadgeVariant
+                                                            }
+                                                            className="text-[10px]"
+                                                        >
+                                                            {getStatusLabel(deck.status)}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-xs">
+                                                        {deck.slideCount}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                                                        {formatDate(deck.lastUpdated)}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                                                onClick={() =>
+                                                                    addToast({
+                                                                        title: "Presenting deck",
+                                                                        description: deck.title,
+                                                                        variant: "default",
+                                                                    })
+                                                                }
+                                                            >
+                                                                <Play className="h-3.5 w-3.5" />
+                                                            </button>
+                                                            <button
+                                                                className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                                                onClick={() =>
+                                                                    addToast({
+                                                                        title: "Download started",
+                                                                        description: deck.title,
+                                                                        variant: "default",
+                                                                    })
+                                                                }
+                                                            >
+                                                                <Download className="h-3.5 w-3.5" />
+                                                            </button>
+                                                            <button
+                                                                className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                                                onClick={() =>
+                                                                    addToast({
+                                                                        title: "Opening deck",
+                                                                        description: deck.title,
+                                                                        variant: "default",
+                                                                    })
+                                                                }
+                                                            >
+                                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </CardContent>

@@ -6,54 +6,40 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-    BadgeCheck,
-    LogIn,
-    LogOut,
-    QrCode,
-    ShieldAlert,
-    ShieldCheck,
-    XCircle,
-} from "lucide-react";
+import { BadgeCheck, LogIn, LogOut, QrCode, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-
-interface ScanResult {
-    result: string;
-    assignment: Record<string, unknown> | null;
-    credential_type: Record<string, unknown> | null;
-    message: string;
-    timestamp: string;
-}
+import {
+    type GateScanResult,
+    useGateScan,
+    useGateScanHistory,
+} from "@/lib/supabase/hooks-credentialing";
 
 export default function GateScannerPage() {
     const [barcodeInput, setBarcodeInput] = useState("");
     const [scanType, setScanType] = useState<"check_in" | "check_out">("check_in");
-    const [scanning, setScanning] = useState(false);
-    const [lastResult, setLastResult] = useState<ScanResult | null>(null);
-    const [scanHistory, setScanHistory] = useState<ScanResult[]>([]);
+    const [lastResult, setLastResult] = useState<GateScanResult | null>(null);
+
+    const gateScan = useGateScan();
+    const { data: sbHistory } = useGateScanHistory(50);
+
+    const scanHistory: { result: string; assignee_name: string | null; timestamp: string }[] = (
+        sbHistory ?? []
+    ).map((h: Record<string, unknown>) => ({
+        result: (h.scan_result as string) ?? "",
+        assignee_name:
+            ((h.credential_assignments as Record<string, unknown>)?.assignee_name as string) ??
+            null,
+        timestamp: (h.scanned_at as string) ?? "",
+    }));
 
     const handleScan = useCallback(async () => {
         if (!barcodeInput.trim()) return;
-        setScanning(true);
-
         try {
-            const res = await fetch("/api/credentials/scan", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    barcode_value: barcodeInput.trim(),
-                    scan_type: scanType,
-                }),
+            const result = await gateScan.mutateAsync({
+                barcode_value: barcodeInput.trim(),
+                scan_type: scanType,
             });
-
-            const data = await res.json();
-            const result: ScanResult = {
-                ...data,
-                timestamp: new Date().toISOString(),
-            };
-
             setLastResult(result);
-            setScanHistory((prev) => [result, ...prev].slice(0, 50));
             setBarcodeInput("");
         } catch {
             setLastResult({
@@ -63,10 +49,8 @@ export default function GateScannerPage() {
                 message: "Network error — please retry",
                 timestamp: new Date().toISOString(),
             });
-        } finally {
-            setScanning(false);
         }
-    }, [barcodeInput, scanType]);
+    }, [barcodeInput, scanType, gateScan]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
@@ -75,21 +59,23 @@ export default function GateScannerPage() {
         }
     };
 
-    const resultIcon = lastResult?.result === "valid" ? (
-        <ShieldCheck className="h-16 w-16 text-success" />
-    ) : lastResult?.result === "denied" || lastResult?.result === "revoked" ? (
-        <XCircle className="h-16 w-16 text-destructive" />
-    ) : lastResult?.result === "zone_denied" ? (
-        <ShieldAlert className="h-16 w-16 text-warning" />
-    ) : lastResult?.result === "expired" ? (
-        <ShieldAlert className="h-16 w-16 text-muted-foreground" />
-    ) : null;
+    const resultIcon =
+        lastResult?.result === "valid" ? (
+            <ShieldCheck className="h-16 w-16 text-success" />
+        ) : lastResult?.result === "denied" || lastResult?.result === "revoked" ? (
+            <XCircle className="h-16 w-16 text-destructive" />
+        ) : lastResult?.result === "zone_denied" ? (
+            <ShieldAlert className="h-16 w-16 text-warning" />
+        ) : lastResult?.result === "expired" ? (
+            <ShieldAlert className="h-16 w-16 text-muted-foreground" />
+        ) : null;
 
-    const resultColor = lastResult?.result === "valid"
-        ? "border-success/50 bg-success/5"
-        : lastResult?.result === "zone_denied"
-            ? "border-warning/50 bg-warning/5"
-            : lastResult
+    const resultColor =
+        lastResult?.result === "valid"
+            ? "border-success/50 bg-success/5"
+            : lastResult?.result === "zone_denied"
+              ? "border-warning/50 bg-warning/5"
+              : lastResult
                 ? "border-destructive/50 bg-destructive/5"
                 : "border-border bg-card";
 
@@ -109,7 +95,9 @@ export default function GateScannerPage() {
                                     <div className="flex items-center gap-2 w-full max-w-md">
                                         <Button
                                             size="sm"
-                                            variant={scanType === "check_in" ? "default" : "outline"}
+                                            variant={
+                                                scanType === "check_in" ? "default" : "outline"
+                                            }
                                             onClick={() => setScanType("check_in")}
                                         >
                                             <LogIn className="h-4 w-4" />
@@ -117,7 +105,9 @@ export default function GateScannerPage() {
                                         </Button>
                                         <Button
                                             size="sm"
-                                            variant={scanType === "check_out" ? "default" : "outline"}
+                                            variant={
+                                                scanType === "check_out" ? "default" : "outline"
+                                            }
                                             onClick={() => setScanType("check_out")}
                                         >
                                             <LogOut className="h-4 w-4" />
@@ -140,9 +130,9 @@ export default function GateScannerPage() {
                                         <Button
                                             size="lg"
                                             onClick={handleScan}
-                                            disabled={scanning || !barcodeInput.trim()}
+                                            disabled={gateScan.isPending || !barcodeInput.trim()}
                                         >
-                                            {scanning ? "Scanning..." : "Scan"}
+                                            {gateScan.isPending ? "Scanning..." : "Scan"}
                                         </Button>
                                     </div>
                                 </div>
@@ -157,7 +147,9 @@ export default function GateScannerPage() {
                                         <h2 className="text-xl font-bold capitalize">
                                             {lastResult.result.replace("_", " ")}
                                         </h2>
-                                        <p className="text-sm text-muted-foreground">{lastResult.message}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {lastResult.message}
+                                        </p>
 
                                         {lastResult.assignment && (
                                             <div className="mt-4 p-4 rounded-lg bg-card border w-full max-w-sm">
@@ -166,14 +158,33 @@ export default function GateScannerPage() {
                                                 </p>
                                                 {lastResult.credential_type && (
                                                     <div className="flex items-center gap-1.5 mt-1">
-                                                        {!!(lastResult.credential_type as Record<string, unknown>).color_hex && (
+                                                        {!!(
+                                                            lastResult.credential_type as Record<
+                                                                string,
+                                                                unknown
+                                                            >
+                                                        ).color_hex && (
                                                             <span
                                                                 className="inline-block h-2.5 w-2.5 rounded-full"
-                                                                style={{ backgroundColor: (lastResult.credential_type as Record<string, unknown>).color_hex as string }}
+                                                                style={{
+                                                                    backgroundColor: (
+                                                                        lastResult.credential_type as Record<
+                                                                            string,
+                                                                            unknown
+                                                                        >
+                                                                    ).color_hex as string,
+                                                                }}
                                                             />
                                                         )}
                                                         <span className="text-xs text-muted-foreground">
-                                                            {(lastResult.credential_type as Record<string, unknown>).name as string}
+                                                            {
+                                                                (
+                                                                    lastResult.credential_type as Record<
+                                                                        string,
+                                                                        unknown
+                                                                    >
+                                                                ).name as string
+                                                            }
                                                         </span>
                                                     </div>
                                                 )}
@@ -197,19 +208,27 @@ export default function GateScannerPage() {
                         </CardHeader>
                         <CardContent>
                             {scanHistory.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-8">No scans yet</p>
+                                <p className="text-sm text-muted-foreground text-center py-8">
+                                    No scans yet
+                                </p>
                             ) : (
                                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
                                     {scanHistory.map((s, i) => (
                                         <div
                                             key={i}
                                             className={`p-2 rounded-lg border ${
-                                                s.result === "valid" ? "border-success/20" : "border-destructive/20"
+                                                s.result === "valid"
+                                                    ? "border-success/20"
+                                                    : "border-destructive/20"
                                             }`}
                                         >
                                             <div className="flex items-center justify-between">
                                                 <Badge
-                                                    variant={s.result === "valid" ? "success" : "destructive"}
+                                                    variant={
+                                                        s.result === "valid"
+                                                            ? "success"
+                                                            : "destructive"
+                                                    }
                                                     className="text-[9px]"
                                                 >
                                                     {s.result.replace("_", " ").toUpperCase()}
@@ -218,9 +237,9 @@ export default function GateScannerPage() {
                                                     {new Date(s.timestamp).toLocaleTimeString()}
                                                 </span>
                                             </div>
-                                            {s.assignment && (
+                                            {s.assignee_name && (
                                                 <p className="text-xs mt-1 truncate">
-                                                    {s.assignment.assignee_name as string}
+                                                    {s.assignee_name}
                                                 </p>
                                             )}
                                         </div>

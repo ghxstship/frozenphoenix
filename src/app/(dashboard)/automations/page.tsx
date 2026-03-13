@@ -27,6 +27,7 @@ import {
     Plus,
     Zap,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useAutomations } from "@/lib/supabase/hooks-pages";
 import { useAutomationLogs } from "@/lib/supabase/hooks-extended";
 import { PermissionGate } from "@/components/permission-guard";
@@ -261,129 +262,137 @@ export default function AutomationsPage() {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        {filtered.map((automation, i) => {
-                            const statusCfg = WORKFLOW_STATUS_MAP[automation.status];
-                            const triggerCfg = TRIGGER_LABELS[automation.trigger];
-                            const TriggerIcon = triggerCfg.icon;
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={Zap}
+                            title="No automations found"
+                            description={
+                                searchQuery || statusFilter !== "all"
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first automation to streamline workflows"
+                            }
+                            action={
+                                !searchQuery && statusFilter === "all"
+                                    ? { label: "New Automation", onClick: openCreate }
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-4">
+                            {filtered.map((automation, i) => {
+                                const statusCfg = WORKFLOW_STATUS_MAP[automation.status];
+                                const triggerCfg = TRIGGER_LABELS[automation.trigger];
+                                const TriggerIcon = triggerCfg.icon;
 
-                            return (
-                                <StaggerItem key={automation.id} index={i} stagger="relaxed">
-                                    <Card
-                                        className="hover:shadow-md transition-all"
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label={`Automation: ${automation.name}, status: ${statusCfg?.label ?? automation.status}`}
-                                        onKeyDown={(e: React.KeyboardEvent) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                e.preventDefault();
-                                                void automation.id;
-                                            }
-                                        }}
-                                    >
-                                        <CardContent className="py-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div
-                                                        className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${automation.status === "active" ? "bg-success/10" : automation.status === "paused" ? "bg-warning/10" : "bg-muted"}`}
-                                                    >
-                                                        <Zap
-                                                            className={`h-5 w-5 ${automation.status === "active" ? "text-success" : automation.status === "paused" ? "text-warning" : "text-muted-foreground"}`}
-                                                        />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <Badge variant={statusCfg?.variant}>
-                                                                {statusCfg?.label}
-                                                            </Badge>
-                                                            <Badge variant="ghost">
-                                                                {automation.entityType}
-                                                            </Badge>
+                                return (
+                                    <StaggerItem key={automation.id} index={i} stagger="relaxed">
+                                        <Card
+                                            className="hover:shadow-md transition-all"
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`Automation: ${automation.name}, status: ${statusCfg?.label ?? automation.status}`}
+                                            onKeyDown={(e: React.KeyboardEvent) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault();
+                                                    void automation.id;
+                                                }
+                                            }}
+                                        >
+                                            <CardContent className="py-4">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                        <div
+                                                            className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${automation.status === "active" ? "bg-success/10" : automation.status === "paused" ? "bg-warning/10" : "bg-muted"}`}
+                                                        >
+                                                            <Zap
+                                                                className={`h-5 w-5 ${automation.status === "active" ? "text-success" : automation.status === "paused" ? "text-warning" : "text-muted-foreground"}`}
+                                                            />
                                                         </div>
-                                                        <h3 className="text-sm font-semibold mt-1">
-                                                            {automation.name}
-                                                        </h3>
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {automation.description}
-                                                        </p>
-
-                                                        {/* Trigger → Action Flow */}
-                                                        <div className="flex items-center gap-2 mt-3 flex-wrap">
-                                                            <div className="flex items-center gap-1 rounded-md bg-info/10 px-2 py-1 text-xs font-medium text-info">
-                                                                <TriggerIcon className="h-3 w-3" />
-                                                                {triggerCfg.label}
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <Badge variant={statusCfg?.variant}>
+                                                                    {statusCfg?.label}
+                                                                </Badge>
+                                                                <Badge variant="ghost">
+                                                                    {automation.entityType}
+                                                                </Badge>
                                                             </div>
-                                                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                                                            {automation.actions.map((action, j) => {
-                                                                const actionCfg =
-                                                                    ACTION_LABELS[action];
-                                                                const ActionIcon = actionCfg.icon;
-                                                                return (
-                                                                    <div
-                                                                        key={j}
-                                                                        className="flex items-center gap-1 rounded-md bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground"
-                                                                    >
-                                                                        <ActionIcon className="h-3 w-3" />
-                                                                        {actionCfg.label}
-                                                                    </div>
-                                                                );
-                                                            })}
+                                                            <h3 className="text-sm font-semibold mt-1">
+                                                                {automation.name}
+                                                            </h3>
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {automation.description}
+                                                            </p>
+
+                                                            {/* Trigger → Action Flow */}
+                                                            <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                                                <div className="flex items-center gap-1 rounded-md bg-info/10 px-2 py-1 text-xs font-medium text-info">
+                                                                    <TriggerIcon className="h-3 w-3" />
+                                                                    {triggerCfg.label}
+                                                                </div>
+                                                                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                                                {automation.actions.map(
+                                                                    (action, j) => {
+                                                                        const actionCfg =
+                                                                            ACTION_LABELS[action];
+                                                                        const ActionIcon =
+                                                                            actionCfg.icon;
+                                                                        return (
+                                                                            <div
+                                                                                key={j}
+                                                                                className="flex items-center gap-1 rounded-md bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground"
+                                                                            >
+                                                                                <ActionIcon className="h-3 w-3" />
+                                                                                {actionCfg.label}
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right shrink-0 space-y-1">
+                                                        <p className="text-sm font-bold">
+                                                            {automation.executionCount}
+                                                        </p>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            executions
+                                                        </p>
+                                                        {automation.lastExecuted && (
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                Last:{" "}
+                                                                {formatDate(
+                                                                    automation.lastExecuted
+                                                                )}
+                                                            </p>
+                                                        )}
+                                                        <div className="flex gap-1 justify-end mt-2">
+                                                            {automation.status === "active" ? (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    aria-label={`Pause automation: ${automation.name}`}
+                                                                >
+                                                                    <Pause className="h-3 w-3" />
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    aria-label={`Enable automation: ${automation.name}`}
+                                                                >
+                                                                    <Play className="h-3 w-3" />
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="text-right shrink-0 space-y-1">
-                                                    <p className="text-sm font-bold">
-                                                        {automation.executionCount}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        executions
-                                                    </p>
-                                                    {automation.lastExecuted && (
-                                                        <p className="text-[10px] text-muted-foreground">
-                                                            Last:{" "}
-                                                            {formatDate(automation.lastExecuted)}
-                                                        </p>
-                                                    )}
-                                                    <div className="flex gap-1 justify-end mt-2">
-                                                        {automation.status === "active" ? (
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                aria-label={`Pause automation: ${automation.name}`}
-                                                            >
-                                                                <Pause className="h-3 w-3" />
-                                                            </Button>
-                                                        ) : (
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                aria-label={`Enable automation: ${automation.name}`}
-                                                            >
-                                                                <Play className="h-3 w-3" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                    </div>
-
-                    {filtered.length === 0 && (
-                        <Card>
-                            <CardContent className="flex flex-col items-center justify-center py-12">
-                                <Zap className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-semibold mb-1">No automations found</h3>
-                                <p className="text-muted-foreground text-center">
-                                    {searchQuery || statusFilter !== "all"
-                                        ? "Try adjusting your search or filters"
-                                        : "Create your first automation to streamline workflows"}
-                                </p>
-                            </CardContent>
-                        </Card>
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
                     )}
                 </TabPanel>
 
@@ -424,108 +433,106 @@ export default function AutomationsPage() {
                             be available once the automation engine is wired.
                         </span>
                     </div>
-                    <div className="space-y-3">
-                        {filteredLogs.map((log, i) => {
-                            const statusCfg = LOG_STATUS_CONFIG[log.status];
-                            return (
-                                <StaggerItem key={log.id} index={i} stagger="tight">
-                                    <Card>
-                                        <CardContent className="py-3">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div
-                                                        className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                                            log.status === "success"
-                                                                ? "bg-success/10"
-                                                                : log.status === "failed"
-                                                                  ? "bg-destructive/10"
-                                                                  : "bg-muted"
-                                                        }`}
-                                                    >
-                                                        {log.status === "success" ? (
-                                                            <CheckSquare className="h-4 w-4 text-success" />
-                                                        ) : log.status === "failed" ? (
-                                                            <Zap className="h-4 w-4 text-destructive" />
-                                                        ) : (
-                                                            <Clock className="h-4 w-4 text-muted-foreground" />
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <Badge variant={statusCfg.variant}>
-                                                                {statusCfg.label}
-                                                            </Badge>
-                                                            <Badge variant="ghost">
-                                                                {log.entityType}
-                                                            </Badge>
-                                                            <span className="text-[10px] text-muted-foreground">
-                                                                {log.duration}
-                                                            </span>
+                    {filteredLogs.length === 0 ? (
+                        <EmptyState
+                            icon={Activity}
+                            title="No execution logs found"
+                            description={
+                                searchQuery || logFilter !== "all"
+                                    ? "Try adjusting your filters"
+                                    : "Logs will appear here as automations execute"
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {filteredLogs.map((log, i) => {
+                                const statusCfg = LOG_STATUS_CONFIG[log.status];
+                                return (
+                                    <StaggerItem key={log.id} index={i} stagger="tight">
+                                        <Card>
+                                            <CardContent className="py-3">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                        <div
+                                                            className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                                                log.status === "success"
+                                                                    ? "bg-success/10"
+                                                                    : log.status === "failed"
+                                                                      ? "bg-destructive/10"
+                                                                      : "bg-muted"
+                                                            }`}
+                                                        >
+                                                            {log.status === "success" ? (
+                                                                <CheckSquare className="h-4 w-4 text-success" />
+                                                            ) : log.status === "failed" ? (
+                                                                <Zap className="h-4 w-4 text-destructive" />
+                                                            ) : (
+                                                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                                            )}
                                                         </div>
-                                                        <h4 className="text-sm font-semibold mt-1">
-                                                            {log.automationName}
-                                                        </h4>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                                            Entity:{" "}
-                                                            <span className="font-medium text-foreground">
-                                                                {log.entityName}
-                                                            </span>
-                                                        </p>
-                                                        {log.actionsRun.length > 0 && (
-                                                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <Badge variant={statusCfg.variant}>
+                                                                    {statusCfg.label}
+                                                                </Badge>
+                                                                <Badge variant="ghost">
+                                                                    {log.entityType}
+                                                                </Badge>
                                                                 <span className="text-[10px] text-muted-foreground">
-                                                                    Actions:
+                                                                    {log.duration}
                                                                 </span>
-                                                                {log.actionsRun.map((action, j) => (
-                                                                    <span
-                                                                        key={j}
-                                                                        className="text-[10px] rounded bg-secondary/50 px-1.5 py-0.5 font-medium"
-                                                                    >
-                                                                        {action}
+                                                            </div>
+                                                            <h4 className="text-sm font-semibold mt-1">
+                                                                {log.automationName}
+                                                            </h4>
+                                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                                Entity:{" "}
+                                                                <span className="font-medium text-foreground">
+                                                                    {log.entityName}
+                                                                </span>
+                                                            </p>
+                                                            {log.actionsRun.length > 0 && (
+                                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                        Actions:
                                                                     </span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {log.error && (
-                                                            <div
-                                                                className={`mt-2 text-xs px-2 py-1.5 rounded ${
-                                                                    log.status === "failed"
-                                                                        ? "bg-destructive/10 text-destructive"
-                                                                        : "bg-muted text-muted-foreground"
-                                                                }`}
-                                                            >
-                                                                {log.error}
-                                                            </div>
-                                                        )}
+                                                                    {log.actionsRun.map(
+                                                                        (action, j) => (
+                                                                            <span
+                                                                                key={j}
+                                                                                className="text-[10px] rounded bg-secondary/50 px-1.5 py-0.5 font-medium"
+                                                                            >
+                                                                                {action}
+                                                                            </span>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {log.error && (
+                                                                <div
+                                                                    className={`mt-2 text-xs px-2 py-1.5 rounded ${
+                                                                        log.status === "failed"
+                                                                            ? "bg-destructive/10 text-destructive"
+                                                                            : "bg-muted text-muted-foreground"
+                                                                    }`}
+                                                                >
+                                                                    {log.error}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right shrink-0">
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {formatDateTime(log.triggeredAt)}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <div className="text-right shrink-0">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {formatDateTime(log.triggeredAt)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                    </div>
-
-                    {filteredLogs.length === 0 && (
-                        <Card>
-                            <CardContent className="flex flex-col items-center justify-center py-12">
-                                <Activity className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-semibold mb-1">
-                                    No execution logs found
-                                </h3>
-                                <p className="text-muted-foreground text-center">
-                                    {searchQuery || logFilter !== "all"
-                                        ? "Try adjusting your filters"
-                                        : "Logs will appear here as automations execute"}
-                                </p>
-                            </CardContent>
-                        </Card>
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
                     )}
                 </TabPanel>
             </div>

@@ -142,6 +142,9 @@ export {
     useAiReportQueries,
     useCreateAiReportQuery,
     useGenerateInvoiceFromTime,
+    useComplianceDrift,
+    useOrgSecuritySettings,
+    useUpdateOrgSecuritySettings,
 } from "./hooks-v2-features";
 
 // ─── Advancing Hooks ───

@@ -12,16 +12,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_PERMIT_CONFIG } from "@/config/create-entity-configs";
-import {
-    AlertTriangle,
-    CheckCircle2,
-    Clock,
-    FileBadge,
-    Loader2,
-    MapPin,
-    Plus,
-    XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, FileBadge, MapPin, Plus, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { Permit } from "@/types/governance";
 import { usePermits } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -90,9 +82,7 @@ export default function PermitsPage() {
     const expired = permits.filter((p) => p.status === "expired" || p.status === "revoked").length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -172,52 +162,80 @@ export default function PermitsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((p) => (
-                                        <tr
-                                            key={p.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3">
-                                                <div className="font-medium">{p.title}</div>
-                                                {p.permit_number && (
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {p.permit_number}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {PERMIT_TYPE_LABELS[p.permit_type] || p.permit_type}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {p.jurisdiction}
-                                                </div>
-                                                <div className="text-muted-foreground">
-                                                    {p.jurisdiction_level}
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {p.entity_type}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={p.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={FileBadge}
+                                                    title="No permits found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Add your first permit"
+                                                    }
+                                                    action={
+                                                        !search
+                                                            ? {
+                                                                  label: "Add Permit",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {p.expiry_date
-                                                    ? new Date(p.expiry_date).toLocaleDateString()
-                                                    : "—"}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {p.total_cost
-                                                    ? `$${p.total_cost.toLocaleString()}`
-                                                    : "—"}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((p) => (
+                                            <tr
+                                                key={p.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3">
+                                                    <div className="font-medium">{p.title}</div>
+                                                    {p.permit_number && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {p.permit_number}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {PERMIT_TYPE_LABELS[p.permit_type] ||
+                                                        p.permit_type}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    <div className="flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {p.jurisdiction}
+                                                    </div>
+                                                    <div className="text-muted-foreground">
+                                                        {p.jurisdiction_level}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {p.entity_type}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={p.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {p.expiry_date
+                                                        ? new Date(
+                                                              p.expiry_date
+                                                          ).toLocaleDateString()
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {p.total_cost
+                                                        ? `$${p.total_cost.toLocaleString()}`
+                                                        : "—"}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

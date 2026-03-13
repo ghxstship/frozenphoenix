@@ -4,6 +4,8 @@ import * as React from "react";
 import { Package, Plus } from "lucide-react";
 import { PageShell } from "@/components/layouts/page-shell";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CATALOG_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +24,7 @@ const VIEW_OPTIONS = [
 ] as const;
 
 export default function CatalogAdminPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = React.useState("");
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -57,143 +60,154 @@ export default function CatalogAdminPage() {
     const isLoading = catLoading || itemsLoading;
 
     return (
-        <PermissionGate resource="advancing" action="manage">
-            <PageShell
-                title="Catalog Management"
-                description="Manage catalog categories and items"
-                actions={
-                    <Button disabled onClick={() => void 0}>
-                        <Plus className="h-4 w-4" />
-                        Add Item
-                    </Button>
-                }
-            >
-                {/* Category filter */}
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        variant={selectedCategory === null ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedCategory(null)}
-                    >
-                        All Categories
-                    </Button>
-                    {catList.map((cat) => (
-                        <Button
-                            key={cat.id as string}
-                            variant={selectedCategory === cat.id ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSelectedCategory(cat.id as string)}
-                        >
-                            {String(cat.name)}
+        <>
+            <PermissionGate resource="advancing" action="manage">
+                <PageShell
+                    title="Catalog Management"
+                    description="Manage catalog categories and items"
+                    actions={
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Add Item
                         </Button>
-                    ))}
-                </div>
-
-                {/* Search + view toggle */}
-                <div className="flex items-center gap-3">
-                    <SearchInput
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        placeholder="Search items by name or SKU..."
-                        className="max-w-sm flex-1"
-                    />
-                    <SegmentedControl
-                        value={view}
-                        onValueChange={setView}
-                        options={[...VIEW_OPTIONS]}
-                    />
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{catList.length} categories</span>
-                    <span>&middot;</span>
-                    <span>{filtered.length} items</span>
-                </div>
-
-                {/* Items */}
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-16">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    </div>
-                ) : filtered.length === 0 ? (
-                    <EmptyState
-                        icon={Package}
-                        title="No catalog items"
-                        description="Add items to the catalog to get started"
-                    />
-                ) : view === "grid" ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {filtered.map((item) => (
-                            <Card key={item.id as string}>
-                                <CardContent className="flex flex-col gap-2 pt-4">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <h3 className="text-sm font-medium line-clamp-1">
-                                                {String(item.name)}
-                                            </h3>
-                                            <p className="text-xs font-mono text-muted-foreground">
-                                                {String(item.sku)}
-                                            </p>
-                                        </div>
-                                        <Badge
-                                            variant={item.is_active ? "success" : "secondary"}
-                                            className="text-[10px]"
-                                        >
-                                            {item.is_active ? "Active" : "Inactive"}
-                                        </Badge>
-                                    </div>
-                                    {Boolean(item.catalog_categories) && (
-                                        <CategoryTypeBadge
-                                            type={
-                                                (item.catalog_categories as Record<string, unknown>)
-                                                    ?.category_type as CatalogCategoryType
-                                            }
-                                        />
-                                    )}
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">
-                                            {String(item.unit_of_measure ?? "ea")}
-                                        </span>
-                                        <span className="font-semibold">
-                                            {formatAdvanceCost(Number(item.base_cost ?? 0))}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="space-y-1">
-                        {filtered.map((item) => (
-                            <div
-                                key={item.id as string}
-                                className="flex items-center gap-4 rounded-md border px-4 py-3"
+                    }
+                >
+                    {/* Category filter */}
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant={selectedCategory === null ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedCategory(null)}
+                        >
+                            All Categories
+                        </Button>
+                        {catList.map((cat) => (
+                            <Button
+                                key={cat.id as string}
+                                variant={selectedCategory === cat.id ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSelectedCategory(cat.id as string)}
                             >
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium">
-                                            {String(item.name)}
-                                        </span>
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                            {String(item.sku)}
-                                        </span>
-                                        <Badge
-                                            variant={item.is_active ? "success" : "secondary"}
-                                            className="text-[10px]"
-                                        >
-                                            {item.is_active ? "Active" : "Inactive"}
-                                        </Badge>
-                                    </div>
-                                </div>
-                                <span className="shrink-0 text-sm font-semibold">
-                                    {formatAdvanceCost(Number(item.base_cost ?? 0))}
-                                </span>
-                            </div>
+                                {String(cat.name)}
+                            </Button>
                         ))}
                     </div>
-                )}
-            </PageShell>
-        </PermissionGate>
+
+                    {/* Search + view toggle */}
+                    <div className="flex items-center gap-3">
+                        <SearchInput
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                            placeholder="Search items by name or SKU..."
+                            className="max-w-sm flex-1"
+                        />
+                        <SegmentedControl
+                            value={view}
+                            onValueChange={setView}
+                            options={[...VIEW_OPTIONS]}
+                        />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{catList.length} categories</span>
+                        <span>&middot;</span>
+                        <span>{filtered.length} items</span>
+                    </div>
+
+                    {/* Items */}
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-16">
+                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        </div>
+                    ) : filtered.length === 0 ? (
+                        <EmptyState
+                            icon={Package}
+                            title="No catalog items"
+                            description="Add items to the catalog to get started"
+                        />
+                    ) : view === "grid" ? (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {filtered.map((item) => (
+                                <Card key={item.id as string}>
+                                    <CardContent className="flex flex-col gap-2 pt-4">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h3 className="text-sm font-medium line-clamp-1">
+                                                    {String(item.name)}
+                                                </h3>
+                                                <p className="text-xs font-mono text-muted-foreground">
+                                                    {String(item.sku)}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                variant={item.is_active ? "success" : "secondary"}
+                                                className="text-[10px]"
+                                            >
+                                                {item.is_active ? "Active" : "Inactive"}
+                                            </Badge>
+                                        </div>
+                                        {Boolean(item.catalog_categories) && (
+                                            <CategoryTypeBadge
+                                                type={
+                                                    (
+                                                        item.catalog_categories as Record<
+                                                            string,
+                                                            unknown
+                                                        >
+                                                    )?.category_type as CatalogCategoryType
+                                                }
+                                            />
+                                        )}
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-muted-foreground">
+                                                {String(item.unit_of_measure ?? "ea")}
+                                            </span>
+                                            <span className="font-semibold">
+                                                {formatAdvanceCost(Number(item.base_cost ?? 0))}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {filtered.map((item) => (
+                                <div
+                                    key={item.id as string}
+                                    className="flex items-center gap-4 rounded-md border px-4 py-3"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium">
+                                                {String(item.name)}
+                                            </span>
+                                            <span className="text-xs font-mono text-muted-foreground">
+                                                {String(item.sku)}
+                                            </span>
+                                            <Badge
+                                                variant={item.is_active ? "success" : "secondary"}
+                                                className="text-[10px]"
+                                            >
+                                                {item.is_active ? "Active" : "Inactive"}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <span className="shrink-0 text-sm font-semibold">
+                                        {formatAdvanceCost(Number(item.base_cost ?? 0))}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </PageShell>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_CATALOG_ITEM_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

@@ -22,7 +22,6 @@ import {
     FileSignature,
     FolderKanban,
     Inbox,
-    Loader2,
     Mail,
     MapPin,
     Megaphone,
@@ -30,6 +29,7 @@ import {
     Plus,
     User,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type {
     ServiceRequest,
     ServiceRequestPriority,
@@ -111,9 +111,7 @@ export default function ServiceRequestsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
     const filtered = requests.filter((r) => {
         const matchesSearch =
@@ -176,160 +174,173 @@ export default function ServiceRequestsPage() {
                     </select>
                 </div>
 
-                <div className="space-y-3">
-                    {filtered.map((req, i) => {
-                        const SourceIcon = SOURCE_LABELS[req.source]?.icon || Inbox;
-                        const ConvertIcon = req.convertedToType
-                            ? CONVERT_ICONS[req.convertedToType] || ArrowRightCircle
-                            : null;
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Inbox}
+                        title="No service requests found"
+                        description={
+                            search || statusFilter !== "all"
+                                ? "Try adjusting your search or filters"
+                                : "Create your first service request"
+                        }
+                        action={
+                            !search && statusFilter === "all"
+                                ? { label: "New Request", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-3">
+                        {filtered.map((req, i) => {
+                            const SourceIcon = SOURCE_LABELS[req.source]?.icon || Inbox;
+                            const ConvertIcon = req.convertedToType
+                                ? CONVERT_ICONS[req.convertedToType] || ArrowRightCircle
+                                : null;
 
-                        return (
-                            <StaggerItem key={req.id} index={i} stagger="normal">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <StatusBadge
-                                                        status={req.status}
-                                                        className="text-[10px]"
-                                                    />
-                                                    <span
-                                                        className={`text-[10px] font-medium ${PRIORITY_CONFIG[req.priority].color}`}
-                                                    >
-                                                        {PRIORITY_CONFIG[req.priority].label}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                        <SourceIcon className="h-3 w-3" />
-                                                        {SOURCE_LABELS[req.source]?.label ||
-                                                            req.source}
-                                                    </span>
-                                                </div>
+                            return (
+                                <StaggerItem key={req.id} index={i} stagger="normal">
+                                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <StatusBadge
+                                                            status={req.status}
+                                                            className="text-[10px]"
+                                                        />
+                                                        <span
+                                                            className={`text-[10px] font-medium ${PRIORITY_CONFIG[req.priority].color}`}
+                                                        >
+                                                            {PRIORITY_CONFIG[req.priority].label}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                            <SourceIcon className="h-3 w-3" />
+                                                            {SOURCE_LABELS[req.source]?.label ||
+                                                                req.source}
+                                                        </span>
+                                                    </div>
 
-                                                <h3 className="text-sm font-bold mb-1">
-                                                    {req.title}
-                                                </h3>
+                                                    <h3 className="text-sm font-bold mb-1">
+                                                        {req.title}
+                                                    </h3>
 
-                                                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                                                    {(req.companyName ||
-                                                        req.contactName ||
-                                                        req.requesterName) && (
-                                                        <span className="flex items-center gap-1">
-                                                            <User className="h-3 w-3" />
-                                                            {req.companyName && (
-                                                                <span className="font-medium">
-                                                                    {req.companyName}
-                                                                </span>
-                                                            )}
-                                                            {req.contactName && (
-                                                                <span>{req.contactName}</span>
-                                                            )}
-                                                            {!req.contactName &&
-                                                                req.requesterName && (
-                                                                    <span>{req.requesterName}</span>
+                                                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+                                                        {(req.companyName ||
+                                                            req.contactName ||
+                                                            req.requesterName) && (
+                                                            <span className="flex items-center gap-1">
+                                                                <User className="h-3 w-3" />
+                                                                {req.companyName && (
+                                                                    <span className="font-medium">
+                                                                        {req.companyName}
+                                                                    </span>
                                                                 )}
-                                                        </span>
+                                                                {req.contactName && (
+                                                                    <span>{req.contactName}</span>
+                                                                )}
+                                                                {!req.contactName &&
+                                                                    req.requesterName && (
+                                                                        <span>
+                                                                            {req.requesterName}
+                                                                        </span>
+                                                                    )}
+                                                            </span>
+                                                        )}
+                                                        {req.requesterEmail && (
+                                                            <span className="flex items-center gap-1">
+                                                                <Mail className="h-3 w-3" />
+                                                                {req.requesterEmail}
+                                                            </span>
+                                                        )}
+                                                        {req.preferredDate && (
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar className="h-3 w-3" />
+                                                                Preferred: {req.preferredDate}
+                                                                {req.isFlexible && " (flexible)"}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {req.description && (
+                                                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                                            {req.description}
+                                                        </p>
                                                     )}
-                                                    {req.requesterEmail && (
-                                                        <span className="flex items-center gap-1">
-                                                            <Mail className="h-3 w-3" />
-                                                            {req.requesterEmail}
-                                                        </span>
-                                                    )}
-                                                    {req.preferredDate && (
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="h-3 w-3" />
-                                                            Preferred: {req.preferredDate}
-                                                            {req.isFlexible && " (flexible)"}
-                                                        </span>
-                                                    )}
+
+                                                    <div className="flex items-center gap-3 text-[10px]">
+                                                        {req.category && (
+                                                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                                {req.category}
+                                                            </span>
+                                                        )}
+                                                        {req.serviceType && (
+                                                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                                {req.serviceType}
+                                                            </span>
+                                                        )}
+                                                        {req.requiresAssessment && (
+                                                            <span className="text-warning">
+                                                                Requires assessment
+                                                            </span>
+                                                        )}
+                                                        {req.assignedToName && (
+                                                            <span className="text-muted-foreground">
+                                                                Assigned: {req.assignedToName}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
 
-                                                {req.description && (
-                                                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                                                        {req.description}
-                                                    </p>
-                                                )}
+                                                <div className="shrink-0 flex flex-col items-end gap-2">
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {new Date(
+                                                            req.createdAt
+                                                        ).toLocaleDateString()}
+                                                    </span>
 
-                                                <div className="flex items-center gap-3 text-[10px]">
-                                                    {req.category && (
-                                                        <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                                            {req.category}
-                                                        </span>
+                                                    {req.convertedToType && ConvertIcon && (
+                                                        <Badge
+                                                            variant="success"
+                                                            className="text-[10px]"
+                                                        >
+                                                            <ConvertIcon className="h-3 w-3 mr-1" />
+                                                            →{" "}
+                                                            {req.convertedToType.replace("_", " ")}
+                                                        </Badge>
                                                     )}
-                                                    {req.serviceType && (
-                                                        <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                                            {req.serviceType}
-                                                        </span>
+
+                                                    {req.status === "new" && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            Triage
+                                                        </Button>
                                                     )}
-                                                    {req.requiresAssessment && (
-                                                        <span className="text-warning">
-                                                            Requires assessment
-                                                        </span>
+                                                    {req.status === "acknowledged" && (
+                                                        <Button size="sm" className="text-xs">
+                                                            Create Quote
+                                                        </Button>
                                                     )}
-                                                    {req.assignedToName && (
-                                                        <span className="text-muted-foreground">
-                                                            Assigned: {req.assignedToName}
-                                                        </span>
+                                                    {req.status === "assessment_scheduled" && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            View Assessment
+                                                        </Button>
                                                     )}
                                                 </div>
                                             </div>
-
-                                            <div className="shrink-0 flex flex-col items-end gap-2">
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {new Date(req.createdAt).toLocaleDateString()}
-                                                </span>
-
-                                                {req.convertedToType && ConvertIcon && (
-                                                    <Badge
-                                                        variant="success"
-                                                        className="text-[10px]"
-                                                    >
-                                                        <ConvertIcon className="h-3 w-3 mr-1" />→{" "}
-                                                        {req.convertedToType.replace("_", " ")}
-                                                    </Badge>
-                                                )}
-
-                                                {req.status === "new" && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        Triage
-                                                    </Button>
-                                                )}
-                                                {req.status === "acknowledged" && (
-                                                    <Button size="sm" className="text-xs">
-                                                        Create Quote
-                                                    </Button>
-                                                )}
-                                                {req.status === "assessment_scheduled" && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        View Assessment
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        );
-                    })}
-
-                    {filtered.length === 0 && (
-                        <div className="text-center py-12">
-                            <Inbox className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">
-                                No service requests found
-                            </p>
-                        </div>
-                    )}
-                </div>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_SERVICE_REQUEST_CONFIG}

@@ -2,9 +2,10 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import Link from "next/link";
 import { useProposals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_PROPOSAL_CONFIG } from "@/config/create-entity-configs";
 import {
     Building2,
     Calendar,
@@ -13,11 +14,11 @@ import {
     DollarSign,
     Eye,
     FileText,
-    Loader2,
     Plus,
     Send,
     XCircle,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,7 @@ const statusConfig: Record<
 };
 
 export default function ProposalsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbProposals, isLoading } = useProposals(
@@ -80,9 +82,7 @@ export default function ProposalsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredProposals = proposals.filter((proposal) => {
@@ -108,230 +108,244 @@ export default function ProposalsPage() {
     };
 
     return (
-        <PermissionGate resource="proposals" action="read">
-            <div className="flex flex-col gap-6 p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Proposals</h1>
-                        <p className="text-muted-foreground">
-                            Create and manage client proposals and quotes
-                        </p>
-                    </div>
-                    <Link href="/proposals/new">
-                        <Button>
+        <>
+            <PermissionGate resource="proposals" action="read">
+                <div className="flex flex-col gap-6 p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Proposals</h1>
+                            <p className="text-muted-foreground">
+                                Create and manage client proposals and quotes
+                            </p>
+                        </div>
+                        <Button onClick={openCreate}>
                             <Plus className="mr-2 h-4 w-4" />
                             New Proposal
                         </Button>
-                    </Link>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Total Proposals"
-                        value={stats.total}
-                        icon={FileText}
-                        description={`${formatCurrency(stats.totalValue)} total value`}
-                    />
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-success" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-success">{stats.accepted}</div>
-                            <p className="text-xs text-muted-foreground">
-                                {formatCurrency(stats.acceptedValue)} won
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                            <Clock className="h-4 w-4 text-info" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-info">{stats.pending}</div>
-                            <p className="text-xs text-muted-foreground">
-                                {formatCurrency(stats.pendingValue)} in pipeline
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <StatCard
-                        title="Win Rate"
-                        value={`${stats.total > 0 ? Math.round((stats.accepted / stats.total) * 100) : 0}%`}
-                        icon={DollarSign}
-                        description="conversion rate"
-                    />
-                </div>
-
-                {/* Filters */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <SearchInput
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        placeholder="Search proposals..."
-                        className="flex-1 max-w-sm"
-                    />
-                    <div className="flex gap-2">
-                        {["all", "draft", "sent", "viewed", "accepted", "rejected"].map(
-                            (status) => (
-                                <Button
-                                    key={status}
-                                    variant={statusFilter === status ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setStatusFilter(status)}
-                                >
-                                    {status === "all"
-                                        ? "All"
-                                        : statusConfig[status as ProposalStatus]?.label}
-                                </Button>
-                            )
-                        )}
                     </div>
-                </div>
 
-                {/* Proposals List */}
-                <div className="grid gap-4">
-                    {filteredProposals.map((proposal) => {
-                        const StatusIcon = statusConfig[proposal.status].icon;
-                        return (
-                            <Card
-                                key={proposal.id}
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                            >
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <span className="text-sm font-mono text-muted-foreground">
-                                                    {proposal.number}
-                                                </span>
-                                                <Badge
-                                                    variant={statusConfig[proposal.status].variant}
-                                                >
-                                                    <StatusIcon className="mr-1 h-3 w-3" />
-                                                    {statusConfig[proposal.status].label}
-                                                </Badge>
-                                                {proposal.version > 1 && (
-                                                    <Badge variant="outline">
-                                                        v{proposal.version}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <h3 className="text-lg font-semibold mb-1">
-                                                {proposal.title}
-                                            </h3>
-                                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <Building2 className="h-4 w-4" />
-                                                    {proposal.companyName}
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="h-4 w-4" />
-                                                    Valid until {formatDate(proposal.validUntil)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-2xl font-bold">
-                                                {formatCurrency(proposal.total, proposal.currency)}
-                                            </div>
-                                            <div className="text-sm text-muted-foreground">
-                                                Created {formatDate(proposal.createdAt)}
-                                            </div>
-                                        </div>
-                                    </div>
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="Total Proposals"
+                            value={stats.total}
+                            icon={FileText}
+                            description={`${formatCurrency(stats.totalValue)} total value`}
+                        />
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+                                <CheckCircle className="h-4 w-4 text-success" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-success">
+                                    {stats.accepted}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {formatCurrency(stats.acceptedValue)} won
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                                <Clock className="h-4 w-4 text-info" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-info">{stats.pending}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    {formatCurrency(stats.pendingValue)} in pipeline
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <StatCard
+                            title="Win Rate"
+                            value={`${stats.total > 0 ? Math.round((stats.accepted / stats.total) * 100) : 0}%`}
+                            icon={DollarSign}
+                            description="conversion rate"
+                        />
+                    </div>
 
-                                    {/* Timeline */}
-                                    <div className="mt-4 pt-4 border-t flex flex-wrap items-center gap-3 sm:gap-6 text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className={cn(
-                                                    "h-2 w-2 rounded-full",
-                                                    proposal.sentAt ? "bg-info" : "bg-muted"
-                                                )}
-                                            />
-                                            <span
-                                                className={
-                                                    proposal.sentAt
-                                                        ? "text-foreground"
-                                                        : "text-muted-foreground"
-                                                }
-                                            >
-                                                {proposal.sentAt
-                                                    ? `Sent ${formatDate(proposal.sentAt)}`
-                                                    : "Not sent"}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className={cn(
-                                                    "h-2 w-2 rounded-full",
-                                                    proposal.viewedAt ? "bg-primary" : "bg-muted"
-                                                )}
-                                            />
-                                            <span
-                                                className={
-                                                    proposal.viewedAt
-                                                        ? "text-foreground"
-                                                        : "text-muted-foreground"
-                                                }
-                                            >
-                                                {proposal.viewedAt
-                                                    ? `Viewed ${formatDate(proposal.viewedAt)}`
-                                                    : "Not viewed"}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className={cn(
-                                                    "h-2 w-2 rounded-full",
-                                                    proposal.status === "accepted"
-                                                        ? "bg-success"
-                                                        : proposal.status === "rejected"
-                                                          ? "bg-destructive"
-                                                          : "bg-muted"
-                                                )}
-                                            />
-                                            <span
-                                                className={
-                                                    proposal.status === "accepted"
-                                                        ? "text-success"
-                                                        : proposal.status === "rejected"
-                                                          ? "text-destructive"
-                                                          : "text-muted-foreground"
-                                                }
-                                            >
-                                                {proposal.status === "accepted"
-                                                    ? "Accepted"
-                                                    : proposal.status === "rejected"
-                                                      ? "Rejected"
-                                                      : "Pending decision"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                    {/* Filters */}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <SearchInput
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                            placeholder="Search proposals..."
+                            className="flex-1 max-w-sm"
+                        />
+                        <div className="flex gap-2">
+                            {["all", "draft", "sent", "viewed", "accepted", "rejected"].map(
+                                (status) => (
+                                    <Button
+                                        key={status}
+                                        variant={statusFilter === status ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setStatusFilter(status)}
+                                    >
+                                        {status === "all"
+                                            ? "All"
+                                            : statusConfig[status as ProposalStatus]?.label}
+                                    </Button>
+                                )
+                            )}
+                        </div>
+                    </div>
 
-                {filteredProposals.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No proposals found</h3>
-                            <p className="text-muted-foreground text-center">
-                                {searchQuery || statusFilter !== "all"
+                    {/* Proposals List */}
+                    {filteredProposals.length === 0 ? (
+                        <EmptyState
+                            icon={FileText}
+                            title="No proposals found"
+                            description={
+                                searchQuery || statusFilter !== "all"
                                     ? "Try adjusting your search or filters"
-                                    : "Create your first proposal to get started"}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-        </PermissionGate>
+                                    : "Create your first proposal to get started"
+                            }
+                        />
+                    ) : (
+                        <div className="grid gap-4">
+                            {filteredProposals.map((proposal) => {
+                                const StatusIcon = statusConfig[proposal.status].icon;
+                                return (
+                                    <Card
+                                        key={proposal.id}
+                                        className="cursor-pointer hover:shadow-md transition-shadow"
+                                    >
+                                        <CardContent className="p-6">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <span className="text-sm font-mono text-muted-foreground">
+                                                            {proposal.number}
+                                                        </span>
+                                                        <Badge
+                                                            variant={
+                                                                statusConfig[proposal.status]
+                                                                    .variant
+                                                            }
+                                                        >
+                                                            <StatusIcon className="mr-1 h-3 w-3" />
+                                                            {statusConfig[proposal.status].label}
+                                                        </Badge>
+                                                        {proposal.version > 1 && (
+                                                            <Badge variant="outline">
+                                                                v{proposal.version}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <h3 className="text-lg font-semibold mb-1">
+                                                        {proposal.title}
+                                                    </h3>
+                                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                        <div className="flex items-center gap-1">
+                                                            <Building2 className="h-4 w-4" />
+                                                            {proposal.companyName}
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            <Calendar className="h-4 w-4" />
+                                                            Valid until{" "}
+                                                            {formatDate(proposal.validUntil)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-bold">
+                                                        {formatCurrency(
+                                                            proposal.total,
+                                                            proposal.currency
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        Created {formatDate(proposal.createdAt)}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Timeline */}
+                                            <div className="mt-4 pt-4 border-t flex flex-wrap items-center gap-3 sm:gap-6 text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className={cn(
+                                                            "h-2 w-2 rounded-full",
+                                                            proposal.sentAt ? "bg-info" : "bg-muted"
+                                                        )}
+                                                    />
+                                                    <span
+                                                        className={
+                                                            proposal.sentAt
+                                                                ? "text-foreground"
+                                                                : "text-muted-foreground"
+                                                        }
+                                                    >
+                                                        {proposal.sentAt
+                                                            ? `Sent ${formatDate(proposal.sentAt)}`
+                                                            : "Not sent"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className={cn(
+                                                            "h-2 w-2 rounded-full",
+                                                            proposal.viewedAt
+                                                                ? "bg-primary"
+                                                                : "bg-muted"
+                                                        )}
+                                                    />
+                                                    <span
+                                                        className={
+                                                            proposal.viewedAt
+                                                                ? "text-foreground"
+                                                                : "text-muted-foreground"
+                                                        }
+                                                    >
+                                                        {proposal.viewedAt
+                                                            ? `Viewed ${formatDate(proposal.viewedAt)}`
+                                                            : "Not viewed"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className={cn(
+                                                            "h-2 w-2 rounded-full",
+                                                            proposal.status === "accepted"
+                                                                ? "bg-success"
+                                                                : proposal.status === "rejected"
+                                                                  ? "bg-destructive"
+                                                                  : "bg-muted"
+                                                        )}
+                                                    />
+                                                    <span
+                                                        className={
+                                                            proposal.status === "accepted"
+                                                                ? "text-success"
+                                                                : proposal.status === "rejected"
+                                                                  ? "text-destructive"
+                                                                  : "text-muted-foreground"
+                                                        }
+                                                    >
+                                                        {proposal.status === "accepted"
+                                                            ? "Accepted"
+                                                            : proposal.status === "rejected"
+                                                              ? "Rejected"
+                                                              : "Pending decision"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_PROPOSAL_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

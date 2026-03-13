@@ -16,7 +16,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { ClipboardCheck, Loader2, Star } from "lucide-react";
+import { ClipboardCheck, Star } from "lucide-react";
 
 type TabId = "overview" | "scores" | "chatter";
 const TAB_VALUES = ["overview", "scores", "chatter"] as const;
@@ -41,9 +41,7 @@ export default function VendorReviewDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const r = review as Record<string, unknown> | undefined;

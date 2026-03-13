@@ -11,7 +11,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Wrench } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Plus, Wrench } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { EngineeringApproval, EngineeringApprovalStatus } from "@/types/governance";
 import { useEngineeringApprovals } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -61,9 +62,7 @@ export default function EngineeringApprovalsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = approvals.filter((a) => {
@@ -144,56 +143,87 @@ export default function EngineeringApprovalsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((a) => (
-                                        <tr
-                                            key={a.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-medium">
-                                                {APPROVAL_TYPE_LABELS[a.approval_type] ||
-                                                    a.approval_type}
-                                            </td>
-                                            <td className="p-3">
-                                                <div className="text-xs font-medium">
-                                                    {a.engineer_name}
-                                                </div>
-                                                {a.engineering_firm && (
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {a.engineering_firm}
-                                                    </div>
-                                                )}
-                                                {a.engineer_license_number && (
-                                                    <div className="text-[10px] text-muted-foreground">
-                                                        License: {a.engineer_license_number}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {a.entity_type} · {a.entity_id}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={a.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="p-0">
+                                                <EmptyState
+                                                    icon={Wrench}
+                                                    title="No engineering approvals found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search"
+                                                            : "Create your first engineering approval"
+                                                    }
+                                                    action={
+                                                        !search
+                                                            ? {
+                                                                  label: "New Approval",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {a.valid_until
-                                                    ? new Date(a.valid_until).toLocaleDateString()
-                                                    : "—"}
-                                            </td>
-                                            <td className="p-3 text-xs max-w-[200px] truncate">
-                                                {a.conditions || "—"}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((a) => (
+                                            <tr
+                                                key={a.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-medium">
+                                                    {APPROVAL_TYPE_LABELS[a.approval_type] ||
+                                                        a.approval_type}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="text-xs font-medium">
+                                                        {a.engineer_name}
+                                                    </div>
+                                                    {a.engineering_firm && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {a.engineering_firm}
+                                                        </div>
+                                                    )}
+                                                    {a.engineer_license_number && (
+                                                        <div className="text-[10px] text-muted-foreground">
+                                                            License: {a.engineer_license_number}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {a.entity_type} · {a.entity_id}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={a.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {a.valid_until
+                                                        ? new Date(
+                                                              a.valid_until
+                                                          ).toLocaleDateString()
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3 text-xs max-w-[200px] truncate">
+                                                    {a.conditions || "—"}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_ENGINEERING_APPROVAL_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_ENGINEERING_APPROVAL_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

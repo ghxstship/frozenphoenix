@@ -9,10 +9,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus, PaymentApproval } from "@/types/governance";
-import { useBudgetApprovals } from "@/lib/supabase/hooks-pages";
+import { useBudgetApprovals, useUpdateBudgetApproval } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 const APPROVAL_STATUSES: ApprovalStatus[] = [
@@ -30,6 +32,7 @@ export default function PaymentApprovalsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: sbApprovals, isLoading } = useBudgetApprovals();
+    const updateApproval = useUpdateBudgetApproval();
 
     const approvals: PaymentApproval[] = (sbApprovals ?? []).map((a: Record<string, unknown>) => ({
         id: (a.id as string) ?? "",
@@ -52,9 +55,7 @@ export default function PaymentApprovalsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = approvals.filter((a) => {
@@ -130,65 +131,121 @@ export default function PaymentApprovalsPage() {
                                         <th className="text-left p-3 font-medium">Threshold</th>
                                         <th className="text-left p-3 font-medium">Status</th>
                                         <th className="text-left p-3 font-medium">Requested</th>
+                                        <th className="text-left p-3 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((a) => (
-                                        <tr
-                                            key={a.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-medium">
-                                                {a.payee_name || "—"}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {a.payment_type.replace(/_/g, " ")}
-                                            </td>
-                                            <td className="p-3 font-medium">
-                                                {formatCurrency(a.amount)}
-                                            </td>
-                                            <td className="p-3">
-                                                <div className="flex flex-wrap gap-1">
-                                                    {a.three_way_match_verified && (
-                                                        <Badge
-                                                            variant="success"
-                                                            className="text-[9px]"
-                                                        >
-                                                            3-Way Match
-                                                        </Badge>
-                                                    )}
-                                                    {a.vendor_compliance_verified && (
-                                                        <Badge
-                                                            variant="success"
-                                                            className="text-[9px]"
-                                                        >
-                                                            Compliance
-                                                        </Badge>
-                                                    )}
-                                                    {a.budget_within_limit && (
-                                                        <Badge
-                                                            variant="success"
-                                                            className="text-[9px]"
-                                                        >
-                                                            Budget OK
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {a.threshold_rule || "—"}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={a.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="p-0">
+                                                <EmptyState
+                                                    icon={ShieldCheck}
+                                                    title="No payment approvals found"
+                                                    description={
+                                                        search || statusFilter !== "all"
+                                                            ? "Try adjusting your search or filters"
+                                                            : "No payment approvals pending"
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(a.requested_at).toLocaleDateString()}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((a) => (
+                                            <tr
+                                                key={a.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-medium">
+                                                    {a.payee_name || "—"}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {a.payment_type.replace(/_/g, " ")}
+                                                </td>
+                                                <td className="p-3 font-medium">
+                                                    {formatCurrency(a.amount)}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {a.three_way_match_verified && (
+                                                            <Badge
+                                                                variant="success"
+                                                                className="text-[9px]"
+                                                            >
+                                                                3-Way Match
+                                                            </Badge>
+                                                        )}
+                                                        {a.vendor_compliance_verified && (
+                                                            <Badge
+                                                                variant="success"
+                                                                className="text-[9px]"
+                                                            >
+                                                                Compliance
+                                                            </Badge>
+                                                        )}
+                                                        {a.budget_within_limit && (
+                                                            <Badge
+                                                                variant="success"
+                                                                className="text-[9px]"
+                                                            >
+                                                                Budget OK
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {a.threshold_rule || "—"}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={a.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(a.requested_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3">
+                                                    {a.status === "pending" && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 text-xs text-success border-success/30 hover:bg-success/10"
+                                                                disabled={updateApproval.isPending}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateApproval.mutate({
+                                                                        id: a.id,
+                                                                        status: "approved",
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <CheckCircle2 className="h-3 w-3" />
+                                                                Approve
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                                                                disabled={updateApproval.isPending}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateApproval.mutate({
+                                                                        id: a.id,
+                                                                        status: "rejected",
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <XCircle className="h-3 w-3" />
+                                                                Reject
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

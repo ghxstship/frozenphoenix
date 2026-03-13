@@ -24,12 +24,14 @@ import {
     CheckCircle2,
     DollarSign,
     FileText,
-    Loader2,
     Plus,
     Send,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useClientInvoices } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_INVOICE_CONFIG } from "@/config/create-entity-configs";
 
 interface InvoiceListItem {
     id: string;
@@ -48,6 +50,7 @@ interface InvoiceListItem {
 export default function InvoicesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const { data: sbInvoices, isLoading } = useClientInvoices();
 
@@ -66,9 +69,7 @@ export default function InvoicesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = invoices.filter((inv) => {
@@ -91,181 +92,193 @@ export default function InvoicesPage() {
         .reduce((sum, i) => sum + i.paidAmount, 0);
 
     return (
-        <PermissionGate resource="invoices" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Invoice Management"
-                    description="Create, send, and track invoices across all projects"
-                >
-                    <div className="flex items-center gap-2">
-                        <CsvExportButton entity="invoices" />
-                        <Link href="/invoices/new">
-                            <Button>
+        <>
+            <PermissionGate resource="invoices" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Invoice Management"
+                        description="Create, send, and track invoices across all projects"
+                    >
+                        <div className="flex items-center gap-2">
+                            <CsvExportButton entity="invoices" />
+                            <Button onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 New Invoice
                             </Button>
-                        </Link>
+                        </div>
+                    </PageHeader>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="Total Outstanding"
+                            value={formatCurrency(totalOutstanding)}
+                            icon={DollarSign}
+                        />
+                        <StatCard
+                            title="Overdue"
+                            value={formatCurrency(totalOverdue)}
+                            icon={AlertTriangle}
+                        />
+                        <StatCard
+                            title="Paid (YTD)"
+                            value={formatCurrency(totalPaid)}
+                            icon={CheckCircle2}
+                        />
+                        <StatCard
+                            title="Invoices Sent"
+                            value={invoices.filter((i) => i.status !== "draft").length}
+                            icon={Send}
+                        />
                     </div>
-                </PageHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Total Outstanding"
-                        value={formatCurrency(totalOutstanding)}
-                        icon={DollarSign}
-                    />
-                    <StatCard
-                        title="Overdue"
-                        value={formatCurrency(totalOverdue)}
-                        icon={AlertTriangle}
-                    />
-                    <StatCard
-                        title="Paid (YTD)"
-                        value={formatCurrency(totalPaid)}
-                        icon={CheckCircle2}
-                    />
-                    <StatCard
-                        title="Invoices Sent"
-                        value={invoices.filter((i) => i.status !== "draft").length}
-                        icon={Send}
-                    />
-                </div>
+                    {totalOverdue > 0 && (
+                        <Card className="border-destructive/30 bg-destructive/5">
+                            <CardContent className="py-3">
+                                <div className="flex items-center gap-2 text-destructive text-sm font-medium">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    {formatCurrency(totalOverdue)} in overdue invoices require
+                                    immediate attention
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
-                {totalOverdue > 0 && (
-                    <Card className="border-destructive/30 bg-destructive/5">
-                        <CardContent className="py-3">
-                            <div className="flex items-center gap-2 text-destructive text-sm font-medium">
-                                <AlertTriangle className="h-4 w-4" />
-                                {formatCurrency(totalOverdue)} in overdue invoices require immediate
-                                attention
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <SearchInput
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        placeholder="Search invoices..."
-                        className="flex-1 max-w-sm"
-                    />
-                    <div className="flex gap-2 flex-wrap">
-                        {["all", "draft", "sent", "viewed", "paid", "overdue", "disputed"].map(
-                            (s) => (
-                                <Button
-                                    key={s}
-                                    variant={statusFilter === s ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setStatusFilter(s)}
-                                >
-                                    {s === "all"
-                                        ? "All"
-                                        : (INVOICE_DELIVERY_STATUS_MAP[
-                                              s as InvoiceDeliveryStatusType
-                                          ]?.label ?? s)}
-                                </Button>
-                            )
-                        )}
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    {filtered.map((invoice, i) => {
-                        const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoice.status];
-                        return (
-                            <StaggerItem key={invoice.id} index={i} stagger="relaxed">
-                                <Link href={`/invoices/${invoice.id}`}>
-                                    <Card
-                                        className={`cursor-pointer hover:shadow-md transition-all ${invoice.status === "overdue" ? "border-destructive/30" : ""}`}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <SearchInput
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                            placeholder="Search invoices..."
+                            className="flex-1 max-w-sm"
+                        />
+                        <div className="flex gap-2 flex-wrap">
+                            {["all", "draft", "sent", "viewed", "paid", "overdue", "disputed"].map(
+                                (s) => (
+                                    <Button
+                                        key={s}
+                                        variant={statusFilter === s ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setStatusFilter(s)}
                                     >
-                                        <CardContent className="py-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div
-                                                        className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${invoice.status === "paid" ? "bg-success/10" : invoice.status === "overdue" ? "bg-destructive/10" : "bg-primary/10"}`}
-                                                    >
-                                                        <FileText
-                                                            className={`h-5 w-5 ${invoice.status === "paid" ? "text-success" : invoice.status === "overdue" ? "text-destructive" : "text-primary"}`}
-                                                        />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="text-xs font-mono text-muted-foreground">
-                                                                {invoice.invoiceNumber}
-                                                            </span>
-                                                            <Badge variant={statusCfg?.variant}>
-                                                                {statusCfg?.label}
-                                                            </Badge>
-                                                        </div>
-                                                        <h3 className="text-sm font-semibold mt-1">
-                                                            {invoice.projectName}
-                                                        </h3>
-                                                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                                                            <span className="flex items-center gap-1">
-                                                                <Building2 className="h-3 w-3" />
-                                                                {invoice.companyName}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <Calendar className="h-3 w-3" />
-                                                                Due {formatDate(invoice.dueDate)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right shrink-0">
-                                                    <p className="text-lg font-bold">
-                                                        {formatCurrency(invoice.amount)}
-                                                    </p>
-                                                    {invoice.status === "overdue" && (
-                                                        <p className="text-xs text-destructive font-medium">
-                                                            {invoice.daysOverdue}d overdue
-                                                        </p>
-                                                    )}
-                                                    {invoice.paidAmount > 0 &&
-                                                        invoice.paidAmount < invoice.amount && (
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {formatCurrency(invoice.paidAmount)}{" "}
-                                                                paid
-                                                            </p>
-                                                        )}
-                                                </div>
-                                            </div>
-                                            {/* Payment progress bar */}
-                                            {invoice.amount > 0 && (
-                                                <div className="mt-3">
-                                                    <ProgressBar
-                                                        value={Math.min(
-                                                            100,
-                                                            (invoice.paidAmount / invoice.amount) *
-                                                                100
-                                                        )}
-                                                        size="xs"
-                                                    />
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
+                                        {s === "all"
+                                            ? "All"
+                                            : (INVOICE_DELIVERY_STATUS_MAP[
+                                                  s as InvoiceDeliveryStatusType
+                                              ]?.label ?? s)}
+                                    </Button>
+                                )
+                            )}
+                        </div>
+                    </div>
 
-                {filtered.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No invoices found</h3>
-                            <p className="text-muted-foreground text-center">
-                                {searchQuery || statusFilter !== "all"
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={FileText}
+                            title="No invoices found"
+                            description={
+                                searchQuery || statusFilter !== "all"
                                     ? "Try adjusting your search or filters"
-                                    : "Create your first invoice to get started"}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-        </PermissionGate>
+                                    : "Create your first invoice to get started"
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {filtered.map((invoice, i) => {
+                                const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoice.status];
+                                return (
+                                    <StaggerItem key={invoice.id} index={i} stagger="relaxed">
+                                        <Link href={`/invoices/${invoice.id}`}>
+                                            <Card
+                                                className={`cursor-pointer hover:shadow-md transition-all ${invoice.status === "overdue" ? "border-destructive/30" : ""}`}
+                                            >
+                                                <CardContent className="py-4">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                            <div
+                                                                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${invoice.status === "paid" ? "bg-success/10" : invoice.status === "overdue" ? "bg-destructive/10" : "bg-primary/10"}`}
+                                                            >
+                                                                <FileText
+                                                                    className={`h-5 w-5 ${invoice.status === "paid" ? "text-success" : invoice.status === "overdue" ? "text-destructive" : "text-primary"}`}
+                                                                />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-xs font-mono text-muted-foreground">
+                                                                        {invoice.invoiceNumber}
+                                                                    </span>
+                                                                    <Badge
+                                                                        variant={statusCfg?.variant}
+                                                                    >
+                                                                        {statusCfg?.label}
+                                                                    </Badge>
+                                                                </div>
+                                                                <h3 className="text-sm font-semibold mt-1">
+                                                                    {invoice.projectName}
+                                                                </h3>
+                                                                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Building2 className="h-3 w-3" />
+                                                                        {invoice.companyName}
+                                                                    </span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        Due{" "}
+                                                                        {formatDate(
+                                                                            invoice.dueDate
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            <p className="text-lg font-bold">
+                                                                {formatCurrency(invoice.amount)}
+                                                            </p>
+                                                            {invoice.status === "overdue" && (
+                                                                <p className="text-xs text-destructive font-medium">
+                                                                    {invoice.daysOverdue}d overdue
+                                                                </p>
+                                                            )}
+                                                            {invoice.paidAmount > 0 &&
+                                                                invoice.paidAmount <
+                                                                    invoice.amount && (
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        {formatCurrency(
+                                                                            invoice.paidAmount
+                                                                        )}{" "}
+                                                                        paid
+                                                                    </p>
+                                                                )}
+                                                        </div>
+                                                    </div>
+                                                    {/* Payment progress bar */}
+                                                    {invoice.amount > 0 && (
+                                                        <div className="mt-3">
+                                                            <ProgressBar
+                                                                value={Math.min(
+                                                                    100,
+                                                                    (invoice.paidAmount /
+                                                                        invoice.amount) *
+                                                                        100
+                                                                )}
+                                                                size="xs"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_INVOICE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

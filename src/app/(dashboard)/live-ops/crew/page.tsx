@@ -8,12 +8,14 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { AlertTriangle, CheckCircle2, Clock, Users } from "lucide-react";
-import { useLiveCrewAssignments } from "@/lib/supabase/hooks-live-ops";
+import { AlertTriangle, CheckCircle2, Clock, Coffee, LogIn, LogOut, Users } from "lucide-react";
+import { useLiveCrewAssignments, useUpdateLiveCrewAssignment } from "@/lib/supabase/hooks-live-ops";
+import { Button } from "@/components/ui/button";
 
 export default function LiveCrewPage() {
     const [search, setSearch] = useState("");
     const { data: crew, isLoading } = useLiveCrewAssignments();
+    const updateAssignment = useUpdateLiveCrewAssignment();
 
     if (isLoading) return <LoadingState />;
 
@@ -71,7 +73,11 @@ export default function LiveCrewPage() {
                                                 {member.crew_member_id}
                                             </h3>
                                             <StatusBadge
-                                                status={member.checked_in_at ? "checked_in" : "not_checked_in"}
+                                                status={
+                                                    member.checked_in_at
+                                                        ? "checked_in"
+                                                        : "not_checked_in"
+                                                }
                                                 className="text-[10px] shrink-0"
                                             />
                                             {member.overtime_flagged && (
@@ -82,16 +88,114 @@ export default function LiveCrewPage() {
                                             )}
                                         </div>
                                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            {member.role_description ?? ""} · {member.department ?? ""} · {member.zone ?? ""}
+                                            {member.role_description ?? ""} ·{" "}
+                                            {member.department ?? ""} · {member.zone ?? ""}
                                         </p>
                                     </div>
-                                    <div className="text-right text-sm shrink-0">
-                                        <p className="font-medium">{member.hours_worked ?? 0}h</p>
-                                        {member.checked_in_at && (
-                                            <p className="text-[10px] text-muted-foreground">
-                                                In: {new Date(member.checked_in_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <div className="text-right text-sm">
+                                            <p className="font-medium">
+                                                {member.hours_worked ?? 0}h
                                             </p>
-                                        )}
+                                            {member.checked_in_at && (
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    In:{" "}
+                                                    {new Date(
+                                                        member.checked_in_at
+                                                    ).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {!member.checked_in_at ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-[10px]"
+                                                    title="Check in"
+                                                    disabled={updateAssignment.isPending}
+                                                    onClick={() =>
+                                                        updateAssignment.mutate({
+                                                            id: member.id,
+                                                            checked_in_at: new Date().toISOString(),
+                                                        })
+                                                    }
+                                                >
+                                                    <LogIn className="h-3 w-3 mr-1" />
+                                                    In
+                                                </Button>
+                                            ) : !member.checked_out_at ? (
+                                                <>
+                                                    {!member.break_start || member.break_end ? (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-[10px]"
+                                                            title="Start break"
+                                                            disabled={updateAssignment.isPending}
+                                                            onClick={() =>
+                                                                updateAssignment.mutate({
+                                                                    id: member.id,
+                                                                    break_start:
+                                                                        new Date().toISOString(),
+                                                                    break_end: null,
+                                                                })
+                                                            }
+                                                        >
+                                                            <Coffee className="h-3 w-3" />
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-[10px] text-warning"
+                                                            title="End break"
+                                                            disabled={updateAssignment.isPending}
+                                                            onClick={() =>
+                                                                updateAssignment.mutate({
+                                                                    id: member.id,
+                                                                    break_end:
+                                                                        new Date().toISOString(),
+                                                                })
+                                                            }
+                                                        >
+                                                            <Coffee className="h-3 w-3 mr-1" />
+                                                            End
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-7 px-2 text-[10px]"
+                                                        title="Check out"
+                                                        disabled={updateAssignment.isPending}
+                                                        onClick={() =>
+                                                            updateAssignment.mutate({
+                                                                id: member.id,
+                                                                checked_out_at:
+                                                                    new Date().toISOString(),
+                                                            })
+                                                        }
+                                                    >
+                                                        <LogOut className="h-3 w-3 mr-1" />
+                                                        Out
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Out:{" "}
+                                                    {new Date(
+                                                        member.checked_out_at
+                                                    ).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>

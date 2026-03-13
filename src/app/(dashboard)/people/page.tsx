@@ -13,7 +13,7 @@ import { CREATE_PERSON_CONFIG } from "@/config/create-entity-configs";
 import type { Stakeholder } from "@/types";
 import { usePeople } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-import { Building2, Loader2, Mail, Phone, Plus, UserCircle, Users, Wrench } from "lucide-react";
+import { Building2, Mail, Phone, Plus, UserCircle, Users, Wrench } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { StakeholderType } from "@/types";
 
@@ -40,9 +40,7 @@ export default function PeoplePage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

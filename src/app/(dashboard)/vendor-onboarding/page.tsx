@@ -13,7 +13,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
-import { CheckCircle2, Clock, FileText, Loader2, UserPlus, Users } from "lucide-react";
+import { CheckCircle2, Clock, FileText, UserPlus, Users } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { OnboardingStatus } from "@/types/vendor-lifecycle";
 import { useVendorOnboarding } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -87,9 +88,7 @@ export default function VendorOnboardingPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = vendors.filter(
@@ -228,59 +227,85 @@ export default function VendorOnboardingPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filtered.map((v) => (
-                                            <tr
-                                                key={v.id}
-                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-3 font-medium">{v.name}</td>
-                                                <td className="p-3">
-                                                    <Badge
-                                                        variant="default"
-                                                        className="text-[10px]"
-                                                    >
-                                                        {v.type}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-3 text-muted-foreground text-xs">
-                                                    {v.contactName}
-                                                    <br />
-                                                    {v.email}
-                                                </td>
-                                                <td className="p-3">
-                                                    <Badge
-                                                        variant={
-                                                            STATUS_BADGE[v.status]?.variant ||
-                                                            "default"
+                                        {filtered.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="p-0">
+                                                    <EmptyState
+                                                        icon={UserPlus}
+                                                        title="No vendors in onboarding"
+                                                        description={
+                                                            search
+                                                                ? "Try adjusting your search"
+                                                                : "Invite your first vendor to get started"
                                                         }
-                                                        className="text-[10px]"
-                                                    >
-                                                        {STATUS_BADGE[v.status]?.label || v.status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <ProgressBar
-                                                            value={
-                                                                v.docsRequired > 0
-                                                                    ? (v.docsApproved /
-                                                                          v.docsRequired) *
-                                                                      100
-                                                                    : 0
-                                                            }
-                                                            size="xs"
-                                                            className="w-16"
-                                                        />
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {v.docsApproved}/{v.docsRequired}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {new Date(v.invitedAt).toLocaleDateString()}
+                                                        action={
+                                                            !search
+                                                                ? {
+                                                                      label: "Invite Vendor",
+                                                                      onClick: openCreate,
+                                                                  }
+                                                                : undefined
+                                                        }
+                                                        compact
+                                                    />
                                                 </td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            filtered.map((v) => (
+                                                <tr
+                                                    key={v.id}
+                                                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-3 font-medium">{v.name}</td>
+                                                    <td className="p-3">
+                                                        <Badge
+                                                            variant="default"
+                                                            className="text-[10px]"
+                                                        >
+                                                            {v.type}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-3 text-muted-foreground text-xs">
+                                                        {v.contactName}
+                                                        <br />
+                                                        {v.email}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <Badge
+                                                            variant={
+                                                                STATUS_BADGE[v.status]?.variant ||
+                                                                "default"
+                                                            }
+                                                            className="text-[10px]"
+                                                        >
+                                                            {STATUS_BADGE[v.status]?.label ||
+                                                                v.status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <ProgressBar
+                                                                value={
+                                                                    v.docsRequired > 0
+                                                                        ? (v.docsApproved /
+                                                                              v.docsRequired) *
+                                                                          100
+                                                                        : 0
+                                                                }
+                                                                size="xs"
+                                                                className="w-16"
+                                                            />
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {v.docsApproved}/{v.docsRequired}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 text-xs text-muted-foreground">
+                                                        {new Date(v.invitedAt).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -288,7 +313,11 @@ export default function VendorOnboardingPage() {
                     </Card>
                 )}
             </div>
-            <CreateEntityDialog config={CREATE_VENDOR_ONBOARDING_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_VENDOR_ONBOARDING_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

@@ -10,7 +10,7 @@ import { CurrencyInput, DatePicker, FormField, Select } from "@/components/ui/fo
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
 import { useProject, useUpdateProject } from "@/lib/supabase/hooks";
-import { FolderKanban, Loader2 } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 
 export default function EditProjectPage() {
     const params = useParams();
@@ -30,9 +30,7 @@ export default function EditProjectPage() {
     });
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!project) {

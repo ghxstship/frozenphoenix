@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useVaultDocuments } from "@/lib/supabase/hooks";
-import { Clock, Eye, FileText, Link, Loader2, Lock, Plus, Shield } from "lucide-react";
+import { Clock, Eye, FileText, Link, Lock, Plus, Shield } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -49,9 +49,7 @@ export default function VaultPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -127,7 +125,11 @@ export default function VaultPage() {
                     })}
                 </div>
             </div>
-            <CreateEntityDialog config={CREATE_VAULT_DOCUMENT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_VAULT_DOCUMENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

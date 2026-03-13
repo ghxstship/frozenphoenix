@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_INSURANCE_POLICY_CONFIG } from "@/config/create-entity-configs";
 import { AlertTriangle, CheckCircle2, Clock, Plus, Shield, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { InsurancePolicy, InsuranceRequirement } from "@/types/governance";
 import { useInsurancePolicies, useInsuranceRequirements } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -176,47 +177,75 @@ export default function InsurancePoliciesPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((p) => (
-                                        <tr
-                                            key={p.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3">
-                                                <div className="font-medium">
-                                                    {holderNames[p.holder_id] || p.holder_id}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {p.holder_type}
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {POLICY_TYPE_LABELS[p.policy_type] || p.policy_type}
-                                            </td>
-                                            <td className="p-3">
-                                                <div className="text-xs font-medium">
-                                                    {p.carrier}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {p.policy_number}
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-xs font-medium">
-                                                ${p.coverage_amount.toLocaleString()}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={p.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={Shield}
+                                                    title="No insurance policies found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Add your first insurance policy"
+                                                    }
+                                                    action={
+                                                        !search
+                                                            ? {
+                                                                  label: "New Policy",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(p.effective_date).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(p.expiry_date).toLocaleDateString()}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((p) => (
+                                            <tr
+                                                key={p.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3">
+                                                    <div className="font-medium">
+                                                        {holderNames[p.holder_id] || p.holder_id}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {p.holder_type}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {POLICY_TYPE_LABELS[p.policy_type] ||
+                                                        p.policy_type}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="text-xs font-medium">
+                                                        {p.carrier}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {p.policy_number}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-xs font-medium">
+                                                    ${p.coverage_amount.toLocaleString()}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={p.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(
+                                                        p.effective_date
+                                                    ).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(p.expiry_date).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -231,27 +260,38 @@ export default function InsurancePoliciesPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {requirements.map((req) => (
-                                <div
-                                    key={req.id}
-                                    className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                                >
-                                    <h4 className="text-sm font-medium mb-1">{req.name}</h4>
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                        {req.description}
-                                    </p>
-                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                                        <span>Min: ${req.minimum_amount.toLocaleString()}</span>
-                                        <span>·</span>
-                                        <span>Before: {req.required_before}</span>
-                                        {req.auto_suspend_on_expiry && (
-                                            <span className="text-destructive">· Auto-suspend</span>
-                                        )}
+                        {requirements.length === 0 ? (
+                            <EmptyState
+                                icon={Shield}
+                                title="No insurance requirements"
+                                description="No insurance requirements configured yet"
+                                compact
+                            />
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {requirements.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                                    >
+                                        <h4 className="text-sm font-medium mb-1">{req.name}</h4>
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                            {req.description}
+                                        </p>
+                                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                            <span>Min: ${req.minimum_amount.toLocaleString()}</span>
+                                            <span>·</span>
+                                            <span>Before: {req.required_before}</span>
+                                            {req.auto_suspend_on_expiry && (
+                                                <span className="text-destructive">
+                                                    · Auto-suspend
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

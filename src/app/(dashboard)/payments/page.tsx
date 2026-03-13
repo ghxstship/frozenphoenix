@@ -13,7 +13,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowDownRight, ArrowUpRight, Banknote, Loader2, Plus, TrendingUp } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Banknote, Plus, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { usePayments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -68,9 +69,7 @@ export default function PaymentsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = payments.filter((p) => {
@@ -153,48 +152,69 @@ export default function PaymentsPage() {
                     />
                 </div>
 
-                <div className="space-y-2">
-                    {filtered.map((p) => (
-                        <Card
-                            key={p.id}
-                            className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                        >
-                            <CardContent className="flex items-center gap-4 py-3">
-                                <div
-                                    className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${p.direction === "incoming" ? "bg-success/10" : "bg-destructive/10"}`}
-                                >
-                                    {p.direction === "incoming" ? (
-                                        <ArrowDownRight className="h-5 w-5 text-success" />
-                                    ) : (
-                                        <ArrowUpRight className="h-5 w-5 text-destructive" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-semibold">{p.counterparty}</p>
-                                        <Badge variant="ghost" className="text-[10px]">
-                                            {METHOD_LABELS[p.method]}
-                                        </Badge>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {p.invoiceNumber} · {p.project} · Ref: {p.reference}
-                                    </p>
-                                </div>
-                                <div className="text-right shrink-0">
-                                    <p
-                                        className={`text-sm font-bold ${p.direction === "incoming" ? "text-success" : "text-destructive"}`}
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Banknote}
+                        title="No payments found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Record your first payment"
+                        }
+                        action={!search ? { label: "New Payment", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {filtered.map((p) => (
+                            <Card
+                                key={p.id}
+                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                            >
+                                <CardContent className="flex items-center gap-4 py-3">
+                                    <div
+                                        className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${p.direction === "incoming" ? "bg-success/10" : "bg-destructive/10"}`}
                                     >
-                                        {p.direction === "incoming" ? "+" : "-"}
-                                        {formatCurrency(p.amount)}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground">{p.date}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                        {p.direction === "incoming" ? (
+                                            <ArrowDownRight className="h-5 w-5 text-success" />
+                                        ) : (
+                                            <ArrowUpRight className="h-5 w-5 text-destructive" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-semibold">
+                                                {p.counterparty}
+                                            </p>
+                                            <Badge variant="ghost" className="text-[10px]">
+                                                {METHOD_LABELS[p.method]}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {p.invoiceNumber} · {p.project} · Ref: {p.reference}
+                                        </p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p
+                                            className={`text-sm font-bold ${p.direction === "incoming" ? "text-success" : "text-destructive"}`}
+                                        >
+                                            {p.direction === "incoming" ? "+" : "-"}
+                                            {formatCurrency(p.amount)}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground">
+                                            {p.date}
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
-            <CreateEntityDialog config={CREATE_PAYMENT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_PAYMENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

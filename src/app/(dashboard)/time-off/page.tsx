@@ -14,15 +14,23 @@ import {
     Clock,
     GraduationCap,
     Heart,
+    Loader2,
     Palmtree,
     Plus,
     Stethoscope,
     User,
     XCircle,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useTimeOffRequests } from "@/lib/supabase/hooks-productive";
+import {
+    useApproveTimeOffRequest,
+    useCreateTimeOffRequest,
+    useRejectTimeOffRequest,
+    useTimeOffRequests,
+} from "@/lib/supabase/hooks-productive";
+import { useAuth } from "@/lib/supabase/auth-context";
 
 type LeaveType = "vacation" | "sick" | "personal" | "training" | "parental" | "bereavement";
 
@@ -69,12 +77,31 @@ interface BalanceItem {
     pending: number;
 }
 
-const balances: BalanceItem[] = [
-    { type: "vacation", label: "Vacation", total: 20, used: 8, pending: 5 },
-    { type: "sick", label: "Sick Leave", total: 10, used: 3, pending: 0 },
-    { type: "personal", label: "Personal", total: 3, used: 1, pending: 1 },
-    { type: "training", label: "Training", total: 5, used: 3, pending: 0 },
-];
+const DEFAULT_ALLOWANCES: Record<LeaveType, number> = {
+    vacation: 20,
+    sick: 10,
+    personal: 3,
+    training: 5,
+    parental: 60,
+    bereavement: 5,
+};
+
+function computeBalances(requests: LeaveView[]): BalanceItem[] {
+    const usedByType = new Map<string, { used: number; pending: number }>();
+    for (const r of requests) {
+        const existing = usedByType.get(r.type) ?? { used: 0, pending: 0 };
+        if (r.status === "approved") existing.used += r.days;
+        else if (r.status === "pending") existing.pending += r.days;
+        usedByType.set(r.type, existing);
+    }
+    return (["vacation", "sick", "personal", "training"] as LeaveType[]).map((type) => ({
+        type,
+        label: LEAVE_TYPE_LABELS[type] ?? type,
+        total: DEFAULT_ALLOWANCES[type] ?? 0,
+        used: usedByType.get(type)?.used ?? 0,
+        pending: usedByType.get(type)?.pending ?? 0,
+    }));
+}
 
 export default function TimeOffPage() {
     const STATUS_FILTERS = ["all", "pending", "approved", "rejected"] as const;
@@ -84,6 +111,10 @@ export default function TimeOffPage() {
         validValues: STATUS_FILTERS,
     });
     const { data: sbRequests, isLoading } = useTimeOffRequests();
+    const approveRequest = useApproveTimeOffRequest();
+    const rejectRequest = useRejectTimeOffRequest();
+    const createRequest = useCreateTimeOffRequest();
+    const { user, activeOrg } = useAuth();
 
     if (isLoading) return <LoadingState />;
 
@@ -114,8 +145,26 @@ export default function TimeOffPage() {
                     title="Time Off"
                     description="Manage leave requests, approvals, and PTO balances"
                 >
-                    <Button onClick={() => void 0}>
-                        <Plus className="mr-2 h-4 w-4" /> Request Time Off
+                    <Button
+                        disabled={createRequest.isPending}
+                        onClick={() =>
+                            createRequest.mutate({
+                                crew_member_id: user?.id ?? "",
+                                organization_id: activeOrg?.id ?? "",
+                                time_off_type: "vacation",
+                                start_date: new Date().toISOString().split("T")[0]!,
+                                end_date: new Date().toISOString().split("T")[0]!,
+                                status: "pending",
+                                reason: "",
+                            })
+                        }
+                    >
+                        {createRequest.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Plus className="mr-2 h-4 w-4" />
+                        )}
+                        Request Time Off
                     </Button>
                 </PageHeader>
 
@@ -149,7 +198,7 @@ export default function TimeOffPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {balances.map((b) => {
+                            {computeBalances(requests).map((b) => {
                                 const Icon = LEAVE_ICONS[b.type] ?? Heart;
                                 const remaining = b.total - b.used - b.pending;
                                 return (
@@ -196,64 +245,100 @@ export default function TimeOffPage() {
                 />
 
                 {/* Requests List */}
-                <div className="space-y-2">
-                    {filtered.map((req) => {
-                        const Icon = LEAVE_ICONS[req.type] ?? Heart;
-                        return (
-                            <Card
-                                key={req.id}
-                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                            >
-                                <CardContent className="flex items-center gap-4 py-3">
-                                    <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                                        <Icon className="h-4 w-4 text-muted-foreground" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-semibold">{req.person}</p>
-                                            <StatusBadge
-                                                status={req.status}
-                                                className="text-[10px]"
-                                            />
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Palmtree}
+                        title="No time-off requests found"
+                        description={
+                            filter !== "all"
+                                ? "Try adjusting your filters"
+                                : "No time-off requests yet"
+                        }
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {filtered.map((req) => {
+                            const Icon = LEAVE_ICONS[req.type] ?? Heart;
+                            return (
+                                <Card
+                                    key={req.id}
+                                    className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                                >
+                                    <CardContent className="flex items-center gap-4 py-3">
+                                        <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                                            <Icon className="h-4 w-4 text-muted-foreground" />
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                            {LEAVE_TYPE_LABELS[req.type] ?? req.type} — {req.reason}
-                                        </p>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm font-medium">
-                                            {req.days} day{req.days > 1 ? "s" : ""}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground">
-                                            {req.startDate}
-                                            {req.days > 1 ? ` — ${req.endDate}` : ""}
-                                        </p>
-                                    </div>
-                                    {req.status === "pending" && (
-                                        <div className="flex gap-1 shrink-0">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 w-7 p-0 text-success hover:bg-success/10"
-                                                onClick={() => void 0}
-                                            >
-                                                <CheckCircle2 className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
-                                                onClick={() => void 0}
-                                            >
-                                                <XCircle className="h-4 w-4" />
-                                            </Button>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold">
+                                                    {req.person}
+                                                </p>
+                                                <StatusBadge
+                                                    status={req.status}
+                                                    className="text-[10px]"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                {LEAVE_TYPE_LABELS[req.type] ?? req.type} —{" "}
+                                                {req.reason}
+                                            </p>
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-sm font-medium">
+                                                {req.days} day{req.days > 1 ? "s" : ""}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {req.startDate}
+                                                {req.days > 1 ? ` — ${req.endDate}` : ""}
+                                            </p>
+                                        </div>
+                                        {req.status === "pending" && (
+                                            <div className="flex gap-1 shrink-0">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0 text-success hover:bg-success/10"
+                                                    disabled={approveRequest.isPending}
+                                                    onClick={() =>
+                                                        approveRequest.mutate({
+                                                            id: req.id,
+                                                            approverId: user?.id ?? "",
+                                                        })
+                                                    }
+                                                >
+                                                    {approveRequest.isPending ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                                                    disabled={rejectRequest.isPending}
+                                                    onClick={() =>
+                                                        rejectRequest.mutate({
+                                                            id: req.id,
+                                                            approverId: user?.id ?? "",
+                                                            reason: "Rejected",
+                                                        })
+                                                    }
+                                                >
+                                                    {rejectRequest.isPending ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <XCircle className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </PermissionGate>
     );

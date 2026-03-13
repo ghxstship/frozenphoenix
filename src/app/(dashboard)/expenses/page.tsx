@@ -26,6 +26,7 @@ import {
     Upload,
     User,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useExpenses } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -173,74 +174,82 @@ export default function ExpensesPage() {
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    {filtered.map((expense, i) => {
-                        return (
-                            <StaggerItem key={expense.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-sm transition-all">
-                                    <CardContent className="py-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                                                <DollarSign className="h-5 w-5 text-muted-foreground" />
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <StatusBadge status={expense.status} />
-                                                    <Badge variant="ghost" className="text-[10px]">
-                                                        {CATEGORY_LABELS[expense.category]}
-                                                    </Badge>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Receipt}
+                        title="No expenses found"
+                        description={
+                            searchQuery || statusFilter !== "all"
+                                ? "Try adjusting your search or filters"
+                                : "Submit your first expense"
+                        }
+                        action={
+                            !searchQuery && statusFilter === "all"
+                                ? { label: "New Expense", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-3">
+                        {filtered.map((expense, i) => {
+                            return (
+                                <StaggerItem key={expense.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-sm transition-all">
+                                        <CardContent className="py-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                                                    <DollarSign className="h-5 w-5 text-muted-foreground" />
                                                 </div>
-                                                <h3 className="text-sm font-semibold mt-1">
-                                                    {expense.description}
-                                                </h3>
-                                                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                                                    <span className="flex items-center gap-1">
-                                                        <User className="h-3 w-3" />
-                                                        {expense.submittedBy}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {formatDate(expense.date)}
-                                                    </span>
-                                                    <span>{expense.projectName}</span>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <StatusBadge status={expense.status} />
+                                                        <Badge
+                                                            variant="ghost"
+                                                            className="text-[10px]"
+                                                        >
+                                                            {CATEGORY_LABELS[expense.category]}
+                                                        </Badge>
+                                                    </div>
+                                                    <h3 className="text-sm font-semibold mt-1">
+                                                        {expense.description}
+                                                    </h3>
+                                                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                                        <span className="flex items-center gap-1">
+                                                            <User className="h-3 w-3" />
+                                                            {expense.submittedBy}
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="h-3 w-3" />
+                                                            {formatDate(expense.date)}
+                                                        </span>
+                                                        <span>{expense.projectName}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <p className="text-lg font-bold">
+                                                        {formatCurrency(expense.amount)}
+                                                    </p>
+                                                    {expense.receiptUrl ? (
+                                                        <span className="text-[10px] text-success">
+                                                            Receipt attached
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto"
+                                                            disabled
+                                                        >
+                                                            <Upload className="h-3 w-3" />
+                                                            Add receipt
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="text-right shrink-0">
-                                                <p className="text-lg font-bold">
-                                                    {formatCurrency(expense.amount)}
-                                                </p>
-                                                {expense.receiptUrl ? (
-                                                    <span className="text-[10px] text-success">
-                                                        Receipt attached
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto"
-                                                        disabled
-                                                    >
-                                                        <Upload className="h-3 w-3" />
-                                                        Add receipt
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
-
-                {filtered.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No expenses found</h3>
-                            <p className="text-muted-foreground text-center">
-                                Try adjusting your search or filters
-                            </p>
-                        </CardContent>
-                    </Card>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
                 )}
             </div>
             <CreateEntityDialog

@@ -10,7 +10,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, Loader2, Plus } from "lucide-react";
+import { Fingerprint, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { IPRight } from "@/types/governance";
 import { useIpRights } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -72,9 +73,7 @@ export default function IPRightsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = rights.filter((r) => {
@@ -120,91 +119,114 @@ export default function IPRightsPage() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {filtered.map((r) => (
-                        <Card
-                            key={r.id}
-                            className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        >
-                            <CardHeader className="pb-2">
-                                <div className="flex items-start justify-between">
-                                    <CardTitle className="text-sm">{r.asset_description}</CardTitle>
-                                    <Badge variant="secondary" className="text-[9px]">
-                                        {ASSET_TYPE_LABELS[r.asset_type] || r.asset_type}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2 text-xs">
-                                    <div className="flex items-center gap-4">
-                                        <div>
-                                            <span className="text-muted-foreground">Owner:</span>{" "}
-                                            <span className="font-medium">
-                                                {OWNER_LABELS[r.owner] || r.owner}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-muted-foreground">License:</span>{" "}
-                                            <span className="font-medium">
-                                                {LICENSE_TYPE_LABELS[r.license_type] ||
-                                                    r.license_type}
-                                            </span>
-                                        </div>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Fingerprint}
+                        title="No IP rights found"
+                        description={
+                            search ? "Try adjusting your search" : "Add your first IP right"
+                        }
+                        action={
+                            !search ? { label: "Add IP Right", onClick: openCreate } : undefined
+                        }
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {filtered.map((r) => (
+                            <Card
+                                key={r.id}
+                                className="hover:bg-muted/30 transition-colors cursor-pointer"
+                            >
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between">
+                                        <CardTitle className="text-sm">
+                                            {r.asset_description}
+                                        </CardTitle>
+                                        <Badge variant="secondary" className="text-[9px]">
+                                            {ASSET_TYPE_LABELS[r.asset_type] || r.asset_type}
+                                        </Badge>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <div>
-                                            <span className="text-muted-foreground">
-                                                Territory:
-                                            </span>{" "}
-                                            {r.territory}
-                                        </div>
-                                        {r.duration && (
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2 text-xs">
+                                        <div className="flex items-center gap-4">
                                             <div>
                                                 <span className="text-muted-foreground">
-                                                    Duration:
+                                                    Owner:
                                                 </span>{" "}
-                                                {r.duration}
+                                                <span className="font-medium">
+                                                    {OWNER_LABELS[r.owner] || r.owner}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">
+                                                    License:
+                                                </span>{" "}
+                                                <span className="font-medium">
+                                                    {LICENSE_TYPE_LABELS[r.license_type] ||
+                                                        r.license_type}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div>
+                                                <span className="text-muted-foreground">
+                                                    Territory:
+                                                </span>{" "}
+                                                {r.territory}
+                                            </div>
+                                            {r.duration && (
+                                                <div>
+                                                    <span className="text-muted-foreground">
+                                                        Duration:
+                                                    </span>{" "}
+                                                    {r.duration}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {r.exclusivity && (
+                                                <Badge variant="warning" className="text-[9px]">
+                                                    Exclusive
+                                                </Badge>
+                                            )}
+                                            {r.sublicensable && (
+                                                <Badge variant="info" className="text-[9px]">
+                                                    Sublicensable
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        {r.permitted_uses && (
+                                            <div>
+                                                <span className="text-muted-foreground">
+                                                    Permitted:
+                                                </span>{" "}
+                                                {r.permitted_uses}
+                                            </div>
+                                        )}
+                                        {r.prohibited_uses && (
+                                            <div className="text-destructive">
+                                                <span className="text-muted-foreground">
+                                                    Prohibited:
+                                                </span>{" "}
+                                                {r.prohibited_uses}
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {r.exclusivity && (
-                                            <Badge variant="warning" className="text-[9px]">
-                                                Exclusive
-                                            </Badge>
-                                        )}
-                                        {r.sublicensable && (
-                                            <Badge variant="info" className="text-[9px]">
-                                                Sublicensable
-                                            </Badge>
-                                        )}
+                                    <div className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-border">
+                                        Contract: {r.contract_id}
                                     </div>
-                                    {r.permitted_uses && (
-                                        <div>
-                                            <span className="text-muted-foreground">
-                                                Permitted:
-                                            </span>{" "}
-                                            {r.permitted_uses}
-                                        </div>
-                                    )}
-                                    {r.prohibited_uses && (
-                                        <div className="text-destructive">
-                                            <span className="text-muted-foreground">
-                                                Prohibited:
-                                            </span>{" "}
-                                            {r.prohibited_uses}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-border">
-                                    Contract: {r.contract_id}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
-            <CreateEntityDialog config={CREATE_IP_RIGHT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_IP_RIGHT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

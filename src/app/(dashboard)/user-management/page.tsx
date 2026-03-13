@@ -13,7 +13,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { DataTable } from "@/components/data-view/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
-import { Clock, Loader2, Shield, UserCheck, UserPlus, Users, UserX } from "lucide-react";
+import { Clock, Shield, UserCheck, UserPlus, Users, UserX } from "lucide-react";
 import type { PermissionLevel, UserLifecycleStatus } from "@/types";
 import type { UserDirectoryEntry } from "@/types/user-lifecycle";
 import { useUserDirectory } from "@/lib/supabase/hooks-pages";
@@ -92,9 +92,7 @@ export default function UserManagementPage() {
     ).length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -249,7 +247,11 @@ export default function UserManagementPage() {
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_USER_INVITE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_USER_INVITE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

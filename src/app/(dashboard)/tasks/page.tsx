@@ -9,7 +9,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { LayoutGrid, List, Loader2, Plus, Table2, Upload } from "lucide-react";
+import { LayoutGrid, List, Plus, Table2, Upload } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
@@ -232,9 +232,7 @@ export default function TasksPage() {
     const isLoading = loadingTasks || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const tasks =

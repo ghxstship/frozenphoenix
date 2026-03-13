@@ -1,8 +1,12 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
+import {
+    useOrgSecuritySettings,
+    useUpdateOrgSecuritySettings,
+} from "@/lib/supabase/hooks-v2-features";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,113 +49,18 @@ export default function OrgSecurityPage() {
     const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id;
 
-    const [settings, setSettings] = useState<OrgSecuritySettings | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
-    const [newDomain, setNewDomain] = useState("");
-
-    // Fetch org security settings
-    useEffect(() => {
-        if (!orgId) {
-            setLoading(false);
-            return;
-        }
-
-        async function fetchSettings() {
-            try {
-                const res = await fetch(`/api/organizations/${orgId}/security`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setSettings(data.organization);
-                } else if (res.status === 403) {
-                    setError("You do not have permission to view organization security settings.");
-                } else {
-                    setError("Failed to load security settings.");
-                }
-            } catch {
-                setError("Failed to load security settings.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchSettings();
-    }, [orgId]);
-
-    const handleSave = useCallback(async () => {
-        if (!settings || !orgId) return;
-
-        setSaving(true);
-        setError(null);
-        setSuccess(false);
-
-        try {
-            const res = await fetch(`/api/organizations/${orgId}/security`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    require_mfa: settings.require_mfa,
-                    enforce_sso: settings.enforce_sso,
-                    sso_domain: settings.sso_domain,
-                    allowed_email_domains: settings.allowed_email_domains,
-                    session_timeout_hours: settings.session_timeout_hours,
-                    max_sessions_per_user: settings.max_sessions_per_user,
-                    invitation_expiry_days: settings.invitation_expiry_days,
-                    default_role: settings.default_role,
-                }),
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setSettings(data.organization);
-                setSuccess(true);
-                setTimeout(() => setSuccess(false), 3000);
-            } else {
-                const data = await res.json();
-                setError(data.error || "Failed to save settings.");
-            }
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setSaving(false);
-        }
-    }, [settings, orgId]);
-
-    const updateField = useCallback(
-        <K extends keyof OrgSecuritySettings>(field: K, value: OrgSecuritySettings[K]) => {
-            setSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
-        },
-        []
-    );
-
-    const addDomain = useCallback(() => {
-        const domain = newDomain.trim().toLowerCase();
-        if (!domain || !domain.includes(".")) return;
-        if (!settings) return;
-
-        if (!settings.allowed_email_domains.includes(domain)) {
-            updateField("allowed_email_domains", [...settings.allowed_email_domains, domain]);
-        }
-        setNewDomain("");
-    }, [newDomain, settings, updateField]);
-
-    const removeDomain = useCallback(
-        (domain: string) => {
-            if (!settings) return;
-            updateField(
-                "allowed_email_domains",
-                settings.allowed_email_domains.filter((d) => d !== domain)
-            );
-        },
-        [settings, updateField]
-    );
+    const {
+        data: fetchedSettings,
+        isLoading: loading,
+        error: fetchError,
+    } = useOrgSecuritySettings(orgId) as {
+        data: OrgSecuritySettings | undefined;
+        isLoading: boolean;
+        error: Error | null;
+    };
 
     if (loading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!orgId || !activeOrg) {
@@ -166,7 +75,7 @@ export default function OrgSecurityPage() {
         );
     }
 
-    if (error && !settings) {
+    if (fetchError && !fetchedSettings) {
         return (
             <div className="max-w-2xl space-y-4">
                 <h1 className="text-2xl font-bold tracking-tight">Organization Security</h1>
@@ -175,13 +84,83 @@ export default function OrgSecurityPage() {
                     role="alert"
                 >
                     <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {error}
+                    {fetchError.message}
                 </div>
             </div>
         );
     }
 
-    if (!settings) return null;
+    if (!fetchedSettings) return null;
+
+    return <OrgSecurityForm initialSettings={fetchedSettings} orgId={orgId} />;
+}
+
+function OrgSecurityForm({
+    initialSettings,
+    orgId,
+}: {
+    initialSettings: OrgSecuritySettings;
+    orgId: string;
+}) {
+    const updateMutation = useUpdateOrgSecuritySettings(orgId);
+
+    const [settings, setSettings] = useState<OrgSecuritySettings>(initialSettings);
+    const [success, setSuccess] = useState(false);
+    const [newDomain, setNewDomain] = useState("");
+
+    const saving = updateMutation.isPending;
+    const error = updateMutation.error?.message ?? null;
+
+    const handleSave = useCallback(() => {
+        setSuccess(false);
+
+        updateMutation.mutate(
+            {
+                require_mfa: settings.require_mfa,
+                enforce_sso: settings.enforce_sso,
+                sso_domain: settings.sso_domain,
+                allowed_email_domains: settings.allowed_email_domains,
+                session_timeout_hours: settings.session_timeout_hours,
+                max_sessions_per_user: settings.max_sessions_per_user,
+                invitation_expiry_days: settings.invitation_expiry_days,
+                default_role: settings.default_role,
+            },
+            {
+                onSuccess: (data) => {
+                    setSettings(data as OrgSecuritySettings);
+                    setSuccess(true);
+                    setTimeout(() => setSuccess(false), 3000);
+                },
+            }
+        );
+    }, [settings, updateMutation]);
+
+    const updateField = useCallback(
+        <K extends keyof OrgSecuritySettings>(field: K, value: OrgSecuritySettings[K]) => {
+            setSettings((prev) => ({ ...prev, [field]: value }));
+        },
+        []
+    );
+
+    const addDomain = useCallback(() => {
+        const domain = newDomain.trim().toLowerCase();
+        if (!domain || !domain.includes(".")) return;
+
+        if (!settings.allowed_email_domains.includes(domain)) {
+            updateField("allowed_email_domains", [...settings.allowed_email_domains, domain]);
+        }
+        setNewDomain("");
+    }, [newDomain, settings, updateField]);
+
+    const removeDomain = useCallback(
+        (domain: string) => {
+            updateField(
+                "allowed_email_domains",
+                settings.allowed_email_domains.filter((d) => d !== domain)
+            );
+        },
+        [settings, updateField]
+    );
 
     return (
         <div className="space-y-6 max-w-2xl animate-fade-in">

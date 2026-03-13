@@ -4,7 +4,7 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import { formatDate } from "@/lib/locale";
 
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -169,8 +169,49 @@ export default function ApprovalsPage() {
         defaultValue: "list",
         validValues: APPROVAL_VIEW_MODES,
     });
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkProcessing, setBulkProcessing] = useState(false);
     const { data: sbApprovals, isLoading } = useApprovals();
     const updateApproval = useUpdateApproval();
+
+    const handleBulkApprove = useCallback(async () => {
+        setBulkProcessing(true);
+        try {
+            await Promise.all(
+                [...selectedIds].map((id) =>
+                    updateApproval.mutateAsync({
+                        id,
+                        status: "approved",
+                        approved_at: new Date().toISOString(),
+                    } as unknown as Parameters<typeof updateApproval.mutateAsync>[0])
+                )
+            );
+            setSelectedIds(new Set());
+        } catch (error) {
+            logger.error("Bulk approve failed", { error });
+        } finally {
+            setBulkProcessing(false);
+        }
+    }, [selectedIds, updateApproval]);
+
+    const handleBulkReject = useCallback(async () => {
+        setBulkProcessing(true);
+        try {
+            await Promise.all(
+                [...selectedIds].map((id) =>
+                    updateApproval.mutateAsync({
+                        id,
+                        status: "rejected",
+                    } as unknown as Parameters<typeof updateApproval.mutateAsync>[0])
+                )
+            );
+            setSelectedIds(new Set());
+        } catch (error) {
+            logger.error("Bulk reject failed", { error });
+        } finally {
+            setBulkProcessing(false);
+        }
+    }, [selectedIds, updateApproval]);
 
     const handleApprove = async (approvalId: string) => {
         try {
@@ -388,6 +429,51 @@ export default function ApprovalsPage() {
                             />
                         </div>
 
+                        {/* Bulk Action Bar */}
+                        {selectedIds.size > 0 && (
+                            <div className="sticky top-0 z-20 flex items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 animate-fade-in">
+                                <span className="text-sm font-medium">
+                                    {selectedIds.size} approval{selectedIds.size > 1 ? "s" : ""}{" "}
+                                    selected
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setSelectedIds(new Set())}
+                                        disabled={bulkProcessing}
+                                    >
+                                        Clear
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={handleBulkReject}
+                                        disabled={bulkProcessing}
+                                    >
+                                        {bulkProcessing ? (
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <XCircle className="h-3.5 w-3.5" />
+                                        )}
+                                        Reject All
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleBulkApprove}
+                                        disabled={bulkProcessing}
+                                    >
+                                        {bulkProcessing ? (
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                        )}
+                                        Approve All
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Table View */}
                         {approvalView === "table" && (
                             <DataTable<Approval>
@@ -398,6 +484,9 @@ export default function ApprovalsPage() {
                                 searchPlaceholder="Search approvals..."
                                 pageSize={15}
                                 hoverable
+                                selectable
+                                selectedKeys={selectedIds}
+                                onSelectionChange={setSelectedIds}
                             />
                         )}
 

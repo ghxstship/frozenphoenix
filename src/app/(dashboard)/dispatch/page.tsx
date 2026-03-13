@@ -13,7 +13,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_DISPATCH_CONFIG } from "@/config/create-entity-configs";
-import { CheckCircle2, Clock, Loader2, MapPin, Navigation, Plus, Truck, Users } from "lucide-react";
+import { CheckCircle2, Clock, MapPin, Navigation, Plus, Truck, Users } from "lucide-react";
 import type { DispatchEntry } from "@/types/vendor-lifecycle";
 import { useDispatch } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -59,9 +59,7 @@ export default function DispatchPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

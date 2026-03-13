@@ -15,6 +15,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { CheckCircle2, Circle, Clock, ListChecks, Percent, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { ChecklistTemplate } from "@/types/vendor-lifecycle";
 import { useChecklists, useChecklistTemplates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -145,125 +146,160 @@ export default function ChecklistsPage() {
                     className="max-w-sm"
                 />
 
-                {tab === "active" && (
-                    <div className="space-y-4">
-                        {filteredChecklists.map((checklist, i) => (
-                            <StaggerItem key={checklist.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-shadow">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
+                {tab === "active" &&
+                    (filteredChecklists.length === 0 ? (
+                        <EmptyState
+                            icon={ListChecks}
+                            title="No checklists found"
+                            description={
+                                search ? "Try adjusting your search" : "Create your first checklist"
+                            }
+                            action={
+                                !search
+                                    ? { label: "New Checklist", onClick: openCreate }
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-4">
+                            {filteredChecklists.map((checklist, i) => (
+                                <StaggerItem key={checklist.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-shadow">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <h3 className="text-sm font-bold">
+                                                        {checklist.title}
+                                                    </h3>
+                                                    {checklist.dueDate && (
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            Due: {checklist.dueDate}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <StatusBadge
+                                                    status={checklist.status}
+                                                    className="text-[10px]"
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <ProgressBar
+                                                    value={checklist.completionPercent}
+                                                    size="md"
+                                                    className="flex-1"
+                                                />
+                                                <span className="text-xs font-medium">
+                                                    {checklist.completedItems}/
+                                                    {checklist.totalItems}
+                                                </span>
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                {checklist.items.map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="flex items-center gap-2 py-1"
+                                                    >
+                                                        {item.completed ? (
+                                                            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                                                        ) : (
+                                                            <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                                                        )}
+                                                        <span
+                                                            className={`text-xs ${item.completed ? "line-through text-muted-foreground" : ""}`}
+                                                        >
+                                                            {item.title}
+                                                        </span>
+                                                        {item.required && !item.completed && (
+                                                            <span className="text-[9px] text-destructive">
+                                                                Required
+                                                            </span>
+                                                        )}
+                                                        {item.completedBy && (
+                                                            <span className="text-[9px] text-muted-foreground ml-auto">
+                                                                {item.completedBy}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    ))}
+
+                {tab === "templates" &&
+                    (filteredTemplates.length === 0 ? (
+                        <EmptyState
+                            icon={ListChecks}
+                            title="No templates found"
+                            description={
+                                search
+                                    ? "Try adjusting your search"
+                                    : "No checklist templates available"
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filteredTemplates.map((template, i) => (
+                                <StaggerItem key={template.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-start justify-between mb-2">
                                                 <h3 className="text-sm font-bold">
-                                                    {checklist.title}
+                                                    {template.name}
                                                 </h3>
-                                                {checklist.dueDate && (
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                                        Due: {checklist.dueDate}
+                                                {template.isActive && (
+                                                    <Badge
+                                                        variant="success"
+                                                        className="text-[10px]"
+                                                    >
+                                                        Active
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {template.description && (
+                                                <p className="text-xs text-muted-foreground mb-3">
+                                                    {template.description}
+                                                </p>
+                                            )}
+                                            <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+                                                <span className="flex items-center gap-1">
+                                                    <ListChecks className="h-3 w-3" />{" "}
+                                                    {template.items.length} items
+                                                </span>
+                                                {template.category && (
+                                                    <span>{template.category}</span>
+                                                )}
+                                                <span>Used {template.usageCount}x</span>
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {template.items.slice(0, 4).map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="flex items-center gap-2 text-xs text-muted-foreground"
+                                                    >
+                                                        <Circle className="h-3 w-3 shrink-0" />
+                                                        <span className="truncate">
+                                                            {item.title}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                                {template.items.length > 4 && (
+                                                    <p className="text-[10px] text-muted-foreground pl-5">
+                                                        +{template.items.length - 4} more items
                                                     </p>
                                                 )}
                                             </div>
-                                            <StatusBadge
-                                                status={checklist.status}
-                                                className="text-[10px]"
-                                            />
-                                        </div>
-
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <ProgressBar
-                                                value={checklist.completionPercent}
-                                                size="md"
-                                                className="flex-1"
-                                            />
-                                            <span className="text-xs font-medium">
-                                                {checklist.completedItems}/{checklist.totalItems}
-                                            </span>
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            {checklist.items.map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="flex items-center gap-2 py-1"
-                                                >
-                                                    {item.completed ? (
-                                                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                                                    ) : (
-                                                        <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                                                    )}
-                                                    <span
-                                                        className={`text-xs ${item.completed ? "line-through text-muted-foreground" : ""}`}
-                                                    >
-                                                        {item.title}
-                                                    </span>
-                                                    {item.required && !item.completed && (
-                                                        <span className="text-[9px] text-destructive">
-                                                            Required
-                                                        </span>
-                                                    )}
-                                                    {item.completedBy && (
-                                                        <span className="text-[9px] text-muted-foreground ml-auto">
-                                                            {item.completedBy}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        ))}
-                    </div>
-                )}
-
-                {tab === "templates" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredTemplates.map((template, i) => (
-                            <StaggerItem key={template.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <h3 className="text-sm font-bold">{template.name}</h3>
-                                            {template.isActive && (
-                                                <Badge variant="success" className="text-[10px]">
-                                                    Active
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        {template.description && (
-                                            <p className="text-xs text-muted-foreground mb-3">
-                                                {template.description}
-                                            </p>
-                                        )}
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                                            <span className="flex items-center gap-1">
-                                                <ListChecks className="h-3 w-3" />{" "}
-                                                {template.items.length} items
-                                            </span>
-                                            {template.category && <span>{template.category}</span>}
-                                            <span>Used {template.usageCount}x</span>
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            {template.items.slice(0, 4).map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="flex items-center gap-2 text-xs text-muted-foreground"
-                                                >
-                                                    <Circle className="h-3 w-3 shrink-0" />
-                                                    <span className="truncate">{item.title}</span>
-                                                </div>
-                                            ))}
-                                            {template.items.length > 4 && (
-                                                <p className="text-[10px] text-muted-foreground pl-5">
-                                                    +{template.items.length - 4} more items
-                                                </p>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        ))}
-                    </div>
-                )}
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    ))}
             </div>
             <CreateEntityDialog
                 config={CREATE_CHECKLIST_CONFIG}

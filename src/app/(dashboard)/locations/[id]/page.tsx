@@ -26,7 +26,6 @@ import {
     Edit,
     ExternalLink,
     FileText,
-    Loader2,
     Mail,
     MapPin,
     Phone,
@@ -166,9 +165,7 @@ export default function LocationDetailPage() {
         : [];
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!location) {
@@ -339,7 +336,14 @@ export default function LocationDetailPage() {
                         label: "Schedule Event",
                         onClick: () => router.push(`/events/new?locationId=${locationId}`),
                     },
-                    { label: "View on Map", onClick: () => window.open(`https://maps.google.com/?q=${encodeURIComponent(location?.name ?? "")}`, "_blank") },
+                    {
+                        label: "View on Map",
+                        onClick: () =>
+                            window.open(
+                                `https://maps.google.com/?q=${encodeURIComponent(location?.name ?? "")}`,
+                                "_blank"
+                            ),
+                    },
                     ...crudMenuItems,
                 ]}
                 tabs={tabs}

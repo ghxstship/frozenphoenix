@@ -17,7 +17,7 @@ import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { Calendar, DollarSign, FileText, Loader2 } from "lucide-react";
+import { Calendar, DollarSign, FileText } from "lucide-react";
 
 type TabId = "overview" | "line-items" | "chatter";
 const TAB_VALUES = ["overview", "line-items", "chatter"] as const;
@@ -42,9 +42,7 @@ export default function ClientInvoiceDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const inv = invoice as Record<string, unknown> | undefined;

@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { TabBar } from "@/components/ui/tab-bar";
 import { PageHeader } from "@/components/ui/page-header";
@@ -32,7 +32,12 @@ import {
     Square,
     Timer,
 } from "lucide-react";
-import { useTimeEntries } from "@/lib/supabase/hooks-pages";
+import { EmptyState } from "@/components/layouts/empty-state";
+import {
+    useCreateTimeEntry,
+    useSubmitTimeEntries,
+    useTimeEntries,
+} from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TimeEntryStatus = "draft" | "submitted" | "approved" | "rejected";
@@ -51,7 +56,6 @@ interface TimeEntry {
 }
 
 const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const weekDates = ["Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25"];
 
 interface WeeklyRow {
     project: string;
@@ -60,32 +64,47 @@ interface WeeklyRow {
     billable: boolean;
 }
 
-const weeklyData: WeeklyRow[] = [
-    {
-        project: "Nike Air Max Launch",
-        task: "Stage design revisions",
-        hours: [4, 3, 5, 4, 5, 0, 4.5],
-        billable: true,
-    },
-    {
-        project: "Red Bull Festival",
-        task: "Vendor coordination",
-        hours: [2, 1.5, 2, 1, 2.5, 0, 2],
-        billable: true,
-    },
-    {
-        project: "Glossier Pop-Up",
-        task: "Fabrication oversight",
-        hours: [0, 3, 0, 3, 0, 0, 0],
-        billable: true,
-    },
-    {
-        project: "Internal",
-        task: "Team standup",
-        hours: [0.5, 0.5, 0.5, 0.5, 0.5, 0, 0.5],
-        billable: false,
-    },
-];
+function getWeekStart(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+function getWeekDates(start: Date): string[] {
+    return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    });
+}
+
+function buildWeeklyRows(entries: TimeEntry[], weekStart: Date): WeeklyRow[] {
+    const grouped = new Map<string, { task: string; billable: boolean; hours: number[] }>();
+    for (const entry of entries) {
+        const entryDate = new Date(entry.date);
+        const dayIndex = Math.round((entryDate.getTime() - weekStart.getTime()) / 86400000);
+        if (dayIndex < 0 || dayIndex > 6) continue;
+        const key = `${entry.project}||${entry.task}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, {
+                task: entry.task,
+                billable: entry.billable,
+                hours: [0, 0, 0, 0, 0, 0, 0],
+            });
+        }
+        const row = grouped.get(key)!;
+        row.hours[dayIndex] = (row.hours[dayIndex] ?? 0) + entry.hours;
+    }
+    return Array.from(grouped.entries()).map(([key, val]) => ({
+        project: key.split("||")[0] ?? "",
+        task: val.task,
+        hours: val.hours,
+        billable: val.billable,
+    }));
+}
 
 // ─── Invoicing Pipeline Sub-component ───
 interface ProjectInvoiceGroup {
@@ -310,7 +329,29 @@ export default function TimeTrackingPage() {
     const [search, setSearch] = useState("");
     const [timerRunning, setTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
-    const [timerProject] = useState("Nike Air Max Launch");
+    const [timerProject, _setTimerProject] = useState("");
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        if (timerRunning) {
+            timerRef.current = setInterval(() => {
+                setTimerSeconds((s) => s + 1);
+            }, 1000);
+        }
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [timerRunning]);
+
+    const createEntry = useCreateTimeEntry();
+    const submitEntries = useSubmitTimeEntries();
+    const [weekOffset, setWeekOffset] = useState(0);
+
+    const currentWeekStart = useMemo(() => {
+        const ws = getWeekStart(new Date());
+        ws.setDate(ws.getDate() + weekOffset * 7);
+        return ws;
+    }, [weekOffset]);
 
     const { data: sbEntries, isLoading } = useTimeEntries();
 
@@ -327,12 +368,11 @@ export default function TimeTrackingPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
-    const todayEntries = entries.filter((e) => e.date === "2026-02-25");
+    const today = new Date().toISOString().split("T")[0] ?? "";
+    const todayEntries = entries.filter((e) => e.date === today);
     const totalHoursToday = todayEntries.reduce((s, e) => s + e.hours, 0);
     const billableToday = todayEntries.filter((e) => e.billable).reduce((s, e) => s + e.hours, 0);
     const totalWeekHours = entries.reduce((s, e) => s + e.hours, 0);
@@ -368,8 +408,23 @@ export default function TimeTrackingPage() {
                         )}
                         {timerRunning ? "Pause" : "Start"} Timer
                     </Button>
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" /> Log Time
+                    <Button
+                        onClick={() =>
+                            createEntry.mutate({
+                                entry_date: today,
+                                hours: 0,
+                                billable: true,
+                                status: "draft",
+                            })
+                        }
+                        disabled={createEntry.isPending}
+                    >
+                        {createEntry.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Plus className="mr-2 h-4 w-4" />
+                        )}
+                        Log Time
                     </Button>
                 </PageHeader>
 
@@ -480,60 +535,95 @@ export default function TimeTrackingPage() {
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
                                 <span className="text-sm font-semibold">
-                                    Tuesday, February 25, 2026
+                                    {new Date().toLocaleDateString("en-US", {
+                                        weekday: "long",
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    })}
                                 </span>
                                 <Button variant="ghost" size="sm">
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <Button variant="outline" size="sm">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={submitEntries.isPending}
+                                onClick={() => {
+                                    const draftIds = todayEntries
+                                        .filter((e) => e.status === "draft")
+                                        .map((e) => e.id);
+                                    if (draftIds.length > 0) submitEntries.mutate(draftIds);
+                                }}
+                            >
+                                {submitEntries.isPending ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Send className="mr-2 h-4 w-4" />
+                                )}
                                 Submit Day for Approval
                             </Button>
                         </div>
 
-                        <div className="space-y-2">
-                            {filtered.map((entry) => (
-                                <Card
-                                    key={entry.id}
-                                    className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                                >
-                                    <CardContent className="flex items-center gap-4 py-3">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-semibold truncate">
-                                                    {entry.project}
+                        {filtered.length === 0 ? (
+                            <EmptyState
+                                icon={Clock}
+                                title="No time entries found"
+                                description={
+                                    search
+                                        ? "Try adjusting your search"
+                                        : "No time entries recorded yet"
+                                }
+                            />
+                        ) : (
+                            <div className="space-y-2">
+                                {filtered.map((entry) => (
+                                    <Card
+                                        key={entry.id}
+                                        className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                                    >
+                                        <CardContent className="flex items-center gap-4 py-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-semibold truncate">
+                                                        {entry.project}
+                                                    </p>
+                                                    {entry.billable && (
+                                                        <Badge
+                                                            variant="info"
+                                                            className="text-[10px]"
+                                                        >
+                                                            Billable
+                                                        </Badge>
+                                                    )}
+                                                    <StatusBadge
+                                                        status={entry.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {entry.task} — {entry.description}
+                                                </p>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <p className="text-sm font-bold tabular-nums">
+                                                    {entry.hours}h
                                                 </p>
                                                 {entry.billable && (
-                                                    <Badge variant="info" className="text-[10px]">
-                                                        Billable
-                                                    </Badge>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        {formatCurrency(entry.hours * entry.rate)}
+                                                    </p>
                                                 )}
-                                                <StatusBadge
-                                                    status={entry.status}
-                                                    className="text-[10px]"
-                                                />
                                             </div>
-                                            <p className="text-xs text-muted-foreground mt-0.5">
-                                                {entry.task} — {entry.description}
-                                            </p>
-                                        </div>
-                                        <div className="text-right shrink-0">
-                                            <p className="text-sm font-bold tabular-nums">
-                                                {entry.hours}h
-                                            </p>
-                                            {entry.billable && (
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    {formatCurrency(entry.hours * entry.rate)}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <span className="text-xs text-muted-foreground w-20 text-right">
-                                            {entry.date}
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                                            <span className="text-xs text-muted-foreground w-20 text-right">
+                                                {entry.date}
+                                            </span>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -542,17 +632,52 @@ export default function TimeTrackingPage() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setWeekOffset((p) => p - 1)}
+                                >
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
                                 <span className="text-sm font-semibold">
-                                    Week of Feb 19 – Feb 25, 2026
+                                    Week of{" "}
+                                    {currentWeekStart.toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                    })}
+                                    {" – "}
+                                    {new Date(
+                                        currentWeekStart.getTime() + 6 * 86400000
+                                    ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                    })}
                                 </span>
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setWeekOffset((p) => p + 1)}
+                                >
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <Button variant="outline" size="sm">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={submitEntries.isPending}
+                                onClick={() => {
+                                    const draftIds = entries
+                                        .filter((e) => e.status === "draft")
+                                        .map((e) => e.id);
+                                    if (draftIds.length > 0) submitEntries.mutate(draftIds);
+                                }}
+                            >
+                                {submitEntries.isPending ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Send className="mr-2 h-4 w-4" />
+                                )}
                                 Submit Week for Approval
                             </Button>
                         </div>
@@ -572,7 +697,7 @@ export default function TimeTrackingPage() {
                                                 >
                                                     <div>{day}</div>
                                                     <div className="text-[10px] text-muted-foreground font-normal">
-                                                        {weekDates[i]}
+                                                        {getWeekDates(currentWeekStart)[i]}
                                                     </div>
                                                 </th>
                                             ))}
@@ -582,66 +707,74 @@ export default function TimeTrackingPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {weeklyData.map((row, i) => (
-                                            <tr
-                                                key={i}
-                                                className="border-b hover:bg-secondary/30 transition-colors"
-                                            >
-                                                <td className="p-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div>
-                                                            <p className="font-medium text-xs">
-                                                                {row.project}
-                                                            </p>
-                                                            <p className="text-[10px] text-muted-foreground">
-                                                                {row.task}
-                                                            </p>
-                                                        </div>
-                                                        {row.billable && (
-                                                            <Badge
-                                                                variant="info"
-                                                                className="text-[9px]"
-                                                            >
-                                                                $
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                {row.hours.map((h, j) => (
-                                                    <td key={j} className="text-center p-3">
-                                                        <span
-                                                            className={`text-xs tabular-nums ${h > 0 ? "font-medium" : "text-muted-foreground"}`}
-                                                        >
-                                                            {h > 0 ? h : "—"}
-                                                        </span>
-                                                    </td>
-                                                ))}
-                                                <td className="text-center p-3 font-bold text-xs tabular-nums">
-                                                    {row.hours.reduce((a, b) => a + b, 0)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        <tr className="bg-muted/30 font-bold">
-                                            <td className="p-3 text-xs">Daily Total</td>
-                                            {weekDays.map((_, i) => (
-                                                <td
+                                        {buildWeeklyRows(entries, currentWeekStart).map(
+                                            (row, i) => (
+                                                <tr
                                                     key={i}
-                                                    className="text-center p-3 text-xs tabular-nums"
+                                                    className="border-b hover:bg-secondary/30 transition-colors"
                                                 >
-                                                    {weeklyData.reduce(
-                                                        (s, r) => s + (r.hours[i] ?? 0),
-                                                        0
-                                                    )}
-                                                </td>
-                                            ))}
-                                            <td className="text-center p-3 text-xs tabular-nums">
-                                                {weeklyData.reduce(
-                                                    (s, r) =>
-                                                        s + r.hours.reduce((a, b) => a + b, 0),
-                                                    0
-                                                )}
-                                            </td>
-                                        </tr>
+                                                    <td className="p-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div>
+                                                                <p className="font-medium text-xs">
+                                                                    {row.project}
+                                                                </p>
+                                                                <p className="text-[10px] text-muted-foreground">
+                                                                    {row.task}
+                                                                </p>
+                                                            </div>
+                                                            {row.billable && (
+                                                                <Badge
+                                                                    variant="info"
+                                                                    className="text-[9px]"
+                                                                >
+                                                                    $
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    {row.hours.map((h, j) => (
+                                                        <td key={j} className="text-center p-3">
+                                                            <span
+                                                                className={`text-xs tabular-nums ${h > 0 ? "font-medium" : "text-muted-foreground"}`}
+                                                            >
+                                                                {h > 0 ? h : "—"}
+                                                            </span>
+                                                        </td>
+                                                    ))}
+                                                    <td className="text-center p-3 font-bold text-xs tabular-nums">
+                                                        {row.hours.reduce((a, b) => a + b, 0)}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
+                                        {(() => {
+                                            const rows = buildWeeklyRows(entries, currentWeekStart);
+                                            return (
+                                                <tr className="bg-muted/30 font-bold">
+                                                    <td className="p-3 text-xs">Daily Total</td>
+                                                    {weekDays.map((_, i) => (
+                                                        <td
+                                                            key={i}
+                                                            className="text-center p-3 text-xs tabular-nums"
+                                                        >
+                                                            {rows.reduce(
+                                                                (s, r) => s + (r.hours[i] ?? 0),
+                                                                0
+                                                            )}
+                                                        </td>
+                                                    ))}
+                                                    <td className="text-center p-3 text-xs tabular-nums">
+                                                        {rows.reduce(
+                                                            (s, r) =>
+                                                                s +
+                                                                r.hours.reduce((a, b) => a + b, 0),
+                                                            0
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })()}
                                     </tbody>
                                 </table>
                             </CardContent>
@@ -683,8 +816,22 @@ export default function TimeTrackingPage() {
                                     <Button
                                         variant="outline"
                                         size="lg"
+                                        disabled={createEntry.isPending}
                                         onClick={() => {
                                             setTimerRunning(false);
+                                            if (timerSeconds > 0) {
+                                                createEntry.mutate({
+                                                    entry_date: today,
+                                                    hours:
+                                                        Math.round((timerSeconds / 3600) * 100) /
+                                                        100,
+                                                    billable: true,
+                                                    status: "draft",
+                                                    description: timerProject
+                                                        ? `Timer: ${timerProject}`
+                                                        : "Timer session",
+                                                });
+                                            }
                                             setTimerSeconds(0);
                                         }}
                                     >
@@ -699,48 +846,35 @@ export default function TimeTrackingPage() {
                                 <CardTitle className="text-base">Recent Timer Sessions</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {[
-                                    {
-                                        project: "Nike Air Max Launch",
-                                        task: "3D render updates",
-                                        duration: "02:15:30",
-                                        date: "Today",
-                                    },
-                                    {
-                                        project: "Red Bull Festival",
-                                        task: "Vendor calls",
-                                        duration: "01:45:00",
-                                        date: "Today",
-                                    },
-                                    {
-                                        project: "Glossier Pop-Up",
-                                        task: "Material sourcing",
-                                        duration: "03:10:22",
-                                        date: "Yesterday",
-                                    },
-                                ].map((session, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
-                                    >
-                                        <div>
-                                            <p className="text-xs font-semibold">
-                                                {session.project}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                {session.task}
-                                            </p>
+                                {entries.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-6">
+                                        No recent timer sessions. Start a timer to log time.
+                                    </p>
+                                ) : (
+                                    entries.slice(0, 5).map((entry) => (
+                                        <div
+                                            key={entry.id}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+                                        >
+                                            <div>
+                                                <p className="text-xs font-semibold">
+                                                    {entry.project}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {entry.task}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-mono font-bold tabular-nums">
+                                                    {formatTimer(Math.round(entry.hours * 3600))}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {entry.date === today ? "Today" : entry.date}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-mono font-bold tabular-nums">
-                                                {session.duration}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                {session.date}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </CardContent>
                         </Card>
                     </div>

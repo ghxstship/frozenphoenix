@@ -27,7 +27,6 @@ import {
     CalendarDays,
     DollarSign,
     ImageIcon,
-    Loader2,
     Megaphone,
     Play,
     Target,
@@ -64,9 +63,7 @@ export default function CampaignDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!campaign) {
@@ -242,8 +239,14 @@ export default function CampaignDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "Edit Campaign", onClick: () => router.push(`/campaigns/${entityId}/edit`) },
-                { label: "Duplicate", onClick: () => router.push(`/campaigns/new?duplicateFrom=${entityId}`) },
+                {
+                    label: "Edit Campaign",
+                    onClick: () => router.push(`/campaigns/${entityId}/edit`),
+                },
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/campaigns/new?duplicateFrom=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

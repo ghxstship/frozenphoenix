@@ -16,7 +16,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency } from "@/lib/utils";
 import { useClientInvoices } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-import { AlertTriangle, DollarSign, Eye, FileText, Loader2, Plus, Send } from "lucide-react";
+import { AlertTriangle, DollarSign, Eye, FileText, Plus, Send } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 type InvoiceStatus =
     | "draft"
@@ -78,9 +79,7 @@ export default function ClientInvoicesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = invoices.filter((inv) => {
@@ -167,86 +166,99 @@ export default function ClientInvoicesPage() {
                     />
                 </div>
 
-                <div className="space-y-2">
-                    {filtered.map((inv) => {
-                        const balanceDue = inv.total - inv.amountPaid;
-                        return (
-                            <Card
-                                key={inv.id}
-                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                            >
-                                <CardContent className="flex items-center gap-4 py-3">
-                                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                                        <FileText className="h-5 w-5 text-muted-foreground" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-mono text-muted-foreground">
-                                                {inv.number}
-                                            </span>
-                                            <StatusBadge
-                                                status={inv.status}
-                                                className="text-[10px]"
-                                            />
-                                            {inv.sowNumber && (
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {inv.sowNumber}
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={FileText}
+                        title="No invoices found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Create your first client invoice"
+                        }
+                        action={!search ? { label: "New Invoice", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {filtered.map((inv) => {
+                            const balanceDue = inv.total - inv.amountPaid;
+                            return (
+                                <Card
+                                    key={inv.id}
+                                    className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                                >
+                                    <CardContent className="flex items-center gap-4 py-3">
+                                        <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                                            <FileText className="h-5 w-5 text-muted-foreground" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-mono text-muted-foreground">
+                                                    {inv.number}
                                                 </span>
+                                                <StatusBadge
+                                                    status={inv.status}
+                                                    className="text-[10px]"
+                                                />
+                                                {inv.sowNumber && (
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {inv.sowNumber}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm font-semibold truncate">
+                                                {inv.title}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {inv.client} · {inv.lineItemCount} line items · Due{" "}
+                                                {inv.dueDate}
+                                            </p>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-sm font-bold">
+                                                {formatCurrency(inv.total)}
+                                            </p>
+                                            {balanceDue > 0 && balanceDue < inv.total && (
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Balance: {formatCurrency(balanceDue)}
+                                                </p>
+                                            )}
+                                            {inv.status === "paid" && (
+                                                <p className="text-[10px] text-success font-medium">
+                                                    Paid in full
+                                                </p>
+                                            )}
+                                            {inv.status === "overdue" && (
+                                                <p className="text-[10px] text-destructive font-medium">
+                                                    Overdue
+                                                </p>
                                             )}
                                         </div>
-                                        <p className="text-sm font-semibold truncate">
-                                            {inv.title}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {inv.client} · {inv.lineItemCount} line items · Due{" "}
-                                            {inv.dueDate}
-                                        </p>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm font-bold">
-                                            {formatCurrency(inv.total)}
-                                        </p>
-                                        {balanceDue > 0 && balanceDue < inv.total && (
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Balance: {formatCurrency(balanceDue)}
-                                            </p>
-                                        )}
-                                        {inv.status === "paid" && (
-                                            <p className="text-[10px] text-success font-medium">
-                                                Paid in full
-                                            </p>
-                                        )}
-                                        {inv.status === "overdue" && (
-                                            <p className="text-[10px] text-destructive font-medium">
-                                                Overdue
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-1 shrink-0">
-                                        {inv.status === "draft" && (
+                                        <div className="flex gap-1 shrink-0">
+                                            {inv.status === "draft" && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0"
+                                                    title="Send"
+                                                >
+                                                    <Send className="h-3.5 w-3.5" />
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0"
-                                                title="Send"
+                                                title="Preview"
                                             >
-                                                <Send className="h-3.5 w-3.5" />
+                                                <Eye className="h-3.5 w-3.5" />
                                             </Button>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 w-7 p-0"
-                                            title="Preview"
-                                        >
-                                            <Eye className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_CLIENT_INVOICE_CONFIG}

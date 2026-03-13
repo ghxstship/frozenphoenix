@@ -14,17 +14,24 @@ import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
-import { Building, ChevronRight, DollarSign, Loader2, MapPin, Plus, Upload, Warehouse } from "lucide-react";
+import { Building, ChevronRight, DollarSign, MapPin, Plus, Upload, Warehouse } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_LOCATION_CONFIG } from "@/config/create-entity-configs";
 
 export default function LocationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
 
-    const { data: sbLocations, isLoading: loadingLocations, refetch: refetchLocations } = useLocations();
+    const {
+        data: sbLocations,
+        isLoading: loadingLocations,
+        refetch: refetchLocations,
+    } = useLocations();
     const [importOpen, setImportOpen] = useState(false);
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const handleImportComplete = useCallback(() => {
         void refetchLocations();
@@ -73,9 +80,7 @@ export default function LocationsPage() {
     const isLoading = loadingLocations || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredLocations = locations.filter((location) => {
@@ -100,12 +105,10 @@ export default function LocationsPage() {
                             <Upload className="h-4 w-4" />
                             Import CSV
                         </Button>
-                        <Link href="/locations/new">
-                            <Button>
-                                <Plus className="h-4 w-4" />
-                                Add Location
-                            </Button>
-                        </Link>
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Add Location
+                        </Button>
                     </div>
                 }
             >
@@ -171,7 +174,12 @@ export default function LocationsPage() {
                                 : "Add your first location to get started"
                         }
                         action={
-                            !searchQuery ? { label: "Add Location", onClick: () => window.location.assign("/locations/new") } : undefined
+                            !searchQuery
+                                ? {
+                                      label: "Add Location",
+                                      onClick: () => window.location.assign("/locations/new"),
+                                  }
+                                : undefined
                         }
                     />
                 ) : (
@@ -268,6 +276,11 @@ export default function LocationsPage() {
                 open={importOpen}
                 onOpenChange={setImportOpen}
                 onImportComplete={handleImportComplete}
+            />
+            <CreateEntityDialog
+                config={CREATE_LOCATION_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
             />
         </PermissionGate>
     );

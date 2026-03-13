@@ -9,9 +9,13 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Chip } from "@/components/ui/chip";
-import { FileText, Film, Image, Lock, Music } from "lucide-react";
+import { FileText, Film, Image, Lock, Music, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useDigitalAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DIGITAL_ASSET_CONFIG } from "@/config/create-entity-configs";
+import { Button } from "@/components/ui/button";
 
 interface DigitalAssetView {
     id: string;
@@ -36,6 +40,7 @@ const CLASS_ICONS: Record<string, typeof Image> = {
 };
 
 export default function DigitalAssetsPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
 
     const { data: sbAssets, isLoading } = useDigitalAssets();
@@ -73,83 +78,107 @@ export default function DigitalAssetsPage() {
     };
 
     return (
-        <PermissionGate resource="digital_assets" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Digital Assets"
-                    description="Centralized asset library — images, video, documents, audio — with versioning and access control"
-                />
+        <>
+            <PermissionGate resource="digital_assets" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Digital Assets"
+                        description="Centralized asset library — images, video, documents, audio — with versioning and access control"
+                    >
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            New Asset
+                        </Button>
+                    </PageHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total Assets" value={assets.length} icon={Image} />
-                    <StatCard title="Approved" value={byStatus.approved} icon={Image} />
-                    <StatCard title="In Review" value={byStatus.inReview} icon={FileText} />
-                    <StatCard title="Locked" value={byStatus.locked} icon={Lock} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard title="Total Assets" value={assets.length} icon={Image} />
+                        <StatCard title="Approved" value={byStatus.approved} icon={Image} />
+                        <StatCard title="In Review" value={byStatus.inReview} icon={FileText} />
+                        <StatCard title="Locked" value={byStatus.locked} icon={Lock} />
+                    </div>
+
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search assets or tags..."
+                        className="max-w-sm"
+                    />
+
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={Image}
+                            title="No digital assets found"
+                            description={
+                                search
+                                    ? "Try adjusting your search"
+                                    : "Upload your first digital asset"
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map((asset, i) => {
+                                const Icon = CLASS_ICONS[asset.assetClass] ?? FileText;
+                                return (
+                                    <StaggerItem key={asset.id} index={i} stagger="tight">
+                                        <Card className="hover:shadow-sm transition-all">
+                                            <CardContent className="py-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="h-10 w-10 rounded bg-secondary flex items-center justify-center shrink-0">
+                                                        <Icon className="h-5 w-5 text-muted-foreground" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-sm font-semibold truncate">
+                                                                {asset.name}
+                                                            </h3>
+                                                            {asset.isLocked && (
+                                                                <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <StatusBadge
+                                                                status={asset.status}
+                                                                className="text-[10px]"
+                                                            />
+                                                            <span className="text-[10px] text-muted-foreground">
+                                                                v{asset.version}
+                                                            </span>
+                                                            <span className="text-[10px] text-muted-foreground">
+                                                                {asset.fileSize}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[11px] text-muted-foreground mt-1">
+                                                            {asset.uploadedBy} — {asset.uploadedAt}
+                                                        </p>
+                                                        {asset.projectName && (
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                {asset.projectName}
+                                                            </p>
+                                                        )}
+                                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                                            {asset.tags.map((t) => (
+                                                                <Chip key={t} size="sm">
+                                                                    {t}
+                                                                </Chip>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
-
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search assets or tags..."
-                    className="max-w-sm"
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filtered.map((asset, i) => {
-                        const Icon = CLASS_ICONS[asset.assetClass] ?? FileText;
-                        return (
-                            <StaggerItem key={asset.id} index={i} stagger="tight">
-                                <Card className="hover:shadow-sm transition-all">
-                                    <CardContent className="py-4">
-                                        <div className="flex items-start gap-3">
-                                            <div className="h-10 w-10 rounded bg-secondary flex items-center justify-center shrink-0">
-                                                <Icon className="h-5 w-5 text-muted-foreground" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="text-sm font-semibold truncate">
-                                                        {asset.name}
-                                                    </h3>
-                                                    {asset.isLocked && (
-                                                        <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <StatusBadge
-                                                        status={asset.status}
-                                                        className="text-[10px]"
-                                                    />
-                                                    <span className="text-[10px] text-muted-foreground">
-                                                        v{asset.version}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted-foreground">
-                                                        {asset.fileSize}
-                                                    </span>
-                                                </div>
-                                                <p className="text-[11px] text-muted-foreground mt-1">
-                                                    {asset.uploadedBy} — {asset.uploadedAt}
-                                                </p>
-                                                {asset.projectName && (
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        {asset.projectName}
-                                                    </p>
-                                                )}
-                                                <div className="flex flex-wrap gap-1 mt-1.5">
-                                                    {asset.tags.map((t) => (
-                                                        <Chip key={t} size="sm">
-                                                            {t}
-                                                        </Chip>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
-            </div>
-        </PermissionGate>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_DIGITAL_ASSET_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

@@ -16,7 +16,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { Loader2, MapPin, Package, Truck } from "lucide-react";
+import { MapPin, Package, Truck } from "lucide-react";
 
 type TabId = "overview" | "tracking" | "chatter";
 const TAB_VALUES = ["overview", "tracking", "chatter"] as const;
@@ -41,9 +41,7 @@ export default function DispatchDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const d = record as Record<string, unknown> | undefined;

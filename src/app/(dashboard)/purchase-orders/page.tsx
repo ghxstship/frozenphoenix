@@ -13,16 +13,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import {
-    CheckCircle2,
-    Clock,
-    DollarSign,
-    FileText,
-    Loader2,
-    Package,
-    Plus,
-    Truck,
-} from "lucide-react";
+import { CheckCircle2, Clock, DollarSign, FileText, Package, Plus, Truck } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { usePurchaseOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -63,9 +55,7 @@ export default function PurchaseOrdersPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = orders.filter((o) => {
@@ -134,10 +124,21 @@ export default function PurchaseOrdersPage() {
                         </div>
 
                         {filtered.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Package className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                                <p>No purchase orders found</p>
-                            </div>
+                            <EmptyState
+                                icon={Package}
+                                title="No purchase orders found"
+                                description={
+                                    search || statusFilter !== "all"
+                                        ? "Try adjusting your search or filters"
+                                        : "Create your first purchase order"
+                                }
+                                action={
+                                    !search && statusFilter === "all"
+                                        ? { label: "New PO", onClick: openCreate }
+                                        : undefined
+                                }
+                                compact
+                            />
                         ) : (
                             <div className="space-y-2">
                                 {filtered.map((po) => (

@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { PERMISSION_MATRIX } from "@/config/rbac";
-import { useRoleDefinitions } from "@/lib/settings/hooks";
+import {
+    useDeletePermissionGrant,
+    useRoleDefinitions,
+    useUpsertPermissionGrant,
+} from "@/lib/settings/hooks";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { PermissionGate } from "@/components/permission-guard";
 import { getStatusLabel } from "@/config/ui-variants";
@@ -72,6 +76,8 @@ export default function RolesPage() {
     const { activeOrg } = useAuth();
     const { data: dbRoles, isLoading: dbLoading } = useRoleDefinitions(activeOrg?.organization_id);
     const [selectedRoleKey, setSelectedRoleKey] = useState<string>("exec");
+    const upsertGrant = useUpsertPermissionGrant();
+    const deleteGrant = useDeletePermissionGrant();
 
     // Use DB roles if available, otherwise fall back to static PERMISSION_MATRIX
     const useDbRoles = dbRoles && dbRoles.length > 0;
@@ -286,7 +292,58 @@ export default function RolesPage() {
                                                                     key={action}
                                                                     className="text-center py-2.5 px-3"
                                                                 >
-                                                                    {has ? (
+                                                                    {useDbRoles ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-secondary/50 transition-colors disabled:opacity-50"
+                                                                            disabled={
+                                                                                upsertGrant.isPending ||
+                                                                                deleteGrant.isPending
+                                                                            }
+                                                                            onClick={() => {
+                                                                                const dbRole =
+                                                                                    dbRoles.find(
+                                                                                        (r) =>
+                                                                                            r.key ===
+                                                                                            selectedRoleKey
+                                                                                    );
+                                                                                if (!dbRole) return;
+                                                                                const grant =
+                                                                                    dbRole.permission_grants.find(
+                                                                                        (g) =>
+                                                                                            g.resource ===
+                                                                                                resource &&
+                                                                                            g.action ===
+                                                                                                action
+                                                                                    );
+                                                                                if (grant) {
+                                                                                    deleteGrant.mutate(
+                                                                                        grant.id
+                                                                                    );
+                                                                                } else {
+                                                                                    upsertGrant.mutate(
+                                                                                        {
+                                                                                            role_definition_id:
+                                                                                                dbRole.id,
+                                                                                            resource,
+                                                                                            action,
+                                                                                        }
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                            title={
+                                                                                has
+                                                                                    ? `Revoke ${action} on ${resource}`
+                                                                                    : `Grant ${action} on ${resource}`
+                                                                            }
+                                                                        >
+                                                                            {has ? (
+                                                                                <CheckCircle2 className="h-4 w-4 text-success" />
+                                                                            ) : (
+                                                                                <XCircle className="h-4 w-4 text-muted-foreground/30" />
+                                                                            )}
+                                                                        </button>
+                                                                    ) : has ? (
                                                                         <CheckCircle2 className="h-4 w-4 text-success inline-block" />
                                                                     ) : (
                                                                         <XCircle className="h-4 w-4 text-muted-foreground/30 inline-block" />

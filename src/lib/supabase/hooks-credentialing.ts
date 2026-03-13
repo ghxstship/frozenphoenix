@@ -101,7 +101,9 @@ export function useCredentialPools(filters?: CredentialPoolFilters) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("credential_inventory_pools")
-                .select("*, credential_types:credential_type_id(id, name, category, color_hex, format)")
+                .select(
+                    "*, credential_types:credential_type_id(id, name, category, color_hex, format)"
+                )
                 .order("created_at", { ascending: false });
 
             if (filters?.event_id) {
@@ -124,7 +126,9 @@ export function useCredentialPool(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("credential_inventory_pools")
-                .select("*, credential_types:credential_type_id(id, name, category, color_hex, format)")
+                .select(
+                    "*, credential_types:credential_type_id(id, name, category, color_hex, format)"
+                )
                 .eq("id", id)
                 .single();
             if (error) throw error;
@@ -185,7 +189,9 @@ export function useCredentialAssignments(filters?: CredentialAssignmentFilters) 
         queryFn: async () => {
             let query = getSupabase()
                 .from("credential_assignments")
-                .select("*, credential_types:credential_type_id(id, name, category, color_hex, format)")
+                .select(
+                    "*, credential_types:credential_type_id(id, name, category, color_hex, format)"
+                )
                 .order(filters?.sort_by ?? "created_at", {
                     ascending: filters?.sort_order === "asc",
                 });
@@ -229,7 +235,9 @@ export function useCredentialAssignment(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("credential_assignments")
-                .select("*, credential_types:credential_type_id(id, name, category, color_hex, format)")
+                .select(
+                    "*, credential_types:credential_type_id(id, name, category, color_hex, format)"
+                )
                 .eq("id", id)
                 .single();
             if (error) throw error;
@@ -265,10 +273,7 @@ export function useCreateCredentialAssignment() {
 export function useUpdateCredentialAssignment() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async ({
-            id,
-            ...payload
-        }: Record<string, unknown> & { id: string }) => {
+        mutationFn: async ({ id, ...payload }: Record<string, unknown> & { id: string }) => {
             const { data, error } = await getSupabase()
                 .from("credential_assignments")
                 .update(payload)
@@ -335,6 +340,66 @@ export function useCreateScanEntry() {
             qc.invalidateQueries({ queryKey: ["credential_scan_log"] });
             qc.invalidateQueries({ queryKey: ["credential_scan_log", vars.assignment_id] });
             qc.invalidateQueries({ queryKey: ["credential_assignments"] });
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GATE SCANNER — API-backed scan + recent history
+// ═══════════════════════════════════════════════════════════════
+
+export interface GateScanResult {
+    result: string;
+    assignment: Record<string, unknown> | null;
+    credential_type: Record<string, unknown> | null;
+    message: string;
+    timestamp: string;
+}
+
+export function useGateScan() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: {
+            barcode_value: string;
+            scan_type: string;
+            zone_id?: string;
+            device_id?: string;
+            notes?: string;
+        }): Promise<GateScanResult> => {
+            const res = await fetch("/api/credentials/scan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: "Scan failed" }));
+                throw new Error((err as Record<string, string>).message ?? "Scan failed");
+            }
+            const data = await res.json();
+            return {
+                ...(data as Omit<GateScanResult, "timestamp">),
+                timestamp: new Date().toISOString(),
+            };
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["credential_scan_log"] });
+            qc.invalidateQueries({ queryKey: ["gate_scan_history"] });
+            qc.invalidateQueries({ queryKey: ["credential_assignments"] });
+        },
+    });
+}
+
+export function useGateScanHistory(limit = 50) {
+    return useQuery({
+        queryKey: ["gate_scan_history", limit],
+        queryFn: async () => {
+            const { data, error } = await getSupabase()
+                .from("credential_scan_log")
+                .select("*, credential_assignments:assignment_id(barcode_value, assignee_name)")
+                .order("scanned_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
         },
     });
 }
@@ -452,10 +517,7 @@ export function useCreateExportTemplate() {
 export function useUpdateExportTemplate() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async ({
-            id,
-            ...payload
-        }: Record<string, unknown> & { id: string }) => {
+        mutationFn: async ({ id, ...payload }: Record<string, unknown> & { id: string }) => {
             const { data, error } = await getSupabase()
                 .from("export_templates")
                 .update(payload)

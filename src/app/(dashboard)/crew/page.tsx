@@ -16,7 +16,6 @@ import {
     AlertTriangle,
     Kanban,
     LayoutGrid,
-    Loader2,
     Plus,
     ShieldAlert,
     ShieldCheck,
@@ -25,6 +24,8 @@ import {
 } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_WORKFORCE_CONFIG } from "@/config/create-entity-configs";
 import type { CertificationType, CrewMember } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { type BoardColumn, type CardField, DataBoard } from "@/components/data-view/data-board";
@@ -188,6 +189,7 @@ export default function CrewPage() {
     });
     const { data: sbCrew, isLoading, refetch } = useCrewMembers();
     const [importOpen, setImportOpen] = useState(false);
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const handleImportComplete = useCallback(() => {
         void refetch();
@@ -227,191 +229,199 @@ export default function CrewPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const availableCount = crew.filter((c) => c.status === "available").length;
     const expiredCerts = crew.flatMap((c) => c.certifications.filter((cert) => !cert.isValid));
 
     return (
-        <PermissionGate resource="crew" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Crew & Labor Command"
-                    description="Shift scheduling, certifications, and crew management"
-                >
-                    <div className="flex items-center gap-2">
-                        <SegmentedControl<ViewMode>
-                            ariaLabel="Crew view mode"
-                            value={viewMode}
-                            onValueChange={setViewMode}
-                            options={[
-                                {
-                                    value: "cards",
-                                    label: "Cards",
-                                    icon: <LayoutGrid className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "table",
-                                    label: "Table",
-                                    icon: <Table2 className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "board",
-                                    label: "Board",
-                                    icon: <Kanban className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                            ]}
-                        />
-                        <CsvExportButton entity="crew_members" />
-                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                            <Upload className="h-4 w-4" />
-                            Import CSV
-                        </Button>
-                        <Button size="sm" onClick={() => router.push("/crew/new")}>
-                            <Plus className="h-4 w-4" />
-                            Add Crew
-                        </Button>
-                    </div>
-                </PageHeader>
-                <CsvImportDialog
-                    entity="crew_members"
-                    open={importOpen}
-                    onOpenChange={setImportOpen}
-                    onImportComplete={handleImportComplete}
-                />
-
-                {/* Summary */}
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        {availableCount} Available
-                    </div>
-                    {expiredCerts.length > 0 && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
-                            <ShieldAlert className="h-3.5 w-3.5" />
-                            {expiredCerts.length} Expired Cert{expiredCerts.length > 1 ? "s" : ""}
+        <>
+            <PermissionGate resource="crew" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Crew & Labor Command"
+                        description="Shift scheduling, certifications, and crew management"
+                    >
+                        <div className="flex items-center gap-2">
+                            <SegmentedControl<ViewMode>
+                                ariaLabel="Crew view mode"
+                                value={viewMode}
+                                onValueChange={setViewMode}
+                                options={[
+                                    {
+                                        value: "cards",
+                                        label: "Cards",
+                                        icon: <LayoutGrid className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "table",
+                                        label: "Table",
+                                        icon: <Table2 className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "board",
+                                        label: "Board",
+                                        icon: <Kanban className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                ]}
+                            />
+                            <CsvExportButton entity="crew_members" />
+                            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                                <Upload className="h-4 w-4" />
+                                Import CSV
+                            </Button>
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" />
+                                Add Crew
+                            </Button>
                         </div>
+                    </PageHeader>
+                    <CsvImportDialog
+                        entity="crew_members"
+                        open={importOpen}
+                        onOpenChange={setImportOpen}
+                        onImportComplete={handleImportComplete}
+                    />
+
+                    {/* Summary */}
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium">
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                            {availableCount} Available
+                        </div>
+                        {expiredCerts.length > 0 && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
+                                <ShieldAlert className="h-3.5 w-3.5" />
+                                {expiredCerts.length} Expired Cert
+                                {expiredCerts.length > 1 ? "s" : ""}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Table View */}
+                    {viewMode === "table" && (
+                        <DataTable<CrewMember>
+                            data={crew}
+                            columns={tableColumns}
+                            keyField="id"
+                            searchable
+                            searchPlaceholder="Search crew..."
+                            pageSize={20}
+                        />
                     )}
-                </div>
 
-                {/* Table View */}
-                {viewMode === "table" && (
-                    <DataTable<CrewMember>
-                        data={crew}
-                        columns={tableColumns}
-                        keyField="id"
-                        searchable
-                        searchPlaceholder="Search crew..."
-                        pageSize={20}
-                    />
-                )}
+                    {/* Board View */}
+                    {viewMode === "board" && (
+                        <DataBoard<CrewMember>
+                            data={crew}
+                            columns={boardColumns}
+                            keyField="id"
+                            cardTitle="name"
+                            cardFields={boardCardFields}
+                            onCardClick={(member) => router.push(`/crew/${member.id}`)}
+                        />
+                    )}
 
-                {/* Board View */}
-                {viewMode === "board" && (
-                    <DataBoard<CrewMember>
-                        data={crew}
-                        columns={boardColumns}
-                        keyField="id"
-                        cardTitle="name"
-                        cardFields={boardCardFields}
-                        onCardClick={(member) => router.push(`/crew/${member.id}`)}
-                    />
-                )}
-
-                {/* Cards View (original) */}
-                {viewMode === "cards" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {crew.map((member, i) => {
-                            const hasExpired = member.certifications.some((c) => !c.isValid);
-                            return (
-                                <StaggerItem key={member.id} index={i} stagger="relaxed">
-                                    <Card
-                                        className={`${hasExpired ? "border-destructive/30" : ""}`}
-                                    >
-                                        <CardContent>
-                                            <div className="flex items-start gap-3">
-                                                <Avatar name={member.name} size="lg" />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-sm font-bold truncate">
-                                                            {member.name}
-                                                        </h3>
-                                                        <Badge
-                                                            variant={
-                                                                member.status === "available"
-                                                                    ? "success"
-                                                                    : member.status === "assigned"
-                                                                      ? "info"
-                                                                      : "ghost"
-                                                            }
-                                                            className="text-[9px]"
-                                                        >
-                                                            {member.status}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                                        {member.role}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        ${member.hourlyRate}/hr
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {/* Certifications */}
-                                            <div className="mt-4 space-y-1.5">
-                                                <OverlineText>Certifications</OverlineText>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {member.certifications.map((cert) => (
-                                                        <div
-                                                            key={cert.id}
-                                                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
-                                                                cert.isValid
-                                                                    ? "bg-success/10 text-success"
-                                                                    : "bg-destructive/10 text-destructive"
-                                                            }`}
-                                                        >
-                                                            {cert.isValid ? (
-                                                                <ShieldCheck className="h-3 w-3" />
-                                                            ) : (
-                                                                <AlertTriangle className="h-3 w-3" />
-                                                            )}
-                                                            {cert.label}
-                                                            {!cert.isValid && (
-                                                                <span className="ml-0.5 opacity-70">
-                                                                    EXPIRED
-                                                                </span>
-                                                            )}
+                    {/* Cards View (original) */}
+                    {viewMode === "cards" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {crew.map((member, i) => {
+                                const hasExpired = member.certifications.some((c) => !c.isValid);
+                                return (
+                                    <StaggerItem key={member.id} index={i} stagger="relaxed">
+                                        <Card
+                                            className={`${hasExpired ? "border-destructive/30" : ""}`}
+                                        >
+                                            <CardContent>
+                                                <div className="flex items-start gap-3">
+                                                    <Avatar name={member.name} size="lg" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-sm font-bold truncate">
+                                                                {member.name}
+                                                            </h3>
+                                                            <Badge
+                                                                variant={
+                                                                    member.status === "available"
+                                                                        ? "success"
+                                                                        : member.status ===
+                                                                            "assigned"
+                                                                          ? "info"
+                                                                          : "ghost"
+                                                                }
+                                                                className="text-[9px]"
+                                                            >
+                                                                {member.status}
+                                                            </Badge>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Assignment Gate Warning */}
-                                            {hasExpired && (
-                                                <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
-                                                        <p className="text-[10px] font-medium text-destructive">
-                                                            Cannot be assigned — expired credentials
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            {member.role}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            ${member.hourlyRate}/hr
                                                         </p>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-        </PermissionGate>
+
+                                                {/* Certifications */}
+                                                <div className="mt-4 space-y-1.5">
+                                                    <OverlineText>Certifications</OverlineText>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {member.certifications.map((cert) => (
+                                                            <div
+                                                                key={cert.id}
+                                                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                                                                    cert.isValid
+                                                                        ? "bg-success/10 text-success"
+                                                                        : "bg-destructive/10 text-destructive"
+                                                                }`}
+                                                            >
+                                                                {cert.isValid ? (
+                                                                    <ShieldCheck className="h-3 w-3" />
+                                                                ) : (
+                                                                    <AlertTriangle className="h-3 w-3" />
+                                                                )}
+                                                                {cert.label}
+                                                                {!cert.isValid && (
+                                                                    <span className="ml-0.5 opacity-70">
+                                                                        EXPIRED
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Assignment Gate Warning */}
+                                                {hasExpired && (
+                                                    <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
+                                                            <p className="text-[10px] font-medium text-destructive">
+                                                                Cannot be assigned — expired
+                                                                credentials
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_WORKFORCE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

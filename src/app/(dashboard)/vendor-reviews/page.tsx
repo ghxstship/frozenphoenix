@@ -12,7 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import { Loader2, Plus, Star, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
+import { Plus, Star, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { VendorReview } from "@/types/vendor-lifecycle";
 import { useVendorReviews } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -63,9 +64,7 @@ export default function VendorReviewsPage() {
     const wouldNotRehireCount = reviews.filter((r) => r.wouldRehire === false).length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -98,131 +97,153 @@ export default function VendorReviewsPage() {
                     className="max-w-sm"
                 />
 
-                <div className="space-y-4">
-                    {filtered.map((review, i) => (
-                        <StaggerItem key={review.id} index={i} stagger="relaxed">
-                            <Card className="hover:shadow-md transition-shadow">
-                                <CardContent className="pt-4">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="text-sm font-bold">
-                                                    {review.vendorName}
-                                                </h3>
-                                                <Badge
-                                                    variant={
-                                                        REVIEW_TYPE_LABELS[review.reviewType]
-                                                            .variant
-                                                    }
-                                                    className="text-[10px]"
-                                                >
-                                                    {REVIEW_TYPE_LABELS[review.reviewType].label}
-                                                </Badge>
-                                            </div>
-                                            {review.projectName && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    Project: {review.projectName}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="text-right">
-                                            <StarRating rating={review.overallRating} size="md" />
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {review.reviewDate}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-3">
-                                        {[
-                                            { label: "Quality", value: review.qualityRating },
-                                            { label: "Timeliness", value: review.timelinessRating },
-                                            {
-                                                label: "Communication",
-                                                value: review.communicationRating,
-                                            },
-                                            {
-                                                label: "Professionalism",
-                                                value: review.professionalismRating,
-                                            },
-                                            { label: "Value", value: review.valueRating },
-                                            { label: "Safety", value: review.safetyRating },
-                                        ]
-                                            .filter((r) => r.value !== undefined)
-                                            .map((r) => (
-                                                <div key={r.label} className="text-center">
-                                                    <p className="text-[10px] text-muted-foreground mb-0.5">
-                                                        {r.label}
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Star}
+                        title="No reviews found"
+                        description={
+                            search ? "Try adjusting your search" : "Add your first vendor review"
+                        }
+                        action={!search ? { label: "New Review", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="space-y-4">
+                        {filtered.map((review, i) => (
+                            <StaggerItem key={review.id} index={i} stagger="relaxed">
+                                <Card className="hover:shadow-md transition-shadow">
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="text-sm font-bold">
+                                                        {review.vendorName}
+                                                    </h3>
+                                                    <Badge
+                                                        variant={
+                                                            REVIEW_TYPE_LABELS[review.reviewType]
+                                                                .variant
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {
+                                                            REVIEW_TYPE_LABELS[review.reviewType]
+                                                                .label
+                                                        }
+                                                    </Badge>
+                                                </div>
+                                                {review.projectName && (
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Project: {review.projectName}
                                                     </p>
-                                                    <StarRating rating={r.value!} />
-                                                </div>
-                                            ))}
-                                    </div>
-
-                                    {(review.strengths ||
-                                        review.improvements ||
-                                        review.comments) && (
-                                        <div className="space-y-2 text-xs border-t border-border pt-3">
-                                            {review.strengths && (
-                                                <div>
-                                                    <span className="font-medium text-success">
-                                                        Strengths:
-                                                    </span>{" "}
-                                                    <span className="text-muted-foreground">
-                                                        {review.strengths}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {review.improvements && (
-                                                <div>
-                                                    <span className="font-medium text-warning">
-                                                        Improvements:
-                                                    </span>{" "}
-                                                    <span className="text-muted-foreground">
-                                                        {review.improvements}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {review.comments && (
-                                                <div>
-                                                    <span className="font-medium">Comments:</span>{" "}
-                                                    <span className="text-muted-foreground">
-                                                        {review.comments}
-                                                    </span>
-                                                </div>
-                                            )}
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <StarRating
+                                                    rating={review.overallRating}
+                                                    size="md"
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {review.reviewDate}
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
 
-                                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border text-xs">
-                                        <span className="text-muted-foreground">
-                                            Reviewed by {review.reviewerName}
-                                        </span>
-                                        {review.wouldRehire !== undefined && (
-                                            <div className="flex items-center gap-1">
-                                                {review.wouldRehire ? (
-                                                    <>
-                                                        <ThumbsUp className="h-3 w-3 text-success" />
-                                                        <span className="text-success">
-                                                            Would rehire
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-3">
+                                            {[
+                                                { label: "Quality", value: review.qualityRating },
+                                                {
+                                                    label: "Timeliness",
+                                                    value: review.timelinessRating,
+                                                },
+                                                {
+                                                    label: "Communication",
+                                                    value: review.communicationRating,
+                                                },
+                                                {
+                                                    label: "Professionalism",
+                                                    value: review.professionalismRating,
+                                                },
+                                                { label: "Value", value: review.valueRating },
+                                                { label: "Safety", value: review.safetyRating },
+                                            ]
+                                                .filter((r) => r.value !== undefined)
+                                                .map((r) => (
+                                                    <div key={r.label} className="text-center">
+                                                        <p className="text-[10px] text-muted-foreground mb-0.5">
+                                                            {r.label}
+                                                        </p>
+                                                        <StarRating rating={r.value!} />
+                                                    </div>
+                                                ))}
+                                        </div>
+
+                                        {(review.strengths ||
+                                            review.improvements ||
+                                            review.comments) && (
+                                            <div className="space-y-2 text-xs border-t border-border pt-3">
+                                                {review.strengths && (
+                                                    <div>
+                                                        <span className="font-medium text-success">
+                                                            Strengths:
+                                                        </span>{" "}
+                                                        <span className="text-muted-foreground">
+                                                            {review.strengths}
                                                         </span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <ThumbsDown className="h-3 w-3 text-destructive" />
-                                                        <span className="text-destructive">
-                                                            Would not rehire
+                                                    </div>
+                                                )}
+                                                {review.improvements && (
+                                                    <div>
+                                                        <span className="font-medium text-warning">
+                                                            Improvements:
+                                                        </span>{" "}
+                                                        <span className="text-muted-foreground">
+                                                            {review.improvements}
                                                         </span>
-                                                    </>
+                                                    </div>
+                                                )}
+                                                {review.comments && (
+                                                    <div>
+                                                        <span className="font-medium">
+                                                            Comments:
+                                                        </span>{" "}
+                                                        <span className="text-muted-foreground">
+                                                            {review.comments}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
                                         )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </StaggerItem>
-                    ))}
-                </div>
+
+                                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-border text-xs">
+                                            <span className="text-muted-foreground">
+                                                Reviewed by {review.reviewerName}
+                                            </span>
+                                            {review.wouldRehire !== undefined && (
+                                                <div className="flex items-center gap-1">
+                                                    {review.wouldRehire ? (
+                                                        <>
+                                                            <ThumbsUp className="h-3 w-3 text-success" />
+                                                            <span className="text-success">
+                                                                Would rehire
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <ThumbsDown className="h-3 w-3 text-destructive" />
+                                                            <span className="text-destructive">
+                                                                Would not rehire
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </StaggerItem>
+                        ))}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_VENDOR_REVIEW_CONFIG}

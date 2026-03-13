@@ -18,7 +18,7 @@ import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
-import { Calendar, ChevronRight, Clock, Loader2, MapPin, Play, Plus, Upload, Users } from "lucide-react";
+import { Calendar, ChevronRight, Clock, MapPin, Play, Plus, Upload, Users } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { PermissionGate } from "@/components/permission-guard";
@@ -92,9 +92,7 @@ export default function EventsPage() {
     const isLoading = loadingEvents || loadingLocations || loadingActivations || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredEvents = events.filter((event) => {

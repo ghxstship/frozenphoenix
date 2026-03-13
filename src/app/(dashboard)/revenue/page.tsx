@@ -14,15 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 // REVENUE_SCHEDULE_STATUS_MAP available for drill-down views
 import type { RevenueSchedule } from "@/types";
-import {
-    ArrowRight,
-    CheckCircle,
-    Clock,
-    DollarSign,
-    Loader2,
-    Receipt,
-    TrendingUp,
-} from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, DollarSign, Receipt, TrendingUp } from "lucide-react";
 import { useRevenueSchedules } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -189,9 +181,7 @@ export default function RevenuePage() {
     }, [schedules]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

@@ -56,6 +56,12 @@ export const orgSecurityPatchSchema = z
         message: "At least one field must be provided",
     });
 
+// ─── POST /api/billing/subscribe ─────────────────────────────
+export const billingSubscribeSchema = z.object({
+    pricing_tier: z.enum(["core", "pro", "enterprise"]),
+    billing_cycle: z.enum(["monthly", "annual"]),
+});
+
 // ─── POST /api/invitations/send-email ────────────────────────
 export const sendEmailSchema = z.object({
     to: z.string().email("Valid email required"),

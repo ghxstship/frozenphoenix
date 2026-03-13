@@ -21,7 +21,6 @@ import {
     ChevronRight,
     Clock,
     DollarSign,
-    Loader2,
     Mail,
     Phone,
     Plus,
@@ -99,9 +98,11 @@ export default function LeadsPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const [importOpen, setImportOpen] = useState(false);
-    const { data: sbLeads, isLoading, refetch } = useLeads(
-        statusFilter !== "all" ? statusFilter : undefined
-    );
+    const {
+        data: sbLeads,
+        isLoading,
+        refetch,
+    } = useLeads(statusFilter !== "all" ? statusFilter : undefined);
     const { data: pipelineStats } = useLeadPipelineStats();
 
     const handleImportComplete = useCallback(() => {
@@ -133,9 +134,7 @@ export default function LeadsPage() {
             : 0;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

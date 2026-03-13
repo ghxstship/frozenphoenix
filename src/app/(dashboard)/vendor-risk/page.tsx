@@ -8,7 +8,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { VendorRiskScore } from "@/types/governance";
 import { useRiskAssessments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -65,9 +66,7 @@ export default function VendorRiskPage() {
     ).length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -104,78 +103,96 @@ export default function VendorRiskPage() {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filtered.map((s) => (
-                        <Card
-                            key={s.id}
-                            className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        >
-                            <CardHeader className="pb-2">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <CardTitle className="text-sm">
-                                            {vendorNames[s.vendor_id] || s.vendor_id}
-                                        </CardTitle>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                                            Scored: {new Date(s.score_date).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold">{s.overall_score}</div>
-                                        <Badge
-                                            variant={RISK_VARIANTS[s.risk_level]}
-                                            className="text-[9px]"
-                                        >
-                                            {RISK_LEVEL_MAP[
-                                                s.risk_level as keyof typeof RISK_LEVEL_MAP
-                                            ]?.label ?? s.risk_level}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2 mb-3">
-                                    <ScoreBar label="Financial" score={s.financial_score} />
-                                    <ScoreBar label="Compliance" score={s.compliance_score} />
-                                    <ScoreBar label="Performance" score={s.performance_score} />
-                                    <ScoreBar label="Operational" score={s.operational_score} />
-                                </div>
-                                <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border pt-2">
-                                    <span>Spend: {formatCurrency(s.total_spend)}</span>
-                                    <span>POs: {s.active_po_count}</span>
-                                    {s.overdue_invoice_count > 0 && (
-                                        <span className="text-destructive">
-                                            Overdue: {s.overdue_invoice_count}
-                                        </span>
-                                    )}
-                                    {s.incident_count > 0 && (
-                                        <span className="text-destructive">
-                                            Incidents: {s.incident_count}
-                                        </span>
-                                    )}
-                                </div>
-                                {(s.risk_factors as { factor: string }[]).length > 0 && (
-                                    <div className="mt-2 space-y-1">
-                                        {(
-                                            s.risk_factors as { factor: string; severity: string }[]
-                                        ).map((f, i) => (
-                                            <div
-                                                key={i}
-                                                className="flex items-center gap-1 text-[10px]"
-                                            >
-                                                <StatusBadge
-                                                    status={f.severity}
-                                                    className="text-[8px]"
-                                                />
-                                                <span>{f.factor}</span>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={ShieldAlert}
+                        title="No risk assessments found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "No vendor risk assessments available"
+                        }
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filtered.map((s) => (
+                            <Card
+                                key={s.id}
+                                className="hover:bg-muted/30 transition-colors cursor-pointer"
+                            >
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <CardTitle className="text-sm">
+                                                {vendorNames[s.vendor_id] || s.vendor_id}
+                                            </CardTitle>
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                Scored:{" "}
+                                                {new Date(s.score_date).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-bold">
+                                                {s.overall_score}
                                             </div>
-                                        ))}
+                                            <Badge
+                                                variant={RISK_VARIANTS[s.risk_level]}
+                                                className="text-[9px]"
+                                            >
+                                                {RISK_LEVEL_MAP[
+                                                    s.risk_level as keyof typeof RISK_LEVEL_MAP
+                                                ]?.label ?? s.risk_level}
+                                            </Badge>
+                                        </div>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2 mb-3">
+                                        <ScoreBar label="Financial" score={s.financial_score} />
+                                        <ScoreBar label="Compliance" score={s.compliance_score} />
+                                        <ScoreBar label="Performance" score={s.performance_score} />
+                                        <ScoreBar label="Operational" score={s.operational_score} />
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border pt-2">
+                                        <span>Spend: {formatCurrency(s.total_spend)}</span>
+                                        <span>POs: {s.active_po_count}</span>
+                                        {s.overdue_invoice_count > 0 && (
+                                            <span className="text-destructive">
+                                                Overdue: {s.overdue_invoice_count}
+                                            </span>
+                                        )}
+                                        {s.incident_count > 0 && (
+                                            <span className="text-destructive">
+                                                Incidents: {s.incident_count}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {(s.risk_factors as { factor: string }[]).length > 0 && (
+                                        <div className="mt-2 space-y-1">
+                                            {(
+                                                s.risk_factors as {
+                                                    factor: string;
+                                                    severity: string;
+                                                }[]
+                                            ).map((f, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="flex items-center gap-1 text-[10px]"
+                                                >
+                                                    <StatusBadge
+                                                        status={f.severity}
+                                                        className="text-[8px]"
+                                                    />
+                                                    <span>{f.factor}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
         </PermissionGate>
     );

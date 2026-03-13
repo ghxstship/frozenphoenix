@@ -12,7 +12,8 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import { AlertTriangle, BarChart3, Loader2, MapPin, Package, Plus, Tag } from "lucide-react";
+import { AlertTriangle, BarChart3, MapPin, Package, Plus, Tag } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useInventoryItems } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -53,9 +54,7 @@ export default function InventoryPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const categories = ["all", ...new Set(items.map((i) => i.category))];
@@ -137,79 +136,88 @@ export default function InventoryPage() {
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    {filtered.map((item, i) => {
-                        return (
-                            <StaggerItem key={item.id} index={i} stagger="tight">
-                                <Card className="hover:shadow-sm transition-all">
-                                    <CardContent className="py-3">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                                                <Package className="h-6 w-6 text-muted-foreground" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-sm font-semibold truncate">
-                                                            {item.name}
-                                                        </h3>
-                                                        <StatusBadge
-                                                            status={item.status}
-                                                            className="text-[10px] shrink-0"
-                                                        />
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Package}
+                        title="No items found"
+                        description={
+                            searchQuery || categoryFilter !== "all"
+                                ? "Try adjusting your search or filters"
+                                : "Add your first inventory item"
+                        }
+                        action={
+                            !searchQuery && categoryFilter === "all"
+                                ? { label: "New Item", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {filtered.map((item, i) => {
+                            return (
+                                <StaggerItem key={item.id} index={i} stagger="tight">
+                                    <Card className="hover:shadow-sm transition-all">
+                                        <CardContent className="py-3">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                                                    <Package className="h-6 w-6 text-muted-foreground" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-sm font-semibold truncate">
+                                                                {item.name}
+                                                            </h3>
+                                                            <StatusBadge
+                                                                status={item.status}
+                                                                className="text-[10px] shrink-0"
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                                                            <span className="font-mono">
+                                                                {item.sku}
+                                                            </span>
+                                                            <span className="flex items-center gap-0.5">
+                                                                <Tag className="h-2.5 w-2.5" />
+                                                                {item.category}
+                                                            </span>
+                                                            <span className="flex items-center gap-0.5">
+                                                                <MapPin className="h-2.5 w-2.5" />
+                                                                {item.location}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-                                                        <span className="font-mono">
-                                                            {item.sku}
-                                                        </span>
-                                                        <span className="flex items-center gap-0.5">
-                                                            <Tag className="h-2.5 w-2.5" />
-                                                            {item.category}
-                                                        </span>
-                                                        <span className="flex items-center gap-0.5">
-                                                            <MapPin className="h-2.5 w-2.5" />
-                                                            {item.location}
-                                                        </span>
+                                                </div>
+                                                <div className="flex items-center gap-6 text-sm shrink-0">
+                                                    <div className="text-right">
+                                                        <p className="font-bold">{item.quantity}</p>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            min: {item.minQuantity}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-medium">
+                                                            ${item.unitCost.toFixed(2)}
+                                                        </p>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            unit cost
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-6 text-sm shrink-0">
-                                                <div className="text-right">
-                                                    <p className="font-bold">{item.quantity}</p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        min: {item.minQuantity}
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="font-medium">
-                                                        ${item.unitCost.toFixed(2)}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        unit cost
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
-
-                {filtered.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <Package className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No items found</h3>
-                            <p className="text-muted-foreground text-center">
-                                Adjust filters or search terms
-                            </p>
-                        </CardContent>
-                    </Card>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
                 )}
             </div>
-            <CreateEntityDialog config={CREATE_INVENTORY_ITEM_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_INVENTORY_ITEM_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

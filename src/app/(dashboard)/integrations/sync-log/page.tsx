@@ -7,15 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useSyncEvents, useWebhookEvents } from "@/lib/supabase/hooks-external-sync";
-import {
-    AlertTriangle,
-    CheckCircle2,
-    Clock,
-    Loader2,
-    RefreshCw,
-    Webhook,
-    XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, RefreshCw, Webhook, XCircle } from "lucide-react";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -42,7 +34,10 @@ interface WebhookEventRow {
     processed_at: string | null;
 }
 
-const SYNC_STATUS: Record<string, { variant: "success" | "warning" | "destructive" | "info" | "ghost"; icon: typeof CheckCircle2 }> = {
+const SYNC_STATUS: Record<
+    string,
+    { variant: "success" | "warning" | "destructive" | "info" | "ghost"; icon: typeof CheckCircle2 }
+> = {
     completed: { variant: "success", icon: CheckCircle2 },
     in_progress: { variant: "info", icon: RefreshCw },
     failed: { variant: "destructive", icon: XCircle },
@@ -54,7 +49,10 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
     {
         id: "provider",
         header: "Provider",
-        accessorFn: (row) => row.provider_connections?.display_name ?? row.provider_connections?.provider_name ?? "—",
+        accessorFn: (row) =>
+            row.provider_connections?.display_name ??
+            row.provider_connections?.provider_name ??
+            "—",
         sortable: true,
         filterable: true,
     },
@@ -104,7 +102,9 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
             <div className="text-right">
                 <span className="text-xs font-medium">{row.records_processed}</span>
                 {row.records_failed > 0 && (
-                    <span className="text-[10px] text-destructive ml-1">({row.records_failed} failed)</span>
+                    <span className="text-[10px] text-destructive ml-1">
+                        ({row.records_failed} failed)
+                    </span>
                 )}
             </div>
         ),
@@ -122,7 +122,11 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
         accessorKey: "error_message",
         render: (v) => {
             if (!v) return <span className="text-xs text-muted-foreground">—</span>;
-            return <span className="text-xs text-destructive truncate max-w-[200px] block">{String(v)}</span>;
+            return (
+                <span className="text-xs text-destructive truncate max-w-[200px] block">
+                    {String(v)}
+                </span>
+            );
         },
     },
 ];
@@ -151,7 +155,14 @@ const webhookColumns: ColumnDef<WebhookEventRow>[] = [
         filterable: true,
         render: (v) => {
             const s = String(v);
-            const variant = s === "processed" ? "success" : s === "failed" ? "destructive" : s === "pending" ? "ghost" : "info";
+            const variant =
+                s === "processed"
+                    ? "success"
+                    : s === "failed"
+                      ? "destructive"
+                      : s === "pending"
+                        ? "ghost"
+                        : "info";
             return (
                 <Badge variant={variant} className="text-[10px] capitalize">
                     {s}
@@ -172,7 +183,11 @@ const webhookColumns: ColumnDef<WebhookEventRow>[] = [
         accessorKey: "error_message",
         render: (v) => {
             if (!v) return <span className="text-xs text-muted-foreground">—</span>;
-            return <span className="text-xs text-destructive truncate max-w-[200px] block">{String(v)}</span>;
+            return (
+                <span className="text-xs text-destructive truncate max-w-[200px] block">
+                    {String(v)}
+                </span>
+            );
         },
     },
 ];
@@ -184,9 +199,7 @@ export default function SyncLogPage() {
     const isLoading = loadingSyncs || loadingWebhooks;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const syncs = (syncEvents ?? []) as unknown as SyncEventRow[];

@@ -10,7 +10,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CircleDollarSign, Loader2, Plus } from "lucide-react";
+import { CircleDollarSign, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { GLAccount } from "@/types/governance";
 import { useGlAccounts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -53,9 +54,7 @@ export default function GLAccountsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = accounts.filter((a) => {
@@ -136,63 +135,95 @@ export default function GLAccountsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((a) => (
-                                        <tr
-                                            key={a.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-mono font-medium">{a.code}</td>
-                                            <td className="p-3">
-                                                <div className="font-medium">{a.name}</div>
-                                                {a.description && (
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {a.description}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3">
-                                                <Badge
-                                                    variant={
-                                                        (ACCOUNT_TYPE_VARIANTS[a.account_type] ||
-                                                            "ghost") as
-                                                            | "info"
-                                                            | "warning"
-                                                            | "secondary"
-                                                            | "success"
-                                                            | "destructive"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="p-0">
+                                                <EmptyState
+                                                    icon={CircleDollarSign}
+                                                    title="No GL accounts found"
+                                                    description={
+                                                        search || typeFilter !== "all"
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Add your first GL account"
                                                     }
-                                                    className="text-[10px]"
-                                                >
-                                                    {ACCOUNT_TYPE_LABELS[a.account_type]}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {a.capex_opex
-                                                    ? a.capex_opex === "capex"
-                                                        ? "CapEx"
-                                                        : "OpEx"
-                                                    : "—"}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {a.department || "—"}
-                                            </td>
-                                            <td className="p-3">
-                                                <Badge
-                                                    variant={a.is_active ? "success" : "ghost"}
-                                                    className="text-[10px]"
-                                                >
-                                                    {a.is_active ? "Active" : "Inactive"}
-                                                </Badge>
+                                                    action={
+                                                        !search && typeFilter === "all"
+                                                            ? {
+                                                                  label: "Add Account",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
+                                                />
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((a) => (
+                                            <tr
+                                                key={a.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-mono font-medium">
+                                                    {a.code}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="font-medium">{a.name}</div>
+                                                    {a.description && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {a.description}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3">
+                                                    <Badge
+                                                        variant={
+                                                            (ACCOUNT_TYPE_VARIANTS[
+                                                                a.account_type
+                                                            ] || "ghost") as
+                                                                | "info"
+                                                                | "warning"
+                                                                | "secondary"
+                                                                | "success"
+                                                                | "destructive"
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {ACCOUNT_TYPE_LABELS[a.account_type]}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {a.capex_opex
+                                                        ? a.capex_opex === "capex"
+                                                            ? "CapEx"
+                                                            : "OpEx"
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {a.department || "—"}
+                                                </td>
+                                                <td className="p-3">
+                                                    <Badge
+                                                        variant={a.is_active ? "success" : "ghost"}
+                                                        className="text-[10px]"
+                                                    >
+                                                        {a.is_active ? "Active" : "Inactive"}
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_GL_ACCOUNT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_GL_ACCOUNT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

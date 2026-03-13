@@ -32,7 +32,6 @@ import {
     DollarSign,
     GripVertical,
     List,
-    Loader2,
     Plus,
     Target,
     TrendingUp,
@@ -178,9 +177,7 @@ export default function OpportunitiesPage() {
     const boardStages = OPPORTUNITY_STAGES.filter((s) => s.id !== "won" && s.id !== "lost");
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

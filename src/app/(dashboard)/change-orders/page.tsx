@@ -3,7 +3,6 @@
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
-import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -18,6 +17,8 @@ import { formatDate } from "@/lib/locale";
 import { CHANGE_ORDER_TYPE_MAP } from "@/config/domain-config";
 import { useChangeOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SOW_CONFIG } from "@/config/create-entity-configs";
 import type { ChangeOrder } from "@/types";
 import {
     AlertTriangle,
@@ -28,7 +29,6 @@ import {
     Clock,
     DollarSign,
     FolderKanban,
-    Loader2,
     Plus,
 } from "lucide-react";
 
@@ -136,6 +136,7 @@ export default function ChangeOrdersPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbChangeOrders, isLoading } = useChangeOrders();
 
     const changeOrders = useMemo(
@@ -175,93 +176,96 @@ export default function ChangeOrdersPage() {
     }, [changeOrders]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
-        <PermissionGate resource="change_orders" action="read">
-            <div className="space-y-6">
-                <PageHeader
-                    title="Change Orders"
-                    description="Track and manage post-contract scope modifications"
-                >
-                    <div className="flex items-center gap-2">
-                        <CsvExportButton entity="change_orders" />
-                        <Link href="/change-orders/new">
-                            <Button size="sm">
+        <>
+            <PermissionGate resource="change_orders" action="read">
+                <div className="space-y-6">
+                    <PageHeader
+                        title="Change Orders"
+                        description="Track and manage post-contract scope modifications"
+                    >
+                        <div className="flex items-center gap-2">
+                            <CsvExportButton entity="change_orders" />
+                            <Button size="sm" onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" /> New Change Order
                             </Button>
-                        </Link>
+                        </div>
+                    </PageHeader>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="Net Value Impact"
+                            value={formatCurrency(stats.totalImpact)}
+                            icon={DollarSign}
+                        />
+                        <StatCard
+                            title="Approved Impact"
+                            value={formatCurrency(stats.approvedImpact)}
+                            icon={CheckCircle}
+                        />
+                        <StatCard
+                            title="Pending Approval"
+                            value={stats.pendingCount}
+                            icon={AlertTriangle}
+                        />
+                        <StatCard
+                            title="Schedule Impact"
+                            value={`${stats.totalScheduleImpact > 0 ? "+" : ""}${stats.totalScheduleImpact} days`}
+                            icon={Clock}
+                        />
                     </div>
-                </PageHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Net Value Impact"
-                        value={formatCurrency(stats.totalImpact)}
-                        icon={DollarSign}
-                    />
-                    <StatCard
-                        title="Approved Impact"
-                        value={formatCurrency(stats.approvedImpact)}
-                        icon={CheckCircle}
-                    />
-                    <StatCard
-                        title="Pending Approval"
-                        value={stats.pendingCount}
-                        icon={AlertTriangle}
-                    />
-                    <StatCard
-                        title="Schedule Impact"
-                        value={`${stats.totalScheduleImpact > 0 ? "+" : ""}${stats.totalScheduleImpact} days`}
-                        icon={Clock}
-                    />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search change orders..."
+                        />
+                        <select
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="pending_review">Pending Review</option>
+                            <option value="pending_client">Pending Client</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="void">Void</option>
+                        </select>
+                        <select
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                        >
+                            <option value="all">All Types</option>
+                            <option value="scope_addition">Scope Addition</option>
+                            <option value="scope_reduction">Scope Reduction</option>
+                            <option value="timeline_change">Timeline Change</option>
+                            <option value="budget_adjustment">Budget Adjustment</option>
+                            <option value="combined">Combined</option>
+                        </select>
+                    </div>
+
+                    <DataTable columns={tableColumns} data={filtered} keyField="id" />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {filtered.map((co) => (
+                            <ChangeOrderCard key={co.id} co={co} />
+                        ))}
+                    </div>
                 </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <SearchInput
-                        value={search}
-                        onValueChange={setSearch}
-                        placeholder="Search change orders..."
-                    />
-                    <select
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">All Statuses</option>
-                        <option value="draft">Draft</option>
-                        <option value="pending_review">Pending Review</option>
-                        <option value="pending_client">Pending Client</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="void">Void</option>
-                    </select>
-                    <select
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                    >
-                        <option value="all">All Types</option>
-                        <option value="scope_addition">Scope Addition</option>
-                        <option value="scope_reduction">Scope Reduction</option>
-                        <option value="timeline_change">Timeline Change</option>
-                        <option value="budget_adjustment">Budget Adjustment</option>
-                        <option value="combined">Combined</option>
-                    </select>
-                </div>
-
-                <DataTable columns={tableColumns} data={filtered} keyField="id" />
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filtered.map((co) => (
-                        <ChangeOrderCard key={co.id} co={co} />
-                    ))}
-                </div>
-            </div>
-        </PermissionGate>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_SOW_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }
 

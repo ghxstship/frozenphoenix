@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { formatCurrency } from "@/lib/utils";
 import { Building2, Globe, MapPin, MoreHorizontal, Plus, Star, Upload, Users } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { Button } from "@/components/ui/button";
@@ -120,9 +121,7 @@ export default function CompaniesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredCompanies = companies.filter((company) => {
@@ -240,14 +239,150 @@ export default function CompaniesPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredCompanies.map((company) => (
-                                    <TableRow
-                                        key={company.id}
-                                        className="cursor-pointer hover:bg-muted/50"
-                                    >
-                                        <TableCell>
+                                {filteredCompanies.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="p-0">
+                                            <EmptyState
+                                                icon={Building2}
+                                                title="No companies found"
+                                                description={
+                                                    searchQuery
+                                                        ? "Try adjusting your search"
+                                                        : "Add your first company"
+                                                }
+                                                action={
+                                                    !searchQuery
+                                                        ? {
+                                                              label: "Add Company",
+                                                              onClick: openCreate,
+                                                          }
+                                                        : undefined
+                                                }
+                                                compact
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredCompanies.map((company) => (
+                                        <TableRow
+                                            key={company.id}
+                                            className="cursor-pointer hover:bg-muted/50"
+                                        >
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage
+                                                            src={company.logoUrl}
+                                                            alt={company.name}
+                                                        />
+                                                        <AvatarFallback>
+                                                            {company.name
+                                                                .substring(0, 2)
+                                                                .toUpperCase()}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <div className="font-medium">
+                                                            {company.name}
+                                                        </div>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {company.industry}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={typeVariants[company.companyType]}>
+                                                    {company.companyType}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={statusVariants[company.status]}>
+                                                    {company.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {company.city && company.state && (
+                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {company.city}, {company.state}
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm">
+                                                    {company.accountManagerName || "—"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {company.projectCount}
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium">
+                                                {formatCurrency(company.totalRevenue)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            aria-label="Company actions"
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem>
+                                                            View Details
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            View Contacts
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            View Projects
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive">
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </Card>
+                )}
+
+                {/* Cards View */}
+                {view === "cards" &&
+                    (filteredCompanies.length === 0 ? (
+                        <EmptyState
+                            icon={Building2}
+                            title="No companies found"
+                            description={
+                                searchQuery ? "Try adjusting your search" : "Add your first company"
+                            }
+                            action={
+                                !searchQuery
+                                    ? { label: "Add Company", onClick: openCreate }
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredCompanies.map((company) => (
+                                <Card
+                                    key={company.id}
+                                    className="cursor-pointer hover:shadow-md transition-shadow"
+                                >
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
                                             <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
+                                                <Avatar className="h-12 w-12">
                                                     <AvatarImage
                                                         src={company.logoUrl}
                                                         alt={company.name}
@@ -257,45 +392,14 @@ export default function CompaniesPage() {
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <div className="font-medium">
+                                                    <CardTitle className="text-lg">
                                                         {company.name}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
+                                                    </CardTitle>
+                                                    <CardDescription>
                                                         {company.industry}
-                                                    </div>
+                                                    </CardDescription>
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={typeVariants[company.companyType]}>
-                                                {company.companyType}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={statusVariants[company.status]}>
-                                                {company.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {company.city && company.state && (
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {company.city}, {company.state}
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-sm">
-                                                {company.accountManagerName || "—"}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            {company.projectCount}
-                                        </TableCell>
-                                        <TableCell className="text-right font-medium">
-                                            {formatCurrency(company.totalRevenue)}
-                                        </TableCell>
-                                        <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
@@ -311,111 +415,52 @@ export default function CompaniesPage() {
                                                         View Details
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        View Contacts
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        View Projects
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive">
-                                                        Delete
-                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Card>
-                )}
-
-                {/* Cards View */}
-                {view === "cards" && (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredCompanies.map((company) => (
-                            <Card
-                                key={company.id}
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                            >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-12 w-12">
-                                                <AvatarImage
-                                                    src={company.logoUrl}
-                                                    alt={company.name}
-                                                />
-                                                <AvatarFallback>
-                                                    {company.name.substring(0, 2).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <CardTitle className="text-lg">
-                                                    {company.name}
-                                                </CardTitle>
-                                                <CardDescription>
-                                                    {company.industry}
-                                                </CardDescription>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="flex gap-2">
+                                            <Badge variant={typeVariants[company.companyType]}>
+                                                {company.companyType}
+                                            </Badge>
+                                            <Badge variant={statusVariants[company.status]}>
+                                                {company.status}
+                                            </Badge>
+                                        </div>
+                                        <div className="space-y-1 text-sm">
+                                            {company.city && company.state && (
+                                                <div className="flex items-center gap-2 text-muted-foreground">
+                                                    <MapPin className="h-3 w-3" />
+                                                    {company.city}, {company.state}
+                                                </div>
+                                            )}
+                                            {company.website && (
+                                                <div className="flex items-center gap-2 text-muted-foreground">
+                                                    <Globe className="h-3 w-3" />
+                                                    {company.website.replace("https://", "")}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center justify-between pt-2 border-t">
+                                            <div className="text-sm">
+                                                <span className="font-medium">
+                                                    {company.projectCount}
+                                                </span>
+                                                <span className="text-muted-foreground">
+                                                    {" "}
+                                                    projects
+                                                </span>
+                                            </div>
+                                            <div className="text-sm font-medium">
+                                                {formatCurrency(company.totalRevenue)}
                                             </div>
                                         </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    aria-label="Company actions"
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="flex gap-2">
-                                        <Badge variant={typeVariants[company.companyType]}>
-                                            {company.companyType}
-                                        </Badge>
-                                        <Badge variant={statusVariants[company.status]}>
-                                            {company.status}
-                                        </Badge>
-                                    </div>
-                                    <div className="space-y-1 text-sm">
-                                        {company.city && company.state && (
-                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                <MapPin className="h-3 w-3" />
-                                                {company.city}, {company.state}
-                                            </div>
-                                        )}
-                                        {company.website && (
-                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                <Globe className="h-3 w-3" />
-                                                {company.website.replace("https://", "")}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between pt-2 border-t">
-                                        <div className="text-sm">
-                                            <span className="font-medium">
-                                                {company.projectCount}
-                                            </span>
-                                            <span className="text-muted-foreground"> projects</span>
-                                        </div>
-                                        <div className="text-sm font-medium">
-                                            {formatCurrency(company.totalRevenue)}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ))}
             </div>
             <CreateEntityDialog
                 config={CREATE_COMPANY_CONFIG}

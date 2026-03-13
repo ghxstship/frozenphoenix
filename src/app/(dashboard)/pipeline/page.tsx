@@ -2,7 +2,6 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
-import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -13,21 +12,14 @@ import { DEAL_STAGES_KANBAN as DEAL_STAGES } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    Calendar,
-    Columns,
-    DollarSign,
-    GripVertical,
-    List,
-    Loader2,
-    Plus,
-    User,
-} from "lucide-react";
+import { Calendar, Columns, DollarSign, GripVertical, List, Plus, User } from "lucide-react";
 import type { Deal, DealStage } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField, ProgressField } from "@/components/data-view/field-renderers";
 import { DEAL_STAGE_MAP as DEAL_STAGE_CONFIG } from "@/config/domain-config";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DEAL_CONFIG } from "@/config/create-entity-configs";
 
 type ViewMode = "board" | "table";
 
@@ -100,7 +92,7 @@ const tableColumns: ColumnDef<Deal>[] = [
 ];
 
 export default function PipelinePage() {
-    const router = useRouter();
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["board", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -126,9 +118,7 @@ export default function PipelinePage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const stagesWithDeals = DEAL_STAGES.map((stage) => ({
@@ -138,170 +128,182 @@ export default function PipelinePage() {
     }));
 
     return (
-        <PermissionGate resource="pipeline" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader title="Pipeline" description="Manage your sales pipeline and deal flow">
-                    <div className="flex items-center gap-2">
-                        <SegmentedControl
-                            value={viewMode}
-                            onValueChange={(v) => setViewMode(v as ViewMode)}
-                            options={[
-                                {
-                                    value: "board",
-                                    label: "Board",
-                                    icon: <Columns className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "table",
-                                    label: "Table",
-                                    icon: <List className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                            ]}
-                            ariaLabel="View mode"
-                        />
-                        <Button size="sm" onClick={() => router.push("/pipeline/new")}>
-                            <Plus className="h-4 w-4" />
-                            New Deal
-                        </Button>
-                    </div>
-                </PageHeader>
+        <>
+            <PermissionGate resource="pipeline" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Pipeline"
+                        description="Manage your sales pipeline and deal flow"
+                    >
+                        <div className="flex items-center gap-2">
+                            <SegmentedControl
+                                value={viewMode}
+                                onValueChange={(v) => setViewMode(v as ViewMode)}
+                                options={[
+                                    {
+                                        value: "board",
+                                        label: "Board",
+                                        icon: <Columns className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "table",
+                                        label: "Table",
+                                        icon: <List className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                ]}
+                                ariaLabel="View mode"
+                            />
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" />
+                                New Deal
+                            </Button>
+                        </div>
+                    </PageHeader>
 
-                {/* Pipeline Summary */}
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                    {stagesWithDeals
-                        .filter((s) => s.id !== "lost")
-                        .map((stage) => (
-                            <div
-                                key={stage.id}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 text-xs whitespace-nowrap"
-                            >
-                                <span className="font-medium">{stage.label}</span>
-                                <span className="font-bold text-primary">
-                                    {formatCurrency(stage.total)}
-                                </span>
-                                <Badge variant="ghost" className="text-[10px] px-1">
-                                    {stage.deals.length}
-                                </Badge>
-                            </div>
-                        ))}
-                </div>
-
-                {/* Table View */}
-                {viewMode === "table" && (
-                    <DataTable
-                        data={deals}
-                        columns={tableColumns}
-                        keyField="id"
-                        sortable
-                        searchable
-                        searchPlaceholder="Search deals..."
-                        pagination
-                        pageSize={15}
-                        hoverable
-                        stickyHeader
-                    />
-                )}
-
-                {/* Kanban Board */}
-                {viewMode === "board" && (
-                    <div className="flex gap-3 lg:gap-4 overflow-x-auto pb-4 -mx-4 px-4 lg:mx-0 lg:px-0 min-h-[calc(100vh-240px)]">
-                        {stagesWithDeals.map((stage) => (
-                            <div
-                                key={stage.id}
-                                className="flex-shrink-0 w-64 sm:w-72 flex flex-col"
-                            >
-                                {/* Column Header */}
-                                <div className="flex items-center justify-between px-3 py-2 mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="h-2 w-2 rounded-full"
-                                            style={{ backgroundColor: stage.color }}
-                                        />
-                                        <span className="text-sm font-semibold">{stage.label}</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            ({stage.deals.length})
-                                        </span>
-                                    </div>
-                                    <span className="text-xs font-medium text-muted-foreground">
+                    {/* Pipeline Summary */}
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                        {stagesWithDeals
+                            .filter((s) => s.id !== "lost")
+                            .map((stage) => (
+                                <div
+                                    key={stage.id}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 text-xs whitespace-nowrap"
+                                >
+                                    <span className="font-medium">{stage.label}</span>
+                                    <span className="font-bold text-primary">
                                         {formatCurrency(stage.total)}
                                     </span>
+                                    <Badge variant="ghost" className="text-[10px] px-1">
+                                        {stage.deals.length}
+                                    </Badge>
                                 </div>
+                            ))}
+                    </div>
 
-                                {/* Cards */}
-                                <div className="flex-1 space-y-2">
-                                    {stage.deals.map((deal, i) => (
-                                        <StaggerItem key={deal.id} index={i} stagger="relaxed">
-                                            <div className="spatial-card p-4 cursor-grab active:cursor-grabbing">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-semibold truncate">
-                                                            {deal.title}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {deal.company}
-                                                        </p>
+                    {/* Table View */}
+                    {viewMode === "table" && (
+                        <DataTable
+                            data={deals}
+                            columns={tableColumns}
+                            keyField="id"
+                            sortable
+                            searchable
+                            searchPlaceholder="Search deals..."
+                            pagination
+                            pageSize={15}
+                            hoverable
+                            stickyHeader
+                        />
+                    )}
+
+                    {/* Kanban Board */}
+                    {viewMode === "board" && (
+                        <div className="flex gap-3 lg:gap-4 overflow-x-auto pb-4 -mx-4 px-4 lg:mx-0 lg:px-0 min-h-[calc(100vh-240px)]">
+                            {stagesWithDeals.map((stage) => (
+                                <div
+                                    key={stage.id}
+                                    className="flex-shrink-0 w-64 sm:w-72 flex flex-col"
+                                >
+                                    {/* Column Header */}
+                                    <div className="flex items-center justify-between px-3 py-2 mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="h-2 w-2 rounded-full"
+                                                style={{ backgroundColor: stage.color }}
+                                            />
+                                            <span className="text-sm font-semibold">
+                                                {stage.label}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                ({stage.deals.length})
+                                            </span>
+                                        </div>
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                            {formatCurrency(stage.total)}
+                                        </span>
+                                    </div>
+
+                                    {/* Cards */}
+                                    <div className="flex-1 space-y-2">
+                                        {stage.deals.map((deal, i) => (
+                                            <StaggerItem key={deal.id} index={i} stagger="relaxed">
+                                                <div className="spatial-card p-4 cursor-grab active:cursor-grabbing">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-semibold truncate">
+                                                                {deal.title}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {deal.company}
+                                                            </p>
+                                                        </div>
+                                                        <GripVertical className="h-4 w-4 text-muted-foreground/30 shrink-0" />
                                                     </div>
-                                                    <GripVertical className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-                                                </div>
 
-                                                <div className="flex items-center gap-1.5 mb-3">
-                                                    <DollarSign className="h-3.5 w-3.5 text-success" />
-                                                    <span className="text-sm font-bold">
-                                                        {formatCurrency(deal.value)}
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                                                        <User className="h-3 w-3" />
-                                                        <span>{deal.contactName}</span>
+                                                    <div className="flex items-center gap-1.5 mb-3">
+                                                        <DollarSign className="h-3.5 w-3.5 text-success" />
+                                                        <span className="text-sm font-bold">
+                                                            {formatCurrency(deal.value)}
+                                                        </span>
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                                                        <Calendar className="h-3 w-3" />
-                                                        <span>
-                                                            {formatDate(
-                                                                deal.expectedCloseDate,
-                                                                "compact"
-                                                            )}
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                                            <User className="h-3 w-3" />
+                                                            <span>{deal.contactName}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                            <Calendar className="h-3 w-3" />
+                                                            <span>
+                                                                {formatDate(
+                                                                    deal.expectedCloseDate,
+                                                                    "compact"
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Probability bar */}
+                                                    <div className="mt-3 flex items-center gap-2">
+                                                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full rounded-full transition-all duration-500"
+                                                                style={{
+                                                                    width: `${deal.probability}%`,
+                                                                    backgroundColor: stage.color,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-medium text-muted-foreground">
+                                                            {deal.probability}%
                                                         </span>
                                                     </div>
                                                 </div>
+                                            </StaggerItem>
+                                        ))}
 
-                                                {/* Probability bar */}
-                                                <div className="mt-3 flex items-center gap-2">
-                                                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-500"
-                                                            style={{
-                                                                width: `${deal.probability}%`,
-                                                                backgroundColor: stage.color,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-[10px] font-medium text-muted-foreground">
-                                                        {deal.probability}%
-                                                    </span>
-                                                </div>
+                                        {/* Empty state */}
+                                        {stage.deals.length === 0 && (
+                                            <div className="border-2 border-dashed border-border rounded-xl p-6 text-center">
+                                                <p className="text-xs text-muted-foreground">
+                                                    No deals in this stage
+                                                </p>
                                             </div>
-                                        </StaggerItem>
-                                    ))}
-
-                                    {/* Empty state */}
-                                    {stage.deals.length === 0 && (
-                                        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center">
-                                            <p className="text-xs text-muted-foreground">
-                                                No deals in this stage
-                                            </p>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </PermissionGate>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_DEAL_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

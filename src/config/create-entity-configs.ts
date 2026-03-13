@@ -960,6 +960,28 @@ export const CREATE_SHIPMENT_CONFIG: CreateEntityConfig = {
     ],
 };
 
+// ─── Teams ───
+
+export const CREATE_TEAM_CONFIG: CreateEntityConfig = {
+    entityName: "Team",
+    description: "Create a new team to organize members.",
+    fields: [
+        {
+            key: "name",
+            label: "Team Name",
+            type: "text",
+            placeholder: "e.g. Camera Department",
+            required: true,
+        },
+        {
+            key: "description",
+            label: "Description",
+            type: "textarea",
+            placeholder: "What this team does...",
+        },
+    ],
+};
+
 // ─── Accounts & People ───
 
 export const CREATE_ACCOUNT_CONFIG: CreateEntityConfig = {
@@ -1351,6 +1373,47 @@ export const CREATE_PERMIT_CONFIG: CreateEntityConfig = {
             label: "Notes",
             type: "textarea",
             placeholder: "Permit conditions or notes...",
+        },
+    ],
+};
+
+export const CREATE_LOCATION_CONFIG: CreateEntityConfig = {
+    entityName: "Location",
+    description: "Add a new production location or venue.",
+    fields: [
+        {
+            key: "name",
+            label: "Location Name",
+            type: "text",
+            placeholder: "e.g. Main Stage Area",
+            required: true,
+        },
+        {
+            key: "type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "venue", label: "Venue" },
+                { value: "studio", label: "Studio" },
+                { value: "warehouse", label: "Warehouse" },
+                { value: "office", label: "Office" },
+                { value: "outdoor", label: "Outdoor" },
+                { value: "other", label: "Other" },
+            ],
+            required: true,
+        },
+        { key: "capacity", label: "Capacity", type: "number", placeholder: "0", min: 0 },
+        {
+            key: "address",
+            label: "Address",
+            type: "textarea",
+            placeholder: "Street, City, State, ZIP",
+        },
+        {
+            key: "notes",
+            label: "Notes",
+            type: "textarea",
+            placeholder: "Access details, parking, load-in info...",
         },
     ],
 };
@@ -2771,6 +2834,338 @@ export const CREATE_WORKER_REVIEW_CONFIG: CreateEntityConfig = {
             label: "Areas for Improvement",
             type: "textarea",
             placeholder: "Growth opportunities",
+        },
+    ],
+};
+
+// ─── Templates ───
+
+export const CREATE_TEMPLATE_CONFIG: CreateEntityConfig = {
+    entityName: "Template",
+    description: "Create a new document template.",
+    fields: [
+        {
+            key: "name",
+            label: "Template Name",
+            type: "text",
+            placeholder: "e.g. Standard Services Agreement",
+            required: true,
+        },
+        {
+            key: "category",
+            label: "Category",
+            type: "select",
+            options: [
+                { value: "proposal", label: "Proposal" },
+                { value: "contract", label: "Contract" },
+                { value: "invoice", label: "Invoice" },
+                { value: "call_sheet", label: "Call Sheet" },
+                { value: "tech_sheet", label: "Tech Sheet" },
+                { value: "sow", label: "SOW" },
+                { value: "report", label: "Report" },
+                { value: "email", label: "Email" },
+            ],
+            required: true,
+        },
+        {
+            key: "description",
+            label: "Description",
+            type: "textarea",
+            placeholder: "Template purpose and usage notes...",
+        },
+    ],
+};
+
+// ─── Knowledge Base ───
+
+export const CREATE_KB_ARTICLE_CONFIG: CreateEntityConfig = {
+    entityName: "Article",
+    description: "Create a new knowledge base article.",
+    fields: [
+        {
+            key: "title",
+            label: "Article Title",
+            type: "text",
+            placeholder: "e.g. How to Submit Time-Off Requests",
+            required: true,
+        },
+        {
+            key: "category",
+            label: "Category",
+            type: "select",
+            options: [
+                { value: "sop", label: "SOP" },
+                { value: "checklist", label: "Checklist" },
+                { value: "template", label: "Template" },
+                { value: "guide", label: "Guide" },
+                { value: "policy", label: "Policy" },
+                { value: "training", label: "Training" },
+            ],
+            required: true,
+        },
+        {
+            key: "summary",
+            label: "Summary",
+            type: "textarea",
+            placeholder: "Brief summary of this article...",
+        },
+    ],
+};
+
+// ─── Advancing ───
+
+export const CREATE_ADVANCE_CONFIG: CreateEntityConfig = {
+    entityName: "Advance",
+    description: "Create a new production advance request.",
+    fields: [
+        {
+            key: "title",
+            label: "Title",
+            type: "text",
+            placeholder: "e.g. Stage Build Materials",
+            required: true,
+        },
+        {
+            key: "advance_type",
+            label: "Type",
+            type: "select",
+            options: [
+                { value: "purchase", label: "Purchase" },
+                { value: "rental", label: "Rental" },
+                { value: "service", label: "Service" },
+                { value: "labor", label: "Labor" },
+                { value: "other", label: "Other" },
+            ],
+            required: true,
+        },
+        {
+            key: "priority",
+            label: "Priority",
+            type: "select",
+            options: [
+                { value: "low", label: "Low" },
+                { value: "medium", label: "Medium" },
+                { value: "high", label: "High" },
+                { value: "urgent", label: "Urgent" },
+            ],
+        },
+        {
+            key: "total_estimated_cost",
+            label: "Estimated Cost",
+            type: "number",
+            placeholder: "0.00",
+        },
+        {
+            key: "notes",
+            label: "Notes",
+            type: "textarea",
+            placeholder: "Additional details...",
+        },
+    ],
+};
+
+export const CREATE_CATALOG_ITEM_CONFIG: CreateEntityConfig = {
+    entityName: "Catalog Item",
+    description: "Add a new item to the advance catalog.",
+    fields: [
+        {
+            key: "name",
+            label: "Item Name",
+            type: "text",
+            placeholder: "e.g. Gaffer Tape Roll",
+            required: true,
+        },
+        {
+            key: "sku",
+            label: "SKU",
+            type: "text",
+            placeholder: "e.g. GT-001",
+        },
+        {
+            key: "unit_cost",
+            label: "Unit Cost",
+            type: "number",
+            placeholder: "0.00",
+            required: true,
+        },
+        {
+            key: "description",
+            label: "Description",
+            type: "textarea",
+            placeholder: "Item description...",
+        },
+    ],
+};
+
+export const CREATE_ADVANCE_TEMPLATE_CONFIG: CreateEntityConfig = {
+    entityName: "Advance Template",
+    description: "Create a reusable advance template.",
+    fields: [
+        {
+            key: "name",
+            label: "Template Name",
+            type: "text",
+            placeholder: "e.g. Standard Stage Build",
+            required: true,
+        },
+        {
+            key: "description",
+            label: "Description",
+            type: "textarea",
+            placeholder: "What this template includes...",
+        },
+    ],
+};
+
+// ─── Credentials ───
+
+export const CREATE_CREDENTIAL_ASSIGNMENT_CONFIG: CreateEntityConfig = {
+    entityName: "Credential Assignment",
+    description: "Assign a credential to a person.",
+    fields: [
+        {
+            key: "assignee_name",
+            label: "Assignee Name",
+            type: "text",
+            placeholder: "e.g. Jane Smith",
+            required: true,
+        },
+        {
+            key: "assignee_email",
+            label: "Email",
+            type: "email",
+            placeholder: "jane@company.com",
+        },
+        {
+            key: "zone_access",
+            label: "Zone Access",
+            type: "text",
+            placeholder: "e.g. VIP, Backstage",
+        },
+        {
+            key: "valid_from",
+            label: "Valid From",
+            type: "date",
+        },
+        {
+            key: "valid_until",
+            label: "Valid Until",
+            type: "date",
+        },
+    ],
+};
+
+// ─── Digital Assets ───
+
+export const CREATE_DIGITAL_ASSET_CONFIG: CreateEntityConfig = {
+    entityName: "Digital Asset",
+    description: "Register a new digital asset.",
+    fields: [
+        {
+            key: "name",
+            label: "Asset Name",
+            type: "text",
+            placeholder: "e.g. Hero Image - Main Stage",
+            required: true,
+        },
+        {
+            key: "asset_class",
+            label: "Asset Class",
+            type: "select",
+            options: [
+                { value: "image", label: "Image" },
+                { value: "video", label: "Video" },
+                { value: "audio", label: "Audio" },
+                { value: "document", label: "Document" },
+            ],
+            required: true,
+        },
+        {
+            key: "description",
+            label: "Description",
+            type: "textarea",
+            placeholder: "Asset details...",
+        },
+    ],
+};
+
+// ─── SLA Policies ───
+
+export const CREATE_SLA_POLICY_CONFIG: CreateEntityConfig = {
+    entityName: "SLA Policy",
+    description: "Create a new SLA policy for service requests.",
+    fields: [
+        {
+            key: "name",
+            label: "Policy Name",
+            type: "text",
+            placeholder: "e.g. Critical Response SLA",
+            required: true,
+        },
+        {
+            key: "priority",
+            label: "Priority",
+            type: "select",
+            options: [
+                { value: "critical", label: "Critical" },
+                { value: "high", label: "High" },
+                { value: "medium", label: "Medium" },
+                { value: "low", label: "Low" },
+            ],
+            required: true,
+        },
+        {
+            key: "response_time_minutes",
+            label: "Response Time (minutes)",
+            type: "number",
+            placeholder: "15",
+            required: true,
+        },
+        {
+            key: "resolution_time_minutes",
+            label: "Resolution Time (minutes)",
+            type: "number",
+            placeholder: "60",
+            required: true,
+        },
+        {
+            key: "assign_to_team",
+            label: "Assign to Team",
+            type: "text",
+            placeholder: "e.g. Operations",
+        },
+    ],
+};
+
+// ─── Email Integration ───
+
+export const CREATE_EMAIL_ACCOUNT_CONFIG: CreateEntityConfig = {
+    entityName: "Email Account",
+    description: "Connect an email account for bi-directional sync.",
+    fields: [
+        {
+            key: "email",
+            label: "Email Address",
+            type: "email",
+            placeholder: "team@company.com",
+            required: true,
+        },
+        {
+            key: "provider",
+            label: "Provider",
+            type: "select",
+            options: [
+                { value: "google", label: "Google Workspace" },
+                { value: "microsoft", label: "Microsoft 365" },
+                { value: "imap", label: "IMAP / Other" },
+            ],
+            required: true,
+        },
+        {
+            key: "label",
+            label: "Account Label",
+            type: "text",
+            placeholder: "e.g. Sales Inbox",
         },
     ],
 };

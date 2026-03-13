@@ -13,6 +13,7 @@ import {
     Clock,
     Download,
     LineChart,
+    Loader2,
     PieChart,
     RefreshCw,
     Send,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useAiReportQueries } from "@/lib/supabase/hooks-v2-features";
+import { useAiReportQueries, useCreateAiReportQuery } from "@/lib/supabase/hooks-v2-features";
 
 interface AiReportQuery {
     id: string;
@@ -86,6 +87,23 @@ export default function AiReportsPage() {
     const [queryInput, setQueryInput] = useState("");
 
     const { data: sbQueries, isLoading } = useAiReportQueries();
+    const createQuery = useCreateAiReportQuery();
+
+    const handleGenerateReport = () => {
+        const trimmed = queryInput.trim();
+        if (!trimmed || createQuery.isPending) return;
+        createQuery.mutate(
+            {
+                query: trimmed,
+                status: "generating",
+                chart_type: "bar",
+                generated_title: trimmed.length > 60 ? trimmed.slice(0, 57) + "..." : trimmed,
+                data_points: 0,
+                execution_time_ms: 0,
+            },
+            { onSuccess: () => setQueryInput("") }
+        );
+    };
 
     const queries: AiReportQuery[] = useMemo(
         () =>
@@ -156,11 +174,20 @@ export default function AiReportsPage() {
                                 placeholder="Ask a question... e.g., 'Show me revenue by project for Q1'"
                                 className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
                                 onKeyDown={(e) => {
-                                    if (e.key === "Enter" && queryInput.trim()) setQueryInput("");
+                                    if (e.key === "Enter") handleGenerateReport();
                                 }}
                             />
-                            <Button size="sm" disabled={!queryInput.trim()}>
-                                <Send className="h-3.5 w-3.5" /> Generate
+                            <Button
+                                size="sm"
+                                disabled={!queryInput.trim() || createQuery.isPending}
+                                onClick={handleGenerateReport}
+                            >
+                                {createQuery.isPending ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <Send className="h-3.5 w-3.5" />
+                                )}
+                                {createQuery.isPending ? "Generating..." : "Generate"}
                             </Button>
                         </div>
                     </CardContent>

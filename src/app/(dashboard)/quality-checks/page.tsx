@@ -27,6 +27,7 @@ import {
     Plus,
     XCircle,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useAllQualityChecks, useUpdateQualityCheck } from "@/lib/supabase/hooks-feature-gaps";
@@ -224,194 +225,212 @@ export default function QualityChecksPage() {
                         />
                     </div>
 
-                    <div className="space-y-3">
-                        {filtered.map((qc, i) => {
-                            const isExpanded = expandedId === qc.id;
-                            const passCount = qc.checkItems.filter(
-                                (ci) => ci.passed === true
-                            ).length;
-                            const failCount = qc.checkItems.filter(
-                                (ci) => ci.passed === false
-                            ).length;
-                            const unchecked = qc.checkItems.filter(
-                                (ci) => ci.passed === null
-                            ).length;
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={ClipboardCheck}
+                            title="No quality checks found"
+                            description={
+                                search || statusFilter !== "all"
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first quality check"
+                            }
+                            action={
+                                !search && statusFilter === "all"
+                                    ? { label: "New Quality Check", onClick: openCreate }
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {filtered.map((qc, i) => {
+                                const isExpanded = expandedId === qc.id;
+                                const passCount = qc.checkItems.filter(
+                                    (ci) => ci.passed === true
+                                ).length;
+                                const failCount = qc.checkItems.filter(
+                                    (ci) => ci.passed === false
+                                ).length;
+                                const unchecked = qc.checkItems.filter(
+                                    (ci) => ci.passed === null
+                                ).length;
 
-                            return (
-                                <StaggerItem key={qc.id} index={i} stagger="normal">
-                                    <Card className="overflow-hidden">
-                                        <CardHeader
-                                            className="cursor-pointer hover:bg-secondary/30 transition-colors py-4"
-                                            onClick={() => setExpandedId(isExpanded ? null : qc.id)}
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <CardTitle className="text-sm">
-                                                            {qc.title}
-                                                        </CardTitle>
-                                                        <StatusBadge
-                                                            status={qc.status}
-                                                            className="text-[10px]"
-                                                        />
-                                                        <Badge
-                                                            variant="ghost"
-                                                            className="text-[10px]"
-                                                        >
-                                                            {CATEGORY_LABELS[qc.category]}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {qc.projectName} · {qc.phase} · Inspector:{" "}
-                                                        {qc.inspectorName} ·{" "}
-                                                        {formatDate(qc.scheduledDate)}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-3 shrink-0">
-                                                    <div className="flex items-center gap-1.5 text-xs">
-                                                        <span className="text-success font-medium">
-                                                            {passCount}✓
-                                                        </span>
-                                                        {failCount > 0 && (
-                                                            <span className="text-destructive font-medium">
-                                                                {failCount}✗
-                                                            </span>
-                                                        )}
-                                                        {unchecked > 0 && (
-                                                            <span className="text-muted-foreground">
-                                                                {unchecked}○
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    {qc.photos > 0 && (
-                                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                            <Camera className="h-3 w-3" />
-                                                            {qc.photos}
-                                                        </div>
-                                                    )}
-                                                    {isExpanded ? (
-                                                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                                                    ) : (
-                                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-
-                                        {isExpanded && (
-                                            <CardContent className="pt-0 space-y-4">
-                                                <div>
-                                                    <OverlineText as="h4" className="mb-3">
-                                                        Check Items
-                                                    </OverlineText>
-                                                    <div className="space-y-2">
-                                                        {qc.checkItems.map((ci) => (
-                                                            <div
-                                                                key={ci.id}
-                                                                className={`flex items-start gap-3 p-2.5 rounded-lg ${
-                                                                    ci.passed === true
-                                                                        ? "bg-success/5"
-                                                                        : ci.passed === false
-                                                                          ? "bg-destructive/5"
-                                                                          : "bg-secondary/30"
-                                                                }`}
+                                return (
+                                    <StaggerItem key={qc.id} index={i} stagger="normal">
+                                        <Card className="overflow-hidden">
+                                            <CardHeader
+                                                className="cursor-pointer hover:bg-secondary/30 transition-colors py-4"
+                                                onClick={() =>
+                                                    setExpandedId(isExpanded ? null : qc.id)
+                                                }
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <CardTitle className="text-sm">
+                                                                {qc.title}
+                                                            </CardTitle>
+                                                            <StatusBadge
+                                                                status={qc.status}
+                                                                className="text-[10px]"
+                                                            />
+                                                            <Badge
+                                                                variant="ghost"
+                                                                className="text-[10px]"
                                                             >
-                                                                <div className="shrink-0 mt-0.5">
-                                                                    {ci.passed === true && (
-                                                                        <CheckCircle2 className="h-4 w-4 text-success" />
-                                                                    )}
-                                                                    {ci.passed === false && (
-                                                                        <XCircle className="h-4 w-4 text-destructive" />
-                                                                    )}
-                                                                    {ci.passed === null && (
-                                                                        <Clock className="h-4 w-4 text-muted-foreground" />
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="text-xs font-medium">
-                                                                        {ci.label}
-                                                                    </p>
-                                                                    {ci.note && (
-                                                                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                                            {ci.note}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {qc.notes && (
-                                                    <div>
-                                                        <OverlineText as="h4" className="mb-2">
-                                                            Inspector Notes
-                                                        </OverlineText>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {qc.notes}
+                                                                {CATEGORY_LABELS[qc.category]}
+                                                            </Badge>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {qc.projectName} · {qc.phase} ·
+                                                            Inspector: {qc.inspectorName} ·{" "}
+                                                            {formatDate(qc.scheduledDate)}
                                                         </p>
                                                     </div>
-                                                )}
-
-                                                <div className="flex items-center gap-2 pt-2 border-t">
-                                                    {qc.status === "in_progress" && (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleUpdateStatus(qc.id, "passed")
-                                                            }
-                                                        >
-                                                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
-                                                            Complete Inspection
-                                                        </Button>
-                                                    )}
-                                                    {qc.status === "failed" && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                handleUpdateStatus(qc.id, "pending")
-                                                            }
-                                                        >
-                                                            <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />{" "}
-                                                            Schedule Re-Inspection
-                                                        </Button>
-                                                    )}
-                                                    {qc.status === "pending" && (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleUpdateStatus(
-                                                                    qc.id,
-                                                                    "in_progress"
-                                                                )
-                                                            }
-                                                        >
-                                                            <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />{" "}
-                                                            Start Inspection
-                                                        </Button>
-                                                    )}
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setExpandedId(qc.id)}
-                                                    >
-                                                        <Camera className="mr-1.5 h-3.5 w-3.5" />{" "}
-                                                        Add Photos
-                                                    </Button>
+                                                    <div className="flex items-center gap-3 shrink-0">
+                                                        <div className="flex items-center gap-1.5 text-xs">
+                                                            <span className="text-success font-medium">
+                                                                {passCount}✓
+                                                            </span>
+                                                            {failCount > 0 && (
+                                                                <span className="text-destructive font-medium">
+                                                                    {failCount}✗
+                                                                </span>
+                                                            )}
+                                                            {unchecked > 0 && (
+                                                                <span className="text-muted-foreground">
+                                                                    {unchecked}○
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {qc.photos > 0 && (
+                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                                <Camera className="h-3 w-3" />
+                                                                {qc.photos}
+                                                            </div>
+                                                        )}
+                                                        {isExpanded ? (
+                                                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                                                        ) : (
+                                                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </CardContent>
-                                        )}
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                    </div>
+                                            </CardHeader>
 
-                    {filtered.length === 0 && (
-                        <div className="text-center py-12">
-                            <ClipboardCheck className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">No quality checks found</p>
+                                            {isExpanded && (
+                                                <CardContent className="pt-0 space-y-4">
+                                                    <div>
+                                                        <OverlineText as="h4" className="mb-3">
+                                                            Check Items
+                                                        </OverlineText>
+                                                        <div className="space-y-2">
+                                                            {qc.checkItems.map((ci) => (
+                                                                <div
+                                                                    key={ci.id}
+                                                                    className={`flex items-start gap-3 p-2.5 rounded-lg ${
+                                                                        ci.passed === true
+                                                                            ? "bg-success/5"
+                                                                            : ci.passed === false
+                                                                              ? "bg-destructive/5"
+                                                                              : "bg-secondary/30"
+                                                                    }`}
+                                                                >
+                                                                    <div className="shrink-0 mt-0.5">
+                                                                        {ci.passed === true && (
+                                                                            <CheckCircle2 className="h-4 w-4 text-success" />
+                                                                        )}
+                                                                        {ci.passed === false && (
+                                                                            <XCircle className="h-4 w-4 text-destructive" />
+                                                                        )}
+                                                                        {ci.passed === null && (
+                                                                            <Clock className="h-4 w-4 text-muted-foreground" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-xs font-medium">
+                                                                            {ci.label}
+                                                                        </p>
+                                                                        {ci.note && (
+                                                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                                                {ci.note}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {qc.notes && (
+                                                        <div>
+                                                            <OverlineText as="h4" className="mb-2">
+                                                                Inspector Notes
+                                                            </OverlineText>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {qc.notes}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex items-center gap-2 pt-2 border-t">
+                                                        {qc.status === "in_progress" && (
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleUpdateStatus(
+                                                                        qc.id,
+                                                                        "passed"
+                                                                    )
+                                                                }
+                                                            >
+                                                                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
+                                                                Complete Inspection
+                                                            </Button>
+                                                        )}
+                                                        {qc.status === "failed" && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    handleUpdateStatus(
+                                                                        qc.id,
+                                                                        "pending"
+                                                                    )
+                                                                }
+                                                            >
+                                                                <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />{" "}
+                                                                Schedule Re-Inspection
+                                                            </Button>
+                                                        )}
+                                                        {qc.status === "pending" && (
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleUpdateStatus(
+                                                                        qc.id,
+                                                                        "in_progress"
+                                                                    )
+                                                                }
+                                                            >
+                                                                <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />{" "}
+                                                                Start Inspection
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setExpandedId(qc.id)}
+                                                        >
+                                                            <Camera className="mr-1.5 h-3.5 w-3.5" />{" "}
+                                                            Add Photos
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            )}
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

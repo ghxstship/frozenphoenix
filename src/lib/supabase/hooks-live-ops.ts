@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabase } from "./client";
-import type { Tables } from "./database.types";
+import type { Tables, TablesUpdate } from "./database.types";
 
 // ═══════════════════════════════════════════════════════════════
 // Live-Ops Hooks — Supabase queries for all live-ops tables
@@ -35,6 +35,26 @@ export function useLiveCrewAssignments(liveEventId?: string) {
             if (error) throw error;
             return data as Tables<"live_crew_assignments">[];
         },
+    });
+}
+
+export function useUpdateLiveCrewAssignment() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({
+            id,
+            ...updates
+        }: TablesUpdate<"live_crew_assignments"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("live_crew_assignments")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data as Tables<"live_crew_assignments">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["live_crew_assignments"] }),
     });
 }
 
@@ -170,6 +190,23 @@ export function useRosCues(liveEventId?: string) {
             if (error) throw error;
             return data as Tables<"ros_cues">[];
         },
+    });
+}
+
+export function useUpdateRosCue() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"ros_cues"> & { id: string }) => {
+            const { data, error } = await getSupabase()
+                .from("ros_cues")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data as Tables<"ros_cues">;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ros_cues"] }),
     });
 }
 

@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SAVED_VIEW_CONFIG } from "@/config/create-entity-configs";
 import { useSavedViews } from "@/lib/supabase/hooks-productive";
 
 type ViewVisibility = "private" | "team" | "organization";
@@ -69,6 +71,7 @@ function deriveVisibility(row: Record<string, unknown>): ViewVisibility {
 
 export default function SavedViewsPage() {
     const [search, setSearch] = useState("");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIS_FILTERS = ["all", "private", "team", "organization"] as const;
     const [visFilter, setVisFilter] = useQueryTabState({
         key: "visibility",
@@ -110,57 +113,64 @@ export default function SavedViewsPage() {
     const unstarred = filtered.filter((v) => !v.starred);
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Saved Views"
-                description="Manage custom filtered, sorted, and grouped views shared across your team"
-            >
-                <Button onClick={() => void 0}>
-                    <Plus className="mr-2 h-4 w-4" /> New View
-                </Button>
-            </PageHeader>
+        <>
+            <div className="space-y-6 animate-fade-in">
+                <PageHeader
+                    title="Saved Views"
+                    description="Manage custom filtered, sorted, and grouped views shared across your team"
+                >
+                    <Button onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> New View
+                    </Button>
+                </PageHeader>
 
-            <div className="flex items-center gap-4">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search views..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="View visibility filter"
-                    value={visFilter}
-                    onValueChange={(v) => setVisFilter(v as (typeof VIS_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All" },
-                        { value: "private", label: "Private" },
-                        { value: "team", label: "Team" },
-                        { value: "organization", label: "Organization" },
-                    ]}
-                />
-            </div>
+                <div className="flex items-center gap-4">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search views..."
+                        className="flex-1 max-w-sm"
+                    />
+                    <SegmentedControl
+                        ariaLabel="View visibility filter"
+                        value={visFilter}
+                        onValueChange={(v) => setVisFilter(v as (typeof VIS_FILTERS)[number])}
+                        size="sm"
+                        options={[
+                            { value: "all", label: "All" },
+                            { value: "private", label: "Private" },
+                            { value: "team", label: "Team" },
+                            { value: "organization", label: "Organization" },
+                        ]}
+                    />
+                </div>
 
-            {/* Starred Views */}
-            {starred.length > 0 && (
+                {/* Starred Views */}
+                {starred.length > 0 && (
+                    <div className="space-y-2">
+                        <OverlineText as="h3" className="flex items-center gap-1">
+                            <Star className="h-3 w-3" /> Starred
+                        </OverlineText>
+                        {starred.map((v) => (
+                            <ViewCard key={v.id} view={v} />
+                        ))}
+                    </div>
+                )}
+
+                {/* All Views */}
                 <div className="space-y-2">
-                    <OverlineText as="h3" className="flex items-center gap-1">
-                        <Star className="h-3 w-3" /> Starred
-                    </OverlineText>
-                    {starred.map((v) => (
+                    {starred.length > 0 && <OverlineText as="h3">All Views</OverlineText>}
+                    {unstarred.map((v) => (
                         <ViewCard key={v.id} view={v} />
                     ))}
                 </div>
-            )}
-
-            {/* All Views */}
-            <div className="space-y-2">
-                {starred.length > 0 && <OverlineText as="h3">All Views</OverlineText>}
-                {unstarred.map((v) => (
-                    <ViewCard key={v.id} view={v} />
-                ))}
             </div>
-        </div>
+            <CreateEntityDialog
+                config={CREATE_SAVED_VIEW_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }
 

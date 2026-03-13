@@ -27,6 +27,8 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useSlaPolicies, useSlaStatus } from "@/lib/supabase/hooks-v2-features";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SLA_POLICY_CONFIG } from "@/config/create-entity-configs";
 
 type SlaTab = "policies" | "active" | "metrics";
 
@@ -78,6 +80,7 @@ function formatMinutes(min: number): string {
 }
 
 export default function SlaPage() {
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useQueryTabState<SlaTab>({
         key: "tab",
@@ -148,323 +151,349 @@ export default function SlaPage() {
     ];
 
     return (
-        <PermissionGate resource="service_requests" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="SLA Management"
-                    description="Service Level Agreement policies, active SLA timers, and compliance metrics"
-                >
-                    <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                            <Settings className="h-4 w-4" /> Configure
-                        </Button>
-                        <Button size="sm">
-                            <Plus className="h-4 w-4" /> New Policy
-                        </Button>
+        <>
+            <PermissionGate resource="service_requests" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="SLA Management"
+                        description="Service Level Agreement policies, active SLA timers, and compliance metrics"
+                    >
+                        <div className="flex gap-2">
+                            <Button size="sm" variant="outline">
+                                <Settings className="h-4 w-4" /> Configure
+                            </Button>
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" /> New Policy
+                            </Button>
+                        </div>
+                    </PageHeader>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="SLA Compliance"
+                            value={`${complianceRate}%`}
+                            icon={Target}
+                        />
+                        <StatCard title="Breached" value={breached} icon={AlertTriangle} />
+                        <StatCard title="At Risk" value={atRisk} icon={Clock} />
+                        <StatCard title="Within SLA" value={withinSla} icon={CheckCircle2} />
                     </div>
-                </PageHeader>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="SLA Compliance" value={`${complianceRate}%`} icon={Target} />
-                    <StatCard title="Breached" value={breached} icon={AlertTriangle} />
-                    <StatCard title="At Risk" value={atRisk} icon={Clock} />
-                    <StatCard title="Within SLA" value={withinSla} icon={CheckCircle2} />
-                </div>
+                    <div className="flex items-center gap-3">
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search tickets..."
+                            className="max-w-sm"
+                        />
+                    </div>
 
-                <div className="flex items-center gap-3">
-                    <SearchInput
-                        value={search}
-                        onValueChange={setSearch}
-                        placeholder="Search tickets..."
-                        className="max-w-sm"
+                    <TabBar
+                        items={tabs}
+                        value={activeTab}
+                        onValueChange={(id) => setActiveTab(id as SlaTab)}
                     />
-                </div>
 
-                <TabBar
-                    items={tabs}
-                    value={activeTab}
-                    onValueChange={(id) => setActiveTab(id as SlaTab)}
-                />
-
-                <TabPanel value="active" activeValue={activeTab}>
-                    <div className="space-y-3">
-                        {activeSlas
-                            .filter(
-                                (s) =>
-                                    !search ||
-                                    s.ticketTitle.toLowerCase().includes(search.toLowerCase()) ||
-                                    s.ticketNumber.toLowerCase().includes(search.toLowerCase())
-                            )
-                            .map((sla) => {
-                                const totalMinutes =
-                                    sla.elapsedMinutes + Math.max(sla.timeRemainingMinutes, 0);
-                                const progressPct = Math.min(
-                                    Math.round((sla.elapsedMinutes / totalMinutes) * 100),
-                                    100
-                                );
-                                return (
-                                    <Card
-                                        key={sla.id}
-                                        className={
-                                            sla.status === "breached"
-                                                ? "border-destructive/30"
-                                                : sla.status === "at_risk"
-                                                  ? "border-warning/30"
-                                                  : ""
-                                        }
-                                    >
-                                        <CardContent className="p-4">
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-mono text-muted-foreground">
-                                                            {sla.ticketNumber}
-                                                        </span>
-                                                        <Badge
-                                                            variant={PRIORITY_BADGE[sla.priority]}
-                                                            className="text-[10px]"
-                                                        >
-                                                            {sla.priority}
-                                                        </Badge>
-                                                        <Badge
-                                                            variant={STATUS_BADGE[sla.status]}
-                                                            className="text-[10px]"
-                                                        >
-                                                            {sla.status.replace(/_/g, " ")}
-                                                        </Badge>
+                    <TabPanel value="active" activeValue={activeTab}>
+                        <div className="space-y-3">
+                            {activeSlas
+                                .filter(
+                                    (s) =>
+                                        !search ||
+                                        s.ticketTitle
+                                            .toLowerCase()
+                                            .includes(search.toLowerCase()) ||
+                                        s.ticketNumber.toLowerCase().includes(search.toLowerCase())
+                                )
+                                .map((sla) => {
+                                    const totalMinutes =
+                                        sla.elapsedMinutes + Math.max(sla.timeRemainingMinutes, 0);
+                                    const progressPct = Math.min(
+                                        Math.round((sla.elapsedMinutes / totalMinutes) * 100),
+                                        100
+                                    );
+                                    return (
+                                        <Card
+                                            key={sla.id}
+                                            className={
+                                                sla.status === "breached"
+                                                    ? "border-destructive/30"
+                                                    : sla.status === "at_risk"
+                                                      ? "border-warning/30"
+                                                      : ""
+                                            }
+                                        >
+                                            <CardContent className="p-4">
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-mono text-muted-foreground">
+                                                                {sla.ticketNumber}
+                                                            </span>
+                                                            <Badge
+                                                                variant={
+                                                                    PRIORITY_BADGE[sla.priority]
+                                                                }
+                                                                className="text-[10px]"
+                                                            >
+                                                                {sla.priority}
+                                                            </Badge>
+                                                            <Badge
+                                                                variant={STATUS_BADGE[sla.status]}
+                                                                className="text-[10px]"
+                                                            >
+                                                                {sla.status.replace(/_/g, " ")}
+                                                            </Badge>
+                                                        </div>
+                                                        <h3 className="text-sm font-semibold mt-1">
+                                                            {sla.ticketTitle}
+                                                        </h3>
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            {sla.policyName} · Assigned to{" "}
+                                                            {sla.assignee}
+                                                        </p>
                                                     </div>
-                                                    <h3 className="text-sm font-semibold mt-1">
-                                                        {sla.ticketTitle}
-                                                    </h3>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                                        {sla.policyName} · Assigned to{" "}
-                                                        {sla.assignee}
-                                                    </p>
+                                                    <div className="text-right">
+                                                        <p
+                                                            className={`text-sm font-bold ${sla.timeRemainingMinutes < 0 ? "text-destructive" : sla.timeRemainingMinutes < 30 ? "text-warning" : "text-success"}`}
+                                                        >
+                                                            {sla.timeRemainingMinutes < 0
+                                                                ? "BREACHED"
+                                                                : formatMinutes(
+                                                                      sla.timeRemainingMinutes
+                                                                  )}
+                                                        </p>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            remaining
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p
-                                                        className={`text-sm font-bold ${sla.timeRemainingMinutes < 0 ? "text-destructive" : sla.timeRemainingMinutes < 30 ? "text-warning" : "text-success"}`}
-                                                    >
-                                                        {sla.timeRemainingMinutes < 0
-                                                            ? "BREACHED"
-                                                            : formatMinutes(
-                                                                  sla.timeRemainingMinutes
-                                                              )}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        remaining
-                                                    </p>
+                                                <div className="grid grid-cols-2 gap-4 mb-3 text-xs">
+                                                    <div>
+                                                        <p className="text-muted-foreground">
+                                                            Response Deadline
+                                                        </p>
+                                                        <p className="font-medium">
+                                                            {formatDate(sla.responseDeadline)}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-muted-foreground">
+                                                            Resolution Deadline
+                                                        </p>
+                                                        <p className="font-medium">
+                                                            {formatDate(sla.resolutionDeadline)}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4 mb-3 text-xs">
-                                                <div>
-                                                    <p className="text-muted-foreground">
-                                                        Response Deadline
-                                                    </p>
-                                                    <p className="font-medium">
-                                                        {formatDate(sla.responseDeadline)}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-muted-foreground">
-                                                        Resolution Deadline
-                                                    </p>
-                                                    <p className="font-medium">
-                                                        {formatDate(sla.resolutionDeadline)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <ProgressBar value={progressPct} size="sm" />
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                    </div>
-                </TabPanel>
+                                                <ProgressBar value={progressPct} size="sm" />
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                        </div>
+                    </TabPanel>
 
-                <TabPanel value="policies" activeValue={activeTab}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {policies.map((policy) => (
-                            <Card key={policy.id}>
-                                <CardContent className="p-4 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
+                    <TabPanel value="policies" activeValue={activeTab}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {policies.map((policy) => (
+                                <Card key={policy.id}>
+                                    <CardContent className="p-4 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Badge
+                                                    variant={PRIORITY_BADGE[policy.priority]}
+                                                    className="text-[10px]"
+                                                >
+                                                    {policy.priority}
+                                                </Badge>
+                                                <h3 className="text-sm font-semibold">
+                                                    {policy.name}
+                                                </h3>
+                                            </div>
                                             <Badge
-                                                variant={PRIORITY_BADGE[policy.priority]}
+                                                variant={policy.isActive ? "success" : "ghost"}
                                                 className="text-[10px]"
                                             >
-                                                {policy.priority}
+                                                {policy.isActive ? "Active" : "Disabled"}
                                             </Badge>
-                                            <h3 className="text-sm font-semibold">{policy.name}</h3>
                                         </div>
-                                        <Badge
-                                            variant={policy.isActive ? "success" : "ghost"}
-                                            className="text-[10px]"
-                                        >
-                                            {policy.isActive ? "Active" : "Disabled"}
-                                        </Badge>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                                            <p className="text-sm font-bold">
-                                                {formatMinutes(policy.responseTimeMinutes)}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Response
-                                            </p>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className="p-2 rounded-lg bg-secondary/30 text-center">
+                                                <p className="text-sm font-bold">
+                                                    {formatMinutes(policy.responseTimeMinutes)}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Response
+                                                </p>
+                                            </div>
+                                            <div className="p-2 rounded-lg bg-secondary/30 text-center">
+                                                <p className="text-sm font-bold">
+                                                    {formatMinutes(policy.resolutionTimeMinutes)}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Resolution
+                                                </p>
+                                            </div>
+                                            <div className="p-2 rounded-lg bg-secondary/30 text-center">
+                                                <p className="text-sm font-bold">
+                                                    {formatMinutes(policy.escalationAfterMinutes)}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Escalation
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                                            <p className="text-sm font-bold">
-                                                {formatMinutes(policy.resolutionTimeMinutes)}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Resolution
-                                            </p>
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                                {policy.autoAssign ? (
+                                                    <>
+                                                        <Zap className="h-3 w-3 text-success" />
+                                                        Auto-assign to {policy.assignToTeam}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Users className="h-3 w-3" />
+                                                        Manual — {policy.assignToTeam}
+                                                    </>
+                                                )}
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-6 text-[10px]"
+                                            >
+                                                Edit
+                                            </Button>
                                         </div>
-                                        <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                                            <p className="text-sm font-bold">
-                                                {formatMinutes(policy.escalationAfterMinutes)}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Escalation
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            {policy.autoAssign ? (
-                                                <>
-                                                    <Zap className="h-3 w-3 text-success" />
-                                                    Auto-assign to {policy.assignToTeam}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Users className="h-3 w-3" />
-                                                    Manual — {policy.assignToTeam}
-                                                </>
-                                            )}
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-6 text-[10px]"
-                                        >
-                                            Edit
-                                        </Button>
-                                    </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </TabPanel>
+
+                    <TabPanel value="metrics" activeValue={activeTab}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Target className="h-4 w-4" />
+                                        Compliance by Priority
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {(["critical", "high", "medium", "low"] as const)
+                                        .map((p) => {
+                                            const matching = activeSlas.filter(
+                                                (s) => s.priority === p
+                                            );
+                                            const total = matching.length;
+                                            const breachedCount = matching.filter(
+                                                (s) => s.status === "breached"
+                                            ).length;
+                                            const rate =
+                                                total > 0
+                                                    ? Math.round(
+                                                          ((total - breachedCount) / total) * 100
+                                                      )
+                                                    : 100;
+                                            return {
+                                                priority: p.charAt(0).toUpperCase() + p.slice(1),
+                                                rate,
+                                                total,
+                                                breached: breachedCount,
+                                            };
+                                        })
+                                        .map((metric) => (
+                                            <div key={metric.priority}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-sm font-medium">
+                                                        {metric.priority}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {metric.rate}% (
+                                                        {metric.total - metric.breached}/
+                                                        {metric.total})
+                                                    </span>
+                                                </div>
+                                                <ProgressBar value={metric.rate} size="sm" />
+                                            </div>
+                                        ))}
                                 </CardContent>
                             </Card>
-                        ))}
-                    </div>
-                </TabPanel>
-
-                <TabPanel value="metrics" activeValue={activeTab}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Target className="h-4 w-4" />
-                                    Compliance by Priority
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {(["critical", "high", "medium", "low"] as const)
-                                    .map((p) => {
-                                        const matching = activeSlas.filter((s) => s.priority === p);
-                                        const total = matching.length;
-                                        const breachedCount = matching.filter(
-                                            (s) => s.status === "breached"
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <TrendingUp className="h-4 w-4" />
+                                        Response Time Trend
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    {(() => {
+                                        if (activeSlas.length === 0) return [];
+                                        const avgElapsed = Math.round(
+                                            activeSlas.reduce((s, a) => s + a.elapsedMinutes, 0) /
+                                                activeSlas.length
+                                        );
+                                        const compliant = activeSlas.filter(
+                                            (a) => a.status !== "breached"
                                         ).length;
-                                        const rate =
-                                            total > 0
-                                                ? Math.round(
-                                                      ((total - breachedCount) / total) * 100
-                                                  )
-                                                : 100;
-                                        return {
-                                            priority: p.charAt(0).toUpperCase() + p.slice(1),
-                                            rate,
-                                            total,
-                                            breached: breachedCount,
-                                        };
-                                    })
-                                    .map((metric) => (
-                                        <div key={metric.priority}>
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-sm font-medium">
-                                                    {metric.priority}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {metric.rate}% ({metric.total - metric.breached}
-                                                    /{metric.total})
-                                                </span>
+                                        const pct = Math.round(
+                                            (compliant / activeSlas.length) * 100
+                                        );
+                                        return [
+                                            {
+                                                week: "Current",
+                                                avgResponse: formatMinutes(avgElapsed),
+                                                avgResolution: "—",
+                                                compliance: pct,
+                                            },
+                                        ];
+                                    })().map((week) => (
+                                        <div
+                                            key={week.week}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                        >
+                                            <span className="text-sm font-medium">{week.week}</span>
+                                            <div className="flex items-center gap-4 text-xs">
+                                                <div className="text-center">
+                                                    <p className="text-muted-foreground">
+                                                        Avg Response
+                                                    </p>
+                                                    <p className="font-bold">{week.avgResponse}</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-muted-foreground">
+                                                        Avg Resolution
+                                                    </p>
+                                                    <p className="font-bold">
+                                                        {week.avgResolution}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-muted-foreground">
+                                                        Compliance
+                                                    </p>
+                                                    <p
+                                                        className={`font-bold ${week.compliance >= 90 ? "text-success" : "text-warning"}`}
+                                                    >
+                                                        {week.compliance}%
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <ProgressBar value={metric.rate} size="sm" />
                                         </div>
                                     ))}
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <TrendingUp className="h-4 w-4" />
-                                    Response Time Trend
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {(() => {
-                                    if (activeSlas.length === 0) return [];
-                                    const avgElapsed = Math.round(
-                                        activeSlas.reduce((s, a) => s + a.elapsedMinutes, 0) /
-                                            activeSlas.length
-                                    );
-                                    const compliant = activeSlas.filter(
-                                        (a) => a.status !== "breached"
-                                    ).length;
-                                    const pct = Math.round((compliant / activeSlas.length) * 100);
-                                    return [
-                                        {
-                                            week: "Current",
-                                            avgResponse: formatMinutes(avgElapsed),
-                                            avgResolution: "—",
-                                            compliance: pct,
-                                        },
-                                    ];
-                                })().map((week) => (
-                                    <div
-                                        key={week.week}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                    >
-                                        <span className="text-sm font-medium">{week.week}</span>
-                                        <div className="flex items-center gap-4 text-xs">
-                                            <div className="text-center">
-                                                <p className="text-muted-foreground">
-                                                    Avg Response
-                                                </p>
-                                                <p className="font-bold">{week.avgResponse}</p>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-muted-foreground">
-                                                    Avg Resolution
-                                                </p>
-                                                <p className="font-bold">{week.avgResolution}</p>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-muted-foreground">Compliance</p>
-                                                <p
-                                                    className={`font-bold ${week.compliance >= 90 ? "text-success" : "text-warning"}`}
-                                                >
-                                                    {week.compliance}%
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </div>
-                </TabPanel>
-            </div>
-        </PermissionGate>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabPanel>
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_SLA_POLICY_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

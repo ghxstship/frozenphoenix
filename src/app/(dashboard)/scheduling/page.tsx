@@ -22,6 +22,7 @@ import type { CrewMember, Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
     AlertTriangle,
     BarChart3,
+    CalendarDays,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
@@ -31,6 +32,7 @@ import {
     Plus,
     Users,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 
@@ -456,79 +458,102 @@ export default function SchedulingPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredCrew.map((crew) => (
-                                                <tr
-                                                    key={crew.id}
-                                                    className="border-b border-border/50 hover:bg-secondary/20"
-                                                >
-                                                    <td className="p-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <Avatar name={crew.name} size="sm" />
-                                                            <div>
-                                                                <p className="text-xs font-medium">
-                                                                    {crew.name}
-                                                                </p>
-                                                                <p className="text-[10px] text-muted-foreground">
-                                                                    {crew.role}
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                                            {filteredCrew.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={8} className="p-0">
+                                                        <EmptyState
+                                                            icon={CalendarDays}
+                                                            title="No crew members found"
+                                                            description="No crew members match the current filters"
+                                                            compact
+                                                        />
                                                     </td>
-                                                    {weekDays.map((day) => {
-                                                        const shifts = getShiftsForDateAndCrew(
-                                                            day,
-                                                            crew.id
-                                                        );
-                                                        const isToday =
-                                                            formatDateKey(day) ===
-                                                            formatDateKey(new Date());
-                                                        return (
-                                                            <td
-                                                                key={day.toISOString()}
-                                                                className={`p-1.5 ${isToday ? "bg-primary/5" : ""}`}
-                                                            >
-                                                                {shifts.map((shift) => {
-                                                                    const project = projects.find(
-                                                                        (p) =>
-                                                                            p.id === shift.projectId
-                                                                    );
-                                                                    const config =
-                                                                        statusConfig[shift.status];
-                                                                    return (
-                                                                        <div
-                                                                            key={shift.id}
-                                                                            className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer mb-1"
-                                                                        >
-                                                                            <p className="text-[10px] font-medium truncate">
-                                                                                {project?.name}
-                                                                            </p>
-                                                                            <p className="text-[9px] text-muted-foreground">
-                                                                                {shift.startTime} —{" "}
-                                                                                {shift.endTime}
-                                                                            </p>
-                                                                            <Badge
-                                                                                variant={
-                                                                                    config.variant
-                                                                                }
-                                                                                className="text-[8px] mt-1 px-1"
-                                                                            >
-                                                                                {config.label}
-                                                                            </Badge>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                                {shifts.length === 0 && (
-                                                                    <div className="h-16 flex items-center justify-center">
-                                                                        <span className="text-[10px] text-muted-foreground/50">
-                                                                            —
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                            </td>
-                                                        );
-                                                    })}
                                                 </tr>
-                                            ))}
+                                            ) : (
+                                                filteredCrew.map((crew) => (
+                                                    <tr
+                                                        key={crew.id}
+                                                        className="border-b border-border/50 hover:bg-secondary/20"
+                                                    >
+                                                        <td className="p-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <Avatar
+                                                                    name={crew.name}
+                                                                    size="sm"
+                                                                />
+                                                                <div>
+                                                                    <p className="text-xs font-medium">
+                                                                        {crew.name}
+                                                                    </p>
+                                                                    <p className="text-[10px] text-muted-foreground">
+                                                                        {crew.role}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        {weekDays.map((day) => {
+                                                            const shifts = getShiftsForDateAndCrew(
+                                                                day,
+                                                                crew.id
+                                                            );
+                                                            const isToday =
+                                                                formatDateKey(day) ===
+                                                                formatDateKey(new Date());
+                                                            return (
+                                                                <td
+                                                                    key={day.toISOString()}
+                                                                    className={`p-1.5 ${isToday ? "bg-primary/5" : ""}`}
+                                                                >
+                                                                    {shifts.map((shift) => {
+                                                                        const project =
+                                                                            projects.find(
+                                                                                (p) =>
+                                                                                    p.id ===
+                                                                                    shift.projectId
+                                                                            );
+                                                                        const config =
+                                                                            statusConfig[
+                                                                                shift.status
+                                                                            ];
+                                                                        return (
+                                                                            <div
+                                                                                key={shift.id}
+                                                                                className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer mb-1"
+                                                                            >
+                                                                                <p className="text-[10px] font-medium truncate">
+                                                                                    {project?.name}
+                                                                                </p>
+                                                                                <p className="text-[9px] text-muted-foreground">
+                                                                                    {
+                                                                                        shift.startTime
+                                                                                    }{" "}
+                                                                                    —{" "}
+                                                                                    {shift.endTime}
+                                                                                </p>
+                                                                                <Badge
+                                                                                    variant={
+                                                                                        config.variant
+                                                                                    }
+                                                                                    className="text-[8px] mt-1 px-1"
+                                                                                >
+                                                                                    {config.label}
+                                                                                </Badge>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                    {shifts.length === 0 && (
+                                                                        <div className="h-16 flex items-center justify-center">
+                                                                            <span className="text-[10px] text-muted-foreground/50">
+                                                                                —
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                ))
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>

@@ -624,6 +624,23 @@ export function useUpdateReportDefinition() {
 // DOCUMENT TEMPLATES
 // ═══════════════════════════════════════════════════════════════
 
+export function useDocumentTemplate(id?: string) {
+    return useQuery({
+        queryKey: ["document_templates", "detail", id],
+        queryFn: async () => {
+            if (!id) return null;
+            const { data, error } = await getSupabase()
+                .from("document_templates")
+                .select("*")
+                .eq("id", id)
+                .single();
+            if (error) throw error;
+            return data as unknown as DocumentTemplateRow;
+        },
+        enabled: !!id,
+    });
+}
+
 export function useDocumentTemplates(category?: string) {
     return useQuery({
         queryKey: ["document_templates", category],

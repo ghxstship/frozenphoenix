@@ -11,7 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ArrowDownRight, DollarSign, FileText, Loader2, Plus, ReceiptText } from "lucide-react";
+import { ArrowDownRight, DollarSign, FileText, Plus, ReceiptText } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useCreditNotes } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -50,9 +51,7 @@ export default function CreditNotesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = creditNotes.filter(
@@ -114,44 +113,65 @@ export default function CreditNotesPage() {
                     />
                 </div>
 
-                <div className="space-y-2">
-                    {filtered.map((cn) => (
-                        <Card
-                            key={cn.id}
-                            className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                        >
-                            <CardContent className="flex items-center gap-4 py-3">
-                                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                                    <FileText className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                            {cn.number}
-                                        </span>
-                                        <StatusBadge status={cn.status} className="text-[10px]" />
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={ReceiptText}
+                        title="No credit notes found"
+                        description={
+                            search ? "Try adjusting your search" : "Create your first credit note"
+                        }
+                        action={
+                            !search ? { label: "New Credit Note", onClick: openCreate } : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {filtered.map((cn) => (
+                            <Card
+                                key={cn.id}
+                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                            >
+                                <CardContent className="flex items-center gap-4 py-3">
+                                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                                        <FileText className="h-5 w-5 text-muted-foreground" />
                                     </div>
-                                    <p className="text-sm font-semibold">{cn.reason}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {cn.client} · Against {cn.invoiceNumber} · {cn.issuedDate}
-                                    </p>
-                                </div>
-                                <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-destructive">
-                                        -{formatCurrency(cn.amount)}
-                                    </p>
-                                    {cn.appliedDate && (
-                                        <p className="text-[10px] text-muted-foreground">
-                                            Applied {cn.appliedDate}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-mono text-muted-foreground">
+                                                {cn.number}
+                                            </span>
+                                            <StatusBadge
+                                                status={cn.status}
+                                                className="text-[10px]"
+                                            />
+                                        </div>
+                                        <p className="text-sm font-semibold">{cn.reason}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {cn.client} · Against {cn.invoiceNumber} ·{" "}
+                                            {cn.issuedDate}
                                         </p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-sm font-bold text-destructive">
+                                            -{formatCurrency(cn.amount)}
+                                        </p>
+                                        {cn.appliedDate && (
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Applied {cn.appliedDate}
+                                            </p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
-            <CreateEntityDialog config={CREATE_CREDIT_NOTE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_CREDIT_NOTE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

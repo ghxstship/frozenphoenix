@@ -10,7 +10,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookLock, Loader2, Plus } from "lucide-react";
+import { BookLock, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { ClauseRiskLevel, ContractClause } from "@/types/governance";
 import { useClauseLibrary } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -63,9 +64,7 @@ export default function ClauseLibraryPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = clauses.filter((c) => {
@@ -120,52 +119,71 @@ export default function ClauseLibraryPage() {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {filtered.map((c) => (
-                        <Card
-                            key={c.id}
-                            className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        >
-                            <CardHeader className="pb-2">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <CardTitle className="text-sm">{c.title}</CardTitle>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                                            {CLAUSE_TYPE_LABELS[c.clause_type] || c.clause_type}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Badge
-                                            variant={RISK_VARIANTS[c.risk_level]}
-                                            className="text-[9px]"
-                                        >
-                                            {c.risk_level}
-                                        </Badge>
-                                        {c.is_template && (
-                                            <Badge variant="secondary" className="text-[9px]">
-                                                Template
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={BookLock}
+                        title="No clauses found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Add your first clause to the library"
+                        }
+                        action={!search ? { label: "Add Clause", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {filtered.map((c) => (
+                            <Card
+                                key={c.id}
+                                className="hover:bg-muted/30 transition-colors cursor-pointer"
+                            >
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <CardTitle className="text-sm">{c.title}</CardTitle>
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                {CLAUSE_TYPE_LABELS[c.clause_type] || c.clause_type}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Badge
+                                                variant={RISK_VARIANTS[c.risk_level]}
+                                                className="text-[9px]"
+                                            >
+                                                {c.risk_level}
                                             </Badge>
+                                            {c.is_template && (
+                                                <Badge variant="secondary" className="text-[9px]">
+                                                    Template
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-xs text-muted-foreground line-clamp-3">
+                                        {c.body}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border text-[10px] text-muted-foreground">
+                                        {c.is_standard && <span>Standard</span>}
+                                        {c.negotiable && <span>· Negotiable</span>}
+                                        {!c.negotiable && (
+                                            <span className="text-destructive">
+                                                · Non-negotiable
+                                            </span>
                                         )}
                                     </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-xs text-muted-foreground line-clamp-3">
-                                    {c.body}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border text-[10px] text-muted-foreground">
-                                    {c.is_standard && <span>Standard</span>}
-                                    {c.negotiable && <span>· Negotiable</span>}
-                                    {!c.negotiable && (
-                                        <span className="text-destructive">· Non-negotiable</span>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
-            <CreateEntityDialog config={CREATE_CLAUSE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_CLAUSE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

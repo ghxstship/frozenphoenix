@@ -14,15 +14,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
-import {
-    ArrowRightLeft,
-    Calendar,
-    CheckCircle2,
-    Headphones,
-    Loader2,
-    MapPin,
-    User,
-} from "lucide-react";
+import { ArrowRightLeft, Calendar, CheckCircle2, Headphones, MapPin, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useServiceRequest } from "@/lib/supabase/hooks-pages";
 
@@ -63,9 +55,7 @@ export default function ServiceRequestDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!sr) {
@@ -231,8 +221,15 @@ export default function ServiceRequestDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Request", onClick: () => router.push(`/service-requests/${entityId}/edit`) },
-                { label: "Assign", onClick: () => router.push(`/service-requests/${entityId}/edit?section=assignment`) },
+                {
+                    label: "Edit Request",
+                    onClick: () => router.push(`/service-requests/${entityId}/edit`),
+                },
+                {
+                    label: "Assign",
+                    onClick: () =>
+                        router.push(`/service-requests/${entityId}/edit?section=assignment`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

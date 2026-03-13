@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_COMPLIANCE_CHECKLIST_CONFIG } from "@/config/create-entity-configs";
-import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { ComplianceChecklist } from "@/types/governance";
 import { useComplianceChecklists } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -64,9 +65,7 @@ export default function ComplianceChecklistsPage() {
     ).length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -112,46 +111,64 @@ export default function ComplianceChecklistsPage() {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filtered.map((c) => (
-                        <Card
-                            key={c.id}
-                            className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        >
-                            <CardHeader className="pb-2">
-                                <div className="flex items-start justify-between">
-                                    <CardTitle className="text-sm">{c.title}</CardTitle>
-                                    <StatusBadge status={c.status} className="text-[10px]" />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Badge variant="secondary" className="text-[9px]">
-                                        {CHECKLIST_TYPE_LABELS[c.checklist_type] ||
-                                            c.checklist_type}
-                                    </Badge>
-                                    <span className="text-[10px] text-muted-foreground">
-                                        {c.entity_type}
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between text-xs">
-                                        <span className="text-muted-foreground">
-                                            {c.completed_items} / {c.total_items} items
-                                        </span>
-                                        <span className="font-medium">{c.completion_percent}%</span>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={CheckCircle2}
+                        title="No compliance checklists found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Create your first compliance checklist"
+                        }
+                        action={
+                            !search ? { label: "New Checklist", onClick: openCreate } : undefined
+                        }
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filtered.map((c) => (
+                            <Card
+                                key={c.id}
+                                className="hover:bg-muted/30 transition-colors cursor-pointer"
+                            >
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between">
+                                        <CardTitle className="text-sm">{c.title}</CardTitle>
+                                        <StatusBadge status={c.status} className="text-[10px]" />
                                     </div>
-                                    <ProgressBar value={c.completion_percent} size="md" />
-                                </div>
-                                {c.inspected_at && (
-                                    <p className="text-[10px] text-muted-foreground mt-2">
-                                        Inspected: {new Date(c.inspected_at).toLocaleDateString()}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Badge variant="secondary" className="text-[9px]">
+                                            {CHECKLIST_TYPE_LABELS[c.checklist_type] ||
+                                                c.checklist_type}
+                                        </Badge>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {c.entity_type}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span className="text-muted-foreground">
+                                                {c.completed_items} / {c.total_items} items
+                                            </span>
+                                            <span className="font-medium">
+                                                {c.completion_percent}%
+                                            </span>
+                                        </div>
+                                        <ProgressBar value={c.completion_percent} size="md" />
+                                    </div>
+                                    {c.inspected_at && (
+                                        <p className="text-[10px] text-muted-foreground mt-2">
+                                            Inspected:{" "}
+                                            {new Date(c.inspected_at).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_COMPLIANCE_CHECKLIST_CONFIG}

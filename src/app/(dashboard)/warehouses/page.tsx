@@ -12,16 +12,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    Loader2,
-    MapPin,
-    Package,
-    Plus,
-    Shield,
-    Thermometer,
-    Truck,
-    Warehouse,
-} from "lucide-react";
+import { MapPin, Package, Plus, Shield, Thermometer, Truck, Warehouse } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useWarehouses } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -62,9 +54,7 @@ export default function WarehousesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = warehouses.filter(
@@ -115,65 +105,86 @@ export default function WarehousesPage() {
                     className="max-w-sm"
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filtered.map((wh, i) => {
-                        const utilPercent = Math.round((wh.utilized / wh.capacity) * 100);
-                        return (
-                            <StaggerItem key={wh.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-all">
-                                    <CardContent className="py-4 space-y-3">
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="text-sm font-bold">{wh.name}</h3>
-                                                    <StatusBadge status={wh.status} />
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Warehouse}
+                        title="No warehouses found"
+                        description={
+                            searchQuery ? "Try adjusting your search" : "Add your first warehouse"
+                        }
+                        action={
+                            !searchQuery
+                                ? { label: "Add Warehouse", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filtered.map((wh, i) => {
+                            const utilPercent = Math.round((wh.utilized / wh.capacity) * 100);
+                            return (
+                                <StaggerItem key={wh.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-all">
+                                        <CardContent className="py-4 space-y-3">
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-sm font-bold">
+                                                            {wh.name}
+                                                        </h3>
+                                                        <StatusBadge status={wh.status} />
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {wh.address}, {wh.city}
+                                                    </p>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {wh.address}, {wh.city}
+                                                <Warehouse className="h-8 w-8 text-muted-foreground/20" />
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between text-xs mb-1">
+                                                    <span className="text-muted-foreground">
+                                                        Capacity
+                                                    </span>
+                                                    <span className="font-medium">
+                                                        {wh.utilized.toLocaleString()} /{" "}
+                                                        {wh.capacity.toLocaleString()} sq ft
+                                                    </span>
+                                                </div>
+                                                <ProgressBar value={utilPercent} size="md" />
+                                                <p className="text-[10px] text-muted-foreground mt-1">
+                                                    {utilPercent}% utilized
                                                 </p>
                                             </div>
-                                            <Warehouse className="h-8 w-8 text-muted-foreground/20" />
-                                        </div>
 
-                                        <div>
-                                            <div className="flex items-center justify-between text-xs mb-1">
-                                                <span className="text-muted-foreground">
-                                                    Capacity
-                                                </span>
-                                                <span className="font-medium">
-                                                    {wh.utilized.toLocaleString()} /{" "}
-                                                    {wh.capacity.toLocaleString()} sq ft
-                                                </span>
+                                            <div className="grid grid-cols-3 gap-2 text-xs">
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Thermometer className="h-3 w-3" />
+                                                    {wh.climate}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Shield className="h-3 w-3" />
+                                                    {wh.securityLevel}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Truck className="h-3 w-3" />
+                                                    {wh.activeShipments} shipments
+                                                </div>
                                             </div>
-                                            <ProgressBar value={utilPercent} size="md" />
-                                            <p className="text-[10px] text-muted-foreground mt-1">
-                                                {utilPercent}% utilized
-                                            </p>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-2 text-xs">
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Thermometer className="h-3 w-3" />
-                                                {wh.climate}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Shield className="h-3 w-3" />
-                                                {wh.securityLevel}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Truck className="h-3 w-3" />
-                                                {wh.activeShipments} shipments
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-            <CreateEntityDialog config={CREATE_WAREHOUSE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_WAREHOUSE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

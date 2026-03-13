@@ -4,6 +4,8 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import Link from "next/link";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_CONTRACT_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,9 +30,9 @@ import {
     Clock,
     DollarSign,
     FileSignature,
-    Loader2,
     Plus,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 interface ContractListItem {
     id: string;
@@ -50,6 +52,7 @@ interface ContractListItem {
 export default function ContractsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const { data: sbContracts, isLoading } = useContracts();
 
@@ -78,9 +81,7 @@ export default function ContractsPage() {
     });
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = contracts.filter((c) => {
@@ -108,194 +109,213 @@ export default function ContractsPage() {
     };
 
     return (
-        <PermissionGate resource="contracts" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Contract Management"
-                    description="Track contracts, NDAs, SOWs, and amendments across all projects"
-                >
-                    <div className="flex items-center gap-2">
-                        <CsvExportButton entity="contracts" />
-                        <Link href="/contracts/new">
-                            <Button>
+        <>
+            <PermissionGate resource="contracts" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Contract Management"
+                        description="Track contracts, NDAs, SOWs, and amendments across all projects"
+                    >
+                        <div className="flex items-center gap-2">
+                            <CsvExportButton entity="contracts" />
+                            <Button onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 New Contract
                             </Button>
-                        </Link>
+                        </div>
+                    </PageHeader>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="Total Contracts"
+                            value={stats.total}
+                            icon={FileSignature}
+                        />
+                        <StatCard title="Active" value={stats.active} icon={CheckCircle2} />
+                        <StatCard
+                            title="Pending Action"
+                            value={stats.pendingSignature}
+                            icon={Clock}
+                        />
+                        <StatCard
+                            title="Active Value"
+                            value={formatCurrency(stats.totalValue)}
+                            icon={DollarSign}
+                        />
                     </div>
-                </PageHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total Contracts" value={stats.total} icon={FileSignature} />
-                    <StatCard title="Active" value={stats.active} icon={CheckCircle2} />
-                    <StatCard title="Pending Action" value={stats.pendingSignature} icon={Clock} />
-                    <StatCard
-                        title="Active Value"
-                        value={formatCurrency(stats.totalValue)}
-                        icon={DollarSign}
-                    />
-                </div>
+                    {stats.expiringSoon > 0 && (
+                        <Card className="border-warning/30 bg-warning/5">
+                            <CardContent className="py-3">
+                                <div className="flex items-center gap-2 text-warning text-sm font-medium">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    {stats.expiringSoon} contract{stats.expiringSoon > 1 ? "s" : ""}{" "}
+                                    expiring within 90 days
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
-                {stats.expiringSoon > 0 && (
-                    <Card className="border-warning/30 bg-warning/5">
-                        <CardContent className="py-3">
-                            <div className="flex items-center gap-2 text-warning text-sm font-medium">
-                                <AlertTriangle className="h-4 w-4" />
-                                {stats.expiringSoon} contract{stats.expiringSoon > 1 ? "s" : ""}{" "}
-                                expiring within 90 days
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <SearchInput
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                            placeholder="Search contracts..."
+                            className="flex-1 max-w-sm"
+                        />
+                        <div className="flex gap-2 flex-wrap">
+                            {[
+                                "all",
+                                "active",
+                                "pending_review",
+                                "pending_signature",
+                                "draft",
+                                "expired",
+                            ].map((s) => (
+                                <Button
+                                    key={s}
+                                    variant={statusFilter === s ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setStatusFilter(s)}
+                                >
+                                    {s === "all"
+                                        ? "All"
+                                        : (CONTRACT_STATUS_MAP[s as ContractStatusType]?.label ??
+                                          s)}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
 
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <SearchInput
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        placeholder="Search contracts..."
-                        className="flex-1 max-w-sm"
-                    />
                     <div className="flex gap-2 flex-wrap">
-                        {[
-                            "all",
-                            "active",
-                            "pending_review",
-                            "pending_signature",
-                            "draft",
-                            "expired",
-                        ].map((s) => (
+                        {["all", "client", "vendor", "nda", "msa", "sow", "amendment"].map((t) => (
                             <Button
-                                key={s}
-                                variant={statusFilter === s ? "default" : "outline"}
+                                key={t}
+                                variant={typeFilter === t ? "secondary" : "ghost"}
                                 size="sm"
-                                onClick={() => setStatusFilter(s)}
+                                onClick={() => setTypeFilter(t)}
                             >
-                                {s === "all"
-                                    ? "All"
-                                    : (CONTRACT_STATUS_MAP[s as ContractStatusType]?.label ?? s)}
+                                {t === "all"
+                                    ? "All Types"
+                                    : (CONTRACT_TYPE_MAP[t as ContractType]?.label ?? t)}
                             </Button>
                         ))}
                     </div>
-                </div>
 
-                <div className="flex gap-2 flex-wrap">
-                    {["all", "client", "vendor", "nda", "msa", "sow", "amendment"].map((t) => (
-                        <Button
-                            key={t}
-                            variant={typeFilter === t ? "secondary" : "ghost"}
-                            size="sm"
-                            onClick={() => setTypeFilter(t)}
-                        >
-                            {t === "all"
-                                ? "All Types"
-                                : (CONTRACT_TYPE_MAP[t as ContractType]?.label ?? t)}
-                        </Button>
-                    ))}
-                </div>
-
-                <div className="space-y-3">
-                    {filtered.map((contract, i) => {
-                        const statusCfg = CONTRACT_STATUS_MAP[contract.status];
-                        const typeCfg = CONTRACT_TYPE_MAP[contract.type];
-                        const isExpiring =
-                            contract.daysUntilExpiry > 0 && contract.daysUntilExpiry <= 90;
-
-                        return (
-                            <StaggerItem key={contract.id} index={i} stagger="relaxed">
-                                <Link href={`/contracts/${contract.id}`}>
-                                    <Card
-                                        className={`cursor-pointer hover:shadow-md transition-all ${isExpiring ? "border-warning/30" : ""}`}
-                                    >
-                                        <CardContent className="py-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <FileSignature className="h-5 w-5 text-primary" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="text-xs font-mono text-muted-foreground">
-                                                                {contract.contractNumber}
-                                                            </span>
-                                                            <Badge variant={typeCfg?.variant}>
-                                                                {typeCfg?.label}
-                                                            </Badge>
-                                                            <Badge variant={statusCfg?.variant}>
-                                                                {statusCfg?.label}
-                                                            </Badge>
-                                                        </div>
-                                                        <h3 className="text-sm font-semibold mt-1 truncate">
-                                                            {contract.title}
-                                                        </h3>
-                                                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                                                            {(contract.clientName ||
-                                                                contract.vendorName) && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <Building2 className="h-3 w-3" />
-                                                                    {contract.clientName ||
-                                                                        contract.vendorName}
-                                                                </span>
-                                                            )}
-                                                            <span className="flex items-center gap-1">
-                                                                <Calendar className="h-3 w-3" />
-                                                                {formatDate(
-                                                                    contract.effectiveDate
-                                                                )}{" "}
-                                                                —{" "}
-                                                                {formatDate(
-                                                                    contract.expirationDate
-                                                                )}
-                                                            </span>
-                                                            {contract.autoRenew && (
-                                                                <span className="text-success font-medium">
-                                                                    Auto-renew
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right shrink-0">
-                                                    {contract.value > 0 && (
-                                                        <p className="text-sm font-bold">
-                                                            {formatCurrency(contract.value)}
-                                                        </p>
-                                                    )}
-                                                    {isExpiring && (
-                                                        <p className="text-xs text-warning font-medium mt-1">
-                                                            {contract.daysUntilExpiry}d until expiry
-                                                        </p>
-                                                    )}
-                                                    {contract.daysUntilExpiry < 0 && (
-                                                        <p className="text-xs text-destructive font-medium mt-1">
-                                                            Expired{" "}
-                                                            {Math.abs(contract.daysUntilExpiry)}d
-                                                            ago
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
-
-                {filtered.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <FileSignature className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No contracts found</h3>
-                            <p className="text-muted-foreground text-center">
-                                {searchQuery || statusFilter !== "all"
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={FileSignature}
+                            title="No contracts found"
+                            description={
+                                searchQuery || statusFilter !== "all"
                                     ? "Try adjusting your search or filters"
-                                    : "Create your first contract to get started"}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-        </PermissionGate>
+                                    : "Create your first contract to get started"
+                            }
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {filtered.map((contract, i) => {
+                                const statusCfg = CONTRACT_STATUS_MAP[contract.status];
+                                const typeCfg = CONTRACT_TYPE_MAP[contract.type];
+                                const isExpiring =
+                                    contract.daysUntilExpiry > 0 && contract.daysUntilExpiry <= 90;
+
+                                return (
+                                    <StaggerItem key={contract.id} index={i} stagger="relaxed">
+                                        <Link href={`/contracts/${contract.id}`}>
+                                            <Card
+                                                className={`cursor-pointer hover:shadow-md transition-all ${isExpiring ? "border-warning/30" : ""}`}
+                                            >
+                                                <CardContent className="py-4">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                                                <FileSignature className="h-5 w-5 text-primary" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-xs font-mono text-muted-foreground">
+                                                                        {contract.contractNumber}
+                                                                    </span>
+                                                                    <Badge
+                                                                        variant={typeCfg?.variant}
+                                                                    >
+                                                                        {typeCfg?.label}
+                                                                    </Badge>
+                                                                    <Badge
+                                                                        variant={statusCfg?.variant}
+                                                                    >
+                                                                        {statusCfg?.label}
+                                                                    </Badge>
+                                                                </div>
+                                                                <h3 className="text-sm font-semibold mt-1 truncate">
+                                                                    {contract.title}
+                                                                </h3>
+                                                                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                                                    {(contract.clientName ||
+                                                                        contract.vendorName) && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Building2 className="h-3 w-3" />
+                                                                            {contract.clientName ||
+                                                                                contract.vendorName}
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        {formatDate(
+                                                                            contract.effectiveDate
+                                                                        )}{" "}
+                                                                        —{" "}
+                                                                        {formatDate(
+                                                                            contract.expirationDate
+                                                                        )}
+                                                                    </span>
+                                                                    {contract.autoRenew && (
+                                                                        <span className="text-success font-medium">
+                                                                            Auto-renew
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            {contract.value > 0 && (
+                                                                <p className="text-sm font-bold">
+                                                                    {formatCurrency(contract.value)}
+                                                                </p>
+                                                            )}
+                                                            {isExpiring && (
+                                                                <p className="text-xs text-warning font-medium mt-1">
+                                                                    {contract.daysUntilExpiry}d
+                                                                    until expiry
+                                                                </p>
+                                                            )}
+                                                            {contract.daysUntilExpiry < 0 && (
+                                                                <p className="text-xs text-destructive font-medium mt-1">
+                                                                    Expired{" "}
+                                                                    {Math.abs(
+                                                                        contract.daysUntilExpiry
+                                                                    )}
+                                                                    d ago
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_CONTRACT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

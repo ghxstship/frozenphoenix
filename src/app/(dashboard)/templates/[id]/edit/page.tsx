@@ -16,12 +16,15 @@ import {
     FileText,
     GripVertical,
     Image as ImageIcon,
+    Loader2,
     Plus,
     Save,
     Trash2,
     Type,
     Variable,
 } from "lucide-react";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useDocumentTemplate, useUpdateDocumentTemplate } from "@/lib/supabase/hooks-extended";
 
 type BlockType = "heading" | "paragraph" | "variable" | "image" | "divider" | "table";
 
@@ -55,31 +58,83 @@ const AVAILABLE_VARIABLES = [
     "{{date.due}}",
 ];
 
+function parseBlocks(content: unknown): TemplateBlock[] {
+    if (Array.isArray(content)) {
+        return content.map((b: Record<string, unknown>, i: number) => ({
+            id: String(b.id ?? i),
+            type: (b.type as BlockType) ?? "paragraph",
+            content: (b.content as string) ?? "",
+            variableKey: b.variableKey as string | undefined,
+        }));
+    }
+    if (typeof content === "string" && content.trim().startsWith("[")) {
+        try {
+            const parsed = JSON.parse(content) as Record<string, unknown>[];
+            return parsed.map((b, i) => ({
+                id: String(b.id ?? i),
+                type: (b.type as BlockType) ?? "paragraph",
+                content: (b.content as string) ?? "",
+                variableKey: b.variableKey as string | undefined,
+            }));
+        } catch {
+            return [{ id: "1", type: "paragraph", content: content }];
+        }
+    }
+    return [];
+}
+
 export default function TemplateEditorPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const templateId = resolvedParams.id;
 
-    const [templateName, setTemplateName] = useState("Standard Invoice Template");
-    const [templateCategory, setTemplateCategory] = useState("invoice");
-    const [previewMode, setPreviewMode] = useState(false);
-    const [blocks, setBlocks] = useState<TemplateBlock[]>([
-        { id: "1", type: "heading", content: "INVOICE" },
-        { id: "2", type: "variable", content: "{{company.name}}", variableKey: "company.name" },
-        { id: "3", type: "paragraph", content: "Invoice Number: {{invoice.number}}" },
-        { id: "4", type: "paragraph", content: "Date: {{date.today}}" },
-        { id: "5", type: "divider", content: "" },
-        { id: "6", type: "heading", content: "Bill To" },
-        { id: "7", type: "variable", content: "{{client.name}}", variableKey: "client.name" },
-        { id: "8", type: "variable", content: "{{client.address}}", variableKey: "client.address" },
-        { id: "9", type: "divider", content: "" },
-        {
-            id: "10",
-            type: "paragraph",
-            content: "Thank you for your business. Payment is due within 30 days.",
-        },
-    ]);
+    const { data: template, isLoading } = useDocumentTemplate(templateId);
 
+    if (isLoading) return <LoadingState />;
+
+    const t = (template ?? {}) as Record<string, unknown>;
+    const initialName = (t.name as string) ?? "";
+    const initialCategory = (t.category as string) ?? "invoice";
+    const initialBlocks = parseBlocks(t.content);
+
+    return (
+        <TemplateEditorInner
+            key={templateId}
+            templateId={templateId}
+            initialName={initialName}
+            initialCategory={initialCategory}
+            initialBlocks={initialBlocks}
+        />
+    );
+}
+
+function TemplateEditorInner({
+    templateId,
+    initialName,
+    initialCategory,
+    initialBlocks,
+}: {
+    templateId: string;
+    initialName: string;
+    initialCategory: string;
+    initialBlocks: TemplateBlock[];
+}) {
+    const updateTemplate = useUpdateDocumentTemplate();
+
+    const [previewMode, setPreviewMode] = useState(false);
+    const [templateName, setTemplateName] = useState(initialName);
+    const [templateCategory, setTemplateCategory] = useState(initialCategory);
+    const [blocks, setBlocks] = useState<TemplateBlock[]>(initialBlocks);
     const blockCounter = React.useRef(100);
+
+    const handleSave = () => {
+        updateTemplate.mutate({
+            id: templateId,
+            name: templateName,
+            category: templateCategory,
+            content: JSON.stringify(blocks),
+        });
+    };
+
     const addBlock = (type: BlockType) => {
         blockCounter.current += 1;
         setBlocks([
@@ -115,9 +170,13 @@ export default function TemplateEditorPage({ params }: { params: Promise<{ id: s
                         <Eye className="mr-2 h-4 w-4" />
                         {previewMode ? "Edit" : "Preview"}
                     </Button>
-                    <Button size="sm">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save
+                    <Button size="sm" onClick={handleSave} disabled={updateTemplate.isPending}>
+                        {updateTemplate.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
+                        {updateTemplate.isPending ? "Saving..." : "Save"}
                     </Button>
                 </div>
             </PageHeader>

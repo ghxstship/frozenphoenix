@@ -336,6 +336,22 @@ export function useCreateSurveyTemplate() {
     });
 }
 
+export function useUpdateSurveyTemplate() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("survey_templates")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["survey_templates"] }),
+    });
+}
+
 export function useSurveyResponses(templateId?: string, entityType?: string, entityId?: string) {
     return useQuery({
         queryKey: ["survey_responses", templateId, entityType, entityId],
@@ -651,6 +667,75 @@ export function useGenerateInvoiceFromTime() {
             qc.invalidateQueries({ queryKey: ["time_entries"] });
             qc.invalidateQueries({ queryKey: ["invoices"] });
             qc.invalidateQueries({ queryKey: ["client_invoices"] });
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPLIANCE DRIFT DETECTION (API-route backed)
+// ═══════════════════════════════════════════════════════════════
+
+export function useComplianceDrift(organizationId?: string) {
+    return useQuery({
+        queryKey: ["compliance_drift", organizationId],
+        queryFn: async () => {
+            const res = await fetch(
+                `/api/settings/drift-detection?organization_id=${organizationId}`
+            );
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(
+                    (body as Record<string, string>).error || "Failed to load compliance data."
+                );
+            }
+            return res.json();
+        },
+        enabled: !!organizationId,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORG SECURITY SETTINGS (API-route backed)
+// ═══════════════════════════════════════════════════════════════
+
+export function useOrgSecuritySettings(organizationId?: string) {
+    return useQuery({
+        queryKey: ["org_security", organizationId],
+        queryFn: async () => {
+            const res = await fetch(`/api/organizations/${organizationId}/security`);
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(
+                    (body as Record<string, string>).error || "Failed to load security settings."
+                );
+            }
+            const data = await res.json();
+            return data.organization;
+        },
+        enabled: !!organizationId,
+    });
+}
+
+export function useUpdateOrgSecuritySettings(organizationId?: string) {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (updates: Record<string, unknown>) => {
+            const res = await fetch(`/api/organizations/${organizationId}/security`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updates),
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(
+                    (body as Record<string, string>).error || "Failed to save settings."
+                );
+            }
+            const data = await res.json();
+            return data.organization;
+        },
+        onSuccess: (data) => {
+            qc.setQueryData(["org_security", organizationId], data);
         },
     });
 }

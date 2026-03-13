@@ -14,17 +14,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { TECH_SHEET_STATUS_MAP, type TechSheetStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    CheckCircle2,
-    Cpu,
-    FileText,
-    Loader2,
-    MapPin,
-    Plus,
-    Shield,
-    Wifi,
-    Zap,
-} from "lucide-react";
+import { CheckCircle2, Cpu, FileText, MapPin, Plus, Shield, Wifi, Zap } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useTechSheets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -66,9 +57,7 @@ export default function TechSheetsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = techSheets.filter((ts) => {
@@ -136,106 +125,113 @@ export default function TechSheetsPage() {
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    {filtered.map((ts, i) => {
-                        const statusCfg = TECH_SHEET_STATUS_MAP[ts.status];
-                        return (
-                            <StaggerItem key={ts.id} index={i} stagger="relaxed">
-                                <Link href={`/tech-sheets/${ts.id}`}>
-                                    <Card className="cursor-pointer hover:shadow-md transition-all">
-                                        <CardContent className="py-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <Cpu className="h-5 w-5 text-primary" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="text-xs font-mono text-muted-foreground">
-                                                                {ts.techSheetNumber}
-                                                            </span>
-                                                            <Badge variant={statusCfg?.variant}>
-                                                                {statusCfg?.label}
-                                                            </Badge>
-                                                            <Badge variant="ghost">
-                                                                v{ts.version}
-                                                            </Badge>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Cpu}
+                        title="No tech sheets found"
+                        description={
+                            searchQuery || statusFilter !== "all"
+                                ? "Try adjusting your search or filters"
+                                : "Create your first tech sheet to get started"
+                        }
+                        action={
+                            !searchQuery && statusFilter === "all"
+                                ? { label: "New Tech Sheet", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-3">
+                        {filtered.map((ts, i) => {
+                            const statusCfg = TECH_SHEET_STATUS_MAP[ts.status];
+                            return (
+                                <StaggerItem key={ts.id} index={i} stagger="relaxed">
+                                    <Link href={`/tech-sheets/${ts.id}`}>
+                                        <Card className="cursor-pointer hover:shadow-md transition-all">
+                                            <CardContent className="py-4">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                                            <Cpu className="h-5 w-5 text-primary" />
                                                         </div>
-                                                        <h3 className="text-sm font-semibold mt-1">
-                                                            {ts.title}
-                                                        </h3>
-                                                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
-                                                            <span className="flex items-center gap-1">
-                                                                <MapPin className="h-3 w-3" />
-                                                                {ts.venueName}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <FileText className="h-3 w-3" />
-                                                                {ts.equipmentCount} items
-                                                            </span>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-xs font-mono text-muted-foreground">
+                                                                    {ts.techSheetNumber}
+                                                                </span>
+                                                                <Badge variant={statusCfg?.variant}>
+                                                                    {statusCfg?.label}
+                                                                </Badge>
+                                                                <Badge variant="ghost">
+                                                                    v{ts.version}
+                                                                </Badge>
+                                                            </div>
+                                                            <h3 className="text-sm font-semibold mt-1">
+                                                                {ts.title}
+                                                            </h3>
+                                                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
+                                                                <span className="flex items-center gap-1">
+                                                                    <MapPin className="h-3 w-3" />
+                                                                    {ts.venueName}
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <FileText className="h-3 w-3" />
+                                                                    {ts.equipmentCount} items
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="text-right shrink-0 space-y-1">
-                                                    <div className="flex items-center gap-2 justify-end flex-wrap">
-                                                        <Badge
-                                                            variant={
-                                                                ts.generatorRequired
-                                                                    ? "warning"
-                                                                    : "ghost"
-                                                            }
-                                                            className="text-[10px]"
-                                                        >
-                                                            <Zap className="mr-1 h-3 w-3" />
-                                                            {ts.totalAmperage}A
-                                                        </Badge>
-                                                        {ts.internetRequired && (
+                                                    <div className="text-right shrink-0 space-y-1">
+                                                        <div className="flex items-center gap-2 justify-end flex-wrap">
                                                             <Badge
-                                                                variant="info"
+                                                                variant={
+                                                                    ts.generatorRequired
+                                                                        ? "warning"
+                                                                        : "ghost"
+                                                                }
                                                                 className="text-[10px]"
                                                             >
-                                                                <Wifi className="mr-1 h-3 w-3" />
-                                                                Network
+                                                                <Zap className="mr-1 h-3 w-3" />
+                                                                {ts.totalAmperage}A
                                                             </Badge>
-                                                        )}
-                                                        {ts.generatorRequired && (
-                                                            <Badge
-                                                                variant="warning"
-                                                                className="text-[10px]"
-                                                            >
-                                                                <Shield className="mr-1 h-3 w-3" />
-                                                                Generator
-                                                            </Badge>
-                                                        )}
+                                                            {ts.internetRequired && (
+                                                                <Badge
+                                                                    variant="info"
+                                                                    className="text-[10px]"
+                                                                >
+                                                                    <Wifi className="mr-1 h-3 w-3" />
+                                                                    Network
+                                                                </Badge>
+                                                            )}
+                                                            {ts.generatorRequired && (
+                                                                <Badge
+                                                                    variant="warning"
+                                                                    className="text-[10px]"
+                                                                >
+                                                                    <Shield className="mr-1 h-3 w-3" />
+                                                                    Generator
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            {formatDate(ts.createdAt)}
+                                                        </p>
                                                     </div>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        {formatDate(ts.createdAt)}
-                                                    </p>
                                                 </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            </StaggerItem>
-                        );
-                    })}
-                </div>
-
-                {filtered.length === 0 && (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <Cpu className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-1">No tech sheets found</h3>
-                            <p className="text-muted-foreground text-center">
-                                {searchQuery || statusFilter !== "all"
-                                    ? "Try adjusting your search or filters"
-                                    : "Create your first tech sheet to get started"}
-                            </p>
-                        </CardContent>
-                    </Card>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
                 )}
             </div>
-            <CreateEntityDialog config={CREATE_TECH_SHEET_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_TECH_SHEET_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

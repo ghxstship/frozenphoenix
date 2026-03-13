@@ -26,12 +26,12 @@ import {
     ChevronRight,
     DollarSign,
     FileText,
-    Filter,
     LayoutTemplate,
     Plus,
     Target,
     Users,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 const BRIEF_TYPE_ICONS: Record<CreativeBriefType, string> = {
     brand: "🎨",
@@ -197,24 +197,29 @@ export default function BriefsPage() {
                 </div>
 
                 {/* Brief Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filtered.map((brief, i) => (
-                        <BriefCard
-                            key={brief.id}
-                            brief={brief}
-                            index={i}
-                            statusProgress={computeStatusProgress(brief.status)}
-                        />
-                    ))}
-                    {filtered.length === 0 && (
-                        <div className="col-span-full text-center py-12">
-                            <Filter className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">
-                                No briefs match your filters
-                            </p>
-                        </div>
-                    )}
-                </div>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={FileText}
+                        title="No briefs found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Create your first brief"
+                        }
+                        action={!search ? { label: "New Brief", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {filtered.map((brief, i) => (
+                            <BriefCard
+                                key={brief.id}
+                                brief={brief}
+                                index={i}
+                                statusProgress={computeStatusProgress(brief.status)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_BRIEF_CONFIG}

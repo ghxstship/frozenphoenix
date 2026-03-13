@@ -17,13 +17,14 @@ import {
     ChevronRight,
     Clock,
     FileText,
-    Loader2,
     Plus,
     Shield,
     Users,
 } from "lucide-react";
 import { useKnowledgeBaseArticles } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_KB_ARTICLE_CONFIG } from "@/config/create-entity-configs";
 
 const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     sop: FileText,
@@ -55,6 +56,7 @@ interface KBArticle {
 export default function KnowledgeBasePage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const { data: sbArticles, isLoading } = useKnowledgeBaseArticles();
 
@@ -75,9 +77,7 @@ export default function KnowledgeBasePage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredArticles = articles.filter((article) => {
@@ -105,12 +105,10 @@ export default function KnowledgeBasePage() {
                 title="Knowledge Base"
                 description="SOPs, templates, guides, and documentation"
                 actions={
-                    <Link href="/knowledge-base/new">
-                        <Button>
-                            <Plus className="h-4 w-4" />
-                            New Article
-                        </Button>
-                    </Link>
+                    <Button onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        New Article
+                    </Button>
                 }
             >
                 {/* Filters */}
@@ -205,7 +203,12 @@ export default function KnowledgeBasePage() {
                             searchQuery ? "Try adjusting your search" : "Create your first article"
                         }
                         action={
-                            !searchQuery ? { label: "New Article", onClick: () => window.location.assign("/knowledge-base/new") } : undefined
+                            !searchQuery
+                                ? {
+                                      label: "New Article",
+                                      onClick: () => window.location.assign("/knowledge-base/new"),
+                                  }
+                                : undefined
                         }
                     />
                 ) : (
@@ -307,6 +310,11 @@ export default function KnowledgeBasePage() {
                     </div>
                 )}
             </PageShell>
+            <CreateEntityDialog
+                config={CREATE_KB_ARTICLE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

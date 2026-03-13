@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { useInvoices, usePurchaseOrders } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, DollarSign, Loader2, Receipt } from "lucide-react";
+import { AlertTriangle, CheckCircle2, DollarSign, Receipt } from "lucide-react";
 import type { Invoice, PurchaseOrder } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
@@ -195,9 +195,7 @@ export default function FinancePage() {
     const isLoading = loadingPOs || loadingInvoices;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const totalPO = pos.reduce((sum, po) => sum + po.totalAmount, 0);

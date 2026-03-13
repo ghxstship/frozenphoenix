@@ -2,7 +2,6 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,6 @@ import type { Vendor } from "@/types";
 import {
     FileText,
     LayoutGrid,
-    Loader2,
     Plus,
     ShieldAlert,
     ShieldCheck,
@@ -34,6 +32,8 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_VENDOR_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type ViewMode = "cards" | "table";
@@ -118,7 +118,6 @@ const vendorColumns: ColumnDef<Vendor>[] = [
 ];
 
 export default function VendorsPage() {
-    const router = useRouter();
     const VIEW_MODES = ["cards", "table"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -127,6 +126,7 @@ export default function VendorsPage() {
     });
     const { data: supabaseVendors, isLoading, refetch } = useVendors();
     const [importOpen, setImportOpen] = useState(false);
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const handleImportComplete = useCallback(() => {
         void refetch();
@@ -152,183 +152,198 @@ export default function VendorsPage() {
     const expiredCOIs = vendors.filter((v) => !v.coiValid);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
-        <PermissionGate resource="vendors" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Vendor Vault"
-                    description="Centralized vendor management with COI validation, 1099s, and NDAs"
-                >
-                    <div className="flex items-center gap-2">
-                        <SegmentedControl<ViewMode>
-                            ariaLabel="Vendor view mode"
-                            value={viewMode}
-                            onValueChange={setViewMode}
-                            options={[
-                                {
-                                    value: "cards",
-                                    label: "Cards",
-                                    icon: <LayoutGrid className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "table",
-                                    label: "Table",
-                                    icon: <Table2 className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                            ]}
-                        />
-                        <CsvExportButton entity="vendors" />
-                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                            <Upload className="h-4 w-4" />
-                            Import CSV
-                        </Button>
-                        <Button size="sm" onClick={() => router.push("/vendors/new")}>
-                            <Plus className="h-4 w-4" /> Add Vendor
-                        </Button>
-                    </div>
-                </PageHeader>
-                <CsvImportDialog
-                    entity="vendors"
-                    open={importOpen}
-                    onOpenChange={setImportOpen}
-                    onImportComplete={handleImportComplete}
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <StatCard title="Active Vendors" value={activeVendors.length} icon={Store} />
-                    <StatCard
-                        title="Avg Rating"
-                        value="4.5"
-                        description="across all vendors"
-                        icon={Star}
+        <>
+            <PermissionGate resource="vendors" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Vendor Vault"
+                        description="Centralized vendor management with COI validation, 1099s, and NDAs"
+                    >
+                        <div className="flex items-center gap-2">
+                            <SegmentedControl<ViewMode>
+                                ariaLabel="Vendor view mode"
+                                value={viewMode}
+                                onValueChange={setViewMode}
+                                options={[
+                                    {
+                                        value: "cards",
+                                        label: "Cards",
+                                        icon: <LayoutGrid className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "table",
+                                        label: "Table",
+                                        icon: <Table2 className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                ]}
+                            />
+                            <CsvExportButton entity="vendors" />
+                            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                                <Upload className="h-4 w-4" />
+                                Import CSV
+                            </Button>
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" /> Add Vendor
+                            </Button>
+                        </div>
+                    </PageHeader>
+                    <CsvImportDialog
+                        entity="vendors"
+                        open={importOpen}
+                        onOpenChange={setImportOpen}
+                        onImportComplete={handleImportComplete}
                     />
-                    <StatCard title="Expired COIs" value={expiredCOIs.length} icon={ShieldAlert} />
-                </div>
 
-                {/* Table View */}
-                {viewMode === "table" && (
-                    <DataTable<Vendor>
-                        data={vendors}
-                        columns={vendorColumns}
-                        keyField="id"
-                        searchable
-                        searchPlaceholder="Search vendors..."
-                        pageSize={15}
-                        hoverable
-                    />
-                )}
-
-                {/* Cards View */}
-                {viewMode === "cards" && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {vendors.map((vendor, i) => (
-                            <StaggerItem key={vendor.id} index={i} stagger="relaxed">
-                                <Card
-                                    className={`${!vendor.coiValid ? "border-destructive/30" : ""}`}
-                                >
-                                    <CardContent>
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <h3 className="text-sm font-bold">{vendor.name}</h3>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {vendor.specialty}
-                                                </p>
-                                            </div>
-                                            <Badge
-                                                variant={
-                                                    vendor.status === "active"
-                                                        ? "success"
-                                                        : vendor.status === "suspended"
-                                                          ? "destructive"
-                                                          : "warning"
-                                                }
-                                                className="text-[10px]"
-                                            >
-                                                {vendor.status}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
-                                            <p>
-                                                {vendor.contactName} · {vendor.phone}
-                                            </p>
-                                            <p>{vendor.email}</p>
-                                        </div>
-
-                                        {/* Rating */}
-                                        <div className="flex items-center gap-1 mb-3">
-                                            {Array.from({ length: 5 }).map((_, idx) => (
-                                                <Star
-                                                    key={idx}
-                                                    className={`h-3.5 w-3.5 ${idx < Math.floor(vendor.rating) ? "text-warning fill-warning" : "text-muted"}`}
-                                                />
-                                            ))}
-                                            <span className="text-xs font-medium ml-1">
-                                                {vendor.rating}
-                                            </span>
-                                        </div>
-
-                                        {/* Document Compliance */}
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <div
-                                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
-                                                    vendor.coiValid
-                                                        ? "bg-success/10 text-success"
-                                                        : "bg-destructive/10 text-destructive"
-                                                }`}
-                                            >
-                                                {vendor.coiValid ? (
-                                                    <ShieldCheck className="h-3 w-3" />
-                                                ) : (
-                                                    <ShieldAlert className="h-3 w-3" />
-                                                )}
-                                                COI
-                                            </div>
-                                            <div
-                                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
-                                                    vendor.ndaSigned
-                                                        ? "bg-success/10 text-success"
-                                                        : "bg-muted text-muted-foreground"
-                                                }`}
-                                            >
-                                                <FileText className="h-3 w-3" />
-                                                NDA
-                                            </div>
-                                            <div
-                                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
-                                                    vendor.w9Uploaded
-                                                        ? "bg-success/10 text-success"
-                                                        : "bg-muted text-muted-foreground"
-                                                }`}
-                                            >
-                                                <FileText className="h-3 w-3" />
-                                                W-9
-                                            </div>
-                                        </div>
-
-                                        {/* COI Gate */}
-                                        {!vendor.coiValid && (
-                                            <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
-                                                <p className="text-[10px] font-medium text-destructive flex items-center gap-1">
-                                                    <ShieldAlert className="h-3 w-3" />
-                                                    Cannot assign to projects — COI expired
-                                                </p>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        ))}
+                        <StatCard
+                            title="Active Vendors"
+                            value={activeVendors.length}
+                            icon={Store}
+                        />
+                        <StatCard
+                            title="Avg Rating"
+                            value="4.5"
+                            description="across all vendors"
+                            icon={Star}
+                        />
+                        <StatCard
+                            title="Expired COIs"
+                            value={expiredCOIs.length}
+                            icon={ShieldAlert}
+                        />
                     </div>
-                )}
-            </div>
-        </PermissionGate>
+
+                    {/* Table View */}
+                    {viewMode === "table" && (
+                        <DataTable<Vendor>
+                            data={vendors}
+                            columns={vendorColumns}
+                            keyField="id"
+                            searchable
+                            searchPlaceholder="Search vendors..."
+                            pageSize={15}
+                            hoverable
+                        />
+                    )}
+
+                    {/* Cards View */}
+                    {viewMode === "cards" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {vendors.map((vendor, i) => (
+                                <StaggerItem key={vendor.id} index={i} stagger="relaxed">
+                                    <Card
+                                        className={`${!vendor.coiValid ? "border-destructive/30" : ""}`}
+                                    >
+                                        <CardContent>
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <h3 className="text-sm font-bold">
+                                                        {vendor.name}
+                                                    </h3>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {vendor.specialty}
+                                                    </p>
+                                                </div>
+                                                <Badge
+                                                    variant={
+                                                        vendor.status === "active"
+                                                            ? "success"
+                                                            : vendor.status === "suspended"
+                                                              ? "destructive"
+                                                              : "warning"
+                                                    }
+                                                    className="text-[10px]"
+                                                >
+                                                    {vendor.status}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+                                                <p>
+                                                    {vendor.contactName} · {vendor.phone}
+                                                </p>
+                                                <p>{vendor.email}</p>
+                                            </div>
+
+                                            {/* Rating */}
+                                            <div className="flex items-center gap-1 mb-3">
+                                                {Array.from({ length: 5 }).map((_, idx) => (
+                                                    <Star
+                                                        key={idx}
+                                                        className={`h-3.5 w-3.5 ${idx < Math.floor(vendor.rating) ? "text-warning fill-warning" : "text-muted"}`}
+                                                    />
+                                                ))}
+                                                <span className="text-xs font-medium ml-1">
+                                                    {vendor.rating}
+                                                </span>
+                                            </div>
+
+                                            {/* Document Compliance */}
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <div
+                                                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                                                        vendor.coiValid
+                                                            ? "bg-success/10 text-success"
+                                                            : "bg-destructive/10 text-destructive"
+                                                    }`}
+                                                >
+                                                    {vendor.coiValid ? (
+                                                        <ShieldCheck className="h-3 w-3" />
+                                                    ) : (
+                                                        <ShieldAlert className="h-3 w-3" />
+                                                    )}
+                                                    COI
+                                                </div>
+                                                <div
+                                                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                                                        vendor.ndaSigned
+                                                            ? "bg-success/10 text-success"
+                                                            : "bg-muted text-muted-foreground"
+                                                    }`}
+                                                >
+                                                    <FileText className="h-3 w-3" />
+                                                    NDA
+                                                </div>
+                                                <div
+                                                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                                                        vendor.w9Uploaded
+                                                            ? "bg-success/10 text-success"
+                                                            : "bg-muted text-muted-foreground"
+                                                    }`}
+                                                >
+                                                    <FileText className="h-3 w-3" />
+                                                    W-9
+                                                </div>
+                                            </div>
+
+                                            {/* COI Gate */}
+                                            {!vendor.coiValid && (
+                                                <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
+                                                    <p className="text-[10px] font-medium text-destructive flex items-center gap-1">
+                                                        <ShieldAlert className="h-3 w-3" />
+                                                        Cannot assign to projects — COI expired
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_VENDOR_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

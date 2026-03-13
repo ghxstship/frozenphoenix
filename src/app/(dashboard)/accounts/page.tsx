@@ -25,10 +25,10 @@ import {
     FileWarning,
     FolderKanban,
     HeartPulse,
-    Loader2,
     Shield,
     Target,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 function getRiskColor(risk: string): string {
     switch (risk) {
@@ -96,9 +96,7 @@ export default function AccountsPage() {
     }, [accounts]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -144,16 +142,24 @@ export default function AccountsPage() {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filtered.map((account) => (
-                        <AccountCard key={account.id} account={account} />
-                    ))}
-                    {filtered.length === 0 && (
-                        <div className="col-span-2 text-center py-12 text-muted-foreground">
-                            No accounts match your filters
-                        </div>
-                    )}
-                </div>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Building2}
+                        title="No accounts found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Add your first account"
+                        }
+                        action={!search ? { label: "Add Account", onClick: openCreate } : undefined}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {filtered.map((account) => (
+                            <AccountCard key={account.id} account={account} />
+                        ))}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_ACCOUNT_CONFIG}

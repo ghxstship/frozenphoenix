@@ -1,8 +1,10 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
+import { useComplianceDrift } from "@/lib/supabase/hooks-v2-features";
+import { useQueryClient } from "@tanstack/react-query";
 import { PermissionGate } from "@/components/permission-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -67,41 +69,21 @@ const SEVERITY_STYLES: Record<string, { bg: string; text: string; icon: React.Re
 export default function ComplianceDashboardPage() {
     const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id;
+    const queryClient = useQueryClient();
 
-    const [driftReport, setDriftReport] = useState<DriftReport | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: driftReport,
+        isLoading: loading,
+        isFetching: refreshing,
+        error: queryError,
+    } = useComplianceDrift(orgId) as {
+        data: DriftReport | undefined;
+        isLoading: boolean;
+        isFetching: boolean;
+        error: Error | null;
+    };
 
-    const fetchDrift = useCallback(
-        async (isRefresh = false) => {
-            if (!orgId) return;
-            if (isRefresh) setRefreshing(true);
-            else setLoading(true);
-            setError(null);
-
-            try {
-                const res = await fetch(`/api/settings/drift-detection?organization_id=${orgId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setDriftReport(data);
-                } else {
-                    const data = await res.json();
-                    setError(data.error || "Failed to load compliance data.");
-                }
-            } catch {
-                setError("Failed to load compliance data.");
-            } finally {
-                setLoading(false);
-                setRefreshing(false);
-            }
-        },
-        [orgId]
-    );
-
-    useEffect(() => {
-        fetchDrift();
-    }, [fetchDrift]);
+    const error = queryError?.message ?? null;
 
     // Build compliance checks from available data
     const complianceChecks: ComplianceCheck[] = [
@@ -167,207 +149,224 @@ export default function ComplianceDashboardPage() {
     const overallScore = Math.round((passCount / totalChecks) * 100);
 
     if (loading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
         <PermissionGate resource="compliance" action="read">
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Compliance Dashboard</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        SOC2 readiness and configuration compliance for{" "}
-                        <strong>{activeOrg?.organizations?.name || "your organization"}</strong>
-                    </p>
+            <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Compliance Dashboard</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            SOC2 readiness and configuration compliance for{" "}
+                            <strong>{activeOrg?.organizations?.name || "your organization"}</strong>
+                        </p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        onClick={() =>
+                            queryClient.invalidateQueries({ queryKey: ["compliance_drift", orgId] })
+                        }
+                        disabled={refreshing}
+                    >
+                        {refreshing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        Rescan
+                    </Button>
                 </div>
-                <Button variant="outline" onClick={() => fetchDrift(true)} disabled={refreshing}>
-                    {refreshing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                        <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    Rescan
-                </Button>
-            </div>
 
-            {error && (
-                <div
-                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                    role="alert"
-                >
-                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {error}
-                </div>
-            )}
+                {error && (
+                    <div
+                        className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                        role="alert"
+                    >
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {error}
+                    </div>
+                )}
 
-            {/* Score Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-6 text-center">
-                        <div
-                            className={`text-4xl font-bold ${overallScore >= 80 ? "text-success" : overallScore >= 50 ? "text-warning" : "text-destructive"}`}
-                        >
-                            {overallScore}%
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Overall Score</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-6 text-center">
-                        <div className="text-4xl font-bold text-success">{passCount}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Controls Passing</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-6 text-center">
-                        <div className="text-4xl font-bold text-destructive">
-                            {driftReport?.critical_count || 0}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Critical Drift Items</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-6 text-center">
-                        <div className="text-4xl font-bold text-warning">
-                            {driftReport?.warning_count || 0}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Warning Drift Items</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* SOC2 Control Checks */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <Shield className="h-4 w-4" aria-hidden="true" />
-                        SOC2 Control Status
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ul className="space-y-3" role="list">
-                        {complianceChecks.map((check) => (
-                            <li
-                                key={check.id}
-                                className="flex items-center justify-between p-3 rounded-lg border"
+                {/* Score Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                        <CardContent className="pt-6 text-center">
+                            <div
+                                className={`text-4xl font-bold ${overallScore >= 80 ? "text-success" : overallScore >= 50 ? "text-warning" : "text-destructive"}`}
                             >
-                                <div className="flex items-center gap-3">
-                                    {check.icon}
-                                    <div>
-                                        <p className="text-sm font-medium">{check.label}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {check.description}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-[10px]">
-                                        {check.soc2Control}
-                                    </Badge>
-                                    {check.status === "pass" ? (
-                                        <CheckCircle2
-                                            className="h-5 w-5 text-success"
-                                            aria-label="Passing"
-                                        />
-                                    ) : check.status === "fail" ? (
-                                        <XCircle
-                                            className="h-5 w-5 text-destructive"
-                                            aria-label="Failing"
-                                        />
-                                    ) : check.status === "warning" ? (
-                                        <AlertTriangle
-                                            className="h-5 w-5 text-warning"
-                                            aria-label="Warning"
-                                        />
-                                    ) : (
-                                        <Info
-                                            className="h-5 w-5 text-muted-foreground"
-                                            aria-label="Unknown"
-                                        />
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            </Card>
+                                {overallScore}%
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Overall Score</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6 text-center">
+                            <div className="text-4xl font-bold text-success">{passCount}</div>
+                            <p className="text-xs text-muted-foreground mt-1">Controls Passing</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6 text-center">
+                            <div className="text-4xl font-bold text-destructive">
+                                {driftReport?.critical_count || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Critical Drift Items
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6 text-center">
+                            <div className="text-4xl font-bold text-warning">
+                                {driftReport?.warning_count || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Warning Drift Items
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
 
-            {/* Drift Report */}
-            {driftReport && driftReport.items.length > 0 && (
+                {/* SOC2 Control Checks */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <Activity className="h-4 w-4" aria-hidden="true" />
-                            Configuration Drift Report
-                            <Badge variant="outline" className="ml-2 text-[10px]">
-                                {driftReport.drift_count} items
-                            </Badge>
+                            <Shield className="h-4 w-4" aria-hidden="true" />
+                            SOC2 Control Status
                         </CardTitle>
-                        {driftReport.scanned_at && (
-                            <p className="text-xs text-muted-foreground">
-                                Last scanned: {new Date(driftReport.scanned_at).toLocaleString()}
-                            </p>
-                        )}
                     </CardHeader>
                     <CardContent>
-                        <ul className="space-y-2" role="list">
-                            {driftReport.items.map((item, idx) => {
-                                const style =
-                                    SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info!;
-                                return (
-                                    <li
-                                        key={`${item.setting_key}-${idx}`}
-                                        className={`flex items-start gap-3 p-3 rounded-lg ${style.bg}`}
-                                    >
-                                        <span
-                                            className={`shrink-0 mt-0.5 ${style.text}`}
-                                            aria-hidden="true"
-                                        >
-                                            {style.icon}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className={`text-sm font-medium ${style.text}`}>
-                                                    {item.setting_key}
-                                                </p>
-                                                <Badge variant="outline" className="text-[10px]">
-                                                    {item.drift_type}
-                                                </Badge>
-                                                <Badge variant="outline" className="text-[10px]">
-                                                    {item.category}
-                                                </Badge>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground mt-0.5">
-                                                {item.message}
+                        <ul className="space-y-3" role="list">
+                            {complianceChecks.map((check) => (
+                                <li
+                                    key={check.id}
+                                    className="flex items-center justify-between p-3 rounded-lg border"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {check.icon}
+                                        <div>
+                                            <p className="text-sm font-medium">{check.label}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {check.description}
                                             </p>
                                         </div>
-                                    </li>
-                                );
-                            })}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className="text-[10px]">
+                                            {check.soc2Control}
+                                        </Badge>
+                                        {check.status === "pass" ? (
+                                            <CheckCircle2
+                                                className="h-5 w-5 text-success"
+                                                aria-label="Passing"
+                                            />
+                                        ) : check.status === "fail" ? (
+                                            <XCircle
+                                                className="h-5 w-5 text-destructive"
+                                                aria-label="Failing"
+                                            />
+                                        ) : check.status === "warning" ? (
+                                            <AlertTriangle
+                                                className="h-5 w-5 text-warning"
+                                                aria-label="Warning"
+                                            />
+                                        ) : (
+                                            <Info
+                                                className="h-5 w-5 text-muted-foreground"
+                                                aria-label="Unknown"
+                                            />
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
                         </ul>
                     </CardContent>
                 </Card>
-            )}
 
-            {driftReport && driftReport.items.length === 0 && (
-                <Card>
-                    <CardContent className="py-8 text-center">
-                        <CheckCircle2
-                            className="h-8 w-8 text-success mx-auto mb-2"
-                            aria-hidden="true"
-                        />
-                        <p className="text-sm font-medium">No configuration drift detected</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            All {driftReport.total_definitions} setting definitions are properly
-                            configured.
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
+                {/* Drift Report */}
+                {driftReport && driftReport.items.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Activity className="h-4 w-4" aria-hidden="true" />
+                                Configuration Drift Report
+                                <Badge variant="outline" className="ml-2 text-[10px]">
+                                    {driftReport.drift_count} items
+                                </Badge>
+                            </CardTitle>
+                            {driftReport.scanned_at && (
+                                <p className="text-xs text-muted-foreground">
+                                    Last scanned:{" "}
+                                    {new Date(driftReport.scanned_at).toLocaleString()}
+                                </p>
+                            )}
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2" role="list">
+                                {driftReport.items.map((item, idx) => {
+                                    const style =
+                                        SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info!;
+                                    return (
+                                        <li
+                                            key={`${item.setting_key}-${idx}`}
+                                            className={`flex items-start gap-3 p-3 rounded-lg ${style.bg}`}
+                                        >
+                                            <span
+                                                className={`shrink-0 mt-0.5 ${style.text}`}
+                                                aria-hidden="true"
+                                            >
+                                                {style.icon}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <p
+                                                        className={`text-sm font-medium ${style.text}`}
+                                                    >
+                                                        {item.setting_key}
+                                                    </p>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px]"
+                                                    >
+                                                        {item.drift_type}
+                                                    </Badge>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px]"
+                                                    >
+                                                        {item.category}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {item.message}
+                                                </p>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {driftReport && driftReport.items.length === 0 && (
+                    <Card>
+                        <CardContent className="py-8 text-center">
+                            <CheckCircle2
+                                className="h-8 w-8 text-success mx-auto mb-2"
+                                aria-hidden="true"
+                            />
+                            <p className="text-sm font-medium">No configuration drift detected</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                All {driftReport.total_definitions} setting definitions are properly
+                                configured.
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
         </PermissionGate>
     );
 }

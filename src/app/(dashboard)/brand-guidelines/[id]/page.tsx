@@ -16,7 +16,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { FileText, Loader2, Palette } from "lucide-react";
+import { FileText, Palette } from "lucide-react";
 
 type TabId = "overview" | "rules" | "chatter";
 const TAB_VALUES = ["overview", "rules", "chatter"] as const;
@@ -41,9 +41,7 @@ export default function BrandGuidelineDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const g = guideline as Record<string, unknown> | undefined;

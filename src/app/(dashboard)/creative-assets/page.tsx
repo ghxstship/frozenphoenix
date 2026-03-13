@@ -5,7 +5,6 @@ import { formatDate } from "@/lib/locale";
 
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -19,8 +18,11 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Campaign } from "@/types/creative-brand";
 import { useCampaigns, useCreativeAssets, useCreativeReviews } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_ASSET_CONFIG } from "@/config/create-entity-configs";
 import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
-import { CheckCircle2, Clock, Filter, Globe, Layers, Plus, Shield } from "lucide-react";
+import { CheckCircle2, Clock, Globe, Layers, Plus, Shield } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 const STATUS_ORDER: CampaignAssetProductionStatus[] = [
     "briefed",
@@ -43,6 +45,7 @@ const GATE_LABELS: Record<string, string> = {
 export default function CreativeAssetsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const VIEW_MODES = ["board", "list"] as const;
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -93,135 +96,145 @@ export default function CreativeAssetsPage() {
     }
 
     return (
-        <PermissionGate resource="creative_assets" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Creative Assets"
-                    description="Campaign asset production, review workflow, and brand compliance tracking"
-                >
-                    <div className="flex gap-2">
-                        <SegmentedControl
-                            value={view}
-                            onValueChange={(v) => setView(v as "board" | "list")}
-                            options={[
-                                { value: "board", label: "Board" },
-                                { value: "list", label: "List" },
-                            ]}
-                            ariaLabel="View mode"
-                        />
-                        <Link href="/creative-assets/new">
-                            <Button size="sm">
+        <>
+            <PermissionGate resource="creative_assets" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Creative Assets"
+                        description="Campaign asset production, review workflow, and brand compliance tracking"
+                    >
+                        <div className="flex gap-2">
+                            <SegmentedControl
+                                value={view}
+                                onValueChange={(v) => setView(v as "board" | "list")}
+                                options={[
+                                    { value: "board", label: "Board" },
+                                    { value: "list", label: "List" },
+                                ]}
+                                ariaLabel="View mode"
+                            />
+                            <Button size="sm" onClick={openCreate}>
                                 <Plus className="h-4 w-4" />
                                 New Asset
                             </Button>
-                        </Link>
+                        </div>
+                    </PageHeader>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard title="Total Assets" value={totalAssets} icon={Layers} />
+                        <StatCard
+                            title="Approved / Deployed"
+                            value={approvedCount}
+                            icon={CheckCircle2}
+                        />
+                        <StatCard title="Pending Review" value={pendingReviewCount} icon={Clock} />
+                        <StatCard
+                            title="Avg Compliance"
+                            value={`${avgComplianceScore}%`}
+                            icon={Shield}
+                        />
                     </div>
-                </PageHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total Assets" value={totalAssets} icon={Layers} />
-                    <StatCard
-                        title="Approved / Deployed"
-                        value={approvedCount}
-                        icon={CheckCircle2}
-                    />
-                    <StatCard title="Pending Review" value={pendingReviewCount} icon={Clock} />
-                    <StatCard
-                        title="Avg Compliance"
-                        value={`${avgComplianceScore}%`}
-                        icon={Shield}
-                    />
-                </div>
-
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <SearchInput
-                        value={search}
-                        onValueChange={setSearch}
-                        placeholder="Search assets..."
-                        className="flex-1"
-                    />
-                    <select
-                        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">All Statuses</option>
-                        {STATUS_ORDER.map((s) => (
-                            <option key={s} value={s}>
-                                {getStatusLabel(s)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Board View */}
-                {view === "board" && (
-                    <div className="flex gap-4 overflow-x-auto pb-4">
-                        {STATUS_ORDER.filter((s) => s !== "retired").map((status) => {
-                            const statusAssets = filtered.filter(
-                                (a) => a.production_status === status
-                            );
-                            return (
-                                <div key={status} className="flex-shrink-0 w-72">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Badge
-                                            variant={getStatusVariant(status) as "default"}
-                                            className="text-[9px]"
-                                        >
-                                            {getStatusLabel(status)}
-                                        </Badge>
-                                        <span className="text-xs text-muted-foreground">
-                                            {statusAssets.length}
-                                        </span>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {statusAssets.map((asset) => (
-                                            <AssetCard
-                                                key={asset.id}
-                                                asset={asset}
-                                                reviews={getReviewsForAsset(asset.id)}
-                                                campaignName={getCampaignName(asset.campaign_id)}
-                                            />
-                                        ))}
-                                        {statusAssets.length === 0 && (
-                                            <div className="p-4 border border-dashed border-border rounded-lg text-center">
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    No assets
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    {/* Filters */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <SearchInput
+                            value={search}
+                            onValueChange={setSearch}
+                            placeholder="Search assets..."
+                            className="flex-1"
+                        />
+                        <select
+                            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">All Statuses</option>
+                            {STATUS_ORDER.map((s) => (
+                                <option key={s} value={s}>
+                                    {getStatusLabel(s)}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                )}
 
-                {/* List View */}
-                {view === "list" && (
-                    <div className="space-y-2">
-                        {filtered.map((asset, i) => (
-                            <AssetListRow
-                                key={asset.id}
-                                asset={asset}
-                                reviews={getReviewsForAsset(asset.id)}
-                                campaignName={getCampaignName(asset.campaign_id)}
-                                index={i}
+                    {/* Board View */}
+                    {view === "board" && (
+                        <div className="flex gap-4 overflow-x-auto pb-4">
+                            {STATUS_ORDER.filter((s) => s !== "retired").map((status) => {
+                                const statusAssets = filtered.filter(
+                                    (a) => a.production_status === status
+                                );
+                                return (
+                                    <div key={status} className="flex-shrink-0 w-72">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <Badge
+                                                variant={getStatusVariant(status) as "default"}
+                                                className="text-[9px]"
+                                            >
+                                                {getStatusLabel(status)}
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {statusAssets.length}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {statusAssets.map((asset) => (
+                                                <AssetCard
+                                                    key={asset.id}
+                                                    asset={asset}
+                                                    reviews={getReviewsForAsset(asset.id)}
+                                                    campaignName={getCampaignName(
+                                                        asset.campaign_id
+                                                    )}
+                                                />
+                                            ))}
+                                            {statusAssets.length === 0 && (
+                                                <div className="p-4 border border-dashed border-border rounded-lg text-center">
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        No assets
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* List View */}
+                    {view === "list" &&
+                        (filtered.length === 0 ? (
+                            <EmptyState
+                                icon={Layers}
+                                title="No creative assets found"
+                                description={
+                                    search
+                                        ? "Try adjusting your search or filters"
+                                        : "No creative assets yet"
+                                }
                             />
-                        ))}
-                        {filtered.length === 0 && (
-                            <div className="text-center py-12">
-                                <Filter className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-sm text-muted-foreground">
-                                    No assets match your filters
-                                </p>
+                        ) : (
+                            <div className="space-y-2">
+                                {filtered.map((asset, i) => (
+                                    <AssetListRow
+                                        key={asset.id}
+                                        asset={asset}
+                                        reviews={getReviewsForAsset(asset.id)}
+                                        campaignName={getCampaignName(asset.campaign_id)}
+                                        index={i}
+                                    />
+                                ))}
                             </div>
-                        )}
-                    </div>
-                )}
-            </div>
-        </PermissionGate>
+                        ))}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_ASSET_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }
 

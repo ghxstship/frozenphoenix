@@ -16,7 +16,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { getStatusLabel } from "@/config/ui-variants";
-import { CheckCircle2, Clock, DollarSign, FileText, Loader2, Plus } from "lucide-react";
+import { CheckCircle2, Clock, DollarSign, FileText, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useScopesOfWork } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -74,9 +75,7 @@ export default function ScopesOfWorkPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = sows.filter((s) => {
@@ -164,88 +163,105 @@ export default function ScopesOfWorkPage() {
                     />
                 </div>
 
-                <div className="space-y-3">
-                    {filtered.map((sow) => {
-                        const invoicedPct =
-                            sow.totalValue > 0 ? (sow.invoiced / sow.totalValue) * 100 : 0;
-                        const deliverablePct =
-                            sow.deliverableCount > 0
-                                ? (sow.completedDeliverables / sow.deliverableCount) * 100
-                                : 0;
-                        return (
-                            <Card
-                                key={sow.id}
-                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                            >
-                                <CardContent className="py-4">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-mono text-muted-foreground">
-                                                    {sow.number}
-                                                </span>
-                                                <StatusBadge
-                                                    status={sow.status}
-                                                    className="text-[10px]"
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={FileText}
+                        title="No scopes of work found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Create your first scope of work"
+                        }
+                        action={
+                            !search
+                                ? { label: "New Scope of Work", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-3">
+                        {filtered.map((sow) => {
+                            const invoicedPct =
+                                sow.totalValue > 0 ? (sow.invoiced / sow.totalValue) * 100 : 0;
+                            const deliverablePct =
+                                sow.deliverableCount > 0
+                                    ? (sow.completedDeliverables / sow.deliverableCount) * 100
+                                    : 0;
+                            return (
+                                <Card
+                                    key={sow.id}
+                                    className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                                >
+                                    <CardContent className="py-4">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-xs font-mono text-muted-foreground">
+                                                        {sow.number}
+                                                    </span>
+                                                    <StatusBadge
+                                                        status={sow.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                    <Badge variant="ghost" className="text-[10px]">
+                                                        {{
+                                                            fixed: "Fixed",
+                                                            time_materials: "Time & Materials",
+                                                            milestone: "Milestone",
+                                                            retainer: "Retainer",
+                                                        }[sow.billingType] ?? sow.billingType}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-sm font-semibold truncate">
+                                                    {sow.title}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {sow.client} · {sow.project} · Effective{" "}
+                                                    {sow.effectiveDate}
+                                                </p>
+                                            </div>
+                                            <div className="text-right shrink-0 ml-4">
+                                                <p className="text-lg font-bold">
+                                                    {formatCurrency(sow.totalValue)}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatCurrency(sow.invoiced)} invoiced
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                                                    <span>Invoiced</span>
+                                                    <span>{Math.round(invoicedPct)}%</span>
+                                                </div>
+                                                <ProgressBar
+                                                    value={invoicedPct}
+                                                    size="sm"
+                                                    variant="info"
                                                 />
-                                                <Badge variant="ghost" className="text-[10px]">
-                                                    {{
-                                                        fixed: "Fixed",
-                                                        time_materials: "Time & Materials",
-                                                        milestone: "Milestone",
-                                                        retainer: "Retainer",
-                                                    }[sow.billingType] ?? sow.billingType}
-                                                </Badge>
                                             </div>
-                                            <p className="text-sm font-semibold truncate">
-                                                {sow.title}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {sow.client} · {sow.project} · Effective{" "}
-                                                {sow.effectiveDate}
-                                            </p>
-                                        </div>
-                                        <div className="text-right shrink-0 ml-4">
-                                            <p className="text-lg font-bold">
-                                                {formatCurrency(sow.totalValue)}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatCurrency(sow.invoiced)} invoiced
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                                                <span>Invoiced</span>
-                                                <span>{Math.round(invoicedPct)}%</span>
+                                            <div>
+                                                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                                                    <span>Deliverables</span>
+                                                    <span>
+                                                        {sow.completedDeliverables}/
+                                                        {sow.deliverableCount}
+                                                    </span>
+                                                </div>
+                                                <ProgressBar
+                                                    value={deliverablePct}
+                                                    size="sm"
+                                                    variant="success"
+                                                />
                                             </div>
-                                            <ProgressBar
-                                                value={invoicedPct}
-                                                size="sm"
-                                                variant="info"
-                                            />
                                         </div>
-                                        <div>
-                                            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                                                <span>Deliverables</span>
-                                                <span>
-                                                    {sow.completedDeliverables}/
-                                                    {sow.deliverableCount}
-                                                </span>
-                                            </div>
-                                            <ProgressBar
-                                                value={deliverablePct}
-                                                size="sm"
-                                                variant="success"
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_SOW_CONFIG}

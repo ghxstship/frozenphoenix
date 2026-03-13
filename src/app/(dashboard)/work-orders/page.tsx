@@ -22,12 +22,12 @@ import {
     Clock,
     Gavel,
     LayoutGrid,
-    Loader2,
     Play,
     Plus,
     Table2,
     Users,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { WorkOrderFull } from "@/types/vendor-lifecycle";
 import { useWorkOrders } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -93,9 +93,7 @@ export default function WorkOrdersPage() {
     const totalEstimated = workOrders.reduce((sum, wo) => sum + (wo.estimatedCost || 0), 0);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -163,99 +161,116 @@ export default function WorkOrdersPage() {
                     </select>
                 </div>
 
-                {viewMode === "cards" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filtered.map((wo, i) => (
-                            <StaggerItem key={wo.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[10px] font-mono text-muted-foreground">
-                                                        {wo.number}
-                                                    </span>
-                                                    <span
-                                                        className={`text-[10px] font-medium ${PRIORITY_CONFIG[wo.priority].color}`}
-                                                    >
-                                                        {PRIORITY_CONFIG[wo.priority].label}
-                                                    </span>
+                {viewMode === "cards" &&
+                    (filtered.length === 0 ? (
+                        <EmptyState
+                            icon={ClipboardList}
+                            title="No work orders found"
+                            description={
+                                search
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first work order"
+                            }
+                            action={
+                                !search
+                                    ? { label: "New Work Order", onClick: openCreate }
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map((wo, i) => (
+                                <StaggerItem key={wo.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                                            {wo.number}
+                                                        </span>
+                                                        <span
+                                                            className={`text-[10px] font-medium ${PRIORITY_CONFIG[wo.priority].color}`}
+                                                        >
+                                                            {PRIORITY_CONFIG[wo.priority].label}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-sm font-bold truncate">
+                                                        {wo.title}
+                                                    </h3>
                                                 </div>
-                                                <h3 className="text-sm font-bold truncate">
-                                                    {wo.title}
-                                                </h3>
+                                                <StatusBadge
+                                                    status={wo.status}
+                                                    className="text-[10px] ml-2 shrink-0"
+                                                />
                                             </div>
-                                            <StatusBadge
-                                                status={wo.status}
-                                                className="text-[10px] ml-2 shrink-0"
-                                            />
-                                        </div>
 
-                                        {wo.projectName && (
-                                            <p className="text-xs text-muted-foreground mb-2 truncate">
-                                                {wo.projectName}
-                                            </p>
-                                        )}
-
-                                        {wo.description && (
-                                            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                                                {wo.description}
-                                            </p>
-                                        )}
-
-                                        <div className="space-y-1.5 text-xs mb-3">
-                                            {wo.vendorName && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <Users className="h-3 w-3" />
-                                                    <span>{wo.vendorName}</span>
-                                                </div>
+                                            {wo.projectName && (
+                                                <p className="text-xs text-muted-foreground mb-2 truncate">
+                                                    {wo.projectName}
+                                                </p>
                                             )}
-                                            {wo.scheduledStart && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <Calendar className="h-3 w-3" />
-                                                    <span>
-                                                        {new Date(
-                                                            wo.scheduledStart
-                                                        ).toLocaleDateString()}
-                                                    </span>
-                                                    {wo.scheduledEnd && (
+
+                                            {wo.description && (
+                                                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                                                    {wo.description}
+                                                </p>
+                                            )}
+
+                                            <div className="space-y-1.5 text-xs mb-3">
+                                                {wo.vendorName && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <Users className="h-3 w-3" />
+                                                        <span>{wo.vendorName}</span>
+                                                    </div>
+                                                )}
+                                                {wo.scheduledStart && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <Calendar className="h-3 w-3" />
                                                         <span>
-                                                            —{" "}
                                                             {new Date(
-                                                                wo.scheduledEnd
+                                                                wo.scheduledStart
                                                             ).toLocaleDateString()}
+                                                        </span>
+                                                        {wo.scheduledEnd && (
+                                                            <span>
+                                                                —{" "}
+                                                                {new Date(
+                                                                    wo.scheduledEnd
+                                                                ).toLocaleDateString()}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between pt-2 border-t border-border">
+                                                <div className="flex items-center gap-3 text-xs">
+                                                    {wo.estimatedCost && (
+                                                        <span className="font-medium">
+                                                            {formatCurrency(wo.estimatedCost)}
+                                                        </span>
+                                                    )}
+                                                    {wo.estimatedHours && (
+                                                        <span className="text-muted-foreground flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {wo.estimatedHours}h
                                                         </span>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-2 border-t border-border">
-                                            <div className="flex items-center gap-3 text-xs">
-                                                {wo.estimatedCost && (
-                                                    <span className="font-medium">
-                                                        {formatCurrency(wo.estimatedCost)}
-                                                    </span>
-                                                )}
-                                                {wo.estimatedHours && (
-                                                    <span className="text-muted-foreground flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" />
-                                                        {wo.estimatedHours}h
-                                                    </span>
+                                                {wo.isOpenForBids && (
+                                                    <Badge variant="info" className="text-[10px]">
+                                                        <Gavel className="h-3 w-3 mr-1" /> Open for
+                                                        Bids
+                                                    </Badge>
                                                 )}
                                             </div>
-                                            {wo.isOpenForBids && (
-                                                <Badge variant="info" className="text-[10px]">
-                                                    <Gavel className="h-3 w-3 mr-1" /> Open for Bids
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        ))}
-                    </div>
-                )}
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    ))}
 
                 {viewMode === "table" && (
                     <Card>
@@ -277,48 +292,73 @@ export default function WorkOrdersPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filtered.map((wo) => (
-                                            <tr
-                                                key={wo.id}
-                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-3 font-mono text-xs">
-                                                    {wo.number}
-                                                </td>
-                                                <td className="p-3 font-medium">{wo.title}</td>
-                                                <td className="p-3 text-muted-foreground">
-                                                    {wo.projectName || "—"}
-                                                </td>
-                                                <td className="p-3 text-muted-foreground">
-                                                    {wo.vendorName || "—"}
-                                                </td>
-                                                <td className="p-3">
-                                                    <StatusBadge
-                                                        status={wo.status}
-                                                        className="text-[10px]"
+                                        {filtered.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={8} className="p-0">
+                                                    <EmptyState
+                                                        icon={ClipboardList}
+                                                        title="No work orders found"
+                                                        description={
+                                                            search
+                                                                ? "Try adjusting your search or filters"
+                                                                : "Create your first work order"
+                                                        }
+                                                        action={
+                                                            !search
+                                                                ? {
+                                                                      label: "New Work Order",
+                                                                      onClick: openCreate,
+                                                                  }
+                                                                : undefined
+                                                        }
+                                                        compact
                                                     />
                                                 </td>
-                                                <td className="p-3">
-                                                    <span
-                                                        className={`text-xs ${PRIORITY_CONFIG[wo.priority].color}`}
-                                                    >
-                                                        {PRIORITY_CONFIG[wo.priority].label}
-                                                    </span>
-                                                </td>
-                                                <td className="p-3 text-right">
-                                                    {wo.estimatedCost
-                                                        ? formatCurrency(wo.estimatedCost)
-                                                        : "—"}
-                                                </td>
-                                                <td className="p-3 text-muted-foreground text-xs">
-                                                    {wo.scheduledStart
-                                                        ? new Date(
-                                                              wo.scheduledStart
-                                                          ).toLocaleDateString()
-                                                        : "—"}
-                                                </td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            filtered.map((wo) => (
+                                                <tr
+                                                    key={wo.id}
+                                                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-3 font-mono text-xs">
+                                                        {wo.number}
+                                                    </td>
+                                                    <td className="p-3 font-medium">{wo.title}</td>
+                                                    <td className="p-3 text-muted-foreground">
+                                                        {wo.projectName || "—"}
+                                                    </td>
+                                                    <td className="p-3 text-muted-foreground">
+                                                        {wo.vendorName || "—"}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <StatusBadge
+                                                            status={wo.status}
+                                                            className="text-[10px]"
+                                                        />
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <span
+                                                            className={`text-xs ${PRIORITY_CONFIG[wo.priority].color}`}
+                                                        >
+                                                            {PRIORITY_CONFIG[wo.priority].label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3 text-right">
+                                                        {wo.estimatedCost
+                                                            ? formatCurrency(wo.estimatedCost)
+                                                            : "—"}
+                                                    </td>
+                                                    <td className="p-3 text-muted-foreground text-xs">
+                                                        {wo.scheduledStart
+                                                            ? new Date(
+                                                                  wo.scheduledStart
+                                                              ).toLocaleDateString()
+                                                            : "—"}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

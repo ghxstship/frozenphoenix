@@ -13,16 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { formatDate } from "@/lib/utils";
-import {
-    Calendar,
-    Download,
-    ExternalLink,
-    FileText,
-    Loader2,
-    Lock,
-    Shield,
-    User,
-} from "lucide-react";
+import { Calendar, Download, ExternalLink, FileText, Lock, Shield, User } from "lucide-react";
 
 type TabId = "details" | "chatter";
 const TAB_VALUES = ["details", "chatter"] as const;
@@ -77,9 +68,7 @@ export default function DocumentDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!doc) {
@@ -160,8 +149,14 @@ export default function DocumentDetailPage() {
                 ) : undefined
             }
             menuItems={[
-                { label: "Edit Document", onClick: () => router.push(`/documents/${entityId}/edit`) },
-                { label: "Change Access Level", onClick: () => router.push(`/documents/${entityId}/edit?section=access`) },
+                {
+                    label: "Edit Document",
+                    onClick: () => router.push(`/documents/${entityId}/edit`),
+                },
+                {
+                    label: "Change Access Level",
+                    onClick: () => router.push(`/documents/${entityId}/edit?section=access`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

@@ -16,7 +16,7 @@ import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { Calendar, CheckCircle2, Clock, DollarSign, FileEdit, Loader2, User } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, DollarSign, FileEdit, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useChangeOrder } from "@/lib/supabase/hooks-pages";
 
@@ -46,9 +46,7 @@ export default function ChangeOrderDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!co) {
@@ -189,7 +187,11 @@ export default function ChangeOrderDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleUpdate({ status: "in_review" })}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdate({ status: "in_review" })}
+                    >
                         <User className="h-4 w-4 mr-1" />
                         Request Review
                     </Button>
@@ -200,8 +202,14 @@ export default function ChangeOrderDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Change Order", onClick: () => router.push(`/change-orders/${entityId}/edit`) },
-                { label: "Duplicate", onClick: () => router.push(`/change-orders/new?duplicateFrom=${entityId}`) },
+                {
+                    label: "Edit Change Order",
+                    onClick: () => router.push(`/change-orders/${entityId}/edit`),
+                },
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/change-orders/new?duplicateFrom=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

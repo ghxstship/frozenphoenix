@@ -14,7 +14,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { CERT_TYPE_LABELS, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
-import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText, Loader2 } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCertification } from "@/lib/supabase/hooks-pages";
 
@@ -43,9 +43,7 @@ export default function CertificationDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!cert) {
@@ -195,8 +193,15 @@ export default function CertificationDetailPage() {
                 </div>
             }
             menuItems={[
-                { label: "Edit Certification", onClick: () => router.push(`/certifications/${entityId}/edit`) },
-                { label: "Upload Document", onClick: () => router.push(`/documents/new?entityType=certification&entityId=${entityId}`) },
+                {
+                    label: "Edit Certification",
+                    onClick: () => router.push(`/certifications/${entityId}/edit`),
+                },
+                {
+                    label: "Upload Document",
+                    onClick: () =>
+                        router.push(`/documents/new?entityType=certification&entityId=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

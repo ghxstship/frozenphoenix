@@ -19,7 +19,7 @@ import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
-import { ChevronRight, DollarSign, Loader2, MapPin, Plus, Sparkles, Users } from "lucide-react";
+import { ChevronRight, DollarSign, MapPin, Plus, Sparkles, Users } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 
 const STATUS_VARIANTS: Record<string, string> = {
@@ -88,9 +88,7 @@ export default function ActivationsPage() {
     const isLoading = loadingActivations || loadingLocations || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredActivations = activations.filter((activation) => {

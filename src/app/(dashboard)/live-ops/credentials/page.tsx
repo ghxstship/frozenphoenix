@@ -6,16 +6,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { useCredentialAssignments, useCredentialScanLogs } from "@/lib/supabase/hooks-credentialing";
 import {
-    BadgeCheck,
-    Loader2,
-    LogIn,
-    LogOut,
-    ShieldAlert,
-    Ticket,
-    Users,
-} from "lucide-react";
+    useCredentialAssignments,
+    useCredentialScanLogs,
+} from "@/lib/supabase/hooks-credentialing";
+import { BadgeCheck, LogIn, LogOut, ShieldAlert, Ticket, Users } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function LiveOpsCredentialsPage() {
@@ -27,9 +22,7 @@ export default function LiveOpsCredentialsPage() {
     const isLoading = loadingAssignments || loadingScans;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const rows = (assignments ?? []) as Record<string, unknown>[];
@@ -38,7 +31,9 @@ export default function LiveOpsCredentialsPage() {
     const checkedIn = rows.filter((r) => r.status === "checked_in").length;
     const checkedOut = rows.filter((r) => r.status === "checked_out").length;
     const totalActive = rows.length;
-    const deniedScans = scans.filter((s) => ["denied", "revoked", "zone_denied", "expired"].includes(s.scan_result as string)).length;
+    const deniedScans = scans.filter((s) =>
+        ["denied", "revoked", "zone_denied", "expired"].includes(s.scan_result as string)
+    ).length;
 
     return (
         <PermissionGate resource="credential_assignments" action="read">
@@ -65,22 +60,35 @@ export default function LiveOpsCredentialsPage() {
                         </CardHeader>
                         <CardContent>
                             {checkedIn === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-8">No active check-ins</p>
+                                <p className="text-sm text-muted-foreground text-center py-8">
+                                    No active check-ins
+                                </p>
                             ) : (
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
                                     {rows
                                         .filter((r) => r.status === "checked_in")
                                         .map((r) => (
-                                            <div key={r.id as string} className="flex items-center justify-between p-2 rounded-lg bg-success/5 border border-success/20">
+                                            <div
+                                                key={r.id as string}
+                                                className="flex items-center justify-between p-2 rounded-lg bg-success/5 border border-success/20"
+                                            >
                                                 <div>
-                                                    <p className="text-sm font-medium">{r.assignee_name as string}</p>
-                                                    <p className="text-[10px] text-muted-foreground font-mono">{r.barcode_value as string}</p>
+                                                    <p className="text-sm font-medium">
+                                                        {r.assignee_name as string}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground font-mono">
+                                                        {r.barcode_value as string}
+                                                    </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <Badge variant="success" className="text-[9px]">IN</Badge>
+                                                    <Badge variant="success" className="text-[9px]">
+                                                        IN
+                                                    </Badge>
                                                     {!!r.checked_in_at && (
                                                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                            {new Date(r.checked_in_at as string).toLocaleTimeString()}
+                                                            {new Date(
+                                                                r.checked_in_at as string
+                                                            ).toLocaleTimeString()}
                                                         </p>
                                                     )}
                                                 </div>
@@ -100,7 +108,9 @@ export default function LiveOpsCredentialsPage() {
                         </CardHeader>
                         <CardContent>
                             {scans.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-8">No recent scan activity</p>
+                                <p className="text-sm text-muted-foreground text-center py-8">
+                                    No recent scan activity
+                                </p>
                             ) : (
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
                                     {scans.map((s) => {
@@ -110,12 +120,16 @@ export default function LiveOpsCredentialsPage() {
                                             <div
                                                 key={s.id as string}
                                                 className={`flex items-center justify-between p-2 rounded-lg border ${
-                                                    isValid ? "bg-card border-border" : "bg-destructive/5 border-destructive/20"
+                                                    isValid
+                                                        ? "bg-card border-border"
+                                                        : "bg-destructive/5 border-destructive/20"
                                                 }`}
                                             >
                                                 <div>
                                                     <Badge
-                                                        variant={isValid ? "success" : "destructive"}
+                                                        variant={
+                                                            isValid ? "success" : "destructive"
+                                                        }
                                                         className="text-[9px]"
                                                     >
                                                         {result.replace("_", " ").toUpperCase()}
@@ -125,7 +139,9 @@ export default function LiveOpsCredentialsPage() {
                                                     </p>
                                                 </div>
                                                 <p className="text-[10px] text-muted-foreground">
-                                                    {new Date(s.scanned_at as string).toLocaleTimeString()}
+                                                    {new Date(
+                                                        s.scanned_at as string
+                                                    ).toLocaleTimeString()}
                                                 </p>
                                             </div>
                                         );

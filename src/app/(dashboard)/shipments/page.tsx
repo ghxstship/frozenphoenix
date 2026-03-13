@@ -18,16 +18,7 @@ import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { SHIPMENT_STATUS_CONFIG, SHIPMENT_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-    ArrowRight,
-    Calendar,
-    ChevronRight,
-    Loader2,
-    MapPin,
-    Package,
-    Plus,
-    Truck,
-} from "lucide-react";
+import { ArrowRight, Calendar, ChevronRight, MapPin, Package, Plus, Truck } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 
@@ -84,9 +75,7 @@ export default function ShipmentsPage() {
     const isLoading = loadingShipments || loadingLocations || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredShipments = shipments.filter((shipment) => {
@@ -169,7 +158,9 @@ export default function ShipmentsPage() {
                             searchQuery ? "Try adjusting your search" : "Create your first shipment"
                         }
                         action={
-                            !searchQuery ? { label: "New Shipment", onClick: openCreate } : undefined
+                            !searchQuery
+                                ? { label: "New Shipment", onClick: openCreate }
+                                : undefined
                         }
                     />
                 ) : (

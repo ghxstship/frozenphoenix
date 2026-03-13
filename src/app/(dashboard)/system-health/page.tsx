@@ -25,70 +25,31 @@ import { PermissionGate } from "@/components/permission-guard";
 import {
     useDomainEvents,
     useResilienceTargets,
+    useServiceHealthChecks,
     useSlaDefinitions,
 } from "@/lib/supabase/hooks-pages";
 
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";
 
-// Static service-health config — infrastructure monitoring has no DB table
-const SERVICES: {
+interface ServiceView {
     id: string;
     name: string;
     status: HealthStatus;
     latency: number;
     uptime: number;
     lastCheck: string;
-}[] = [
-    {
-        id: "1",
-        name: "Database (Supabase)",
-        status: "healthy",
-        latency: 12,
-        uptime: 99.97,
-        lastCheck: "2 min ago",
-    },
-    {
-        id: "2",
-        name: "Authentication",
-        status: "healthy",
-        latency: 45,
-        uptime: 99.99,
-        lastCheck: "1 min ago",
-    },
-    {
-        id: "3",
-        name: "Storage (CDN)",
-        status: "healthy",
-        latency: 8,
-        uptime: 99.95,
-        lastCheck: "3 min ago",
-    },
-    {
-        id: "4",
-        name: "Realtime (WebSocket)",
-        status: "healthy",
-        latency: 23,
-        uptime: 99.9,
-        lastCheck: "1 min ago",
-    },
-    {
-        id: "5",
-        name: "Edge Functions",
-        status: "healthy",
-        latency: 67,
-        uptime: 99.85,
-        lastCheck: "5 min ago",
-    },
-    {
-        id: "6",
-        name: "Email (SMTP)",
-        status: "healthy",
-        latency: 120,
-        uptime: 99.8,
-        lastCheck: "10 min ago",
-    },
-];
+}
+
+function formatLastChecked(iso: string): string {
+    if (!iso) return "unknown";
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.round(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.round(mins / 60);
+    return `${hours}h ago`;
+}
 
 const statusIcon = (status: HealthStatus) => {
     switch (status) {
@@ -153,12 +114,22 @@ export default function SystemHealthPage() {
     const { data: sbSlaDefs, isLoading: slaLoading } = useSlaDefinitions();
     const { data: sbResilience, isLoading: resLoading } = useResilienceTargets();
     const { data: sbEvents, isLoading: evtLoading } = useDomainEvents(20);
+    const { data: sbServices, isLoading: svcLoading } = useServiceHealthChecks();
 
-    const isLoading = slaLoading || resLoading || evtLoading;
+    const isLoading = slaLoading || resLoading || evtLoading || svcLoading;
 
     if (isLoading) {
         return <LoadingState />;
     }
+
+    const services: ServiceView[] = (sbServices ?? []).map((s: Record<string, unknown>) => ({
+        id: (s.id as string) ?? "",
+        name: (s.service_name as string) ?? "",
+        status: ((s.status as string) ?? "healthy") as HealthStatus,
+        latency: (s.latency_ms as number) ?? 0,
+        uptime: (s.uptime_pct as number) ?? 0,
+        lastCheck: formatLastChecked((s.last_checked_at as string) ?? ""),
+    }));
 
     type SlaView = { id: string; name: string; target: string; current: number; status: string };
     const slaMetrics: SlaView[] = (sbSlaDefs ?? []).map((s: Record<string, unknown>) => ({
@@ -213,11 +184,13 @@ export default function SystemHealthPage() {
         })
     );
 
-    const healthyCount = SERVICES.filter((s) => s.status === "healthy").length;
-    const avgLatency = Math.round(
-        SERVICES.reduce((sum, s) => sum + s.latency, 0) / SERVICES.length
-    );
-    const avgUptime = (SERVICES.reduce((sum, s) => sum + s.uptime, 0) / SERVICES.length).toFixed(2);
+    const healthyCount = services.filter((s) => s.status === "healthy").length;
+    const avgLatency = services.length
+        ? Math.round(services.reduce((sum, s) => sum + s.latency, 0) / services.length)
+        : 0;
+    const avgUptime = services.length
+        ? (services.reduce((sum, s) => sum + s.uptime, 0) / services.length).toFixed(2)
+        : "0.00";
     const activeAlerts = alerts.filter((a) => !a.acknowledged).length;
 
     return (
@@ -234,7 +207,7 @@ export default function SystemHealthPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Services"
-                        value={`${healthyCount}/${SERVICES.length}`}
+                        value={`${healthyCount}/${services.length}`}
                         icon={Activity}
                         description="All operational"
                     />
@@ -269,7 +242,10 @@ export default function SystemHealthPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {SERVICES.map((service) => (
+                                {services.length === 0 && (
+                                    <EmptyRow message="No services configured" />
+                                )}
+                                {services.map((service) => (
                                     <div
                                         key={service.id}
                                         className="flex items-center justify-between py-2 border-b border-border last:border-0"

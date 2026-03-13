@@ -16,7 +16,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
-import { Calendar, CheckCircle2, Clock, ExternalLink, Loader2, Shield, User } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, ExternalLink, Shield, User } from "lucide-react";
 
 type TabId = "details" | "chatter";
 const TAB_VALUES = ["details", "chatter"] as const;
@@ -55,9 +55,7 @@ export default function ApprovalDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!approval) {
@@ -144,7 +142,13 @@ export default function ApprovalDetailPage() {
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Approval", onClick: () => router.push(`/approvals/${entityId}/edit`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Edit Approval",
+                    onClick: () => router.push(`/approvals/${entityId}/edit`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

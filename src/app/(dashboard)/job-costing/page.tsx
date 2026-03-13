@@ -10,7 +10,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { BarChart3, Calculator, DollarSign, Loader2, TrendingDown, TrendingUp } from "lucide-react";
+import { BarChart3, Calculator, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { JobCostEntry, JobCostType } from "@/types/vendor-lifecycle";
 import { useJobCostEntries } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -52,9 +53,7 @@ export default function JobCostingPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const projects = [...new Set(entries.map((e) => e.projectName).filter(Boolean))] as string[];
@@ -261,53 +260,80 @@ export default function JobCostingPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((entry) => (
-                                        <tr
-                                            key={entry.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors"
-                                        >
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {entry.costDate}
-                                            </td>
-                                            <td className="p-3 font-medium">{entry.description}</td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {entry.projectName}
-                                            </td>
-                                            <td className="p-3">
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
-                                                    {COST_TYPE_CONFIG[entry.costType].label}
-                                                </span>
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {entry.vendorName || entry.crewMemberName || "—"}
-                                            </td>
-                                            <td className="p-3 text-right text-xs">
-                                                {entry.quantity} {entry.unit}
-                                            </td>
-                                            <td className="p-3 text-right text-xs">
-                                                {formatCurrency(entry.unitCost)}
-                                            </td>
-                                            <td className="p-3 text-right font-medium">
-                                                {formatCurrency(entry.totalCost)}
-                                            </td>
-                                            <td className="p-3 text-right text-xs text-muted-foreground">
-                                                {entry.budgetedAmount
-                                                    ? formatCurrency(entry.budgetedAmount)
-                                                    : "—"}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                                {entry.billable ? (
-                                                    <Badge variant="success" className="text-[9px]">
-                                                        Yes
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="default" className="text-[9px]">
-                                                        No
-                                                    </Badge>
-                                                )}
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={10} className="p-0">
+                                                <EmptyState
+                                                    icon={Calculator}
+                                                    title="No cost entries found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search"
+                                                            : "No cost entries recorded yet"
+                                                    }
+                                                    compact
+                                                />
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((entry) => (
+                                            <tr
+                                                key={entry.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors"
+                                            >
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {entry.costDate}
+                                                </td>
+                                                <td className="p-3 font-medium">
+                                                    {entry.description}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {entry.projectName}
+                                                </td>
+                                                <td className="p-3">
+                                                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
+                                                        {COST_TYPE_CONFIG[entry.costType].label}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {entry.vendorName ||
+                                                        entry.crewMemberName ||
+                                                        "—"}
+                                                </td>
+                                                <td className="p-3 text-right text-xs">
+                                                    {entry.quantity} {entry.unit}
+                                                </td>
+                                                <td className="p-3 text-right text-xs">
+                                                    {formatCurrency(entry.unitCost)}
+                                                </td>
+                                                <td className="p-3 text-right font-medium">
+                                                    {formatCurrency(entry.totalCost)}
+                                                </td>
+                                                <td className="p-3 text-right text-xs text-muted-foreground">
+                                                    {entry.budgetedAmount
+                                                        ? formatCurrency(entry.budgetedAmount)
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    {entry.billable ? (
+                                                        <Badge
+                                                            variant="success"
+                                                            className="text-[9px]"
+                                                        >
+                                                            Yes
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge
+                                                            variant="default"
+                                                            className="text-[9px]"
+                                                        >
+                                                            No
+                                                        </Badge>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                                 <tfoot>
                                     <tr className="border-t-2 border-border bg-muted/30 font-bold">

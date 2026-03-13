@@ -26,19 +26,21 @@ import {
     useCampaignChannels,
     useCampaignKpis,
     useCampaigns,
+    useUpdateCampaign,
 } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
+    Archive,
     BarChart3,
     CalendarDays,
     ChevronRight,
     DollarSign,
-    Filter,
     Megaphone,
     Plus,
     TrendingUp,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 const STATUS_ORDER: CampaignStatus[] = [
     "planning",
@@ -64,6 +66,7 @@ export default function CampaignsPage() {
         validValues: VIEW_MODES,
     });
     const { data: sbCampaigns, isLoading } = useCampaigns();
+    const updateCampaign = useUpdateCampaign();
 
     const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);
     const { data: sbChannels } = useCampaignChannels();
@@ -185,252 +188,298 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Card View */}
-                {view === "cards" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {filtered.map((campaign, i) => {
-                            const campaignChannels = getChannelsForCampaign(campaign.id);
-                            const campaignAssets = getAssetsForCampaign(campaign.id);
-                            const campaignKpis = getKpisForCampaign(campaign.id);
-                            const budgetPct = computeBudgetProgress(campaign);
+                {view === "cards" &&
+                    (filtered.length === 0 ? (
+                        <EmptyState
+                            icon={Megaphone}
+                            title="No campaigns found"
+                            description={
+                                search
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first campaign"
+                            }
+                            action={
+                                !search ? { label: "New Campaign", onClick: openCreate } : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {filtered.map((campaign, i) => {
+                                const campaignChannels = getChannelsForCampaign(campaign.id);
+                                const campaignAssets = getAssetsForCampaign(campaign.id);
+                                const campaignKpis = getKpisForCampaign(campaign.id);
+                                const budgetPct = computeBudgetProgress(campaign);
 
-                            return (
-                                <StaggerItem key={campaign.id} index={i} stagger="relaxed">
-                                    <Card className="hover:border-primary/30 transition-colors">
-                                        <CardContent className="pt-5">
-                                            {/* Header */}
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <h3 className="text-sm font-semibold truncate">
-                                                        {campaign.name}
-                                                    </h3>
-                                                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                                                        {campaign.description}
-                                                    </p>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        getStatusVariant(
-                                                            campaign.status
-                                                        ) as "default"
-                                                    }
-                                                    className="text-[9px] flex-shrink-0 ml-2"
-                                                >
-                                                    {getStatusLabel(campaign.status)}
-                                                </Badge>
-                                            </div>
-
-                                            {/* Budget Bar */}
-                                            <div className="mb-3">
-                                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                                                    <span>
-                                                        Budget:{" "}
-                                                        {formatCurrency(campaign.spent_budget)} /{" "}
-                                                        {formatCurrency(campaign.total_budget)}
-                                                    </span>
-                                                    <span>{budgetPct}%</span>
-                                                </div>
-                                                <ProgressBar
-                                                    value={Math.min(budgetPct, 100)}
-                                                    size="xs"
-                                                />
-                                            </div>
-
-                                            {/* Metrics Row */}
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                                                <div className="text-center p-1.5 rounded bg-secondary/30">
-                                                    <p className="text-xs font-semibold">
-                                                        {campaignChannels.length}
-                                                    </p>
-                                                    <p className="text-[9px] text-muted-foreground">
-                                                        Channels
-                                                    </p>
-                                                </div>
-                                                <div className="text-center p-1.5 rounded bg-secondary/30">
-                                                    <p className="text-xs font-semibold">
-                                                        {campaignAssets.length}
-                                                    </p>
-                                                    <p className="text-[9px] text-muted-foreground">
-                                                        Assets
-                                                    </p>
-                                                </div>
-                                                <div className="text-center p-1.5 rounded bg-secondary/30">
-                                                    <p className="text-xs font-semibold">
-                                                        {
-                                                            campaignAssets.filter(
-                                                                (a) =>
-                                                                    a.production_status ===
-                                                                        "approved" ||
-                                                                    a.production_status ===
-                                                                        "deployed"
-                                                            ).length
-                                                        }
-                                                    </p>
-                                                    <p className="text-[9px] text-muted-foreground">
-                                                        Approved
-                                                    </p>
-                                                </div>
-                                                <div className="text-center p-1.5 rounded bg-secondary/30">
-                                                    <p className="text-xs font-semibold">
-                                                        {campaignKpis.length}
-                                                    </p>
-                                                    <p className="text-[9px] text-muted-foreground">
-                                                        KPIs
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {/* Channels */}
-                                            {campaignChannels.length > 0 && (
-                                                <div className="flex gap-1 flex-wrap mb-3">
-                                                    {campaignChannels.map((ch) => (
-                                                        <Badge
-                                                            key={ch.id}
-                                                            variant="outline"
-                                                            className="text-[8px]"
+                                return (
+                                    <StaggerItem key={campaign.id} index={i} stagger="relaxed">
+                                        <Card className="hover:border-primary/30 transition-colors">
+                                            <CardContent className="pt-5">
+                                                {/* Header */}
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <h3 className="text-sm font-semibold truncate">
+                                                            {campaign.name}
+                                                        </h3>
+                                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                                            {campaign.description}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                                        <select
+                                                            className="h-6 rounded border border-input bg-background px-1.5 text-[9px] font-medium cursor-pointer"
+                                                            value={campaign.status}
+                                                            disabled={updateCampaign.isPending}
+                                                            onChange={(e) =>
+                                                                updateCampaign.mutate({
+                                                                    id: campaign.id,
+                                                                    status: e.target.value,
+                                                                })
+                                                            }
+                                                            onClick={(e) => e.stopPropagation()}
                                                         >
-                                                            {(ch.label ?? ch.channel_type)
-                                                                .replace("social_", "")
-                                                                .replace(/_/g, " ")}
-                                                        </Badge>
-                                                    ))}
+                                                            {STATUS_ORDER.map((s) => (
+                                                                <option key={s} value={s}>
+                                                                    {getStatusLabel(s)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        {campaign.status !== "archived" && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 w-6 p-0"
+                                                                title="Archive campaign"
+                                                                disabled={updateCampaign.isPending}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateCampaign.mutate({
+                                                                        id: campaign.id,
+                                                                        status: "archived",
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <Archive className="h-3 w-3" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
 
-                                            {/* Performance (if available) */}
-                                            {campaign.total_reach !== null && (
-                                                <div className="pt-3 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <p className="text-[9px] text-muted-foreground">
-                                                            Reach
-                                                        </p>
+                                                {/* Budget Bar */}
+                                                <div className="mb-3">
+                                                    <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                                                        <span>
+                                                            Budget:{" "}
+                                                            {formatCurrency(campaign.spent_budget)}{" "}
+                                                            /{" "}
+                                                            {formatCurrency(campaign.total_budget)}
+                                                        </span>
+                                                        <span>{budgetPct}%</span>
+                                                    </div>
+                                                    <ProgressBar
+                                                        value={Math.min(budgetPct, 100)}
+                                                        size="xs"
+                                                    />
+                                                </div>
+
+                                                {/* Metrics Row */}
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                                                    <div className="text-center p-1.5 rounded bg-secondary/30">
                                                         <p className="text-xs font-semibold">
-                                                            {formatCompactNumber(
-                                                                campaign.total_reach ?? 0
-                                                            )}
+                                                            {campaignChannels.length}
+                                                        </p>
+                                                        <p className="text-[9px] text-muted-foreground">
+                                                            Channels
                                                         </p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-[9px] text-muted-foreground">
-                                                            Impressions
-                                                        </p>
+                                                    <div className="text-center p-1.5 rounded bg-secondary/30">
                                                         <p className="text-xs font-semibold">
-                                                            {formatCompactNumber(
-                                                                campaign.total_impressions ?? 0
-                                                            )}
+                                                            {campaignAssets.length}
+                                                        </p>
+                                                        <p className="text-[9px] text-muted-foreground">
+                                                            Assets
                                                         </p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-[9px] text-muted-foreground">
-                                                            Engagements
-                                                        </p>
+                                                    <div className="text-center p-1.5 rounded bg-secondary/30">
                                                         <p className="text-xs font-semibold">
-                                                            {formatCompactNumber(
-                                                                campaign.total_engagements ?? 0
-                                                            )}
+                                                            {
+                                                                campaignAssets.filter(
+                                                                    (a) =>
+                                                                        a.production_status ===
+                                                                            "approved" ||
+                                                                        a.production_status ===
+                                                                            "deployed"
+                                                                ).length
+                                                            }
+                                                        </p>
+                                                        <p className="text-[9px] text-muted-foreground">
+                                                            Approved
                                                         </p>
                                                     </div>
-                                                    {campaign.roi !== null && (
+                                                    <div className="text-center p-1.5 rounded bg-secondary/30">
+                                                        <p className="text-xs font-semibold">
+                                                            {campaignKpis.length}
+                                                        </p>
+                                                        <p className="text-[9px] text-muted-foreground">
+                                                            KPIs
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Channels */}
+                                                {campaignChannels.length > 0 && (
+                                                    <div className="flex gap-1 flex-wrap mb-3">
+                                                        {campaignChannels.map((ch) => (
+                                                            <Badge
+                                                                key={ch.id}
+                                                                variant="outline"
+                                                                className="text-[8px]"
+                                                            >
+                                                                {(ch.label ?? ch.channel_type)
+                                                                    .replace("social_", "")
+                                                                    .replace(/_/g, " ")}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Performance (if available) */}
+                                                {campaign.total_reach !== null && (
+                                                    <div className="pt-3 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-2">
                                                         <div>
                                                             <p className="text-[9px] text-muted-foreground">
-                                                                ROI
+                                                                Reach
                                                             </p>
-                                                            <p className="text-xs font-semibold text-success">
-                                                                {campaign.roi}x
+                                                            <p className="text-xs font-semibold">
+                                                                {formatCompactNumber(
+                                                                    campaign.total_reach ?? 0
+                                                                )}
                                                             </p>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            )}
+                                                        <div>
+                                                            <p className="text-[9px] text-muted-foreground">
+                                                                Impressions
+                                                            </p>
+                                                            <p className="text-xs font-semibold">
+                                                                {formatCompactNumber(
+                                                                    campaign.total_impressions ?? 0
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] text-muted-foreground">
+                                                                Engagements
+                                                            </p>
+                                                            <p className="text-xs font-semibold">
+                                                                {formatCompactNumber(
+                                                                    campaign.total_engagements ?? 0
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                        {campaign.roi !== null && (
+                                                            <div>
+                                                                <p className="text-[9px] text-muted-foreground">
+                                                                    ROI
+                                                                </p>
+                                                                <p className="text-xs font-semibold text-success">
+                                                                    {campaign.roi}x
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
 
-                                            {/* KPI Progress (if available) */}
-                                            {campaignKpis.filter((k) => k.current_value !== null)
-                                                .length > 0 && (
-                                                <div className="pt-3 mt-3 border-t border-border">
-                                                    <OverlineText className="mb-1.5">
-                                                        KPI Progress
-                                                    </OverlineText>
-                                                    <div className="space-y-1.5">
-                                                        {campaignKpis
-                                                            .filter((k) => k.current_value !== null)
-                                                            .map((kpi) => {
-                                                                const progress = kpi.target_value
-                                                                    ? Math.min(
-                                                                          Math.round(
-                                                                              ((kpi.current_value ??
-                                                                                  0) /
-                                                                                  kpi.target_value) *
+                                                {/* KPI Progress (if available) */}
+                                                {campaignKpis.filter(
+                                                    (k) => k.current_value !== null
+                                                ).length > 0 && (
+                                                    <div className="pt-3 mt-3 border-t border-border">
+                                                        <OverlineText className="mb-1.5">
+                                                            KPI Progress
+                                                        </OverlineText>
+                                                        <div className="space-y-1.5">
+                                                            {campaignKpis
+                                                                .filter(
+                                                                    (k) => k.current_value !== null
+                                                                )
+                                                                .map((kpi) => {
+                                                                    const progress =
+                                                                        kpi.target_value
+                                                                            ? Math.min(
+                                                                                  Math.round(
+                                                                                      ((kpi.current_value ??
+                                                                                          0) /
+                                                                                          kpi.target_value) *
+                                                                                          100
+                                                                                  ),
                                                                                   100
-                                                                          ),
-                                                                          100
-                                                                      )
-                                                                    : 0;
-                                                                return (
-                                                                    <div key={kpi.id}>
-                                                                        <div className="flex justify-between text-[10px] mb-0.5">
-                                                                            <span className="text-muted-foreground">
-                                                                                {kpi.metric_name}
-                                                                            </span>
-                                                                            <span className="font-medium">
-                                                                                {kpi.current_value}{" "}
-                                                                                / {kpi.target_value}
-                                                                            </span>
+                                                                              )
+                                                                            : 0;
+                                                                    return (
+                                                                        <div key={kpi.id}>
+                                                                            <div className="flex justify-between text-[10px] mb-0.5">
+                                                                                <span className="text-muted-foreground">
+                                                                                    {
+                                                                                        kpi.metric_name
+                                                                                    }
+                                                                                </span>
+                                                                                <span className="font-medium">
+                                                                                    {
+                                                                                        kpi.current_value
+                                                                                    }{" "}
+                                                                                    /{" "}
+                                                                                    {
+                                                                                        kpi.target_value
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                            <ProgressBar
+                                                                                value={progress}
+                                                                                size="xs"
+                                                                            />
                                                                         </div>
-                                                                        <ProgressBar
-                                                                            value={progress}
-                                                                            size="xs"
-                                                                        />
-                                                                    </div>
-                                                                );
-                                                            })}
+                                                                    );
+                                                                })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Timeline */}
+                                                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        {campaign.tags.slice(0, 3).map((tag) => (
+                                                            <Chip key={tag} size="sm">
+                                                                {tag}
+                                                            </Chip>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                        {campaign.start_date && (
+                                                            <>
+                                                                <CalendarDays className="h-3 w-3" />
+                                                                {formatDate(
+                                                                    campaign.start_date,
+                                                                    "compact"
+                                                                )}
+                                                                {campaign.end_date && (
+                                                                    <>
+                                                                        <ChevronRight className="h-3 w-3" />
+                                                                        {formatDate(
+                                                                            campaign.end_date,
+                                                                            "compact"
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            {/* Timeline */}
-                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                                                <div className="flex gap-1 flex-wrap">
-                                                    {campaign.tags.slice(0, 3).map((tag) => (
-                                                        <Chip key={tag} size="sm">
-                                                            {tag}
-                                                        </Chip>
-                                                    ))}
-                                                </div>
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                                    {campaign.start_date && (
-                                                        <>
-                                                            <CalendarDays className="h-3 w-3" />
-                                                            {formatDate(
-                                                                campaign.start_date,
-                                                                "compact"
-                                                            )}
-                                                            {campaign.end_date && (
-                                                                <>
-                                                                    <ChevronRight className="h-3 w-3" />
-                                                                    {formatDate(
-                                                                        campaign.end_date,
-                                                                        "compact"
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                        {filtered.length === 0 && (
-                            <div className="col-span-full text-center py-12">
-                                <Filter className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-sm text-muted-foreground">
-                                    No campaigns match your filters
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    ))}
 
                 {/* Kanban View */}
                 {view === "kanban" && (

@@ -25,9 +25,17 @@ import {
     Star,
     TrendingUp,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useSurveyResponses, useSurveyTemplates } from "@/lib/supabase/hooks-v2-features";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_SURVEY_CONFIG } from "@/config/create-entity-configs";
+import {
+    useCreateSurveyTemplate,
+    useSurveyResponses,
+    useSurveyTemplates,
+    useUpdateSurveyTemplate,
+} from "@/lib/supabase/hooks-v2-features";
 
 type SurveysTab = "templates" | "responses" | "analytics";
 
@@ -99,6 +107,10 @@ export default function SurveysPage() {
         defaultValue: "templates",
         validValues: ["templates", "responses", "analytics"],
     });
+
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const createTemplate = useCreateSurveyTemplate();
+    const updateTemplate = useUpdateSurveyTemplate();
 
     const { data: sbTemplates, isLoading: loadingTemplates } = useSurveyTemplates();
     const { data: sbResponses, isLoading: loadingResponses } = useSurveyResponses();
@@ -212,7 +224,7 @@ export default function SurveysPage() {
                     title="Customer Satisfaction Surveys"
                     description="Build survey templates, collect responses, and analyze satisfaction metrics"
                 >
-                    <Button size="sm">
+                    <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> New Template
                     </Button>
                 </PageHeader>
@@ -256,157 +268,210 @@ export default function SurveysPage() {
 
                 {TAB_VALUES.map((tabId) => (
                     <TabPanel key={tabId} value={tabId} activeValue={activeTab}>
-                        {tabId === "templates" && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {filteredTemplates.map((template) => (
-                                    <StaggerItem
-                                        key={template.id}
-                                        index={enrichedTemplates.indexOf(template)}
-                                    >
-                                        <Card className="hover:border-primary/30 transition-colors">
-                                            <CardContent className="p-4">
-                                                <div className="flex items-start justify-between mb-3">
-                                                    <div>
-                                                        <h3 className="text-sm font-semibold">
-                                                            {template.name}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <Badge
-                                                                variant={TYPE_BADGE[template.type]}
-                                                                className="text-[10px]"
+                        {tabId === "templates" &&
+                            (filteredTemplates.length === 0 ? (
+                                <EmptyState
+                                    icon={ClipboardList}
+                                    title="No survey templates found"
+                                    description={
+                                        search
+                                            ? "Try adjusting your search"
+                                            : "No survey templates yet"
+                                    }
+                                />
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {filteredTemplates.map((template) => (
+                                        <StaggerItem
+                                            key={template.id}
+                                            index={enrichedTemplates.indexOf(template)}
+                                        >
+                                            <Card className="hover:border-primary/30 transition-colors">
+                                                <CardContent className="p-4">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div>
+                                                            <h3 className="text-sm font-semibold">
+                                                                {template.name}
+                                                            </h3>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <Badge
+                                                                    variant={
+                                                                        TYPE_BADGE[template.type]
+                                                                    }
+                                                                    className="text-[10px]"
+                                                                >
+                                                                    {template.type.toUpperCase()}
+                                                                </Badge>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {template.questionCount}{" "}
+                                                                    questions
+                                                                </span>
+                                                                {!template.isActive && (
+                                                                    <Badge
+                                                                        variant="ghost"
+                                                                        className="text-[10px]"
+                                                                    >
+                                                                        Inactive
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 w-7 p-0"
+                                                                title={
+                                                                    template.isActive
+                                                                        ? "Deactivate"
+                                                                        : "Activate"
+                                                                }
+                                                                onClick={() =>
+                                                                    updateTemplate.mutate({
+                                                                        id: template.id,
+                                                                        is_active:
+                                                                            !template.isActive,
+                                                                    })
+                                                                }
                                                             >
-                                                                {template.type.toUpperCase()}
-                                                            </Badge>
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {template.questionCount} questions
-                                                            </span>
-                                                            {!template.isActive && (
+                                                                <Send
+                                                                    className={`h-3.5 w-3.5 ${template.isActive ? "text-success" : "text-muted-foreground"}`}
+                                                                />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 w-7 p-0"
+                                                                title="Duplicate"
+                                                                onClick={() =>
+                                                                    createTemplate.mutate({
+                                                                        name: `${template.name} (Copy)`,
+                                                                        survey_type: template.type,
+                                                                        is_active: false,
+                                                                    })
+                                                                }
+                                                            >
+                                                                <Copy className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 w-7 p-0"
+                                                                title="Preview"
+                                                            >
+                                                                <Eye className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-3 mb-3">
+                                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                            <p className="text-lg font-bold">
+                                                                {template.responseCount}
+                                                            </p>
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                Responses
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                            <p className="text-lg font-bold">
+                                                                {template.averageRating.toFixed(1)}
+                                                            </p>
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                Avg Rating
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                            <p className="text-xs font-medium capitalize">
+                                                                {template.triggerOn.replace(
+                                                                    "_",
+                                                                    " "
+                                                                )}
+                                                            </p>
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                Trigger
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                        <span>
+                                                            Created {formatDate(template.createdAt)}
+                                                        </span>
+                                                        <StarRating
+                                                            rating={Math.round(
+                                                                template.averageRating
+                                                            )}
+                                                        />
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </StaggerItem>
+                                    ))}
+                                </div>
+                            ))}
+
+                        {tabId === "responses" &&
+                            (filteredResponses.length === 0 ? (
+                                <EmptyState
+                                    icon={MessageSquare}
+                                    title="No survey responses found"
+                                    description={
+                                        search
+                                            ? "Try adjusting your search"
+                                            : "No survey responses yet"
+                                    }
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {filteredResponses.map((response) => (
+                                        <StaggerItem
+                                            key={response.id}
+                                            index={responses.indexOf(response)}
+                                        >
+                                            <Card>
+                                                <CardContent className="p-4">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="text-sm font-semibold">
+                                                                    {response.respondentName}
+                                                                </h3>
                                                                 <Badge
                                                                     variant="ghost"
                                                                     className="text-[10px]"
                                                                 >
-                                                                    Inactive
+                                                                    {response.templateName}
                                                                 </Badge>
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                                {response.respondentEmail} ·{" "}
+                                                                {response.entityName}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <StarRating
+                                                                rating={response.overallRating}
+                                                            />
+                                                            {response.npsScore !== null && (
+                                                                <NpsIndicator
+                                                                    score={response.npsScore}
+                                                                />
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 w-7 p-0"
-                                                        >
-                                                            <Send className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 w-7 p-0"
-                                                        >
-                                                            <Copy className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 w-7 p-0"
-                                                        >
-                                                            <Eye className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-3 gap-3 mb-3">
-                                                    <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                                        <p className="text-lg font-bold">
-                                                            {template.responseCount}
+                                                    {response.comments && (
+                                                        <p className="text-xs bg-secondary/30 rounded-lg p-3 mt-2 italic">
+                                                            &ldquo;{response.comments}&rdquo;
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
-                                                            Responses
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                                        <p className="text-lg font-bold">
-                                                            {template.averageRating.toFixed(1)}
-                                                        </p>
-                                                        <p className="text-[10px] text-muted-foreground">
-                                                            Avg Rating
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                                        <p className="text-xs font-medium capitalize">
-                                                            {template.triggerOn.replace("_", " ")}
-                                                        </p>
-                                                        <p className="text-[10px] text-muted-foreground">
-                                                            Trigger
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                    <span>
-                                                        Created {formatDate(template.createdAt)}
-                                                    </span>
-                                                    <StarRating
-                                                        rating={Math.round(template.averageRating)}
-                                                    />
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </StaggerItem>
-                                ))}
-                            </div>
-                        )}
-
-                        {tabId === "responses" && (
-                            <div className="space-y-3">
-                                {filteredResponses.map((response) => (
-                                    <StaggerItem
-                                        key={response.id}
-                                        index={responses.indexOf(response)}
-                                    >
-                                        <Card>
-                                            <CardContent className="p-4">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className="text-sm font-semibold">
-                                                                {response.respondentName}
-                                                            </h3>
-                                                            <Badge
-                                                                variant="ghost"
-                                                                className="text-[10px]"
-                                                            >
-                                                                {response.templateName}
-                                                            </Badge>
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                                            {response.respondentEmail} ·{" "}
-                                                            {response.entityName}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <StarRating
-                                                            rating={response.overallRating}
-                                                        />
-                                                        {response.npsScore !== null && (
-                                                            <NpsIndicator
-                                                                score={response.npsScore}
-                                                            />
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                {response.comments && (
-                                                    <p className="text-xs bg-secondary/30 rounded-lg p-3 mt-2 italic">
-                                                        &ldquo;{response.comments}&rdquo;
+                                                    )}
+                                                    <p className="text-[10px] text-muted-foreground mt-2">
+                                                        {formatDate(response.submittedAt)}
                                                     </p>
-                                                )}
-                                                <p className="text-[10px] text-muted-foreground mt-2">
-                                                    {formatDate(response.submittedAt)}
-                                                </p>
-                                            </CardContent>
-                                        </Card>
-                                    </StaggerItem>
-                                ))}
-                            </div>
-                        )}
+                                                </CardContent>
+                                            </Card>
+                                        </StaggerItem>
+                                    ))}
+                                </div>
+                            ))}
 
                         {tabId === "analytics" && (
                             <div className="space-y-6">
@@ -571,6 +636,11 @@ export default function SurveysPage() {
                     </TabPanel>
                 ))}
             </div>
+            <CreateEntityDialog
+                config={CREATE_SURVEY_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

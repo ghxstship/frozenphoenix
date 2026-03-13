@@ -12,7 +12,8 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, ClipboardList, Clock, Loader2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardList, Clock, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import type { PurchaseRequisition, RequisitionStatus } from "@/types/governance";
 import { usePurchaseRequisitions } from "@/lib/supabase/hooks-pages";
@@ -60,9 +61,7 @@ export default function PurchaseRequisitionsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = reqs.filter((r) => {
@@ -144,49 +143,78 @@ export default function PurchaseRequisitionsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((r) => (
-                                        <tr
-                                            key={r.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-mono text-xs">{r.number}</td>
-                                            <td className="p-3">
-                                                <div className="font-medium text-xs">{r.title}</div>
-                                                {r.justification && (
-                                                    <div className="text-[10px] text-muted-foreground line-clamp-1">
-                                                        {r.justification}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3">
-                                                <Badge
-                                                    variant={
-                                                        URGENCY_VARIANTS[r.urgency] || "default"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={ClipboardList}
+                                                    title="No purchase requisitions found"
+                                                    description={
+                                                        search || statusFilter !== "all"
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Create your first requisition"
                                                     }
-                                                    className="text-[10px]"
-                                                >
-                                                    {r.urgency}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-3 font-medium text-xs">
-                                                {formatCurrency(r.estimated_cost)}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={r.status}
-                                                    className="text-[10px]"
+                                                    action={
+                                                        !search && statusFilter === "all"
+                                                            ? {
+                                                                  label: "New Requisition",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {r.needed_by
-                                                    ? new Date(r.needed_by).toLocaleDateString()
-                                                    : "—"}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {(r.line_items as unknown[]).length} items
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((r) => (
+                                            <tr
+                                                key={r.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-mono text-xs">
+                                                    {r.number}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="font-medium text-xs">
+                                                        {r.title}
+                                                    </div>
+                                                    {r.justification && (
+                                                        <div className="text-[10px] text-muted-foreground line-clamp-1">
+                                                            {r.justification}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3">
+                                                    <Badge
+                                                        variant={
+                                                            URGENCY_VARIANTS[r.urgency] || "default"
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {r.urgency}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-3 font-medium text-xs">
+                                                    {formatCurrency(r.estimated_cost)}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={r.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {r.needed_by
+                                                        ? new Date(r.needed_by).toLocaleDateString()
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {(r.line_items as unknown[]).length} items
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

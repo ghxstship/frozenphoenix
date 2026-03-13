@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -20,12 +20,13 @@ import {
     DollarSign,
     Download,
     FileText,
-    Loader2,
     PieChart,
     TrendingUp,
     Truck,
     Users,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { downloadCsvBlob, serializeCsv } from "@/lib/csv/csv-utils";
 
 interface ReportCard {
     id: string;
@@ -101,13 +102,135 @@ export default function ReportsPage() {
     const { data: sbCrew, isLoading: crewLoading } = useCrewMembers();
     const { data: sbVendors, isLoading: vendorsLoading } = useVendors();
 
-    const deals = sbDeals ?? [];
-    const projects = sbProjects ?? [];
-    const tasks = sbTasks ?? [];
-    const crew = sbCrew ?? [];
-    const vendors = sbVendors ?? [];
+    const deals = useMemo(() => sbDeals ?? [], [sbDeals]);
+    const projects = useMemo(() => sbProjects ?? [], [sbProjects]);
+    const tasks = useMemo(() => sbTasks ?? [], [sbTasks]);
+    const crew = useMemo(() => sbCrew ?? [], [sbCrew]);
+    const vendors = useMemo(() => sbVendors ?? [], [sbVendors]);
     const isLoading =
         dealsLoading || projectsLoading || tasksLoading || crewLoading || vendorsLoading;
+
+    const [selectedReport, setSelectedReport] = useState<string | null>(null);
+
+    const getReportData = useCallback(
+        (
+            reportId: string
+        ): { headers: { key: string; label: string }[]; rows: Record<string, unknown>[] } => {
+            switch (reportId) {
+                case "project-summary":
+                    return {
+                        headers: [
+                            { key: "name", label: "Project" },
+                            { key: "status", label: "Status" },
+                            { key: "budget_planned", label: "Budget Planned" },
+                            { key: "budget_actual", label: "Budget Actual" },
+                            { key: "variance", label: "Variance" },
+                        ],
+                        rows: projects.map((p: Record<string, unknown>) => ({
+                            name: p.name ?? "",
+                            status: getStatusLabel((p.status as string) ?? ""),
+                            budget_planned: (p.budget_planned as number) ?? 0,
+                            budget_actual: (p.budget_actual as number) ?? 0,
+                            variance:
+                                ((p.budget_planned as number) ?? 0) -
+                                ((p.budget_actual as number) ?? 0),
+                        })),
+                    };
+                case "budget-variance":
+                    return {
+                        headers: [
+                            { key: "name", label: "Project" },
+                            { key: "planned", label: "Planned" },
+                            { key: "actual", label: "Actual" },
+                            { key: "variance", label: "Variance" },
+                            { key: "pct", label: "% Utilized" },
+                        ],
+                        rows: projects.map((p: Record<string, unknown>) => {
+                            const planned = (p.budget_planned as number) ?? 0;
+                            const actual = (p.budget_actual as number) ?? 0;
+                            return {
+                                name: p.name ?? "",
+                                planned,
+                                actual,
+                                variance: planned - actual,
+                                pct: planned > 0 ? Math.round((actual / planned) * 100) : 0,
+                            };
+                        }),
+                    };
+                case "crew-utilization":
+                    return {
+                        headers: [
+                            { key: "name", label: "Crew Member" },
+                            { key: "role", label: "Role" },
+                            { key: "status", label: "Status" },
+                        ],
+                        rows: crew.map((c: Record<string, unknown>) => ({
+                            name: c.name ?? c.full_name ?? "",
+                            role: c.role ?? c.primary_role ?? "",
+                            status: c.status ?? "",
+                        })),
+                    };
+                case "vendor-spend":
+                    return {
+                        headers: [
+                            { key: "name", label: "Vendor" },
+                            { key: "status", label: "Status" },
+                            { key: "category", label: "Category" },
+                        ],
+                        rows: vendors.map((v: Record<string, unknown>) => ({
+                            name: v.name ?? v.company_name ?? "",
+                            status: v.status ?? "",
+                            category: v.category ?? "",
+                        })),
+                    };
+                case "pipeline-forecast":
+                    return {
+                        headers: [
+                            { key: "name", label: "Deal" },
+                            { key: "stage", label: "Stage" },
+                            { key: "value", label: "Value" },
+                            { key: "probability", label: "Probability %" },
+                            { key: "weighted", label: "Weighted Value" },
+                        ],
+                        rows: deals.map((d: Record<string, unknown>) => ({
+                            name: d.name ?? d.title ?? "",
+                            stage: d.stage ?? "",
+                            value: (d.value as number) ?? 0,
+                            probability: (d.probability as number) ?? 0,
+                            weighted:
+                                ((d.value as number) ?? 0) *
+                                (((d.probability as number) ?? 0) / 100),
+                        })),
+                    };
+                case "task-completion":
+                    return {
+                        headers: [
+                            { key: "title", label: "Task" },
+                            { key: "status", label: "Status" },
+                            { key: "priority", label: "Priority" },
+                        ],
+                        rows: tasks.map((t: Record<string, unknown>) => ({
+                            title: t.title ?? t.name ?? "",
+                            status: t.status ?? "",
+                            priority: t.priority ?? "",
+                        })),
+                    };
+                default:
+                    return { headers: [], rows: [] };
+            }
+        },
+        [projects, crew, vendors, deals, tasks]
+    );
+
+    const handleDownloadReport = useCallback(
+        (reportId: string) => {
+            const { headers, rows } = getReportData(reportId);
+            if (rows.length === 0) return;
+            const csv = serializeCsv(rows, headers);
+            downloadCsvBlob(csv, `${reportId}_${new Date().toISOString().split("T")[0]}.csv`);
+        },
+        [getReportData]
+    );
 
     // Calculate summary stats
     const totalPipelineValue = deals.reduce(
@@ -129,9 +252,7 @@ export default function ReportsPage() {
     const availableCrew = crew.filter((c) => c.status === "available").length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredReports =
@@ -238,47 +359,159 @@ export default function ReportsPage() {
                 />
 
                 {/* Report Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredReports.map((report, i) => {
-                        const Icon = report.icon;
-                        const category = categoryConfig[report.category];
+                {filteredReports.length === 0 ? (
+                    <EmptyState
+                        icon={FileText}
+                        title="No reports found"
+                        description="Try selecting a different category"
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredReports.map((report, i) => {
+                            const Icon = report.icon;
+                            const category = categoryConfig[report.category];
 
-                        return (
-                            <StaggerItem key={report.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardHeader className="pb-2">
-                                        <div className="flex items-start justify-between">
-                                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                <Icon className="h-5 w-5 text-primary" />
+                            return (
+                                <StaggerItem key={report.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                        <CardHeader className="pb-2">
+                                            <div className="flex items-start justify-between">
+                                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                    <Icon className="h-5 w-5 text-primary" />
+                                                </div>
+                                                <Badge
+                                                    variant={category.variant}
+                                                    className="text-[10px]"
+                                                >
+                                                    {category.label}
+                                                </Badge>
                                             </div>
-                                            <Badge
-                                                variant={category.variant}
-                                                className="text-[10px]"
-                                            >
-                                                {category.label}
+                                        </CardHeader>
+                                        <CardContent>
+                                            <h3 className="font-semibold mb-1">{report.title}</h3>
+                                            <p className="text-xs text-muted-foreground mb-4">
+                                                {report.description}
+                                            </p>
+                                            <div className="flex items-center justify-between">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        setSelectedReport(
+                                                            selectedReport === report.id
+                                                                ? null
+                                                                : report.id
+                                                        )
+                                                    }
+                                                >
+                                                    <BarChart3 className="h-4 w-4" />
+                                                    {selectedReport === report.id
+                                                        ? "Hide"
+                                                        : "View Report"}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleDownloadReport(report.id)}
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Selected Report Detail */}
+                {selectedReport &&
+                    (() => {
+                        const reportDef = REPORTS.find((r) => r.id === selectedReport);
+                        const { headers, rows } = getReportData(selectedReport);
+                        if (!reportDef || rows.length === 0) return null;
+                        return (
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <reportDef.icon className="h-4 w-4" />
+                                            {reportDef.title}
+                                        </CardTitle>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="ghost" className="text-[10px]">
+                                                {rows.length} rows
                                             </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <h3 className="font-semibold mb-1">{report.title}</h3>
-                                        <p className="text-xs text-muted-foreground mb-4">
-                                            {report.description}
-                                        </p>
-                                        <div className="flex items-center justify-between">
-                                            <Button size="sm" variant="ghost">
-                                                <BarChart3 className="h-4 w-4" />
-                                                View Report
-                                            </Button>
-                                            <Button size="sm" variant="ghost">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleDownloadReport(selectedReport)}
+                                            >
                                                 <Download className="h-4 w-4" />
+                                                Export CSV
                                             </Button>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0 overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b bg-muted/50">
+                                                {headers.map((h) => (
+                                                    <th
+                                                        key={h.key}
+                                                        className="text-left p-3 font-medium"
+                                                    >
+                                                        {h.label}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {rows.slice(0, 25).map((row, i) => (
+                                                <tr
+                                                    key={i}
+                                                    className="border-b hover:bg-secondary/30 transition-colors"
+                                                >
+                                                    {headers.map((h) => (
+                                                        <td
+                                                            key={h.key}
+                                                            className="p-3 tabular-nums"
+                                                        >
+                                                            {typeof row[h.key] === "number"
+                                                                ? h.key.includes("pct") ||
+                                                                  h.key.includes("probability")
+                                                                    ? `${row[h.key]}%`
+                                                                    : h.key.includes("budget") ||
+                                                                        h.key.includes(
+                                                                            "variance"
+                                                                        ) ||
+                                                                        h.key.includes("planned") ||
+                                                                        h.key.includes("actual") ||
+                                                                        h.key.includes("value") ||
+                                                                        h.key.includes("weighted")
+                                                                      ? formatCurrency(
+                                                                            row[h.key] as number
+                                                                        )
+                                                                      : String(row[h.key])
+                                                                : String(row[h.key] ?? "")}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    {rows.length > 25 && (
+                                        <p className="text-xs text-muted-foreground text-center py-3">
+                                            Showing 25 of {rows.length} rows. Export CSV for full
+                                            data.
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
                         );
-                    })}
-                </div>
+                    })()}
 
                 {/* Quick Charts */}
                 <div className="grid grid-cols-2 gap-4">

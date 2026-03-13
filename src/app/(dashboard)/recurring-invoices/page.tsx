@@ -13,6 +13,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import { Calendar, DollarSign, Pause, Play, Plus, RefreshCw } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { useRecurringInvoices, useUpdateRecurringInvoice } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
@@ -136,100 +137,119 @@ export default function RecurringInvoicesPage() {
                     />
                 </div>
 
-                <div className="space-y-3">
-                    {filtered.map((r) => (
-                        <Card
-                            key={r.id}
-                            className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                        >
-                            <CardContent className="py-4">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <p className="text-sm font-semibold">{r.title}</p>
-                                            <StatusBadge
-                                                status={r.status}
-                                                className="text-[10px]"
-                                            />
-                                            <Badge variant="ghost" className="text-[10px]">
-                                                {FREQ_LABELS[r.frequency]}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {r.client} · {r.project}
-                                        </p>
-                                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                            {r.nextDate && (
-                                                <span>
-                                                    Next:{" "}
-                                                    <strong className="text-foreground">
-                                                        {r.nextDate}
-                                                    </strong>
-                                                </span>
-                                            )}
-                                            <span>
-                                                Generated:{" "}
-                                                <strong className="text-foreground">
-                                                    {r.totalGenerated}
-                                                </strong>{" "}
-                                                invoices
-                                            </span>
-                                            {r.occurrencesLeft !== null &&
-                                                r.occurrencesLeft > 0 && (
-                                                    <span>{r.occurrencesLeft} remaining</span>
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={RefreshCw}
+                        title="No recurring invoices found"
+                        description={
+                            search
+                                ? "Try adjusting your search"
+                                : "Set up your first recurring invoice"
+                        }
+                        action={
+                            !search
+                                ? { label: "New Recurring Invoice", onClick: openCreate }
+                                : undefined
+                        }
+                    />
+                ) : (
+                    <div className="space-y-3">
+                        {filtered.map((r) => (
+                            <Card
+                                key={r.id}
+                                className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                            >
+                                <CardContent className="py-4">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-sm font-semibold">{r.title}</p>
+                                                <StatusBadge
+                                                    status={r.status}
+                                                    className="text-[10px]"
+                                                />
+                                                <Badge variant="ghost" className="text-[10px]">
+                                                    {FREQ_LABELS[r.frequency]}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {r.client} · {r.project}
+                                            </p>
+                                            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                                {r.nextDate && (
+                                                    <span>
+                                                        Next:{" "}
+                                                        <strong className="text-foreground">
+                                                            {r.nextDate}
+                                                        </strong>
+                                                    </span>
                                                 )}
+                                                <span>
+                                                    Generated:{" "}
+                                                    <strong className="text-foreground">
+                                                        {r.totalGenerated}
+                                                    </strong>{" "}
+                                                    invoices
+                                                </span>
+                                                {r.occurrencesLeft !== null &&
+                                                    r.occurrencesLeft > 0 && (
+                                                        <span>{r.occurrencesLeft} remaining</span>
+                                                    )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <div className="text-right">
+                                                <p className="text-lg font-bold">
+                                                    {formatCurrency(r.amount)}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    per{" "}
+                                                    {r.frequency === "monthly"
+                                                        ? "month"
+                                                        : r.frequency}
+                                                </p>
+                                            </div>
+                                            {r.status === "active" && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    title="Pause"
+                                                    disabled={updateRecurring.isPending}
+                                                    onClick={() =>
+                                                        updateRecurring.mutate({
+                                                            id: r.id,
+                                                            status: "paused",
+                                                        })
+                                                    }
+                                                >
+                                                    <Pause className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {r.status === "paused" && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    title="Resume"
+                                                    disabled={updateRecurring.isPending}
+                                                    onClick={() =>
+                                                        updateRecurring.mutate({
+                                                            id: r.id,
+                                                            status: "active",
+                                                        })
+                                                    }
+                                                >
+                                                    <Play className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 shrink-0">
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold">
-                                                {formatCurrency(r.amount)}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                per{" "}
-                                                {r.frequency === "monthly" ? "month" : r.frequency}
-                                            </p>
-                                        </div>
-                                        {r.status === "active" && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0"
-                                                title="Pause"
-                                                disabled={updateRecurring.isPending}
-                                                onClick={() =>
-                                                    updateRecurring.mutate({
-                                                        id: r.id,
-                                                        status: "paused",
-                                                    })
-                                                }
-                                            >
-                                                <Pause className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                        {r.status === "paused" && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0"
-                                                title="Resume"
-                                                disabled={updateRecurring.isPending}
-                                                onClick={() =>
-                                                    updateRecurring.mutate({
-                                                        id: r.id,
-                                                        status: "active",
-                                                    })
-                                                }
-                                            >
-                                                <Play className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
             <CreateEntityDialog
                 config={CREATE_RECURRING_INVOICE_CONFIG}

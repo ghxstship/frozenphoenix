@@ -16,7 +16,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { CheckSquare, ClipboardList, Loader2, ShieldCheck } from "lucide-react";
+import { CheckSquare, ClipboardList, ShieldCheck } from "lucide-react";
 
 type TabId = "overview" | "items" | "chatter";
 const TAB_VALUES = ["overview", "items", "chatter"] as const;
@@ -41,9 +41,7 @@ export default function ComplianceChecklistDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const cl = checklist as Record<string, unknown> | undefined;

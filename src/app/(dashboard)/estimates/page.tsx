@@ -29,7 +29,8 @@ import {
 import type { Estimate } from "@/types/vendor-lifecycle";
 import { useEstimates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
-import { Loader2 } from "lucide-react";
+import {} from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { EstimateStatus } from "@/types/vendor-lifecycle";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
@@ -75,9 +76,7 @@ export default function EstimatesPage() {
     const pendingCount = estimates.filter((e) => ["sent", "viewed"].includes(e.status)).length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -154,97 +153,111 @@ export default function EstimatesPage() {
                     </select>
                 </div>
 
-                {viewMode === "cards" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filtered.map((est, i) => (
-                            <StaggerItem key={est.id} index={i} stagger="relaxed">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[10px] font-mono text-muted-foreground">
-                                                        {est.number}
-                                                    </span>
+                {viewMode === "cards" &&
+                    (filtered.length === 0 ? (
+                        <EmptyState
+                            icon={FileSignature}
+                            title="No estimates found"
+                            description={
+                                search
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first estimate"
+                            }
+                            action={
+                                !search ? { label: "New Estimate", onClick: openCreate } : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map((est, i) => (
+                                <StaggerItem key={est.id} index={i} stagger="relaxed">
+                                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                                            {est.number}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-sm font-bold truncate">
+                                                        {est.title}
+                                                    </h3>
                                                 </div>
-                                                <h3 className="text-sm font-bold truncate">
-                                                    {est.title}
-                                                </h3>
+                                                <StatusBadge
+                                                    status={est.status}
+                                                    className="text-[10px] ml-2 shrink-0"
+                                                />
                                             </div>
-                                            <StatusBadge
-                                                status={est.status}
-                                                className="text-[10px] ml-2 shrink-0"
-                                            />
-                                        </div>
 
-                                        {est.companyName && (
-                                            <p className="text-xs text-muted-foreground mb-1">
-                                                {est.companyName}
-                                            </p>
-                                        )}
-                                        {est.contactName && (
-                                            <p className="text-[10px] text-muted-foreground mb-3">
-                                                {est.contactName}
-                                            </p>
-                                        )}
-
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="text-lg font-bold">
-                                                {formatCurrency(est.total)}
-                                            </span>
-                                            {est.discountPercent > 0 && (
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {est.discountPercent}% discount
-                                                </span>
+                                            {est.companyName && (
+                                                <p className="text-xs text-muted-foreground mb-1">
+                                                    {est.companyName}
+                                                </p>
                                             )}
-                                        </div>
+                                            {est.contactName && (
+                                                <p className="text-[10px] text-muted-foreground mb-3">
+                                                    {est.contactName}
+                                                </p>
+                                            )}
 
-                                        <div className="text-xs text-muted-foreground space-y-1">
-                                            <div className="flex items-center justify-between">
-                                                <span>{est.lineItems.length} line items</span>
-                                                {est.lineItems.some((li) => li.optional) && (
-                                                    <span>
-                                                        {
-                                                            est.lineItems.filter(
-                                                                (li) => li.optional
-                                                            ).length
-                                                        }{" "}
-                                                        optional
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-lg font-bold">
+                                                    {formatCurrency(est.total)}
+                                                </span>
+                                                {est.discountPercent > 0 && (
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {est.discountPercent}% discount
                                                     </span>
                                                 )}
                                             </div>
-                                            {est.validUntil && (
-                                                <div className="flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    <span>Valid until {est.validUntil}</span>
-                                                </div>
-                                            )}
-                                        </div>
 
-                                        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
-                                            {est.sentAt && (
-                                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                    <Send className="h-3 w-3" /> Sent
-                                                </span>
-                                            )}
-                                            {est.viewedAt && (
-                                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                    <Eye className="h-3 w-3" /> Viewed
-                                                </span>
-                                            )}
-                                            {est.signedBy && (
-                                                <span className="text-[10px] text-success flex items-center gap-1">
-                                                    <CheckCircle2 className="h-3 w-3" /> Signed by{" "}
-                                                    {est.signedBy}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </StaggerItem>
-                        ))}
-                    </div>
-                )}
+                                            <div className="text-xs text-muted-foreground space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span>{est.lineItems.length} line items</span>
+                                                    {est.lineItems.some((li) => li.optional) && (
+                                                        <span>
+                                                            {
+                                                                est.lineItems.filter(
+                                                                    (li) => li.optional
+                                                                ).length
+                                                            }{" "}
+                                                            optional
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {est.validUntil && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>Valid until {est.validUntil}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
+                                                {est.sentAt && (
+                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                        <Send className="h-3 w-3" /> Sent
+                                                    </span>
+                                                )}
+                                                {est.viewedAt && (
+                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                        <Eye className="h-3 w-3" /> Viewed
+                                                    </span>
+                                                )}
+                                                {est.signedBy && (
+                                                    <span className="text-[10px] text-success flex items-center gap-1">
+                                                        <CheckCircle2 className="h-3 w-3" /> Signed
+                                                        by {est.signedBy}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    ))}
 
                 {viewMode === "table" && (
                     <Card>
@@ -265,35 +278,62 @@ export default function EstimatesPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filtered.map((est) => (
-                                            <tr
-                                                key={est.id}
-                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-3 font-mono text-xs">
-                                                    {est.number}
-                                                </td>
-                                                <td className="p-3 font-medium">{est.title}</td>
-                                                <td className="p-3 text-muted-foreground">
-                                                    {est.companyName || "—"}
-                                                </td>
-                                                <td className="p-3">
-                                                    <StatusBadge
-                                                        status={est.status}
-                                                        className="text-[10px]"
+                                        {filtered.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7} className="p-0">
+                                                    <EmptyState
+                                                        icon={FileSignature}
+                                                        title="No estimates found"
+                                                        description={
+                                                            search
+                                                                ? "Try adjusting your search or filters"
+                                                                : "Create your first estimate"
+                                                        }
+                                                        action={
+                                                            !search
+                                                                ? {
+                                                                      label: "New Estimate",
+                                                                      onClick: openCreate,
+                                                                  }
+                                                                : undefined
+                                                        }
+                                                        compact
                                                     />
                                                 </td>
-                                                <td className="p-3 text-right font-medium">
-                                                    {formatCurrency(est.total)}
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {est.validUntil || "—"}
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {new Date(est.createdAt).toLocaleDateString()}
-                                                </td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            filtered.map((est) => (
+                                                <tr
+                                                    key={est.id}
+                                                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-3 font-mono text-xs">
+                                                        {est.number}
+                                                    </td>
+                                                    <td className="p-3 font-medium">{est.title}</td>
+                                                    <td className="p-3 text-muted-foreground">
+                                                        {est.companyName || "—"}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <StatusBadge
+                                                            status={est.status}
+                                                            className="text-[10px]"
+                                                        />
+                                                    </td>
+                                                    <td className="p-3 text-right font-medium">
+                                                        {formatCurrency(est.total)}
+                                                    </td>
+                                                    <td className="p-3 text-xs text-muted-foreground">
+                                                        {est.validUntil || "—"}
+                                                    </td>
+                                                    <td className="p-3 text-xs text-muted-foreground">
+                                                        {new Date(
+                                                            est.createdAt
+                                                        ).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

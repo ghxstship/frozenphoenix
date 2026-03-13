@@ -12,7 +12,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/locale";
-import { Building2, Loader2, Mail, MapPin, Phone, User } from "lucide-react";
+import { Building2, Mail, MapPin, Phone, User } from "lucide-react";
 
 type TabId = "overview" | "contacts" | "chatter";
 const TAB_VALUES = ["overview", "contacts", "chatter"] as const;
@@ -37,9 +37,7 @@ export default function AccountDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const a = account as Record<string, unknown> | undefined;

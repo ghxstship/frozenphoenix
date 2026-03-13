@@ -20,6 +20,7 @@ import {
     ShieldCheck,
     XCircle,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { ComplianceRequirement } from "@/types/vendor-lifecycle";
 import { useComplianceRequirements, useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -200,69 +201,89 @@ export default function VendorCompliancePage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((doc) => {
-                                        const days = daysUntilExpiry(doc.expiryDate);
-                                        return (
-                                            <tr
-                                                key={doc.id}
-                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-3 font-medium">
-                                                    {vendorNames[doc.vendorId] || doc.vendorId}
-                                                </td>
-                                                <td className="p-3">{doc.docName}</td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {DOC_TYPE_LABELS[doc.docType] || doc.docType}
-                                                </td>
-                                                <td className="p-3">
-                                                    <StatusBadge
-                                                        status={doc.status}
-                                                        className="text-[10px]"
-                                                    />
-                                                </td>
-                                                <td className="p-3">
-                                                    {doc.expiryDate ? (
-                                                        <div className="text-xs">
-                                                            <span>
-                                                                {new Date(
-                                                                    doc.expiryDate
-                                                                ).toLocaleDateString()}
-                                                            </span>
-                                                            {days !== null &&
-                                                                days <= 30 &&
-                                                                days > 0 && (
-                                                                    <span className="text-warning ml-1">
-                                                                        ({days}d)
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={FileText}
+                                                    title="No compliance documents found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search or filters"
+                                                            : "No compliance documents submitted yet"
+                                                    }
+                                                    compact
+                                                />
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filtered.map((doc) => {
+                                            const days = daysUntilExpiry(doc.expiryDate);
+                                            return (
+                                                <tr
+                                                    key={doc.id}
+                                                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-3 font-medium">
+                                                        {vendorNames[doc.vendorId] || doc.vendorId}
+                                                    </td>
+                                                    <td className="p-3">{doc.docName}</td>
+                                                    <td className="p-3 text-xs text-muted-foreground">
+                                                        {DOC_TYPE_LABELS[doc.docType] ||
+                                                            doc.docType}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <StatusBadge
+                                                            status={doc.status}
+                                                            className="text-[10px]"
+                                                        />
+                                                    </td>
+                                                    <td className="p-3">
+                                                        {doc.expiryDate ? (
+                                                            <div className="text-xs">
+                                                                <span>
+                                                                    {new Date(
+                                                                        doc.expiryDate
+                                                                    ).toLocaleDateString()}
+                                                                </span>
+                                                                {days !== null &&
+                                                                    days <= 30 &&
+                                                                    days > 0 && (
+                                                                        <span className="text-warning ml-1">
+                                                                            ({days}d)
+                                                                        </span>
+                                                                    )}
+                                                                {days !== null && days <= 0 && (
+                                                                    <span className="text-destructive ml-1">
+                                                                        (Expired)
                                                                     </span>
                                                                 )}
-                                                            {days !== null && days <= 0 && (
-                                                                <span className="text-destructive ml-1">
-                                                                    (Expired)
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            N/A
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="p-3 text-xs">
-                                                    {doc.coverageAmount
-                                                        ? `$${doc.coverageAmount.toLocaleString()}`
-                                                        : "—"}
-                                                    {doc.carrierName && (
-                                                        <span className="text-muted-foreground ml-1">
-                                                            ({doc.carrierName})
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {new Date(doc.submittedAt).toLocaleDateString()}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                N/A
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-3 text-xs">
+                                                        {doc.coverageAmount
+                                                            ? `$${doc.coverageAmount.toLocaleString()}`
+                                                            : "—"}
+                                                        {doc.carrierName && (
+                                                            <span className="text-muted-foreground ml-1">
+                                                                ({doc.carrierName})
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-3 text-xs text-muted-foreground">
+                                                        {new Date(
+                                                            doc.submittedAt
+                                                        ).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -277,44 +298,57 @@ export default function VendorCompliancePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {requirements.map((req) => (
-                                <div
-                                    key={req.id}
-                                    className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                                >
-                                    <div className="flex items-start justify-between mb-1">
-                                        <h4 className="text-sm font-medium">{req.name}</h4>
-                                        {req.isRequired && (
-                                            <Badge variant="destructive" className="text-[9px]">
-                                                Required
-                                            </Badge>
-                                        )}
+                        {requirements.length === 0 ? (
+                            <EmptyState
+                                icon={ShieldCheck}
+                                title="No compliance requirements"
+                                description="No compliance requirements configured yet"
+                                compact
+                            />
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {requirements.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                                    >
+                                        <div className="flex items-start justify-between mb-1">
+                                            <h4 className="text-sm font-medium">{req.name}</h4>
+                                            {req.isRequired && (
+                                                <Badge variant="destructive" className="text-[9px]">
+                                                    Required
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                            {req.description}
+                                        </p>
+                                        <div className="flex flex-wrap gap-1">
+                                            {req.appliesToVendorTypes.map((vt) => (
+                                                <span
+                                                    key={vt}
+                                                    className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                                                >
+                                                    {vt.replace("_", " ")}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                                            {req.hasExpiry && (
+                                                <span>
+                                                    Expires · {req.expiryWarningDays}d warning
+                                                </span>
+                                            )}
+                                            {req.autoSuspendOnExpiry && (
+                                                <span className="text-destructive">
+                                                    Auto-suspend
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                        {req.description}
-                                    </p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {req.appliesToVendorTypes.map((vt) => (
-                                            <span
-                                                key={vt}
-                                                className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-                                            >
-                                                {vt.replace("_", " ")}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                                        {req.hasExpiry && (
-                                            <span>Expires · {req.expiryWarningDays}d warning</span>
-                                        )}
-                                        {req.autoSuspendOnExpiry && (
-                                            <span className="text-destructive">Auto-suspend</span>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

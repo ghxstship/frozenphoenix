@@ -8,9 +8,11 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
-import { CheckCircle2, Clock, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { Button } from "@/components/ui/button";
 import type { BudgetApproval } from "@/types/governance";
-import { useBudgetApprovals } from "@/lib/supabase/hooks-pages";
+import { useBudgetApprovals, useUpdateBudgetApproval } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import type { ApprovalStatus } from "@/types/governance";
@@ -29,6 +31,7 @@ export default function BudgetApprovalsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: sbApprovals, isLoading } = useBudgetApprovals();
+    const updateApproval = useUpdateBudgetApproval();
 
     const approvals = (sbApprovals ?? []) as BudgetApproval[];
 
@@ -49,9 +52,7 @@ export default function BudgetApprovalsPage() {
         .reduce((sum, a) => sum + a.amount, 0);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -114,47 +115,105 @@ export default function BudgetApprovalsPage() {
                                         <th className="text-left p-3 font-medium">Status</th>
                                         <th className="text-left p-3 font-medium">Requested</th>
                                         <th className="text-left p-3 font-medium">Approved</th>
+                                        <th className="text-left p-3 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((a) => (
-                                        <tr
-                                            key={a.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3">
-                                                <div className="font-medium text-xs">
-                                                    {a.entity_type}
-                                                </div>
-                                                <div className="text-[10px] text-muted-foreground">
-                                                    {a.entity_id}
-                                                </div>
-                                            </td>
-                                            <td className="p-3 font-medium">
-                                                {formatCurrency(a.amount)}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {a.threshold_rule || "—"}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                Level {a.approval_level}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={a.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={ShieldCheck}
+                                                    title="No budget approvals found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search"
+                                                            : "No budget approvals yet"
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(a.requested_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {a.approved_at
-                                                    ? new Date(a.approved_at).toLocaleDateString()
-                                                    : "—"}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((a) => (
+                                            <tr
+                                                key={a.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3">
+                                                    <div className="font-medium text-xs">
+                                                        {a.entity_type}
+                                                    </div>
+                                                    <div className="text-[10px] text-muted-foreground">
+                                                        {a.entity_id}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 font-medium">
+                                                    {formatCurrency(a.amount)}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {a.threshold_rule || "—"}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    Level {a.approval_level}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={a.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(a.requested_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {a.approved_at
+                                                        ? new Date(
+                                                              a.approved_at
+                                                          ).toLocaleDateString()
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-3">
+                                                    {a.status === "pending" && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 text-xs text-success border-success/30 hover:bg-success/10"
+                                                                disabled={updateApproval.isPending}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateApproval.mutate({
+                                                                        id: a.id,
+                                                                        status: "approved",
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <CheckCircle2 className="h-3 w-3" />
+                                                                Approve
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                                                                disabled={updateApproval.isPending}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateApproval.mutate({
+                                                                        id: a.id,
+                                                                        status: "rejected",
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <XCircle className="h-3 w-3" />
+                                                                Reject
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

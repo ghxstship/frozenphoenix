@@ -12,7 +12,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CERTIFICATION_CONFIG } from "@/config/create-entity-configs";
-import { BadgeCheck, CheckCircle2, Clock, Loader2, Plus, XCircle } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Clock, Plus, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import type { AssetCertification } from "@/types/governance";
 import { useCertifications } from "@/lib/supabase/hooks-pages";
@@ -49,9 +50,7 @@ export default function CertificationsPage() {
     const expired = certs.filter((c) => c.status === "expired" || c.status === "failed").length;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -118,44 +117,73 @@ export default function CertificationsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((c) => (
-                                        <tr
-                                            key={c.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-medium text-xs">
-                                                {c.asset_id}
-                                            </td>
-                                            <td className="p-3">
-                                                <div className="text-xs font-medium">{c.title}</div>
-                                                {c.cert_number && (
-                                                    <div className="text-[10px] text-muted-foreground">
-                                                        {c.cert_number}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {CERT_TYPE_LABELS[c.cert_type] || c.cert_type}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {c.issued_by}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={c.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={BadgeCheck}
+                                                    title="No certifications found"
+                                                    description={
+                                                        search || statusFilter !== "all"
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Add your first certification"
+                                                    }
+                                                    action={
+                                                        !search && statusFilter === "all"
+                                                            ? {
+                                                                  label: "Add Certification",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(c.issued_date).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {c.expiry_date
-                                                    ? new Date(c.expiry_date).toLocaleDateString()
-                                                    : "—"}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((c) => (
+                                            <tr
+                                                key={c.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-medium text-xs">
+                                                    {c.asset_id}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="text-xs font-medium">
+                                                        {c.title}
+                                                    </div>
+                                                    {c.cert_number && (
+                                                        <div className="text-[10px] text-muted-foreground">
+                                                            {c.cert_number}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {CERT_TYPE_LABELS[c.cert_type] || c.cert_type}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {c.issued_by}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={c.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(c.issued_date).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {c.expiry_date
+                                                        ? new Date(
+                                                              c.expiry_date
+                                                          ).toLocaleDateString()
+                                                        : "—"}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

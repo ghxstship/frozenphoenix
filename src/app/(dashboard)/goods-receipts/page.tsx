@@ -11,14 +11,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
-import {
-    AlertTriangle,
-    CheckCircle2,
-    HardDriveDownload,
-    Loader2,
-    Package,
-    Plus,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, HardDriveDownload, Package, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { GoodsReceipt, GoodsReceiptStatus } from "@/types/governance";
 import { useGoodsReceipts } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -54,9 +48,7 @@ export default function GoodsReceiptsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = receipts.filter((r) => {
@@ -132,44 +124,73 @@ export default function GoodsReceiptsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((r) => (
-                                        <tr
-                                            key={r.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3 font-mono font-medium text-xs">
-                                                {r.receipt_number}
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {r.purchase_order_id}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {r.delivery_location || "—"}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={r.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-0">
+                                                <EmptyState
+                                                    icon={Package}
+                                                    title="No goods receipts found"
+                                                    description={
+                                                        search
+                                                            ? "Try adjusting your search"
+                                                            : "Create your first goods receipt"
+                                                    }
+                                                    action={
+                                                        !search
+                                                            ? {
+                                                                  label: "New Receipt",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {new Date(r.received_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-3 text-xs">
-                                                {(r.line_items as unknown[]).length} items
-                                            </td>
-                                            <td className="p-3 text-xs max-w-[200px] truncate">
-                                                {r.discrepancies || "None"}
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((r) => (
+                                            <tr
+                                                key={r.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3 font-mono font-medium text-xs">
+                                                    {r.receipt_number}
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {r.purchase_order_id}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {r.delivery_location || "—"}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={r.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {new Date(r.received_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {(r.line_items as unknown[]).length} items
+                                                </td>
+                                                <td className="p-3 text-xs max-w-[200px] truncate">
+                                                    {r.discrepancies || "None"}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_GOODS_RECEIPT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_GOODS_RECEIPT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

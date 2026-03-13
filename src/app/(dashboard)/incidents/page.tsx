@@ -21,7 +21,7 @@ import {
     INCIDENT_TYPE_CONFIG,
 } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
-import { AlertTriangle, ChevronRight, Clock, Loader2, MapPin, Plus, Shield } from "lucide-react";
+import { AlertTriangle, ChevronRight, Clock, MapPin, Plus, Shield } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 
@@ -74,9 +74,7 @@ export default function IncidentsPage() {
     const isLoading = loadingIncidents || loadingLocations || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredIncidents = incidents.filter((incident) => {

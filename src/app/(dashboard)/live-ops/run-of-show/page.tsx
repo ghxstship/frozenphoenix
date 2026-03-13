@@ -11,12 +11,13 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { SearchInput } from "@/components/ui/search-input";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { CheckCircle2, Clock, Megaphone, Play, Plus } from "lucide-react";
-import { useRosCues } from "@/lib/supabase/hooks-live-ops";
+import { useRosCues, useUpdateRosCue } from "@/lib/supabase/hooks-live-ops";
 
 export default function RunOfShowPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const { data: cues, isLoading } = useRosCues();
+    const updateCue = useUpdateRosCue();
 
     if (isLoading) return <LoadingState />;
 
@@ -115,25 +116,99 @@ export default function RunOfShowPage() {
                                         </div>
                                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
                                             <span>{cue.department ?? ""}</span>
-                                            {cue.responsible_id && <span>{cue.responsible_id}</span>}
+                                            {cue.responsible_id && (
+                                                <span>{cue.responsible_id}</span>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm shrink-0">
+                                    <div className="flex items-center gap-2 text-sm shrink-0">
                                         {cue.scheduled_time && (
-                                            <div className="text-right">
-                                                <p className="font-medium">{new Date(cue.scheduled_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                                            <div className="text-right mr-2">
+                                                <p className="font-medium">
+                                                    {new Date(
+                                                        cue.scheduled_time
+                                                    ).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </p>
                                                 <p className="text-[10px] text-muted-foreground">
                                                     scheduled
                                                 </p>
                                             </div>
                                         )}
                                         {cue.actual_time && (
-                                            <div className="text-right">
-                                                <p className="font-medium">{new Date(cue.actual_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                                            <div className="text-right mr-2">
+                                                <p className="font-medium">
+                                                    {new Date(cue.actual_time).toLocaleTimeString(
+                                                        [],
+                                                        { hour: "2-digit", minute: "2-digit" }
+                                                    )}
+                                                </p>
                                                 <p className="text-[10px] text-muted-foreground">
                                                     actual
                                                 </p>
                                             </div>
+                                        )}
+                                        {(cue.status === "pending" || cue.status === "standby") && (
+                                            <Button
+                                                size="sm"
+                                                variant="default"
+                                                disabled={updateCue.isPending}
+                                                onClick={() =>
+                                                    updateCue.mutate({
+                                                        id: cue.id,
+                                                        status: "in_progress",
+                                                        actual_time: new Date().toISOString(),
+                                                    })
+                                                }
+                                            >
+                                                <Play className="h-3 w-3" /> Go
+                                            </Button>
+                                        )}
+                                        {cue.status === "in_progress" && (
+                                            <Button
+                                                size="sm"
+                                                variant="default"
+                                                disabled={updateCue.isPending}
+                                                onClick={() =>
+                                                    updateCue.mutate({
+                                                        id: cue.id,
+                                                        status: "completed",
+                                                    })
+                                                }
+                                            >
+                                                <CheckCircle2 className="h-3 w-3" /> Complete
+                                            </Button>
+                                        )}
+                                        {(cue.status === "pending" ||
+                                            cue.status === "standby" ||
+                                            cue.status === "in_progress") && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                disabled={updateCue.isPending}
+                                                onClick={() =>
+                                                    updateCue.mutate({ id: cue.id, status: "held" })
+                                                }
+                                            >
+                                                Hold
+                                            </Button>
+                                        )}
+                                        {cue.status === "held" && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                disabled={updateCue.isPending}
+                                                onClick={() =>
+                                                    updateCue.mutate({
+                                                        id: cue.id,
+                                                        status: "standby",
+                                                    })
+                                                }
+                                            >
+                                                Resume
+                                            </Button>
                                         )}
                                     </div>
                                 </div>

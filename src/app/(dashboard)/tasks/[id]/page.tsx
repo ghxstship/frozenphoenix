@@ -17,16 +17,7 @@ import { useDeleteTask, useProjects, useTasks, useUpdateTask } from "@/lib/supab
 import { useTask } from "@/lib/supabase/hooks-pages";
 import { FABRICATION_STATUS_MAP, PROJECT_PHASE_MAP } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-    CheckSquare,
-    Clock,
-    DollarSign,
-    Edit,
-    Link2,
-    Loader2,
-    MessageSquare,
-    User,
-} from "lucide-react";
+import { CheckSquare, Clock, DollarSign, Edit, Link2, MessageSquare, User } from "lucide-react";
 
 type TabId = "overview" | "subtasks" | "comments" | "chatter";
 const TAB_VALUES = ["overview", "subtasks", "comments", "chatter"] as const;
@@ -85,9 +76,7 @@ export default function TaskDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!task) {
@@ -198,7 +187,10 @@ export default function TaskDetailPage() {
                     label: updateTask.isPending ? "Completing..." : "Mark Complete",
                     onClick: handleMarkComplete,
                 },
-                { label: "Duplicate Task", onClick: () => router.push(`/tasks/new?duplicateFrom=${taskId}`) },
+                {
+                    label: "Duplicate Task",
+                    onClick: () => router.push(`/tasks/new?duplicateFrom=${taskId}`),
+                },
                 {
                     label: deleteTask.isPending ? "Deleting..." : "Delete Task",
                     onClick: handleDeleteTask,
@@ -311,14 +303,22 @@ export default function TaskDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Subtasks</CardTitle>
-                        <Button size="sm" onClick={() => router.push(`/tasks/new?parentId=${taskId}`)}>Add Subtask</Button>
+                        <Button
+                            size="sm"
+                            onClick={() => router.push(`/tasks/new?parentId=${taskId}`)}
+                        >
+                            Add Subtask
+                        </Button>
                     </CardHeader>
                     <CardContent>
                         <EmptyState
                             icon={CheckSquare}
                             title="No subtasks"
                             description="Break this task into smaller subtasks"
-                            action={{ label: "Add Subtask", onClick: () => router.push(`/tasks/new?parentId=${taskId}`) }}
+                            action={{
+                                label: "Add Subtask",
+                                onClick: () => router.push(`/tasks/new?parentId=${taskId}`),
+                            }}
                         />
                     </CardContent>
                 </Card>

@@ -22,6 +22,7 @@ import {
     Tag,
     Users,
 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useCreateProjectTemplate, useProjectTemplates } from "@/lib/supabase/hooks-v2-features";
@@ -130,119 +131,138 @@ export default function ProjectTemplatesPage() {
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filtered.map((template) => (
-                            <Card
-                                key={template.id}
-                                className="hover:border-primary/30 transition-colors"
-                            >
-                                <CardContent className="p-5 space-y-4">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <Badge variant="info" className="text-[10px]">
-                                                {template.category}
-                                            </Badge>
-                                            <span className="text-[10px] text-muted-foreground">
-                                                Used {template.usageCount}x
-                                            </span>
-                                        </div>
-                                        <h3 className="text-sm font-semibold mt-2">
-                                            {template.name}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                            {template.description}
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <CheckSquare className="h-3 w-3 text-muted-foreground" />
-                                                <span className="text-sm font-bold">
-                                                    {template.taskCount}
+                    {filtered.length === 0 ? (
+                        <EmptyState
+                            icon={Layout}
+                            title="No templates found"
+                            description={
+                                search
+                                    ? "Try adjusting your search"
+                                    : "Create your first project template"
+                            }
+                            action={
+                                !search ? { label: "New Template", onClick: openCreate } : undefined
+                            }
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map((template) => (
+                                <Card
+                                    key={template.id}
+                                    className="hover:border-primary/30 transition-colors"
+                                >
+                                    <CardContent className="p-5 space-y-4">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <Badge variant="info" className="text-[10px]">
+                                                    {template.category}
+                                                </Badge>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Used {template.usageCount}x
                                                 </span>
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Tasks
+                                            <h3 className="text-sm font-semibold mt-2">
+                                                {template.name}
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                                {template.description}
                                             </p>
                                         </div>
-                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <FolderPlus className="h-3 w-3 text-muted-foreground" />
-                                                <span className="text-sm font-bold">
-                                                    {template.milestoneCount}
-                                                </span>
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Milestones
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-2 rounded-lg bg-secondary/30">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <Users className="h-3 w-3 text-muted-foreground" />
-                                                <span className="text-sm font-bold">
-                                                    {template.roleCount}
-                                                </span>
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                Roles
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <Calendar className="h-3 w-3" />
-                                        <span>{template.estimatedDuration}</span>
-                                        <span className="mx-1">·</span>
-                                        <span>by {template.createdBy}</span>
-                                    </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <CheckSquare className="h-3 w-3 text-muted-foreground" />
+                                                    <span className="text-sm font-bold">
+                                                        {template.taskCount}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Tasks
+                                                </p>
+                                            </div>
+                                            <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <FolderPlus className="h-3 w-3 text-muted-foreground" />
+                                                    <span className="text-sm font-bold">
+                                                        {template.milestoneCount}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Milestones
+                                                </p>
+                                            </div>
+                                            <div className="text-center p-2 rounded-lg bg-secondary/30">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <Users className="h-3 w-3 text-muted-foreground" />
+                                                    <span className="text-sm font-bold">
+                                                        {template.roleCount}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Roles
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                    <div className="flex flex-wrap gap-1">
-                                        {template.tags.map((tag) => (
-                                            <Badge
-                                                key={tag}
-                                                variant="ghost"
-                                                className="text-[10px]"
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>{template.estimatedDuration}</span>
+                                            <span className="mx-1">·</span>
+                                            <span>by {template.createdBy}</span>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-1">
+                                            {template.tags.map((tag) => (
+                                                <Badge
+                                                    key={tag}
+                                                    variant="ghost"
+                                                    className="text-[10px]"
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 pt-2 border-t">
+                                            <Button
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() =>
+                                                    router.push(
+                                                        `/projects/new?template=${template.id}`
+                                                    )
+                                                }
                                             >
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                                <ArrowRight className="h-3.5 w-3.5" /> Create
+                                                Project
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                title="Duplicate template"
+                                                onClick={() =>
+                                                    duplicateTemplate.mutate({
+                                                        name: `${template.name} (Copy)`,
+                                                        description: template.description,
+                                                        category: template.category,
+                                                        estimated_duration:
+                                                            template.estimatedDuration,
+                                                    })
+                                                }
+                                            >
+                                                <Copy className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
 
-                                    <div className="flex items-center gap-2 pt-2 border-t">
-                                        <Button
-                                            size="sm"
-                                            className="flex-1"
-                                            onClick={() =>
-                                                router.push(`/projects/new?template=${template.id}`)
-                                            }
-                                        >
-                                            <ArrowRight className="h-3.5 w-3.5" /> Create Project
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            title="Duplicate template"
-                                            onClick={() =>
-                                                duplicateTemplate.mutate({
-                                                    name: `${template.name} (Copy)`,
-                                                    description: template.description,
-                                                    category: template.category,
-                                                    estimated_duration: template.estimatedDuration,
-                                                })
-                                            }
-                                        >
-                                            <Copy className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </div>
-
-                                    <p className="text-[10px] text-muted-foreground">
-                                        Last used {formatDate(template.lastUsed)}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                                        <p className="text-[10px] text-muted-foreground">
+                                            Last used {formatDate(template.lastUsed)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </PermissionGate>
             <CreateEntityDialog

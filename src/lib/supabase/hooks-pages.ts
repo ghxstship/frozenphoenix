@@ -997,6 +997,37 @@ export function useBudgetApprovals() {
     });
 }
 
+export function useUpdateBudgetApproval() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({
+            id,
+            status,
+            approved_by,
+        }: {
+            id: string;
+            status: "approved" | "rejected";
+            approved_by?: string;
+        }) => {
+            const updates: Record<string, unknown> = { status };
+            if (status === "approved") {
+                updates.approved_at = new Date().toISOString();
+                if (approved_by) updates.approved_by = approved_by;
+            }
+            const { data, error } = await fromTable("budget_approvals")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["budget_approvals"] });
+        },
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CHECKLISTS
 // ═══════════════════════════════════════════════════════════════
@@ -1070,16 +1101,86 @@ export function useVendorComplianceDocs() {
 // TIME ENTRIES (production_time_entries)
 // ═══════════════════════════════════════════════════════════════
 
-export function useTimeEntries() {
+export function useTimeEntries(weekStart?: string) {
     return useQuery({
-        queryKey: ["time_entries"],
+        queryKey: ["time_entries", weekStart],
         queryFn: async () => {
-            const { data, error } = await fromTable("production_time_entries")
+            let query = fromTable("production_time_entries")
                 .select("*")
                 .order("entry_date", { ascending: false });
+            if (weekStart) {
+                const end = new Date(weekStart);
+                end.setDate(end.getDate() + 6);
+                query = query
+                    .gte("entry_date", weekStart)
+                    .lte("entry_date", end.toISOString().split("T")[0]!);
+            }
+            const { data, error } = await query;
             if (error) throw error;
             return data;
         },
+    });
+}
+
+export function useCreateTimeEntry() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (entry: Record<string, unknown>) => {
+            const { data, error } = await fromTable("production_time_entries")
+                .insert(entry)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
+    });
+}
+
+export function useUpdateTimeEntry() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: Record<string, unknown> & { id: string }) => {
+            const { data, error } = await fromTable("production_time_entries")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
+    });
+}
+
+export function useSubmitTimeEntries() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (ids: string[]) => {
+            const { data, error } = await fromTable("production_time_entries")
+                .update({ status: "submitted" })
+                .in("id", ids)
+                .select();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
+    });
+}
+
+export function useApproveTimeEntry() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { data, error } = await fromTable("production_time_entries")
+                .update({ status: "approved" })
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
     });
 }
 
@@ -3035,6 +3136,65 @@ export function useApprovalSteps() {
             const { data, error } = await fromTable("approval_steps")
                 .select("*, profiles(name)")
                 .order("step_order");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICE HEALTH CHECKS
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// BILLING / SUBSCRIPTIONS
+// ═══════════════════════════════════════════════════════════════
+
+export function useBillingPlan() {
+    return useQuery({
+        queryKey: ["billing_plan"],
+        queryFn: async () => {
+            const res = await fetch("/api/billing/subscribe");
+            if (!res.ok) throw new Error("Failed to fetch billing plan");
+            const json = await res.json();
+            return json.subscription as Record<string, unknown> | null;
+        },
+    });
+}
+
+export function useSelectPlan() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (params: {
+            pricing_tier: "core" | "pro" | "enterprise";
+            billing_cycle: "monthly" | "annual";
+        }) => {
+            const res = await fetch("/api/billing/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(params),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(
+                    (err as Record<string, Record<string, string>>)?.error?.message ??
+                        "Failed to select plan"
+                );
+            }
+            const json = await res.json();
+            return json.subscription;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["billing_plan"] }),
+    });
+}
+
+export function useServiceHealthChecks() {
+    return useQuery({
+        queryKey: ["service_health_checks"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("service_health_checks")
+                .select("*")
+                .order("service_name");
             if (error) throw error;
             return data;
         },

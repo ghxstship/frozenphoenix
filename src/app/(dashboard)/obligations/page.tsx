@@ -12,7 +12,8 @@ import { getStatusLabel } from "@/config/ui-variants";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, ClipboardMinus, Clock, Loader2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardMinus, Clock, Plus } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import type { ContractObligation, ObligationStatus } from "@/types/governance";
 import { useContractObligations } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
@@ -64,9 +65,7 @@ export default function ObligationsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = obligations.filter((o) => {
@@ -140,77 +139,108 @@ export default function ObligationsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((o) => (
-                                        <tr
-                                            key={o.id}
-                                            className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="p-3">
-                                                <div className="font-medium text-xs">
-                                                    {o.description}
-                                                </div>
-                                                {o.clause_reference && (
-                                                    <div className="text-[10px] text-muted-foreground">
-                                                        Clause: {o.clause_reference}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3">
-                                                <Badge
-                                                    variant={PARTY_VARIANTS[o.party] || "default"}
-                                                    className="text-[10px]"
-                                                >
-                                                    {PARTY_LABELS[o.party] || o.party}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-3 text-xs text-muted-foreground">
-                                                {o.contract_id}
-                                            </td>
-                                            <td className="p-3">
-                                                <StatusBadge
-                                                    status={o.status}
-                                                    className="text-[10px]"
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="p-0">
+                                                <EmptyState
+                                                    icon={ClipboardMinus}
+                                                    title="No obligations found"
+                                                    description={
+                                                        search || statusFilter !== "all"
+                                                            ? "Try adjusting your search or filters"
+                                                            : "Create your first obligation"
+                                                    }
+                                                    action={
+                                                        !search && statusFilter === "all"
+                                                            ? {
+                                                                  label: "New Obligation",
+                                                                  onClick: openCreate,
+                                                              }
+                                                            : undefined
+                                                    }
+                                                    compact
                                                 />
                                             </td>
-                                            <td className="p-3 text-xs">
-                                                {o.due_date
-                                                    ? new Date(o.due_date).toLocaleDateString()
-                                                    : "—"}
-                                                {o.is_recurring && (
-                                                    <div className="text-[10px] text-muted-foreground">
-                                                        Recurring: {o.recurrence_pattern}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-3">
-                                                <div className="flex gap-1">
-                                                    {o.is_critical && (
-                                                        <Badge
-                                                            variant="destructive"
-                                                            className="text-[9px]"
-                                                        >
-                                                            Critical
-                                                        </Badge>
-                                                    )}
-                                                    {o.is_recurring && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="text-[9px]"
-                                                        >
-                                                            Recurring
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.map((o) => (
+                                            <tr
+                                                key={o.id}
+                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                                            >
+                                                <td className="p-3">
+                                                    <div className="font-medium text-xs">
+                                                        {o.description}
+                                                    </div>
+                                                    {o.clause_reference && (
+                                                        <div className="text-[10px] text-muted-foreground">
+                                                            Clause: {o.clause_reference}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3">
+                                                    <Badge
+                                                        variant={
+                                                            PARTY_VARIANTS[o.party] || "default"
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {PARTY_LABELS[o.party] || o.party}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-3 text-xs text-muted-foreground">
+                                                    {o.contract_id}
+                                                </td>
+                                                <td className="p-3">
+                                                    <StatusBadge
+                                                        status={o.status}
+                                                        className="text-[10px]"
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-xs">
+                                                    {o.due_date
+                                                        ? new Date(o.due_date).toLocaleDateString()
+                                                        : "—"}
+                                                    {o.is_recurring && (
+                                                        <div className="text-[10px] text-muted-foreground">
+                                                            Recurring: {o.recurrence_pattern}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="flex gap-1">
+                                                        {o.is_critical && (
+                                                            <Badge
+                                                                variant="destructive"
+                                                                className="text-[9px]"
+                                                            >
+                                                                Critical
+                                                            </Badge>
+                                                        )}
+                                                        {o.is_recurring && (
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="text-[9px]"
+                                                            >
+                                                                Recurring
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_OBLIGATION_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_OBLIGATION_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

@@ -9,6 +9,7 @@ import { PermissionGate } from "@/components/permission-guard";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useFeatureFlags, useUpdateFeatureFlag } from "@/lib/settings/hooks";
 import { Flag, Globe, Loader2, Percent, Search, ToggleLeft, Users } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 export default function FeatureFlagsPage() {
     const { data: flags, isLoading } = useFeatureFlags();
@@ -96,11 +97,16 @@ export default function FeatureFlagsPage() {
                                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                             </div>
                         ) : filtered.length === 0 ? (
-                            <div className="text-center py-12 text-sm text-muted-foreground">
-                                {search
-                                    ? "No flags match your search."
-                                    : "No feature flags defined yet."}
-                            </div>
+                            <EmptyState
+                                icon={Flag}
+                                title="No feature flags found"
+                                description={
+                                    search
+                                        ? "No flags match your search"
+                                        : "No feature flags defined yet"
+                                }
+                                compact
+                            />
                         ) : (
                             <div className="space-y-1">
                                 {filtered.map((flag) => (
@@ -149,7 +155,10 @@ export default function FeatureFlagsPage() {
                                                     variant: nextState ? "default" : "destructive",
                                                 });
                                                 if (confirmed) {
-                                                    updateFlag.mutate({ id: flag.id, is_active: nextState });
+                                                    updateFlag.mutate({
+                                                        id: flag.id,
+                                                        is_active: nextState,
+                                                    });
                                                 }
                                             }}
                                             disabled={updateFlag.isPending}

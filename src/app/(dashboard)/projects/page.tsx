@@ -2,7 +2,6 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,13 +21,14 @@ import {
     DollarSign,
     LayoutGrid,
     List,
-    Loader2,
     Plus,
     Upload,
     Users,
 } from "lucide-react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_PROJECT_CONFIG } from "@/config/create-entity-configs";
 import {
     PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
     PROJECT_PHASE_ORDER,
@@ -167,7 +167,6 @@ const boardCardFields: CardField<Project>[] = [
 ];
 
 export default function ProjectsPage() {
-    const router = useRouter();
     const VIEW_MODES = ["cards", "table", "board"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
@@ -176,6 +175,7 @@ export default function ProjectsPage() {
     });
     const { data: sbProjects, isLoading, refetch } = useProjects();
     const [importOpen, setImportOpen] = useState(false);
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
 
     const handleImportComplete = useCallback(() => {
         void refetch();
@@ -202,224 +202,230 @@ export default function ProjectsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
-        <PermissionGate resource="projects" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Productions"
-                    description="Manage your active productions and their lifecycle"
-                >
-                    <div className="flex items-center gap-2">
-                        <SegmentedControl
-                            value={viewMode}
-                            onValueChange={(v) => setViewMode(v as ViewMode)}
-                            options={[
-                                {
-                                    value: "cards",
-                                    label: "Cards",
-                                    icon: <LayoutGrid className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "table",
-                                    label: "Table",
-                                    icon: <List className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "board",
-                                    label: "Board",
-                                    icon: <Columns className="h-4 w-4" />,
-                                    labelHidden: true,
-                                },
-                            ]}
-                            ariaLabel="View mode"
+        <>
+            <PermissionGate resource="projects" action="read">
+                <div className="space-y-6 animate-fade-in">
+                    <PageHeader
+                        title="Productions"
+                        description="Manage your active productions and their lifecycle"
+                    >
+                        <div className="flex items-center gap-2">
+                            <SegmentedControl
+                                value={viewMode}
+                                onValueChange={(v) => setViewMode(v as ViewMode)}
+                                options={[
+                                    {
+                                        value: "cards",
+                                        label: "Cards",
+                                        icon: <LayoutGrid className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "table",
+                                        label: "Table",
+                                        icon: <List className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                    {
+                                        value: "board",
+                                        label: "Board",
+                                        icon: <Columns className="h-4 w-4" />,
+                                        labelHidden: true,
+                                    },
+                                ]}
+                                ariaLabel="View mode"
+                            />
+                            <CsvExportButton entity="projects" />
+                            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                                <Upload className="h-4 w-4" />
+                                Import CSV
+                            </Button>
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" />
+                                New Project
+                            </Button>
+                        </div>
+                    </PageHeader>
+                    <CsvImportDialog
+                        entity="projects"
+                        open={importOpen}
+                        onOpenChange={setImportOpen}
+                        onImportComplete={handleImportComplete}
+                    />
+
+                    {/* Phase Legend - only show in cards view */}
+                    {viewMode === "cards" && (
+                        <div className="flex items-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
+                            {PROJECT_PHASE_ORDER.map((phase, i) => (
+                                <React.Fragment key={phase}>
+                                    <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap px-2 py-1 rounded-md bg-secondary/50">
+                                        {PROJECT_PHASE_CONFIG[phase].label}
+                                    </span>
+                                    {i < PROJECT_PHASE_ORDER.length - 1 && (
+                                        <ArrowRight className="h-3 w-3 text-muted-foreground/30 shrink-0" />
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Table View */}
+                    {viewMode === "table" && (
+                        <DataTable
+                            data={projects}
+                            columns={tableColumns}
+                            keyField="id"
+                            sortable
+                            searchable
+                            searchPlaceholder="Search projects..."
+                            pagination
+                            pageSize={10}
+                            hoverable
+                            stickyHeader
                         />
-                        <CsvExportButton entity="projects" />
-                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                            <Upload className="h-4 w-4" />
-                            Import CSV
-                        </Button>
-                        <Button size="sm" onClick={() => router.push("/projects/new")}>
-                            <Plus className="h-4 w-4" />
-                            New Project
-                        </Button>
-                    </div>
-                </PageHeader>
-                <CsvImportDialog
-                    entity="projects"
-                    open={importOpen}
-                    onOpenChange={setImportOpen}
-                    onImportComplete={handleImportComplete}
-                />
+                    )}
 
-                {/* Phase Legend - only show in cards view */}
-                {viewMode === "cards" && (
-                    <div className="flex items-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
-                        {PROJECT_PHASE_ORDER.map((phase, i) => (
-                            <React.Fragment key={phase}>
-                                <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap px-2 py-1 rounded-md bg-secondary/50">
-                                    {PROJECT_PHASE_CONFIG[phase].label}
-                                </span>
-                                {i < PROJECT_PHASE_ORDER.length - 1 && (
-                                    <ArrowRight className="h-3 w-3 text-muted-foreground/30 shrink-0" />
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
-                )}
+                    {/* Board View */}
+                    {viewMode === "board" && (
+                        <DataBoard
+                            data={projects}
+                            columns={boardColumns}
+                            keyField="id"
+                            cardFields={boardCardFields}
+                            cardTitle="name"
+                            cardSubtitle="client"
+                            columnWidth={320}
+                        />
+                    )}
 
-                {/* Table View */}
-                {viewMode === "table" && (
-                    <DataTable
-                        data={projects}
-                        columns={tableColumns}
-                        keyField="id"
-                        sortable
-                        searchable
-                        searchPlaceholder="Search projects..."
-                        pagination
-                        pageSize={10}
-                        hoverable
-                        stickyHeader
-                    />
-                )}
+                    {/* Cards View */}
+                    {viewMode === "cards" && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                            {projects.map((project, i) => {
+                                const budgetPercent =
+                                    project.budgetPlanned > 0
+                                        ? Math.round(
+                                              (project.budgetActual / project.budgetPlanned) * 100
+                                          )
+                                        : 0;
+                                const isOverBudget = budgetPercent > 90;
 
-                {/* Board View */}
-                {viewMode === "board" && (
-                    <DataBoard
-                        data={projects}
-                        columns={boardColumns}
-                        keyField="id"
-                        cardFields={boardCardFields}
-                        cardTitle="name"
-                        cardSubtitle="client"
-                        columnWidth={320}
-                    />
-                )}
-
-                {/* Cards View */}
-                {viewMode === "cards" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {projects.map((project, i) => {
-                            const budgetPercent =
-                                project.budgetPlanned > 0
-                                    ? Math.round(
-                                          (project.budgetActual / project.budgetPlanned) * 100
-                                      )
-                                    : 0;
-                            const isOverBudget = budgetPercent > 90;
-
-                            return (
-                                <StaggerItem key={project.id} index={i} stagger="relaxed">
-                                    <Card className="group cursor-pointer hover:border-primary/30">
-                                        <CardContent className="space-y-4">
-                                            {/* Header */}
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-base font-bold truncate group-hover:text-primary transition-colors">
-                                                        {project.name}
-                                                    </h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {project.client}
-                                                    </p>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        PROJECT_STATUS_CONFIG[project.status]
-                                                            .variant
-                                                    }
-                                                >
-                                                    {project.status}
-                                                </Badge>
-                                            </div>
-
-                                            {/* Phase Progress */}
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1.5">
-                                                    <span className="text-xs font-medium">
-                                                        Phase:{" "}
-                                                        <span className="text-primary">
-                                                            {
-                                                                PROJECT_PHASE_CONFIG[
-                                                                    project.currentPhase
-                                                                ].label
-                                                            }
-                                                        </span>
-                                                    </span>
-                                                    <span className="text-xs font-bold">
-                                                        {project.progress}%
-                                                    </span>
-                                                </div>
-                                                {/* Phase bar */}
-                                                <div className="flex gap-0.5">
-                                                    {PROJECT_PHASE_ORDER.map((phase, idx) => {
-                                                        const currentIdx =
-                                                            PROJECT_PHASE_ORDER.indexOf(
-                                                                project.currentPhase
-                                                            );
-                                                        const isComplete = idx < currentIdx;
-                                                        const isCurrent = idx === currentIdx;
-                                                        return (
-                                                            <div
-                                                                key={phase}
-                                                                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                                                                    isComplete
-                                                                        ? "bg-success"
-                                                                        : isCurrent
-                                                                          ? "bg-primary animate-pulse-glow"
-                                                                          : "bg-muted"
-                                                                }`}
-                                                            />
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-
-                                            {/* Budget */}
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                        <DollarSign className="h-3 w-3" /> Budget
-                                                    </span>
-                                                    <span
-                                                        className={`text-xs font-medium ${isOverBudget ? "text-destructive" : ""}`}
+                                return (
+                                    <StaggerItem key={project.id} index={i} stagger="relaxed">
+                                        <Card className="group cursor-pointer hover:border-primary/30">
+                                            <CardContent className="space-y-4">
+                                                {/* Header */}
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-base font-bold truncate group-hover:text-primary transition-colors">
+                                                            {project.name}
+                                                        </h3>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {project.client}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant={
+                                                            PROJECT_STATUS_CONFIG[project.status]
+                                                                .variant
+                                                        }
                                                     >
-                                                        {formatCurrency(project.budgetActual)} /{" "}
-                                                        {formatCurrency(project.budgetPlanned)}
+                                                        {project.status}
+                                                    </Badge>
+                                                </div>
+
+                                                {/* Phase Progress */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <span className="text-xs font-medium">
+                                                            Phase:{" "}
+                                                            <span className="text-primary">
+                                                                {
+                                                                    PROJECT_PHASE_CONFIG[
+                                                                        project.currentPhase
+                                                                    ].label
+                                                                }
+                                                            </span>
+                                                        </span>
+                                                        <span className="text-xs font-bold">
+                                                            {project.progress}%
+                                                        </span>
+                                                    </div>
+                                                    {/* Phase bar */}
+                                                    <div className="flex gap-0.5">
+                                                        {PROJECT_PHASE_ORDER.map((phase, idx) => {
+                                                            const currentIdx =
+                                                                PROJECT_PHASE_ORDER.indexOf(
+                                                                    project.currentPhase
+                                                                );
+                                                            const isComplete = idx < currentIdx;
+                                                            const isCurrent = idx === currentIdx;
+                                                            return (
+                                                                <div
+                                                                    key={phase}
+                                                                    className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                                                                        isComplete
+                                                                            ? "bg-success"
+                                                                            : isCurrent
+                                                                              ? "bg-primary animate-pulse-glow"
+                                                                              : "bg-muted"
+                                                                    }`}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                {/* Budget */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                            <DollarSign className="h-3 w-3" />{" "}
+                                                            Budget
+                                                        </span>
+                                                        <span
+                                                            className={`text-xs font-medium ${isOverBudget ? "text-destructive" : ""}`}
+                                                        >
+                                                            {formatCurrency(project.budgetActual)} /{" "}
+                                                            {formatCurrency(project.budgetPlanned)}
+                                                        </span>
+                                                    </div>
+                                                    <ProgressBar
+                                                        value={Math.min(budgetPercent, 100)}
+                                                        size="xs"
+                                                    />
+                                                </div>
+
+                                                {/* Footer */}
+                                                <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+                                                    <span className="flex items-center gap-1">
+                                                        <Calendar className="h-3 w-3" />
+                                                        {formatDate(project.startDate)} —{" "}
+                                                        {formatDate(project.endDate)}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Users className="h-3 w-3" />
+                                                        {project.teamIds.length} members
                                                     </span>
                                                 </div>
-                                                <ProgressBar
-                                                    value={Math.min(budgetPercent, 100)}
-                                                    size="xs"
-                                                />
-                                            </div>
-
-                                            {/* Footer */}
-                                            <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" />
-                                                    {formatDate(project.startDate)} —{" "}
-                                                    {formatDate(project.endDate)}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Users className="h-3 w-3" />
-                                                    {project.teamIds.length} members
-                                                </span>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </StaggerItem>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-        </PermissionGate>
+                                            </CardContent>
+                                        </Card>
+                                    </StaggerItem>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </PermissionGate>
+            <CreateEntityDialog
+                config={CREATE_PROJECT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
+        </>
     );
 }

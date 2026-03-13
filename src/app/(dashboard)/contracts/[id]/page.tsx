@@ -38,10 +38,28 @@ import {
     Shield,
 } from "lucide-react";
 
-interface ClauseItem { title: string; summary: string }
-interface SignatureItem { name: string; email: string; role: string; status: SignatureStatusType; signedAt?: string }
-interface AmendmentItem { id: string; title: string; date: string; value: number }
-interface DocItem { name: string; type: string; uploadedAt: string }
+interface ClauseItem {
+    title: string;
+    summary: string;
+}
+interface SignatureItem {
+    name: string;
+    email: string;
+    role: string;
+    status: SignatureStatusType;
+    signedAt?: string;
+}
+interface AmendmentItem {
+    id: string;
+    title: string;
+    date: string;
+    value: number;
+}
+interface DocItem {
+    name: string;
+    type: string;
+    uploadedAt: string;
+}
 
 function parseClauses(raw: unknown): ClauseItem[] {
     if (!Array.isArray(raw)) return [];
@@ -104,7 +122,9 @@ export default function ContractDetailPage() {
     });
     const contractTitle = (ct?.title as string) ?? "";
     const contractNumber = (ct?.contract_number as string) ?? (ct?.contractNumber as string) ?? "";
-    const contractType = ((ct?.type as string) ?? (ct?.contract_type as string) ?? "msa") as ContractType;
+    const contractType = ((ct?.type as string) ??
+        (ct?.contract_type as string) ??
+        "msa") as ContractType;
     const contractStatus = ((ct?.status as string) ?? "draft") as ContractStatusType;
     const vendorName = (ct?.vendor_name as string) ?? (ct?.vendorName as string) ?? "";
     const clientName = (ct?.client_name as string) ?? (ct?.clientName as string) ?? "";
@@ -190,9 +210,7 @@ export default function ContractDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Counterparty</span>
-                        <span className="font-medium">
-                            {clientName || vendorName || "—"}
-                        </span>
+                        <span className="font-medium">{clientName || vendorName || "—"}</span>
                     </div>
                     {autoRenew && (
                         <div className="flex justify-between">
@@ -212,14 +230,18 @@ export default function ContractDetailPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Effective Date</p>
-                            <p className="font-medium">{effectiveDate ? formatDate(effectiveDate) : "TBD"}</p>
+                            <p className="font-medium">
+                                {effectiveDate ? formatDate(effectiveDate) : "TBD"}
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Expiration Date</p>
-                            <p className="font-medium">{expirationDate ? formatDate(expirationDate) : "TBD"}</p>
+                            <p className="font-medium">
+                                {expirationDate ? formatDate(expirationDate) : "TBD"}
+                            </p>
                         </div>
                     </div>
                     {daysUntilExpiry <= 90 && daysUntilExpiry > 0 && (
@@ -281,7 +303,10 @@ export default function ContractDetailPage() {
             }
             menuItems={[
                 { label: "Export PDF", onClick: handleExportPDF },
-                { label: "Duplicate Contract", onClick: () => router.push(`/contracts/new?duplicateFrom=${entityId}`) },
+                {
+                    label: "Duplicate Contract",
+                    onClick: () => router.push(`/contracts/new?duplicateFrom=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -484,7 +509,7 @@ export default function ContractDetailPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="sm" onClick={() => console.log("Download document:", doc.name)}>
+                                    <Button variant="ghost" size="sm" disabled>
                                         <Download className="h-4 w-4" />
                                     </Button>
                                 </div>

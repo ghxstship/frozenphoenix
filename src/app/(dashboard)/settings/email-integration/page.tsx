@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,9 @@ import {
     Users,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useToast } from "@/components/ui/toast";
+import { useEmailMessages } from "@/lib/supabase/hooks-v2-features";
 
 type EmailTab = "inbox" | "linked" | "settings";
 
@@ -52,108 +55,6 @@ interface EmailAccount {
     messagesProcessed: number;
 }
 
-const PLACEHOLDER_EMAILS: EmailMessage[] = [
-    {
-        id: "em1",
-        subject: "Re: Air Max Launch — Stage Design Approval",
-        from: "maria@nike.com",
-        to: "team@playbook.io",
-        receivedAt: "2026-03-12T14:30:00Z",
-        direction: "inbound",
-        linkedEntity: "Nike Air Max Launch",
-        linkedEntityType: "project",
-        linkedEntityId: "proj-1",
-        snippet: "Hi team, the stage design looks great. We've approved the final render...",
-        hasAttachments: true,
-        isRead: false,
-    },
-    {
-        id: "em2",
-        subject: "Invoice INV-2026-0012 — Payment Confirmation",
-        from: "ap@redbull.com",
-        to: "billing@playbook.io",
-        receivedAt: "2026-03-12T11:15:00Z",
-        direction: "inbound",
-        linkedEntity: "INV-2026-0012",
-        linkedEntityType: "invoice",
-        linkedEntityId: "inv-12",
-        snippet: "Payment has been processed for the above invoice. Please confirm receipt...",
-        hasAttachments: false,
-        isRead: true,
-    },
-    {
-        id: "em3",
-        subject: "Vendor Insurance Certificate Reminder",
-        from: "team@playbook.io",
-        to: "compliance@stageco.com",
-        receivedAt: "2026-03-12T09:00:00Z",
-        direction: "outbound",
-        linkedEntity: "StageCo Productions",
-        linkedEntityType: "vendor",
-        linkedEntityId: "v-3",
-        snippet: "This is a reminder that your insurance certificate expires on March 15...",
-        hasAttachments: false,
-        isRead: true,
-    },
-    {
-        id: "em4",
-        subject: "Quote Request — Samsung Galaxy Pop-Up AV Package",
-        from: "procurement@samsung.com",
-        to: "sales@playbook.io",
-        receivedAt: "2026-03-11T16:45:00Z",
-        direction: "inbound",
-        linkedEntity: "Samsung Electronics",
-        linkedEntityType: "company",
-        linkedEntityId: "co-5",
-        snippet:
-            "We'd like to request a quote for the AV package for our upcoming Galaxy pop-up...",
-        hasAttachments: true,
-        isRead: true,
-    },
-    {
-        id: "em5",
-        subject: "Crew Schedule Update — Coachella Week 1",
-        from: "team@playbook.io",
-        to: "crew@playbook.io",
-        receivedAt: "2026-03-11T08:30:00Z",
-        direction: "outbound",
-        linkedEntity: "Coachella Main Stage 2026",
-        linkedEntityType: "project",
-        linkedEntityId: "proj-5",
-        snippet:
-            "Updated crew schedule for Coachella Week 1. Please review your assigned shifts...",
-        hasAttachments: true,
-        isRead: true,
-    },
-];
-
-const PLACEHOLDER_ACCOUNTS: EmailAccount[] = [
-    {
-        id: "ea1",
-        email: "team@playbook.io",
-        provider: "gmail",
-        status: "connected",
-        lastSyncAt: "2026-03-12T14:35:00Z",
-        messagesProcessed: 1245,
-    },
-    {
-        id: "ea2",
-        email: "billing@playbook.io",
-        provider: "gmail",
-        status: "connected",
-        lastSyncAt: "2026-03-12T14:30:00Z",
-        messagesProcessed: 567,
-    },
-    {
-        id: "ea3",
-        email: "sales@playbook.io",
-        provider: "outlook",
-        status: "error",
-        lastSyncAt: "2026-03-11T22:00:00Z",
-        messagesProcessed: 312,
-    },
-];
-
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
     project: <FileText className="h-3.5 w-3.5" />,
     invoice: <FileText className="h-3.5 w-3.5" />,
@@ -170,16 +71,61 @@ export default function EmailIntegrationPage() {
         validValues: ["inbox", "linked", "settings"],
     });
 
-    const unreadCount = PLACEHOLDER_EMAILS.filter((e) => !e.isRead).length;
-    const linkedCount = PLACEHOLDER_EMAILS.filter((e) => e.linkedEntity).length;
-    const inboundToday = PLACEHOLDER_EMAILS.filter((e) => e.direction === "inbound").length;
-    const outboundToday = PLACEHOLDER_EMAILS.filter((e) => e.direction === "outbound").length;
+    const { data: sbEmails, isLoading } = useEmailMessages();
+
+    const emails: EmailMessage[] = useMemo(
+        () =>
+            (sbEmails ?? []).map((e: Record<string, unknown>) => ({
+                id: String(e.id),
+                subject: String(e.subject ?? ""),
+                from: String(e.from_address ?? ""),
+                to: String(e.to_address ?? ""),
+                receivedAt: String(e.received_at ?? e.created_at ?? ""),
+                direction: (e.direction as "inbound" | "outbound") ?? "inbound",
+                linkedEntity: e.linked_entity_name ? String(e.linked_entity_name) : null,
+                linkedEntityType: e.linked_entity_type ? String(e.linked_entity_type) : null,
+                linkedEntityId: e.linked_entity_id ? String(e.linked_entity_id) : null,
+                snippet: String(e.snippet ?? e.body_preview ?? ""),
+                hasAttachments: e.has_attachments === true,
+                isRead: e.is_read !== false,
+            })),
+        [sbEmails]
+    );
+
+    // Derive accounts from unique from/to addresses
+    const accounts: EmailAccount[] = useMemo(() => {
+        const seen = new Map<string, { count: number; lastSeen: string }>();
+        for (const e of emails) {
+            const addr = e.direction === "outbound" ? e.from : e.to;
+            if (!addr) continue;
+            const prev = seen.get(addr);
+            seen.set(addr, {
+                count: (prev?.count ?? 0) + 1,
+                lastSeen: !prev || e.receivedAt > prev.lastSeen ? e.receivedAt : prev.lastSeen,
+            });
+        }
+        return Array.from(seen.entries()).map(([email, stats]) => ({
+            id: email,
+            email,
+            provider: "gmail" as const,
+            status: "connected" as const,
+            lastSyncAt: stats.lastSeen,
+            messagesProcessed: stats.count,
+        }));
+    }, [emails]);
+
+    if (isLoading) return <LoadingState />;
+
+    const unreadCount = emails.filter((e) => !e.isRead).length;
+    const linkedCount = emails.filter((e) => e.linkedEntity).length;
+    const inboundToday = emails.filter((e) => e.direction === "inbound").length;
+    const outboundToday = emails.filter((e) => e.direction === "outbound").length;
 
     const tabs = [
         {
             id: "inbox" as const,
             label: "Activity Feed",
-            count: PLACEHOLDER_EMAILS.length,
+            count: emails.length,
             icon: <Inbox className="h-4 w-4" />,
         },
         {
@@ -191,7 +137,7 @@ export default function EmailIntegrationPage() {
         {
             id: "settings" as const,
             label: "Accounts",
-            count: PLACEHOLDER_ACCOUNTS.length,
+            count: accounts.length,
             icon: <Settings className="h-4 w-4" />,
         },
     ];
@@ -203,7 +149,16 @@ export default function EmailIntegrationPage() {
                     title="Email Integration"
                     description="Bi-directional email sync with automatic record linking"
                 >
-                    <Button size="sm" onClick={() => addToast({ title: "Syncing", description: "Email sync started for all accounts.", variant: "default" })}>
+                    <Button
+                        size="sm"
+                        onClick={() =>
+                            addToast({
+                                title: "Syncing",
+                                description: "Email sync started for all accounts.",
+                                variant: "default",
+                            })
+                        }
+                    >
                         <RefreshCw className="h-4 w-4" /> Sync Now
                     </Button>
                 </PageHeader>
@@ -223,7 +178,7 @@ export default function EmailIntegrationPage() {
 
                 <TabPanel value="inbox" activeValue={activeTab}>
                     <div className="space-y-2">
-                        {PLACEHOLDER_EMAILS.map((email) => (
+                        {emails.map((email) => (
                             <Card
                                 key={email.id}
                                 className={
@@ -302,14 +257,14 @@ export default function EmailIntegrationPage() {
                 <TabPanel value="linked" activeValue={activeTab}>
                     <div className="space-y-4">
                         {Object.entries(
-                            PLACEHOLDER_EMAILS.filter((e) => e.linkedEntity).reduce<
-                                Record<string, EmailMessage[]>
-                            >((acc, email) => {
-                                const key = `${email.linkedEntityType}:${email.linkedEntity}`;
-                                if (!acc[key]) acc[key] = [];
-                                acc[key]!.push(email);
-                                return acc;
-                            }, {})
+                            emails
+                                .filter((e) => e.linkedEntity)
+                                .reduce<Record<string, EmailMessage[]>>((acc, email) => {
+                                    const key = `${email.linkedEntityType}:${email.linkedEntity}`;
+                                    if (!acc[key]) acc[key] = [];
+                                    acc[key]!.push(email);
+                                    return acc;
+                                }, {})
                         ).map(([key, emails]) => {
                             const first = emails[0]!;
                             return (
@@ -363,11 +318,21 @@ export default function EmailIntegrationPage() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold">Connected Accounts</h3>
-                            <Button size="sm" onClick={() => addToast({ title: "Coming soon", description: "Email account connection is not yet available.", variant: "default" })}>
+                            <Button
+                                size="sm"
+                                onClick={() =>
+                                    addToast({
+                                        title: "Coming soon",
+                                        description:
+                                            "Email account connection is not yet available.",
+                                        variant: "default",
+                                    })
+                                }
+                            >
                                 <Plus className="h-4 w-4" /> Add Account
                             </Button>
                         </div>
-                        {PLACEHOLDER_ACCOUNTS.map((account) => (
+                        {accounts.map((account) => (
                             <Card key={account.id}>
                                 <CardContent className="p-4">
                                     <div className="flex items-center justify-between">
@@ -415,10 +380,30 @@ export default function EmailIntegrationPage() {
                                             <span className="text-[10px] text-muted-foreground">
                                                 Last sync: {formatDate(account.lastSyncAt)}
                                             </span>
-                                            <Button size="sm" variant="outline" onClick={() => addToast({ title: "Syncing", description: `Syncing ${account.email}…`, variant: "default" })}>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    addToast({
+                                                        title: "Syncing",
+                                                        description: `Syncing ${account.email}…`,
+                                                        variant: "default",
+                                                    })
+                                                }
+                                            >
                                                 <RefreshCw className="h-3.5 w-3.5" />
                                             </Button>
-                                            <Button size="sm" variant="outline" onClick={() => addToast({ title: "Coming soon", description: `Account settings for ${account.email} coming soon.`, variant: "default" })}>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    addToast({
+                                                        title: "Coming soon",
+                                                        description: `Account settings for ${account.email} coming soon.`,
+                                                        variant: "default",
+                                                    })
+                                                }
+                                            >
                                                 <Settings className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>

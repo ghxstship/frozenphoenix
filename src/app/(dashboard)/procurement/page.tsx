@@ -15,8 +15,9 @@ import type { BadgeVariant } from "@/config/ui-variants";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-
-// NEXT: Wire to Supabase when procurement_requests table is available
+import { useProjects, useVendors } from "@/lib/supabase/hooks";
+import { usePurchaseOrders, usePurchaseRequisitions } from "@/lib/supabase/hooks-pages";
+import { LoadingState } from "@/components/layouts/loading-state";
 
 interface ProcurementRequest {
     id: string;
@@ -29,54 +30,6 @@ interface ProcurementRequest {
     priority: "low" | "medium" | "high" | "urgent";
     createdAt: string;
 }
-
-// NEXT: Replace with Supabase data when procurement_requests table is available
-const PLACEHOLDER_REQUESTS: ProcurementRequest[] = [
-    {
-        id: "pr1",
-        projectId: "p1",
-        title: "LED Panel Controllers",
-        description: "DMX controllers for video wall",
-        estimatedCost: 4500,
-        requestedBy: "Marcus Johnson",
-        status: "pending",
-        priority: "high",
-        createdAt: "2026-02-22",
-    },
-    {
-        id: "pr2",
-        projectId: "p1",
-        title: "Steel Brackets (Custom)",
-        description: "Custom fabricated mounting brackets",
-        estimatedCost: 2800,
-        requestedBy: "Alex Rivera",
-        status: "approved",
-        priority: "urgent",
-        createdAt: "2026-02-20",
-    },
-    {
-        id: "pr3",
-        projectId: "p2",
-        title: "Vinyl Wrap Material",
-        description: "3M vinyl for window graphics",
-        estimatedCost: 1200,
-        requestedBy: "Jordan Park",
-        status: "ordered",
-        priority: "medium",
-        createdAt: "2026-02-18",
-    },
-    {
-        id: "pr4",
-        projectId: "p1",
-        title: "Rigging Hardware",
-        description: "Shackles and carabiners",
-        estimatedCost: 850,
-        requestedBy: "Aisha Patel",
-        status: "pending",
-        priority: "low",
-        createdAt: "2026-02-23",
-    },
-];
 
 const priorityConfig = {
     low: { label: "Low", variant: "ghost" as const },
@@ -102,19 +55,41 @@ export default function ProcurementPage() {
     });
     const [filterProject, setFilterProject] = useState<string>("all");
 
-    // NEXT: Wire to usePurchaseOrders/useProjects/useVendors/useProcurementRequests() when hooks are available
-    const purchaseOrders: PurchaseOrder[] = [];
-    const projects: Project[] = [];
-    const vendors: Vendor[] = [];
+    const { data: sbPOs, isLoading: loadingPOs } = usePurchaseOrders();
+    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
+    const { data: sbVendors } = useVendors();
+    const { data: sbRequisitions, isLoading: loadingReqs } = usePurchaseRequisitions();
+
+    const purchaseOrders: PurchaseOrder[] = (sbPOs ?? []) as unknown as PurchaseOrder[];
+    const projects: Project[] = (sbProjects ?? []) as unknown as Project[];
+    const vendors: Vendor[] = (sbVendors ?? []) as unknown as Vendor[];
+    const procurementRequests: ProcurementRequest[] = (sbRequisitions ?? []).map(
+        (r: Record<string, unknown>) => ({
+            id: String(r.id ?? ""),
+            projectId: String(r.project_id ?? ""),
+            title: String(r.title ?? ""),
+            description: String(r.description ?? ""),
+            estimatedCost: Number(r.estimated_cost ?? 0),
+            requestedBy: String(r.requested_by ?? ""),
+            status: String(r.status ?? "pending") as ProcurementRequest["status"],
+            priority: String(r.priority ?? "medium") as ProcurementRequest["priority"],
+            createdAt: String(r.created_at ?? ""),
+        })
+    );
+    const isLoading = loadingPOs || loadingProjects || loadingReqs;
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
 
     const totalPOValue = purchaseOrders.reduce((sum, po) => sum + po.totalAmount, 0);
-    const pendingRequests = PLACEHOLDER_REQUESTS.filter((r) => r.status === "pending").length;
+    const pendingRequests = procurementRequests.filter((r) => r.status === "pending").length;
     const issuedPOs = purchaseOrders.filter((po) => po.status === "issued").length;
 
     const filteredRequests =
         filterProject === "all"
-            ? PLACEHOLDER_REQUESTS
-            : PLACEHOLDER_REQUESTS.filter((r) => r.projectId === filterProject);
+            ? procurementRequests
+            : procurementRequests.filter((r) => r.projectId === filterProject);
 
     const filteredPOs =
         filterProject === "all"

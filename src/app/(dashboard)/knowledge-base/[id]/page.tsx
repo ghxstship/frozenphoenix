@@ -3,9 +3,16 @@
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteKBArticle, useUpdateKBArticle } from "@/lib/supabase/hooks-pages";
+import {
+    useCreateRecordComment,
+    useKnowledgeArticle,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { DetailLayout } from "@/components/layouts/detail-layout";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,103 +21,22 @@ import { Textarea } from "@/components/ui/form/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
-import type { ActivityItem } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
-import { OverlineText } from "@/components/ui/overline-text";
-import { RECORD_TYPE_LABELS } from "@/config/ui-variants";
+import type { ActivityItem, CommentItem } from "@/components/activity";
 import { formatDate } from "@/lib/utils";
 import {
     BookOpen,
     CheckSquare,
     Edit,
-    ExternalLink,
     Eye,
     FileText,
     Link2,
     Plus,
     Save,
     Shield,
-    Trash2,
     Users,
     X,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-
-// ─── Types ───
-interface LinkedRecord {
-    id: string;
-    type: "project" | "deal" | "contract" | "event" | "asset";
-    name: string;
-    href: string;
-}
-
-interface KBArticleDetail {
-    id: string;
-    category: string;
-    department?: string;
-    title: string;
-    summary: string;
-    content: string;
-    tags: string[];
-    status: string;
-    version: number;
-    authorName: string;
-    publishedAt: string;
-    updatedAt: string;
-    requiresAcknowledgment: boolean;
-    acknowledgmentCount?: number;
-    totalRequired?: number;
-    linkedRecords: LinkedRecord[];
-}
-
-// ─── Mock Data ───
-const PLACEHOLDER_ARTICLES: Record<string, KBArticleDetail> = {
-    "kb-1": {
-        id: "kb-1",
-        category: "sop",
-        department: "production",
-        title: "Load-In Safety Procedures",
-        summary: "Standard operating procedures for safe load-in operations at venues",
-        content: `## Purpose\nThis SOP outlines the safety procedures all crew members must follow during load-in operations at any venue.\n\n## Scope\nApplies to all production staff, contractors, and vendors participating in load-in activities.\n\n## Pre-Load-In Requirements\n1. Complete venue safety briefing\n2. Verify all personal protective equipment (PPE)\n3. Review venue-specific load-in map and weight restrictions\n4. Confirm forklift certification for operators\n\n## Safety Protocols\n- **Hard hats** required in all active load-in zones\n- **Steel-toed boots** mandatory for all personnel\n- **High-visibility vests** required when operating near vehicle traffic\n- Maximum individual lift weight: **50 lbs** without mechanical assistance\n- All rigging points must be inspected and certified before use\n\n## Emergency Procedures\n1. Know the location of all emergency exits\n2. First aid kits located at each staging area\n3. Report all incidents to the Safety Lead immediately\n4. Emergency contact: Safety Hotline ext. 911`,
-        tags: ["safety", "load-in", "venue"],
-        status: "published",
-        version: 3,
-        authorName: "Marcus Johnson",
-        publishedAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-02-20T14:30:00Z",
-        requiresAcknowledgment: true,
-        acknowledgmentCount: 12,
-        totalRequired: 15,
-        linkedRecords: [
-            { id: "p1", type: "project", name: "Nike Air Max Launch", href: "/projects/1" },
-            { id: "e1", type: "event", name: "Red Bull Festival 2024", href: "/events/1" },
-            {
-                id: "c1",
-                type: "contract",
-                name: "Venue Safety Agreement — Convention Center",
-                href: "/contracts/1",
-            },
-        ],
-    },
-    "kb-2": {
-        id: "kb-2",
-        category: "checklist",
-        department: "technical",
-        title: "AV System Pre-Show Checklist",
-        summary: "Complete checklist for verifying all AV systems before show start",
-        content: `## Audio Systems\n- [ ] Main PA powered on and tested\n- [ ] Monitor mix verified with artists/presenters\n- [ ] Wireless microphone batteries checked (min 70%)\n- [ ] Backup microphones staged\n- [ ] Audio recording system armed\n\n## Video Systems\n- [ ] All LED walls calibrated and tested\n- [ ] Projection systems aligned\n- [ ] Camera feeds verified on switcher\n- [ ] IMAG system tested end-to-end\n- [ ] Backup playback device staged\n\n## Lighting\n- [ ] All fixtures addressed and patched\n- [ ] Follow spots positioned and tested\n- [ ] Haze machines filled and tested\n- [ ] Emergency lighting verified\n\n## Network & Control\n- [ ] Show control system online\n- [ ] Timecode sync verified\n- [ ] Backup show files loaded\n- [ ] Intercom system tested all positions`,
-        tags: ["av", "checklist", "pre-show"],
-        status: "published",
-        version: 2,
-        authorName: "David Kim",
-        publishedAt: "2024-02-01T10:00:00Z",
-        updatedAt: "2024-02-15T09:00:00Z",
-        requiresAcknowledgment: false,
-        linkedRecords: [
-            { id: "p1", type: "project", name: "Nike Air Max Launch", href: "/projects/1" },
-        ],
-    },
-};
 
 const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     sop: FileText,
@@ -120,58 +46,6 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     policy: Shield,
     training: Users,
 };
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "Marcus Johnson",
-        entityType: "article",
-        entityName: "this article",
-        createdAt: "2024-01-10T10:00:00Z",
-    },
-    {
-        id: "a2",
-        action: "updated",
-        actorName: "Marcus Johnson",
-        entityType: "article",
-        description: "Updated safety protocols section",
-        createdAt: "2024-01-20T14:00:00Z",
-    },
-    {
-        id: "a3",
-        action: "approved",
-        actorName: "Safety Team",
-        entityType: "article",
-        description: "Published version 2",
-        createdAt: "2024-02-01T09:00:00Z",
-    },
-    {
-        id: "a4",
-        action: "updated",
-        actorName: "Marcus Johnson",
-        entityType: "article",
-        description: "Added emergency procedures; published v3",
-        createdAt: "2024-02-20T14:30:00Z",
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u1",
-        authorName: "Sarah Chen",
-        content: "Can we add a section about weather contingencies for outdoor load-ins?",
-        createdAt: "2024-02-18T10:00:00Z",
-    },
-    {
-        id: "c2",
-        authorId: "u2",
-        authorName: "Marcus Johnson",
-        content: "Good idea — I'll add an outdoor-specific addendum in the next revision.",
-        createdAt: "2024-02-19T08:30:00Z",
-    },
-];
 
 // ─── Tab config ───
 type TabId = "view" | "edit" | "linked" | "chatter";
@@ -200,30 +74,54 @@ export default function KBArticleDetailPage() {
     const [editContent, setEditContent] = useState("");
     const [editTags, setEditTags] = useState("");
     const [isEditing, setIsEditing] = useState(false);
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
     const [linkSearch, setLinkSearch] = useState("");
 
-    const article = PLACEHOLDER_ARTICLES[articleId];
+    const { data: article, isLoading } = useKnowledgeArticle(articleId);
+    const { data: sbActivity } = useRecordActivityLog("kb_article", articleId);
+    const { data: sbComments } = useRecordComments("kb_article", articleId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "kb_article",
+            entity_id: articleId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const startEditing = () => {
         if (!article) return;
         setEditTitle(article.title);
-        setEditSummary(article.summary);
-        setEditContent(article.content);
-        setEditTags(article.tags.join(", "));
+        setEditSummary(article.body.substring(0, 200));
+        setEditContent(article.body);
+        setEditTags((article.tags ?? []).join(", "));
         setIsEditing(true);
         setActiveTab("edit");
     };
@@ -240,12 +138,14 @@ export default function KBArticleDetailPage() {
             {
                 id: "linked" as const,
                 label: "Linked Records",
-                count: article?.linkedRecords.length ?? 0,
+                count: 0,
             },
             { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
         ],
-        [article?.linkedRecords.length, chatterComments.length]
+        [chatterComments.length]
     );
+
+    if (isLoading) return <LoadingState />;
 
     if (!article) {
         return (
@@ -274,12 +174,6 @@ export default function KBArticleDetailPage() {
                         <span className="text-muted-foreground">Category</span>
                         <Badge variant="secondary">{article.category}</Badge>
                     </div>
-                    {article.department && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Department</span>
-                            <span className="font-medium capitalize">{article.department}</span>
-                        </div>
-                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
                         <StatusBadge status={article.status} />
@@ -290,41 +184,18 @@ export default function KBArticleDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Author</span>
-                        <span className="font-medium">{article.authorName}</span>
+                        <span className="font-medium">{article.profiles?.name ?? "—"}</span>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Published</span>
-                        <span>{formatDate(article.publishedAt)}</span>
-                    </div>
+                    {article.published_at && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Published</span>
+                            <span>{formatDate(article.published_at)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Updated</span>
-                        <span>{formatDate(article.updatedAt)}</span>
+                        <span>{formatDate(article.updated_at)}</span>
                     </div>
-                    {article.requiresAcknowledgment &&
-                        article.acknowledgmentCount !== undefined &&
-                        article.totalRequired !== undefined && (
-                            <>
-                                <div className="border-t pt-3 mt-3">
-                                    <OverlineText className="mb-2">Acknowledgments</OverlineText>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground">Progress</span>
-                                        <span
-                                            className={`font-bold ${article.acknowledgmentCount < article.totalRequired ? "text-warning" : "text-success"}`}
-                                        >
-                                            {article.acknowledgmentCount}/{article.totalRequired}
-                                        </span>
-                                    </div>
-                                    <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full ${article.acknowledgmentCount >= article.totalRequired ? "bg-success" : "bg-warning"}`}
-                                            style={{
-                                                width: `${Math.min(100, (article.acknowledgmentCount / article.totalRequired) * 100)}%`,
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
                 </CardContent>
             </Card>
 
@@ -334,7 +205,7 @@ export default function KBArticleDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-1.5">
-                        {article.tags.map((tag) => (
+                        {(article.tags ?? []).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
                                 {tag}
                             </Badge>
@@ -353,7 +224,7 @@ export default function KBArticleDetailPage() {
                 entityType="knowledge-base"
                 entityId={articleId}
                 title={article.title}
-                subtitle={article.summary}
+                subtitle={article.body.substring(0, 120)}
                 avatar={<CategoryIcon className="h-5 w-5 text-primary" />}
                 tabs={tabs}
                 activeTab={activeTab}
@@ -365,8 +236,14 @@ export default function KBArticleDetailPage() {
                     </Button>
                 }
                 menuItems={[
-                    { label: "Publish New Version", onClick: () => handleUpdate({ status: "published", version: (article?.version ?? 0) + 1 }) },
-                    { label: "Request Acknowledgment", onClick: () => handleUpdate({ requires_acknowledgment: true }) },
+                    {
+                        label: "Publish New Version",
+                        onClick: () =>
+                            handleUpdate({
+                                status: "published",
+                                version: (article?.version ?? 0) + 1,
+                            }),
+                    },
                     ...crudMenuItems,
                 ]}
             >
@@ -374,7 +251,7 @@ export default function KBArticleDetailPage() {
                 {activeTab === "view" && (
                     <Card>
                         <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                            {article.content.split("\n").map((line, i) => {
+                            {article.body.split("\n").map((line, i) => {
                                 if (line.startsWith("## "))
                                     return (
                                         <h2 key={i} className="text-lg font-semibold mt-6 mb-3">
@@ -474,7 +351,7 @@ export default function KBArticleDetailPage() {
                                 </label>
                                 <Input
                                     id="kb-summary"
-                                    value={isEditing ? editSummary : article.summary}
+                                    value={isEditing ? editSummary : article.body.substring(0, 200)}
                                     onChange={(e) => setEditSummary(e.target.value)}
                                     onFocus={() => {
                                         if (!isEditing) startEditing();
@@ -490,7 +367,7 @@ export default function KBArticleDetailPage() {
                                 </label>
                                 <Input
                                     id="kb-tags"
-                                    value={isEditing ? editTags : article.tags.join(", ")}
+                                    value={isEditing ? editTags : (article.tags ?? []).join(", ")}
                                     onChange={(e) => setEditTags(e.target.value)}
                                     onFocus={() => {
                                         if (!isEditing) startEditing();
@@ -506,7 +383,7 @@ export default function KBArticleDetailPage() {
                                 </label>
                                 <Textarea
                                     id="kb-content"
-                                    value={isEditing ? editContent : article.content}
+                                    value={isEditing ? editContent : article.body}
                                     onChange={(e) => setEditContent(e.target.value)}
                                     onFocus={() => {
                                         if (!isEditing) startEditing();
@@ -547,53 +424,10 @@ export default function KBArticleDetailPage() {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {article.linkedRecords.length === 0 ? (
-                                    <div className="text-center py-8 text-sm text-muted-foreground">
-                                        No linked records. Use the search above to link projects,
-                                        deals, events, or contracts.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {article.linkedRecords.map((record) => (
-                                            <div
-                                                key={record.id}
-                                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="text-[10px]"
-                                                    >
-                                                        {RECORD_TYPE_LABELS[record.type] ??
-                                                            record.type}
-                                                    </Badge>
-                                                    <span className="text-sm font-medium">
-                                                        {record.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-7 w-7 p-0"
-                                                        onClick={() => router.push(record.href)}
-                                                        aria-label={`Open ${record.name}`}
-                                                    >
-                                                        <ExternalLink className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-7 w-7 p-0 text-destructive"
-                                                        aria-label={`Unlink ${record.name}`}
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="text-center py-8 text-sm text-muted-foreground">
+                                    No linked records. Use the search above to link projects, deals,
+                                    events, or contracts.
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -613,7 +447,7 @@ export default function KBArticleDetailPage() {
                     <RecordChatter
                         recordType="kb_article"
                         recordId={articleId}
-                        activityItems={PLACEHOLDER_ACTIVITY}
+                        activityItems={activityItems}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

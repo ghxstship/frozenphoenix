@@ -16,7 +16,7 @@ import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
-import { Calendar, CheckCircle2, DollarSign, FileText, Loader2, Shield } from "lucide-react";
+import { Calendar, CheckCircle2, DollarSign, FileText, Shield } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useInsurancePolicy } from "@/lib/supabase/hooks-pages";
 
@@ -34,6 +34,7 @@ export default function InsurancePolicyDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: policy, isLoading } = useInsurancePolicy(entityId);
+    const updatePolicy = useUpdateInsurancePolicy();
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Insurance Policy",
@@ -45,9 +46,7 @@ export default function InsurancePolicyDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!policy) {
@@ -200,19 +199,39 @@ export default function InsurancePolicyDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => console.log("Renew policy:", entityId)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={updatePolicy.isPending}
+                        onClick={() =>
+                            updatePolicy.mutate({ id: entityId, status: "pending_renewal" })
+                        }
+                    >
                         <Calendar className="h-4 w-4 mr-1" />
                         Renew
                     </Button>
-                    <Button size="sm" onClick={() => console.log("Verify policy:", entityId)}>
+                    <Button
+                        size="sm"
+                        disabled={updatePolicy.isPending}
+                        onClick={() => updatePolicy.mutate({ id: entityId, status: "verified" })}
+                    >
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Verify
                     </Button>
                 </div>
             }
             menuItems={[
-                { label: "Edit Policy", onClick: () => router.push(`/insurance-policies/${entityId}/edit`) },
-                { label: "Upload Certificate", onClick: () => router.push(`/documents/new?entityType=insurance_policy&entityId=${entityId}`) },
+                {
+                    label: "Edit Policy",
+                    onClick: () => router.push(`/insurance-policies/${entityId}/edit`),
+                },
+                {
+                    label: "Upload Certificate",
+                    onClick: () =>
+                        router.push(
+                            `/documents/new?entityType=insurance_policy&entityId=${entityId}`
+                        ),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -352,7 +371,11 @@ export default function InsurancePolicyDetailPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <Button variant="outline" size="sm" onClick={() => console.log("View policy document:", entityId)}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setActiveTab("documents")}
+                                >
                                     View
                                 </Button>
                             </div>
@@ -370,7 +393,11 @@ export default function InsurancePolicyDetailPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <Button variant="outline" size="sm" onClick={() => console.log("View certificate:", entityId)}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setActiveTab("documents")}
+                                >
                                     View
                                 </Button>
                             </div>

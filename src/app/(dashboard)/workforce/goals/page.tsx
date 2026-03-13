@@ -27,6 +27,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useGoals, useUpdateGoal } from "@/lib/supabase/hooks-feature-gaps";
 
 type GoalStatus = "not_started" | "on_track" | "at_risk" | "behind" | "completed" | "cancelled";
 type GoalCategory = "performance" | "development" | "project" | "team" | "personal";
@@ -80,169 +82,6 @@ const PERIOD_LABELS: Record<GoalPeriod, string> = {
     annual: "Annual 2026",
 };
 
-const PLACEHOLDER_GOALS: Goal[] = [
-    {
-        id: "g1",
-        title: "Increase Project Delivery Efficiency",
-        description:
-            "Reduce average project delivery time by 15% while maintaining quality standards",
-        ownerName: "Sarah Chen",
-        category: "performance",
-        status: "on_track",
-        period: "q2",
-        progress: 62,
-        dueDate: "2026-06-30",
-        keyResults: [
-            {
-                id: "kr1",
-                title: "Average project completion time",
-                targetValue: 85,
-                currentValue: 88,
-                unit: "% on-time",
-            },
-            {
-                id: "kr2",
-                title: "Client satisfaction score",
-                targetValue: 4.5,
-                currentValue: 4.3,
-                unit: "/5",
-            },
-            { id: "kr3", title: "Rework rate", targetValue: 5, currentValue: 7, unit: "%" },
-        ],
-        linkedProjectName: "Nike Air Max Launch",
-    },
-    {
-        id: "g2",
-        title: "Complete Rigging Certification",
-        description: "Obtain Level 2 rigging certification for arena-scale installations",
-        ownerName: "Mike Johnson",
-        category: "development",
-        status: "on_track",
-        period: "q2",
-        progress: 75,
-        dueDate: "2026-05-15",
-        keyResults: [
-            {
-                id: "kr4",
-                title: "Training hours completed",
-                targetValue: 40,
-                currentValue: 30,
-                unit: "hours",
-            },
-            {
-                id: "kr5",
-                title: "Practice installations",
-                targetValue: 5,
-                currentValue: 4,
-                unit: "installs",
-            },
-        ],
-    },
-    {
-        id: "g3",
-        title: "Build Cross-Functional Design Team",
-        description: "Recruit and onboard 3 new designers with experiential specialization",
-        ownerName: "Alex Rivera",
-        category: "team",
-        status: "at_risk",
-        period: "q2",
-        progress: 33,
-        dueDate: "2026-06-30",
-        keyResults: [
-            {
-                id: "kr6",
-                title: "Designers hired",
-                targetValue: 3,
-                currentValue: 1,
-                unit: "people",
-            },
-            {
-                id: "kr7",
-                title: "Onboarding completed",
-                targetValue: 3,
-                currentValue: 0,
-                unit: "people",
-            },
-        ],
-    },
-    {
-        id: "g4",
-        title: "Reduce Budget Overruns",
-        description: "Keep all projects within 5% of planned budget",
-        ownerName: "Jordan Lee",
-        category: "performance",
-        status: "behind",
-        period: "annual",
-        progress: 25,
-        dueDate: "2026-12-31",
-        keyResults: [
-            {
-                id: "kr8",
-                title: "Projects within budget",
-                targetValue: 90,
-                currentValue: 72,
-                unit: "%",
-            },
-            { id: "kr9", title: "Average overrun", targetValue: 5, currentValue: 12, unit: "%" },
-        ],
-    },
-    {
-        id: "g5",
-        title: "Launch Internal Knowledge Base",
-        description: "Publish 50 SOPs and ensure 80% team acknowledgment rate",
-        ownerName: "Sarah Chen",
-        category: "project",
-        status: "on_track",
-        period: "q1",
-        progress: 90,
-        dueDate: "2026-03-31",
-        keyResults: [
-            {
-                id: "kr10",
-                title: "SOPs published",
-                targetValue: 50,
-                currentValue: 45,
-                unit: "articles",
-            },
-            {
-                id: "kr11",
-                title: "Acknowledgment rate",
-                targetValue: 80,
-                currentValue: 76,
-                unit: "%",
-            },
-        ],
-        linkedProjectName: "Knowledge Base Initiative",
-    },
-    {
-        id: "g6",
-        title: "Vendor Performance Review Cycle",
-        description: "Complete quarterly reviews for all active vendors",
-        ownerName: "Tom Bradley",
-        category: "performance",
-        status: "completed",
-        period: "q1",
-        progress: 100,
-        dueDate: "2026-03-31",
-        keyResults: [
-            {
-                id: "kr12",
-                title: "Vendors reviewed",
-                targetValue: 12,
-                currentValue: 12,
-                unit: "vendors",
-            },
-            {
-                id: "kr13",
-                title: "Action plans created",
-                targetValue: 4,
-                currentValue: 4,
-                unit: "plans",
-            },
-        ],
-    },
-];
-
 const TAB_VALUES = ["all", "on_track", "at_risk", "behind", "completed"] as const;
 
 export default function GoalsPage() {
@@ -252,32 +91,66 @@ export default function GoalsPage() {
         defaultValue: "all",
         validValues: TAB_VALUES,
     });
-    const [expandedId, setExpandedId] = useState<string | null>("g1");
+    const [expandedId, setExpandedId] = useState<string | null>(null);
 
     const [createOpen, openCreate, closeCreate] = useCreateAction();
-    const filtered = useMemo(
+    const updateGoal = useUpdateGoal();
+
+    const { data: sbGoals, isLoading } = useGoals();
+
+    const goals: Goal[] = useMemo(
         () =>
-            PLACEHOLDER_GOALS.filter((g) => {
-                if (statusFilter !== "all" && g.status !== statusFilter) return false;
-                if (
-                    search &&
-                    !g.title.toLowerCase().includes(search.toLowerCase()) &&
-                    !g.ownerName.toLowerCase().includes(search.toLowerCase())
-                )
-                    return false;
-                return true;
+            (sbGoals ?? []).map((g) => {
+                const pct =
+                    g.target_value && g.target_value > 0
+                        ? Math.min(100, Math.round((g.current_value / g.target_value) * 100))
+                        : 0;
+                return {
+                    id: g.id,
+                    title: g.title,
+                    description: g.description ?? "",
+                    ownerName: g.profiles?.name ?? "",
+                    category: (g.goal_type as GoalCategory) ?? "performance",
+                    status: (g.status as GoalStatus) ?? "not_started",
+                    period: "q2" as GoalPeriod,
+                    progress: pct,
+                    dueDate: g.due_date ?? "",
+                    keyResults: g.target_value
+                        ? [
+                              {
+                                  id: `kr-${g.id}`,
+                                  title: g.title,
+                                  targetValue: g.target_value,
+                                  currentValue: g.current_value,
+                                  unit: g.unit,
+                              },
+                          ]
+                        : [],
+                    linkedProjectName: g.projects?.name,
+                    parentGoalId: g.parent_goal_id ?? undefined,
+                };
             }),
-        [search, statusFilter]
+        [sbGoals]
     );
 
-    const onTrack = PLACEHOLDER_GOALS.filter((g) => g.status === "on_track").length;
-    const atRisk = PLACEHOLDER_GOALS.filter(
-        (g) => g.status === "at_risk" || g.status === "behind"
-    ).length;
-    const completed = PLACEHOLDER_GOALS.filter((g) => g.status === "completed").length;
-    const avgProgress = Math.round(
-        PLACEHOLDER_GOALS.reduce((s, g) => s + g.progress, 0) / PLACEHOLDER_GOALS.length
-    );
+    if (isLoading) return <LoadingState />;
+
+    const filtered = goals.filter((g) => {
+        if (statusFilter !== "all" && g.status !== statusFilter) return false;
+        if (
+            search &&
+            !g.title.toLowerCase().includes(search.toLowerCase()) &&
+            !g.ownerName.toLowerCase().includes(search.toLowerCase())
+        )
+            return false;
+        return true;
+    });
+
+    const onTrack = goals.filter((g) => g.status === "on_track").length;
+    const atRisk = goals.filter((g) => g.status === "at_risk" || g.status === "behind").length;
+    const completed = goals.filter((g) => g.status === "completed").length;
+    const avgProgress =
+        goals.length > 0 ? Math.round(goals.reduce((s, g) => s + g.progress, 0) / goals.length) : 0;
 
     return (
         <PermissionGate resource="workforce" action="read">
@@ -449,11 +322,35 @@ export default function GoalsPage() {
                                             </div>
 
                                             <div className="flex items-center gap-2 pt-2 border-t">
-                                                <Button size="sm" variant="outline" onClick={() => console.log("Update progress:", goal.id)}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={updateGoal.isPending}
+                                                    onClick={() =>
+                                                        updateGoal.mutate({
+                                                            id: goal.id,
+                                                            progress: Math.min(
+                                                                100,
+                                                                goal.progress + 10
+                                                            ),
+                                                        })
+                                                    }
+                                                >
                                                     Update Progress
                                                 </Button>
                                                 {goal.status !== "completed" && (
-                                                    <Button size="sm" variant="outline" onClick={() => console.log("Mark goal complete:", goal.id)}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        disabled={updateGoal.isPending}
+                                                        onClick={() =>
+                                                            updateGoal.mutate({
+                                                                id: goal.id,
+                                                                status: "completed",
+                                                                progress: 100,
+                                                            })
+                                                        }
+                                                    >
                                                         <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Mark Complete
                                                     </Button>
@@ -474,7 +371,11 @@ export default function GoalsPage() {
                     </div>
                 )}
             </div>
-            <CreateEntityDialog config={CREATE_GOAL_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_GOAL_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

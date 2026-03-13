@@ -2,6 +2,7 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { useBrandKits, useProjects } from "@/lib/supabase/hooks";
+import { useCreateBrandKit } from "@/lib/supabase/hooks-pages";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
@@ -28,6 +30,8 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 
 export default function BrandKitPage() {
+    const router = useRouter();
+    const createBrandKit = useCreateBrandKit();
     const [copiedColor, setCopiedColor] = React.useState<string | null>(null);
     const [showWizard, setShowWizard] = useState(false);
     const [wizardStep, setWizardStep] = useState(0);
@@ -74,9 +78,7 @@ export default function BrandKitPage() {
     const isLoading = loadingKits || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
     const copyToClipboard = (color: string) => {
         navigator.clipboard.writeText(color);
@@ -332,7 +334,22 @@ export default function BrandKitPage() {
                                         Next <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 ) : (
-                                    <Button disabled={!wizardData.clientName} onClick={() => console.log("Create brand kit:", wizardData)}>
+                                    <Button
+                                        disabled={
+                                            !wizardData.clientName || createBrandKit.isPending
+                                        }
+                                        onClick={() =>
+                                            createBrandKit.mutate(
+                                                {
+                                                    client_name: wizardData.clientName,
+                                                    primary_color: wizardData.primaryColor,
+                                                    accent_color: wizardData.accentColor,
+                                                    font_family: wizardData.fontFamily,
+                                                },
+                                                { onSuccess: () => setShowWizard(false) }
+                                            )
+                                        }
+                                    >
                                         <CheckCircle2 className="mr-2 h-4 w-4" />
                                         Create Brand Kit
                                     </Button>
@@ -384,7 +401,7 @@ export default function BrandKitPage() {
                                                 size="icon"
                                                 className="h-8 w-8"
                                                 aria-label="View asset details"
-                                                onClick={() => console.log("View brand kit:", kit.id)}
+                                                onClick={() => router.push(`/brand-kit/${kit.id}`)}
                                             >
                                                 <ExternalLink className="h-4 w-4" />
                                             </Button>
@@ -457,7 +474,11 @@ export default function BrandKitPage() {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="flex-1 text-xs"
-                                                    onClick={() => console.log("View assets for kit:", kit.id)}
+                                                    onClick={() =>
+                                                        router.push(
+                                                            `/brand-kit/${kit.id}?tab=assets`
+                                                        )
+                                                    }
                                                 >
                                                     <ImageIcon className="h-3.5 w-3.5" />
                                                     Assets
@@ -466,7 +487,7 @@ export default function BrandKitPage() {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="flex-1 text-xs"
-                                                    onClick={() => console.log("Export kit:", kit.id)}
+                                                    onClick={() => window.print()}
                                                 >
                                                     <Download className="h-3.5 w-3.5" />
                                                     Export

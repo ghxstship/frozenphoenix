@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SERVICE_REQUEST_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
@@ -21,119 +22,14 @@ import {
     FileSignature,
     FileText,
     FolderKanban,
+    Inbox,
     MessageSquare,
     Plus,
     ShieldCheck,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-
-interface PortalProject {
-    id: string;
-    name: string;
-    status: string;
-    phase: string;
-    progress: number;
-    nextMilestone: string;
-    nextMilestoneDate: string;
-}
-
-interface PortalInvoice {
-    id: string;
-    number: string;
-    amount: number;
-    status: string;
-    dueDate: string;
-}
-
-interface PortalApproval {
-    id: string;
-    title: string;
-    type: string;
-    status: string;
-    deadline: string;
-}
-
-interface PortalEstimate {
-    id: string;
-    number: string;
-    title: string;
-    total: number;
-    status: string;
-    validUntil: string;
-    sentAt: string;
-}
-
-const mockProjects: PortalProject[] = [
-    {
-        id: "1",
-        name: "Air Max Launch Experience",
-        status: "active",
-        phase: "Fabrication",
-        progress: 65,
-        nextMilestone: "QC Sign-off",
-        nextMilestoneDate: "2026-03-10",
-    },
-    {
-        id: "2",
-        name: "Summer Brand Activation",
-        status: "planning",
-        phase: "Pre-Production",
-        progress: 25,
-        nextMilestone: "Creative Approval",
-        nextMilestoneDate: "2026-03-20",
-    },
-];
-
-const mockInvoices: PortalInvoice[] = [
-    { id: "1", number: "INV-2026-0001", amount: 125000, status: "paid", dueDate: "2026-02-14" },
-    { id: "2", number: "INV-2026-0003", amount: 195000, status: "overdue", dueDate: "2026-01-31" },
-    { id: "3", number: "INV-2026-0005", amount: 62500, status: "sent", dueDate: "2026-03-20" },
-];
-
-const mockApprovals: PortalApproval[] = [
-    {
-        id: "1",
-        title: "Creative Concept — Air Max Launch",
-        type: "creative",
-        status: "pending",
-        deadline: "2026-03-05",
-    },
-    {
-        id: "2",
-        title: "Fabrication Proof — Stage Design",
-        type: "production",
-        status: "pending",
-        deadline: "2026-03-08",
-    },
-    {
-        id: "3",
-        title: "Budget Amendment Request",
-        type: "financial",
-        status: "approved",
-        deadline: "2026-02-28",
-    },
-];
-
-const mockEstimates: PortalEstimate[] = [
-    {
-        id: "est1",
-        number: "EST-2026-001",
-        title: "SXSW Brand Activation Package",
-        total: 198740,
-        status: "sent",
-        validUntil: "2026-03-01",
-        sentAt: "2026-02-20",
-    },
-    {
-        id: "est4",
-        number: "EST-2026-004",
-        title: "Podcast Studio Pop-Up",
-        total: 68500,
-        status: "accepted",
-        validUntil: "2026-03-15",
-        sentAt: "2026-02-15",
-    },
-];
+import { useApprovals, useProjects } from "@/lib/supabase/hooks";
+import { useClientInvoices, useEstimates } from "@/lib/supabase/hooks-pages";
 
 const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success" | "destructive"> =
     {
@@ -145,12 +41,103 @@ const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success
         expired: "destructive",
     };
 
+function EmptyRow({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Inbox className="h-8 w-8 mb-2 opacity-50" />
+            <p className="text-sm">{message}</p>
+        </div>
+    );
+}
+
 export default function ClientPortalPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
-    const totalOutstanding = mockInvoices
+    const { data: sbProjects, isLoading: projLoading } = useProjects();
+    const { data: sbInvoices, isLoading: invLoading } = useClientInvoices();
+    const { data: sbApprovals, isLoading: appLoading } = useApprovals();
+    const { data: sbEstimates, isLoading: estLoading } = useEstimates();
+
+    const isLoading = projLoading || invLoading || appLoading || estLoading;
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
+
+    type ProjectView = {
+        id: string;
+        name: string;
+        status: string;
+        phase: string;
+        progress: number;
+        nextMilestone: string;
+        nextMilestoneDate: string;
+    };
+    const projects: ProjectView[] = (sbProjects ?? []).map((p) => {
+        const rec = p as Record<string, unknown>;
+        return {
+            id: p.id,
+            name: p.name ?? "",
+            status: (p.status ?? "planning") as string,
+            phase: (rec.phase as string) ?? "",
+            progress: Number(rec.progress ?? 0),
+            nextMilestone: "",
+            nextMilestoneDate: "",
+        };
+    });
+
+    type InvoiceView = {
+        id: string;
+        number: string;
+        amount: number;
+        status: string;
+        dueDate: string;
+    };
+    const invoices: InvoiceView[] = (sbInvoices ?? []).map((inv: Record<string, unknown>) => ({
+        id: inv.id as string,
+        number: (inv.invoice_number as string) ?? "",
+        amount: Number(inv.total ?? 0),
+        status: (inv.status as string) ?? "draft",
+        dueDate: (inv.due_date as string) ?? "",
+    }));
+
+    type ApprovalView = {
+        id: string;
+        title: string;
+        type: string;
+        status: string;
+        deadline: string;
+    };
+    const approvals: ApprovalView[] = (sbApprovals ?? []).map((a) => ({
+        id: a.id,
+        title: a.milestone_name ?? "",
+        type: a.milestone_id ?? "",
+        status: (a.status ?? "pending") as string,
+        deadline: a.deadline ? String(a.deadline) : "",
+    }));
+
+    type EstimateView = {
+        id: string;
+        number: string;
+        title: string;
+        total: number;
+        status: string;
+        validUntil: string;
+        sentAt: string;
+    };
+    const estimates: EstimateView[] = (sbEstimates ?? []).map((e: Record<string, unknown>) => ({
+        id: e.id as string,
+        number: (e.number as string) ?? "",
+        title: (e.title as string) ?? "",
+        total: Number(e.total ?? 0),
+        status: (e.status as string) ?? "draft",
+        validUntil: (e.valid_until as string) ?? "",
+        sentAt: (e.sent_at as string) ?? "",
+    }));
+
+    const totalOutstanding = invoices
         .filter((i) => i.status !== "paid")
         .reduce((sum, i) => sum + i.amount, 0);
-    const pendingApprovals = mockApprovals.filter((a) => a.status === "pending").length;
+    const pendingApprovals = approvals.filter((a) => a.status === "pending").length;
 
     return (
         <PermissionGate resource="client_portal" action="read">
@@ -176,7 +163,11 @@ export default function ClientPortalPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard
                         title="Active Projects"
-                        value={mockProjects.length}
+                        value={
+                            projects.filter(
+                                (p) => p.status === "active" || p.status === "in_progress"
+                            ).length
+                        }
                         icon={FolderKanban}
                     />
                     <StatCard
@@ -189,8 +180,8 @@ export default function ClientPortalPage() {
                         value={formatCurrency(totalOutstanding)}
                         icon={DollarSign}
                     />
-                    <StatCard title="Estimates" value={mockEstimates.length} icon={FileSignature} />
-                    <StatCard title="Documents" value={12} icon={FileText} />
+                    <StatCard title="Estimates" value={estimates.length} icon={FileSignature} />
+                    <StatCard title="Documents" value={0} icon={FileText} />
                 </div>
 
                 {/* Projects */}
@@ -202,7 +193,8 @@ export default function ClientPortalPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {mockProjects.map((project) => (
+                        {projects.length === 0 && <EmptyRow message="No projects found" />}
+                        {projects.map((project) => (
                             <div
                                 key={project.id}
                                 className="p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
@@ -213,7 +205,8 @@ export default function ClientPortalPage() {
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge
                                                 variant={
-                                                    project.status === "active"
+                                                    project.status === "active" ||
+                                                    project.status === "in_progress"
                                                         ? "success"
                                                         : "ghost"
                                                 }
@@ -236,11 +229,13 @@ export default function ClientPortalPage() {
                                         <span className="font-semibold">{project.progress}%</span>
                                     </div>
                                     <ProgressBar value={project.progress} size="md" />
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <Calendar className="h-3 w-3" />
-                                        Next: {project.nextMilestone} —{" "}
-                                        {formatDate(project.nextMilestoneDate)}
-                                    </div>
+                                    {project.nextMilestone && (
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Calendar className="h-3 w-3" />
+                                            Next: {project.nextMilestone} —{" "}
+                                            {formatDate(project.nextMilestoneDate)}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -257,7 +252,8 @@ export default function ClientPortalPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {mockEstimates.map((est) => (
+                            {estimates.length === 0 && <EmptyRow message="No estimates found" />}
+                            {estimates.map((est) => (
                                 <div
                                     key={est.id}
                                     className="p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
@@ -286,7 +282,10 @@ export default function ClientPortalPage() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                                        <span>Valid until {formatDate(est.validUntil)}</span>
+                                        <span>
+                                            {est.validUntil &&
+                                                `Valid until ${formatDate(est.validUntil)}`}
+                                        </span>
                                         {est.status === "sent" && (
                                             <Button size="sm">Review & Approve</Button>
                                         )}
@@ -305,7 +304,8 @@ export default function ClientPortalPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {mockApprovals.map((approval) => (
+                            {approvals.length === 0 && <EmptyRow message="No approvals pending" />}
+                            {approvals.map((approval) => (
                                 <div
                                     key={approval.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
@@ -350,7 +350,8 @@ export default function ClientPortalPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {mockInvoices.map((invoice) => (
+                        {invoices.length === 0 && <EmptyRow message="No invoices found" />}
+                        {invoices.map((invoice) => (
                             <div
                                 key={invoice.id}
                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
@@ -390,7 +391,11 @@ export default function ClientPortalPage() {
                     </CardContent>
                 </Card>
             </div>
-            <CreateEntityDialog config={CREATE_SERVICE_REQUEST_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_SERVICE_REQUEST_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

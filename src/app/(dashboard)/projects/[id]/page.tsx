@@ -2,7 +2,7 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { DetailLayout } from "@/components/layouts/detail-layout";
@@ -21,8 +21,7 @@ import { Input } from "@/components/ui/input";
 import { PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
-import type { ActivityItem } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
+import type { ActivityItem, CommentItem } from "@/components/activity";
 import { PROJECT_PHASE_MAP } from "@/config/domain-config";
 import {
     useApprovals,
@@ -33,6 +32,11 @@ import {
     useTasks,
     useUpdateProject,
 } from "@/lib/supabase/hooks";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
@@ -50,93 +54,6 @@ import {
 type TabId = "overview" | "tasks" | "team" | "budget" | "approvals" | "chatter";
 const TAB_VALUES = ["overview", "tasks", "team", "budget", "approvals", "chatter"] as const;
 
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "Sarah Chen",
-        entityType: "project",
-        entityName: "this project",
-        createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "assigned",
-        actorName: "Sarah Chen",
-        entityType: "team",
-        entityName: "Mike Johnson",
-        description: "Added as Production Lead",
-        createdAt: new Date(Date.now() - 13 * 86400000).toISOString(),
-    },
-    {
-        id: "a3",
-        action: "status_changed",
-        actorName: "Mike Johnson",
-        entityType: "project",
-        description: "Status changed from Draft to Active",
-        createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-    },
-    {
-        id: "a4",
-        action: "commented",
-        actorName: "Alex Rivera",
-        entityType: "project",
-        description: "Budget looks tight — can we revisit vendor quotes?",
-        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-    {
-        id: "a5",
-        action: "updated",
-        actorName: "Sarah Chen",
-        entityType: "budget",
-        description: "Budget increased by $15,000",
-        createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-    {
-        id: "a6",
-        action: "approved",
-        actorName: "Jordan Lee",
-        entityType: "milestone",
-        entityName: "Design Sign-Off",
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u2",
-        authorName: "Mike Johnson",
-        content:
-            "Kickoff meeting went well. Client confirmed the creative direction — we're good to proceed with fabrication specs.",
-        createdAt: new Date(Date.now() - 12 * 86400000).toISOString(),
-    },
-    {
-        id: "c2",
-        authorId: "u3",
-        authorName: "Alex Rivera",
-        content:
-            "Budget looks tight for the AV package. Can we revisit the vendor quotes before committing?",
-        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-    {
-        id: "c3",
-        authorId: "u1",
-        authorName: "Sarah Chen",
-        content:
-            "Good call Alex — I've renegotiated with the AV vendor and added $15k buffer. Updated the budget tab.",
-        createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-    {
-        id: "c4",
-        authorId: "u4",
-        authorName: "Jordan Lee",
-        content:
-            "Design sign-off is approved. Moving to fabrication phase. @Mike please update the schedule.",
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-];
-
 export default function ProjectDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -148,12 +65,40 @@ export default function ProjectDetailPage() {
     });
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [taskTitle, setTaskTitle] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
     const updateProject = useUpdateProject();
     const deleteProject = useDeleteProject();
     const createTask = useCreateTask();
 
     const { data: project, isLoading } = useProject(projectId);
+    const { data: sbActivity } = useRecordActivityLog("project", projectId);
+    const { data: sbComments } = useRecordComments("project", projectId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
 
     const handleArchive = async () => {
         try {
@@ -204,9 +149,7 @@ export default function ProjectDetailPage() {
     });
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!project) {
@@ -231,14 +174,12 @@ export default function ProjectDetailPage() {
     const completedTasks = projectTasks.filter((t) => t.status === "done").length;
 
     const handleAddComment = async (content: string) => {
-        const newComment: CommentItem = {
-            id: `c-${Date.now()}`,
-            authorId: "u1",
-            authorName: "Sarah Chen",
-            content,
-            createdAt: new Date().toISOString(),
-        };
-        setChatterComments((prev) => [...prev, newComment]);
+        await createComment.mutateAsync({
+            entity_type: "project",
+            entity_id: projectId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -319,7 +260,10 @@ export default function ProjectDetailPage() {
                     </Button>
                 }
                 menuItems={[
-                    { label: "Duplicate Project", onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`) },
+                    {
+                        label: "Duplicate Project",
+                        onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`),
+                    },
                     {
                         label: updateProject.isPending ? "Archiving..." : "Archive Project",
                         onClick: handleArchive,
@@ -501,7 +445,12 @@ export default function ProjectDetailPage() {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Team Members</CardTitle>
-                            <Button size="sm" onClick={() => router.push(`/crew/new?projectId=${projectId}`)}>Add Member</Button>
+                            <Button
+                                size="sm"
+                                onClick={() => router.push(`/crew/new?projectId=${projectId}`)}
+                            >
+                                Add Member
+                            </Button>
                         </CardHeader>
                         <CardContent>
                             {projectStakeholders.length === 0 ? (
@@ -511,7 +460,8 @@ export default function ProjectDetailPage() {
                                     description="Add team members to this project"
                                     action={{
                                         label: "Add Member",
-                                        onClick: () => router.push(`/crew/new?projectId=${projectId}`),
+                                        onClick: () =>
+                                            router.push(`/crew/new?projectId=${projectId}`),
                                     }}
                                 />
                             ) : (
@@ -637,7 +587,7 @@ export default function ProjectDetailPage() {
                     <RecordChatter
                         recordType="project"
                         recordId={projectId}
-                        activityItems={PLACEHOLDER_ACTIVITY}
+                        activityItems={activityItems}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddComment}

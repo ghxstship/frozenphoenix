@@ -15,14 +15,13 @@ import {
     CheckCircle2,
     Clock,
     FileText,
-    Loader2,
     RefreshCw,
     ShieldAlert,
     ShieldCheck,
     XCircle,
 } from "lucide-react";
 import type { ComplianceRequirement } from "@/types/vendor-lifecycle";
-import { useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
+import { useComplianceRequirements, useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceDocStatus, VendorComplianceDoc } from "@/types/vendor-lifecycle";
 
@@ -68,7 +67,7 @@ export default function VendorCompliancePage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const { data: sbDocs, isLoading } = useVendorComplianceDocs();
+    const { data: sbDocs, isLoading, refetch } = useVendorComplianceDocs();
 
     const docs: VendorComplianceDoc[] = (sbDocs ?? []).map(
         (d: Record<string, unknown>) =>
@@ -84,13 +83,12 @@ export default function VendorCompliancePage() {
                 carrierName: (d.carrier_name as string) ?? undefined,
             }) as VendorComplianceDoc
     );
-    // NEXT: Wire to useComplianceRequirements() when hook is available
-    const requirements: ComplianceRequirement[] = [];
+    const { data: sbRequirements } = useComplianceRequirements();
+    const requirements: ComplianceRequirement[] = (sbRequirements ??
+        []) as unknown as ComplianceRequirement[];
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = docs.filter((doc) => {
@@ -122,7 +120,7 @@ export default function VendorCompliancePage() {
                     title="Vendor Compliance"
                     description="Document tracking, verification status, and compliance requirement management for all vendors"
                 >
-                    <Button size="sm" onClick={() => console.log("Sync vendor compliance status")}>
+                    <Button size="sm" onClick={() => refetch()}>
                         <RefreshCw className="h-4 w-4" /> Sync Status
                     </Button>
                 </PageHeader>
@@ -148,7 +146,11 @@ export default function VendorCompliancePage() {
                                         `${expiringSoon} document(s) expiring within 30 days.`}
                                 </p>
                             </div>
-                            <Button size="sm" variant="destructive" onClick={() => console.log("View compliance alerts")}>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setStatusFilter("expired")}
+                            >
                                 View Alerts
                             </Button>
                         </CardContent>

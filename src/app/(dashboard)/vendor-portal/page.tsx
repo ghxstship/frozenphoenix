@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/layouts/loading-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
     Clock,
     DollarSign,
     FileText,
-    MapPin,
+    Inbox,
     MessageSquare,
     Send,
     ShieldCheck,
@@ -23,203 +24,8 @@ import {
     Upload,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-
-interface VendorTask {
-    id: string;
-    title: string;
-    projectName: string;
-    dueDate: string;
-    status: "todo" | "in_progress" | "complete" | "overdue";
-    priority: "high" | "medium" | "low";
-}
-
-interface VendorDocument {
-    id: string;
-    name: string;
-    type: string;
-    status: "pending" | "submitted" | "approved" | "rejected";
-    dueDate: string;
-}
-
-interface VendorSchedule {
-    id: string;
-    date: string;
-    location: string;
-    callTime: string;
-    wrapTime: string;
-    projectName: string;
-}
-
-interface VendorWorkOrder {
-    id: string;
-    number: string;
-    title: string;
-    projectName: string;
-    status: string;
-    scheduledStart: string;
-    estimatedCost: number;
-}
-
-interface VendorInvoiceSubmission {
-    id: string;
-    number: string;
-    workOrderRef: string;
-    amount: number;
-    status: "draft" | "submitted" | "approved" | "paid" | "disputed";
-    submittedDate: string;
-}
-
-const mockTasks: VendorTask[] = [
-    {
-        id: "1",
-        title: "Deliver LED panels to Barclays Center",
-        projectName: "Nike Air Max Launch",
-        dueDate: "2026-03-13",
-        status: "in_progress",
-        priority: "high",
-    },
-    {
-        id: "2",
-        title: "Install rigging points — Stage Left",
-        projectName: "Nike Air Max Launch",
-        dueDate: "2026-03-14",
-        status: "todo",
-        priority: "high",
-    },
-    {
-        id: "3",
-        title: "Submit insurance certificate renewal",
-        projectName: "General",
-        dueDate: "2026-03-01",
-        status: "overdue",
-        priority: "medium",
-    },
-    {
-        id: "4",
-        title: "AV equipment check-in",
-        projectName: "Red Bull Festival Activation",
-        dueDate: "2026-04-08",
-        status: "todo",
-        priority: "medium",
-    },
-    {
-        id: "5",
-        title: "Generator delivery — Indio site",
-        projectName: "Coachella Brand Experience",
-        dueDate: "2026-03-28",
-        status: "todo",
-        priority: "low",
-    },
-];
-
-const mockDocuments: VendorDocument[] = [
-    {
-        id: "1",
-        name: "Certificate of Insurance 2026",
-        type: "insurance",
-        status: "pending",
-        dueDate: "2026-03-01",
-    },
-    { id: "2", name: "W-9 Tax Form", type: "tax", status: "approved", dueDate: "2026-01-15" },
-    {
-        id: "3",
-        name: "Equipment Inventory List",
-        type: "inventory",
-        status: "submitted",
-        dueDate: "2026-03-10",
-    },
-    {
-        id: "4",
-        name: "Safety Certification",
-        type: "safety",
-        status: "approved",
-        dueDate: "2026-02-01",
-    },
-];
-
-const mockSchedule: VendorSchedule[] = [
-    {
-        id: "1",
-        date: "2026-03-13",
-        location: "Barclays Center, Brooklyn",
-        callTime: "06:00",
-        wrapTime: "14:00",
-        projectName: "Nike Air Max Launch",
-    },
-    {
-        id: "2",
-        date: "2026-03-14",
-        location: "Barclays Center, Brooklyn",
-        callTime: "07:00",
-        wrapTime: "16:00",
-        projectName: "Nike Air Max Launch",
-    },
-    {
-        id: "3",
-        date: "2026-04-08",
-        location: "Randalls Island Park",
-        callTime: "05:00",
-        wrapTime: "18:00",
-        projectName: "Red Bull Festival Activation",
-    },
-];
-
-const mockWorkOrders: VendorWorkOrder[] = [
-    {
-        id: "wo1",
-        number: "WO-2026-001",
-        title: "Stage Steel Frame Fabrication",
-        projectName: "Coachella Main Stage 2026",
-        status: "in_progress",
-        scheduledStart: "2026-02-15",
-        estimatedCost: 185000,
-    },
-    {
-        id: "wo4",
-        number: "WO-2026-004",
-        title: "Custom Fixture Fabrication",
-        projectName: "Glossier Pop-Up NYC",
-        status: "completed",
-        scheduledStart: "2026-02-10",
-        estimatedCost: 28000,
-    },
-    {
-        id: "wo5",
-        number: "WO-2026-005",
-        title: "Electrical & Lighting Install",
-        projectName: "Glossier Pop-Up NYC",
-        status: "accepted",
-        scheduledStart: "2026-03-01",
-        estimatedCost: 14500,
-    },
-];
-
-const mockInvoiceSubmissions: VendorInvoiceSubmission[] = [
-    {
-        id: "vi1",
-        number: "VINV-001",
-        workOrderRef: "WO-2026-004",
-        amount: 26500,
-        status: "approved",
-        submittedDate: "2026-02-28",
-    },
-    {
-        id: "vi2",
-        number: "VINV-002",
-        workOrderRef: "WO-2026-001",
-        amount: 92500,
-        status: "submitted",
-        submittedDate: "2026-03-01",
-    },
-    {
-        id: "vi3",
-        number: "VINV-003",
-        workOrderRef: "WO-2026-005",
-        amount: 14500,
-        status: "draft",
-        submittedDate: "",
-    },
-];
+import { useInvoices, useTasks } from "@/lib/supabase/hooks";
+import { useVendorComplianceDocs, useWorkOrders } from "@/lib/supabase/hooks-pages";
 
 const TASK_STATUS_COLORS: Record<string, string> = {
     todo: "bg-muted text-muted-foreground",
@@ -252,11 +58,100 @@ const INV_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success
         disputed: "destructive",
     };
 
+function EmptyRow({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Inbox className="h-8 w-8 mb-2 opacity-50" />
+            <p className="text-sm">{message}</p>
+        </div>
+    );
+}
+
 export default function VendorPortalPage() {
-    const activeTasks = mockTasks.filter((t) => t.status !== "complete").length;
-    const overdueTasks = mockTasks.filter((t) => t.status === "overdue").length;
-    const pendingDocs = mockDocuments.filter((d) => d.status === "pending").length;
-    const totalInvoiced = mockInvoiceSubmissions
+    const { data: sbTasks, isLoading: tasksLoading } = useTasks();
+    const { data: sbWorkOrders, isLoading: woLoading } = useWorkOrders();
+    const { data: sbDocs, isLoading: docsLoading } = useVendorComplianceDocs();
+    const { data: sbInvoices, isLoading: invLoading } = useInvoices();
+
+    const isLoading = tasksLoading || woLoading || docsLoading || invLoading;
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
+
+    type TaskView = {
+        id: string;
+        title: string;
+        projectName: string;
+        dueDate: string;
+        status: string;
+        priority: string;
+    };
+    const tasks: TaskView[] = (sbTasks ?? []).map((t) => ({
+        id: t.id,
+        title: t.title ?? "",
+        projectName: (t as unknown as { projects?: { name: string } }).projects?.name ?? "",
+        dueDate: t.due_date ?? "",
+        status: (t.status ?? "todo") as string,
+        priority: (t.priority ?? "medium") as string,
+    }));
+
+    type WOView = {
+        id: string;
+        number: string;
+        title: string;
+        projectName: string;
+        status: string;
+        scheduledStart: string;
+        estimatedCost: number;
+    };
+    const workOrders: WOView[] = (sbWorkOrders ?? []).map((wo: Record<string, unknown>) => ({
+        id: wo.id as string,
+        number: (wo.number as string) ?? "",
+        title: (wo.title as string) ?? "",
+        projectName: (wo as unknown as { projects?: { name: string } }).projects?.name ?? "",
+        status: (wo.status as string) ?? "draft",
+        scheduledStart: (wo.scheduled_start as string) ?? "",
+        estimatedCost: (wo.estimated_cost as number) ?? 0,
+    }));
+
+    type DocView = { id: string; name: string; type: string; status: string; dueDate: string };
+    const docs: DocView[] = (sbDocs ?? []).map((d: Record<string, unknown>) => ({
+        id: d.id as string,
+        name: (d.doc_name as string) ?? "",
+        type: (d.doc_type as string) ?? "",
+        status: (d.status as string) ?? "pending_review",
+        dueDate: (d.expiry_date as string) ?? "",
+    }));
+
+    type InvView = {
+        id: string;
+        number: string;
+        workOrderRef: string;
+        amount: number;
+        status: string;
+        submittedDate: string;
+    };
+    const invoices: InvView[] = (sbInvoices ?? []).map((inv) => ({
+        id: inv.id,
+        number: `INV-${inv.id.slice(0, 8).toUpperCase()}`,
+        workOrderRef: inv.purchase_orders ? "PO" : "",
+        amount: Number(inv.amount ?? 0),
+        status: (inv.status ?? "draft") as string,
+        submittedDate: inv.invoice_date ?? "",
+    }));
+
+    type WorkOrderView = (typeof workOrders)[number];
+    const schedule: WorkOrderView[] = workOrders
+        .filter((wo: WorkOrderView) => wo.scheduledStart)
+        .sort((a: WorkOrderView, b: WorkOrderView) =>
+            a.scheduledStart.localeCompare(b.scheduledStart)
+        );
+
+    const activeTasks = tasks.filter((t) => t.status !== "complete" && t.status !== "done").length;
+    const overdueTasks = tasks.filter((t) => t.status === "overdue").length;
+    const pendingDocs = docs.filter((d) => d.status === "pending_review").length;
+    const totalInvoiced = invoices
         .filter((i) => i.status !== "draft")
         .reduce((s, i) => s + i.amount, 0);
 
@@ -268,7 +163,7 @@ export default function VendorPortalPage() {
                     description="Self-service portal: work orders, invoicing, compliance documents, and scheduling"
                 >
                     <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => console.log("Open messages")}>
+                        <Button size="sm" variant="outline">
                             <MessageSquare className="h-4 w-4" /> Messages
                         </Button>
                         <Badge variant="warning" className="text-sm px-3 py-1">
@@ -282,11 +177,7 @@ export default function VendorPortalPage() {
                     <StatCard title="Active Tasks" value={activeTasks} icon={CheckSquare} />
                     <StatCard title="Overdue" value={overdueTasks} icon={Clock} />
                     <StatCard title="Pending Docs" value={pendingDocs} icon={FileText} />
-                    <StatCard
-                        title="Work Orders"
-                        value={mockWorkOrders.length}
-                        icon={ClipboardList}
-                    />
+                    <StatCard title="Work Orders" value={workOrders.length} icon={ClipboardList} />
                     <StatCard
                         title="Total Invoiced"
                         value={formatCurrency(totalInvoiced)}
@@ -304,7 +195,8 @@ export default function VendorPortalPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {mockWorkOrders.map((wo) => (
+                            {workOrders.length === 0 && <EmptyRow message="No work orders found" />}
+                            {workOrders.map((wo) => (
                                 <div
                                     key={wo.id}
                                     className="p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
@@ -359,7 +251,8 @@ export default function VendorPortalPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {mockInvoiceSubmissions.map((inv) => (
+                            {invoices.length === 0 && <EmptyRow message="No invoices found" />}
+                            {invoices.map((inv) => (
                                 <div
                                     key={inv.id}
                                     className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
@@ -377,7 +270,7 @@ export default function VendorPortalPage() {
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground mt-0.5">
-                                            Ref: {inv.workOrderRef}
+                                            {inv.workOrderRef && `Ref: ${inv.workOrderRef}`}
                                             {inv.submittedDate &&
                                                 ` · Submitted ${formatDate(inv.submittedDate)}`}
                                         </p>
@@ -400,16 +293,17 @@ export default function VendorPortalPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {mockTasks.map((task) => (
+                        {tasks.length === 0 && <EmptyRow message="No tasks assigned" />}
+                        {tasks.map((task) => (
                             <div
                                 key={task.id}
-                                className={`flex items-center justify-between p-3 rounded-lg ${TASK_STATUS_COLORS[task.status]} transition-colors`}
+                                className={`flex items-center justify-between p-3 rounded-lg ${TASK_STATUS_COLORS[task.status] ?? ""} transition-colors`}
                             >
                                 <div className="flex items-center gap-3">
                                     <div
-                                        className={`h-8 w-8 rounded-lg flex items-center justify-center ${task.status === "complete" ? "bg-success/20" : task.status === "overdue" ? "bg-destructive/20" : "bg-primary/10"}`}
+                                        className={`h-8 w-8 rounded-lg flex items-center justify-center ${task.status === "complete" || task.status === "done" ? "bg-success/20" : task.status === "overdue" ? "bg-destructive/20" : "bg-primary/10"}`}
                                     >
-                                        {task.status === "complete" ? (
+                                        {task.status === "complete" || task.status === "done" ? (
                                             <CheckCircle2 className="h-4 w-4 text-success" />
                                         ) : (
                                             <CheckSquare className="h-4 w-4 text-primary" />
@@ -428,14 +322,15 @@ export default function VendorPortalPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Badge variant={PRIORITY_BADGE[task.priority]}>
+                                    <Badge variant={PRIORITY_BADGE[task.priority] ?? "ghost"}>
                                         {task.priority}
                                     </Badge>
                                     <Badge
                                         variant={
                                             task.status === "overdue"
                                                 ? "destructive"
-                                                : task.status === "complete"
+                                                : task.status === "complete" ||
+                                                    task.status === "done"
                                                   ? "success"
                                                   : "ghost"
                                         }
@@ -457,7 +352,8 @@ export default function VendorPortalPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {mockSchedule.map((shift) => (
+                        {schedule.length === 0 && <EmptyRow message="No upcoming schedule" />}
+                        {schedule.map((shift) => (
                             <div
                                 key={shift.id}
                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
@@ -473,15 +369,11 @@ export default function VendorPortalPage() {
                                         <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="h-3 w-3" />
-                                                {formatDate(shift.date)}
+                                                {formatDate(shift.scheduledStart)}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
-                                                {shift.callTime} — {shift.wrapTime}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <MapPin className="h-3 w-3" />
-                                                {shift.location}
+                                                <ClipboardList className="h-3 w-3" />
+                                                {shift.number}
                                             </span>
                                         </div>
                                     </div>
@@ -499,25 +391,27 @@ export default function VendorPortalPage() {
                                 <ShieldCheck className="h-4 w-4" />
                                 Compliance Documents
                             </CardTitle>
-                            <Button size="sm" variant="outline" onClick={() => console.log("Upload compliance document")}>
+                            <Button size="sm" variant="outline">
                                 <Upload className="h-3 w-3" /> Upload Document
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {mockDocuments.map((doc) => (
+                        {docs.length === 0 && <EmptyRow message="No compliance documents" />}
+                        {docs.map((doc) => (
                             <div
                                 key={doc.id}
                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
                             >
                                 <div className="flex items-center gap-3">
                                     <FileText
-                                        className={`h-4 w-4 ${doc.status === "approved" ? "text-success" : doc.status === "pending" ? "text-warning" : "text-muted-foreground"}`}
+                                        className={`h-4 w-4 ${doc.status === "approved" ? "text-success" : doc.status === "pending_review" ? "text-warning" : "text-muted-foreground"}`}
                                     />
                                     <div>
                                         <p className="text-sm font-semibold">{doc.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {doc.type} · Due {formatDate(doc.dueDate)}
+                                            {doc.type}{" "}
+                                            {doc.dueDate && `· Expires ${formatDate(doc.dueDate)}`}
                                         </p>
                                     </div>
                                 </div>
@@ -526,17 +420,17 @@ export default function VendorPortalPage() {
                                         variant={
                                             doc.status === "approved"
                                                 ? "success"
-                                                : doc.status === "pending"
+                                                : doc.status === "pending_review"
                                                   ? "warning"
                                                   : doc.status === "rejected"
                                                     ? "destructive"
                                                     : "info"
                                         }
                                     >
-                                        {doc.status}
+                                        {doc.status.replace("_", " ")}
                                     </Badge>
-                                    {doc.status === "pending" && (
-                                        <Button size="sm" onClick={() => console.log("Upload document:", doc.id)}>
+                                    {doc.status === "pending_review" && (
+                                        <Button size="sm">
                                             <Upload className="mr-2 h-3 w-3" />
                                             Upload
                                         </Button>

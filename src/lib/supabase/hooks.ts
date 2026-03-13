@@ -122,7 +122,6 @@ export type ProductionChecklistWithJoins = WithJoin<
     ProfileName & ProjectName & EventName
 >;
 
-
 // ─── Deals ───
 export function useDeals() {
     return useQuery({
@@ -307,6 +306,62 @@ export function useDeleteTask() {
             if (error) throw error;
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    });
+}
+
+// ─── User-Scoped Task Hooks (Home module) ───
+export function useMyTasks() {
+    return useQuery({
+        queryKey: ["my-tasks"],
+        queryFn: async () => {
+            const {
+                data: { user },
+            } = await getSupabase().auth.getUser();
+            if (!user) return [];
+            const { data, error } = await getSupabase()
+                .from("tasks")
+                .select("*, task_dependencies(depends_on_id), projects(name)")
+                .eq("assignee_id", user.id)
+                .order("due_date", { ascending: true, nullsFirst: false });
+            if (error) throw error;
+            return data as unknown as (TaskWithDeps & { projects: { name: string } | null })[];
+        },
+    });
+}
+
+export function useMyTaskCounts() {
+    return useQuery({
+        queryKey: ["my-task-counts"],
+        queryFn: async () => {
+            const {
+                data: { user },
+            } = await getSupabase().auth.getUser();
+            if (!user) return { total: 0, overdue: 0, dueToday: 0, dueThisWeek: 0, inProgress: 0 };
+
+            const { data, error } = await getSupabase()
+                .from("tasks")
+                .select("id, status, due_date")
+                .eq("assignee_id", user.id)
+                .not("status", "in", '("done","completed","cancelled")');
+            if (error) throw error;
+
+            const now = new Date();
+            const todayStr = now.toISOString().slice(0, 10);
+            const endOfWeek = new Date(now);
+            endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
+            const endOfWeekStr = endOfWeek.toISOString().slice(0, 10);
+
+            const tasks: { id: string; status: string; due_date: string | null }[] = data ?? [];
+            return {
+                total: tasks.length,
+                overdue: tasks.filter((t) => t.due_date && t.due_date < todayStr).length,
+                dueToday: tasks.filter((t) => t.due_date === todayStr).length,
+                dueThisWeek: tasks.filter(
+                    (t) => t.due_date && t.due_date >= todayStr && t.due_date <= endOfWeekStr
+                ).length,
+                inProgress: tasks.filter((t) => t.status === "in_progress").length,
+            };
+        },
     });
 }
 

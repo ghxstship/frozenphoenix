@@ -17,7 +17,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Campaign } from "@/types/creative-brand";
-import { useCreativeAssets } from "@/lib/supabase/hooks-pages";
+import { useCampaigns, useCreativeAssets, useCreativeReviews } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CampaignAsset, CampaignAssetProductionStatus, CreativeReview } from "@/types";
 import { CheckCircle2, Clock, Filter, Globe, Layers, Plus, Shield } from "lucide-react";
@@ -52,10 +52,10 @@ export default function CreativeAssetsPage() {
     const { data: sbAssets, isLoading } = useCreativeAssets();
 
     const assets = useMemo(() => (sbAssets ?? []) as unknown as CampaignAsset[], [sbAssets]);
-    // FUTURE: Wire to useCreativeReviews() hook when available
-    const reviews: CreativeReview[] = [];
-    // FUTURE: Wire to useCampaigns() hook when available
-    const campaigns: Campaign[] = [];
+    const { data: sbReviews } = useCreativeReviews();
+    const reviews = useMemo(() => (sbReviews ?? []) as unknown as CreativeReview[], [sbReviews]);
+    const { data: sbCampaigns } = useCampaigns();
+    const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);
 
     const filtered = useMemo(() => {
         return assets.filter((a) => {
@@ -89,9 +89,7 @@ export default function CreativeAssetsPage() {
     })();
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

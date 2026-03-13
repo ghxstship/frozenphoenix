@@ -9,11 +9,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Chip } from "@/components/ui/chip";
-import { FileText, Film, Image, Loader2, Lock, Music } from "lucide-react";
+import { FileText, Film, Image, Lock, Music } from "lucide-react";
 import { useDigitalAssets } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
-interface MockDigitalAsset {
+interface DigitalAssetView {
     id: string;
     name: string;
     assetClass: string;
@@ -40,7 +40,7 @@ export default function DigitalAssetsPage() {
 
     const { data: sbAssets, isLoading } = useDigitalAssets();
 
-    const assets: MockDigitalAsset[] = (sbAssets ?? []).map((a: Record<string, unknown>) => ({
+    const assets: DigitalAssetView[] = (sbAssets ?? []).map((a: Record<string, unknown>) => ({
         id: (a.id as string) ?? "",
         name: (a.name as string) ?? "",
         assetClass: (a.asset_class as string) ?? "document",
@@ -56,9 +56,7 @@ export default function DigitalAssetsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = assets.filter(

@@ -188,30 +188,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, fetchProfile, fetchMemberships, fetchUsername]);
 
     const signOut = useCallback(async () => {
-        // Clear client state immediately
-        setUser(null);
-        setProfile(null);
-        setUsername(null);
-        setSession(null);
-        setMemberships([]);
-        setActiveOrgId(null);
+        // Clear persisted preferences
         if (typeof window !== "undefined") {
             localStorage.removeItem(AUTH_ACTIVE_ORG_KEY);
         }
 
-        // Clear server-side session cookies via API route, then client-side signOut
+        // Clear server-side session cookies via API route
         try {
             await fetch("/api/auth/signout", { method: "POST" });
         } catch {
             // Best-effort — continue with client-side signOut
         }
 
+        // Client-side signOut (clears local Supabase tokens).
+        // Do NOT await — we navigate immediately to avoid the onAuthStateChange
+        // callback re-rendering the current page in an unauthenticated state.
         if (supabase) {
-            await supabase.auth.signOut();
+            supabase.auth.signOut();
         }
 
         // Hard navigation to /login ensures middleware sees cleared cookies.
-        // router.push would serve a cached RSC payload and race with middleware.
+        // This must happen synchronously after signOut to prevent the race
+        // where onAuthStateChange fires and the page re-renders without a user.
         if (typeof window !== "undefined") {
             window.location.href = "/login";
         }

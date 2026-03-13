@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { OverlineText } from "@/components/ui/overline-text";
 import type { CaseStudy } from "@/types";
 import { useCreateLead, usePublicTestimonials, useReviewStats } from "@/lib/supabase/hooks-crm";
+import { usePublicCaseStudies } from "@/lib/supabase/hooks-pages";
 import { getActiveBrand } from "@/config/brands";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -40,8 +41,8 @@ export default function LandingPage() {
     const { data: testimonials } = usePublicTestimonials();
     const { data: reviewStats } = useReviewStats();
 
-    // NEXT: Wire to useCaseStudies() when hook is available
-    const caseStudies: CaseStudy[] = [];
+    const { data: sbCaseStudies } = usePublicCaseStudies();
+    const caseStudies: CaseStudy[] = (sbCaseStudies ?? []) as unknown as CaseStudy[];
 
     const handleSubmit = async () => {
         const [firstName = "", ...lastParts] = formData.name.split(" ");

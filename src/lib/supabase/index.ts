@@ -281,7 +281,11 @@ export {
     useTeamMembersPage,
     useAddTeamMember,
     useRemoveTeamMember,
+    useMyDocuments,
 } from "./hooks-pages";
+
+// ─── User-Scoped Home Hooks ───
+export { useMyTasks, useMyTaskCounts } from "./hooks";
 
 // ─── Live-Ops Hooks ───
 export {

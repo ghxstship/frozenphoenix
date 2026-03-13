@@ -21,7 +21,6 @@ import {
     CheckCircle2,
     Clock,
     DollarSign,
-    Loader2,
     Plus,
     Receipt,
     Upload,
@@ -87,9 +86,7 @@ export default function ExpensesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = expenses.filter((e) => {
@@ -217,7 +214,10 @@ export default function ExpensesPage() {
                                                         Receipt attached
                                                     </span>
                                                 ) : (
-                                                    <button className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto" onClick={() => console.log("Add receipt:", expense.id)}>
+                                                    <button
+                                                        className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto"
+                                                        disabled
+                                                    >
                                                         <Upload className="h-3 w-3" />
                                                         Add receipt
                                                     </button>

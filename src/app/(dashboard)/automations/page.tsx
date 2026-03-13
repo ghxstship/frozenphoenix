@@ -21,7 +21,6 @@ import {
     CheckSquare,
     Clock,
     GitBranch,
-    Loader2,
     Mail,
     Pause,
     Play,
@@ -29,6 +28,7 @@ import {
     Zap,
 } from "lucide-react";
 import { useAutomations } from "@/lib/supabase/hooks-pages";
+import { useAutomationLogs } from "@/lib/supabase/hooks-extended";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -72,121 +72,11 @@ const LOG_STATUS_CONFIG: Record<
     skipped: { label: "Skipped", variant: "ghost" },
 };
 
-// FUTURE: Replace mockLogs with useAutomationLogs() hook when available
-const mockLogs: ExecutionLog[] = [
-    {
-        id: "l1",
-        automationName: "New Deal → Notify Sales Manager",
-        triggeredAt: "2026-02-25T14:32:00",
-        status: "success",
-        duration: "1.2s",
-        entityType: "deal",
-        entityId: "d-101",
-        entityName: "Samsung Pop-Up Activation",
-        actionsRun: ["Send Notification", "Send Email"],
-    },
-    {
-        id: "l2",
-        automationName: "Task Overdue → Escalate to PM",
-        triggeredAt: "2026-02-25T13:15:00",
-        status: "success",
-        duration: "0.8s",
-        entityType: "task",
-        entityId: "t-312",
-        entityName: "Finalize floor plan layout",
-        actionsRun: ["Create Task", "Send Notification"],
-    },
-    {
-        id: "l3",
-        automationName: "Invoice Overdue → Send Reminder",
-        triggeredAt: "2026-02-25T09:00:00",
-        status: "failed",
-        duration: "3.1s",
-        entityType: "invoice",
-        entityId: "inv-087",
-        entityName: "INV-2026-0087",
-        actionsRun: ["Send Email"],
-        error: "SMTP connection timeout — recipient server unreachable",
-    },
-    {
-        id: "l4",
-        automationName: "Daily Standup Reminder",
-        triggeredAt: "2026-02-25T09:00:00",
-        status: "success",
-        duration: "2.4s",
-        entityType: "project",
-        entityId: "p-005",
-        entityName: "All Active Projects",
-        actionsRun: ["Send Notification"],
-    },
-    {
-        id: "l5",
-        automationName: "Proposal Accepted → Create Project",
-        triggeredAt: "2026-02-24T16:42:00",
-        status: "success",
-        duration: "1.8s",
-        entityType: "proposal",
-        entityId: "prop-022",
-        entityName: "PROP-2026-0022 (Red Bull)",
-        actionsRun: ["Create Task", "Assign User"],
-    },
-    {
-        id: "l6",
-        automationName: "Budget Threshold → Alert Finance",
-        triggeredAt: "2026-02-24T11:20:00",
-        status: "skipped",
-        duration: "0.3s",
-        entityType: "project",
-        entityId: "p-008",
-        entityName: "Nike Air Max Launch",
-        actionsRun: [],
-        error: "Condition not met — budget at 72% (threshold: 80%)",
-    },
-    {
-        id: "l7",
-        automationName: "New Deal → Notify Sales Manager",
-        triggeredAt: "2026-02-24T10:05:00",
-        status: "success",
-        duration: "1.0s",
-        entityType: "deal",
-        entityId: "d-099",
-        entityName: "Adidas Festival Booth",
-        actionsRun: ["Send Notification", "Send Email"],
-    },
-    {
-        id: "l8",
-        automationName: "Task Overdue → Escalate to PM",
-        triggeredAt: "2026-02-23T15:30:00",
-        status: "success",
-        duration: "0.9s",
-        entityType: "task",
-        entityId: "t-298",
-        entityName: "Order LED panels",
-        actionsRun: ["Create Task", "Send Notification"],
-    },
-    {
-        id: "l9",
-        automationName: "Invoice Overdue → Send Reminder",
-        triggeredAt: "2026-02-23T09:00:00",
-        status: "success",
-        duration: "1.5s",
-        entityType: "invoice",
-        entityId: "inv-081",
-        entityName: "INV-2026-0081",
-        actionsRun: ["Send Email"],
-    },
-    {
-        id: "l10",
-        automationName: "Daily Standup Reminder",
-        triggeredAt: "2026-02-23T09:00:00",
-        status: "success",
-        duration: "2.1s",
-        entityType: "project",
-        entityId: "p-005",
-        entityName: "All Active Projects",
-        actionsRun: ["Send Notification"],
-    },
-];
+function deriveLogStatus(row: Record<string, unknown>): LogStatus {
+    if (row.success === true) return "success";
+    if (row.success === false) return "failed";
+    return "skipped";
+}
 
 const TRIGGER_LABELS: Record<TriggerType, { label: string; icon: React.ElementType }> = {
     created: { label: "When Created", icon: Plus },
@@ -237,6 +127,7 @@ export default function AutomationsPage() {
     const [logFilter, setLogFilter] = useState<string>("all");
 
     const { data: sbAutomations, isLoading } = useAutomations();
+    const { data: sbLogs } = useAutomationLogs();
 
     const automations: AutomationListItem[] = (sbAutomations ?? []).map(
         (a: Record<string, unknown>) => ({
@@ -254,9 +145,7 @@ export default function AutomationsPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = automations.filter((a) => {
@@ -268,7 +157,25 @@ export default function AutomationsPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const filteredLogs = mockLogs.filter((l) => {
+    const automationMap = new Map(automations.map((a) => [a.id, a]));
+    const logs: ExecutionLog[] = (sbLogs ?? []).map((row: Record<string, unknown>) => {
+        const execData = (row.execution_data ?? {}) as Record<string, unknown>;
+        const parent = automationMap.get(row.automation_id as string);
+        return {
+            id: row.id as string,
+            automationName: parent?.name ?? "Unknown Automation",
+            triggeredAt: (row.triggered_at as string) ?? "",
+            status: deriveLogStatus(row),
+            duration: (execData.duration as string) ?? "",
+            entityType: parent?.entityType ?? "",
+            entityId: (row.entity_id as string) ?? "",
+            entityName: (execData.entity_name as string) ?? (row.entity_id as string) ?? "",
+            actionsRun: (execData.actions_run as string[]) ?? [],
+            error: (row.error_message as string) ?? undefined,
+        };
+    });
+
+    const filteredLogs = logs.filter((l) => {
         const matchesLogFilter = logFilter === "all" || l.status === logFilter;
         const matchesSearch =
             !searchQuery ||
@@ -316,7 +223,7 @@ export default function AutomationsPage() {
                             id: "logs",
                             label: "Execution Logs",
                             icon: <Activity className="h-4 w-4" />,
-                            count: mockLogs.length,
+                            count: logs.length,
                         },
                     ]}
                     value={activeTab}
@@ -370,7 +277,7 @@ export default function AutomationsPage() {
                                         onKeyDown={(e: React.KeyboardEvent) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                                 e.preventDefault();
-                                                console.log("Open automation:", automation.id);
+                                                void automation.id;
                                             }
                                         }}
                                     >
@@ -512,7 +419,10 @@ export default function AutomationsPage() {
 
                     <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-warning/40 bg-warning/5 px-3 py-2 text-xs text-warning">
                         <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                        <span>Execution logs shown below are placeholder data. Live log streaming will be available once the automation engine is wired.</span>
+                        <span>
+                            Execution logs shown below are placeholder data. Live log streaming will
+                            be available once the automation engine is wired.
+                        </span>
                     </div>
                     <div className="space-y-3">
                         {filteredLogs.map((log, i) => {
@@ -619,7 +529,11 @@ export default function AutomationsPage() {
                     )}
                 </TabPanel>
             </div>
-            <CreateEntityDialog config={CREATE_AUTOMATION_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_AUTOMATION_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useSurveyResponses, useSurveyTemplates } from "@/lib/supabase/hooks-v2-features";
 
 type SurveysTab = "templates" | "responses" | "analytics";
 
@@ -52,111 +54,6 @@ interface SurveyResponse {
     comments: string;
     submittedAt: string;
 }
-
-const PLACEHOLDER_TEMPLATES: SurveyTemplate[] = [
-    {
-        id: "st1",
-        name: "Post-Event CSAT",
-        type: "csat",
-        questionCount: 8,
-        responseCount: 142,
-        averageRating: 4.3,
-        triggerOn: "event_completed",
-        isActive: true,
-        createdAt: "2025-11-15",
-    },
-    {
-        id: "st2",
-        name: "Project Completion NPS",
-        type: "nps",
-        questionCount: 5,
-        responseCount: 89,
-        averageRating: 4.1,
-        triggerOn: "project_completed",
-        isActive: true,
-        createdAt: "2025-12-01",
-    },
-    {
-        id: "st3",
-        name: "Vendor Experience",
-        type: "custom",
-        questionCount: 12,
-        responseCount: 34,
-        averageRating: 3.8,
-        triggerOn: "manual",
-        isActive: true,
-        createdAt: "2026-01-10",
-    },
-    {
-        id: "st4",
-        name: "Post-Activation Feedback",
-        type: "post_event",
-        questionCount: 6,
-        responseCount: 67,
-        averageRating: 4.6,
-        triggerOn: "event_completed",
-        isActive: false,
-        createdAt: "2025-10-01",
-    },
-];
-
-const PLACEHOLDER_RESPONSES: SurveyResponse[] = [
-    {
-        id: "sr1",
-        templateName: "Post-Event CSAT",
-        respondentName: "Maria Santos",
-        respondentEmail: "maria@nike.com",
-        entityName: "Air Max Launch Experience",
-        overallRating: 5,
-        npsScore: 9,
-        comments: "Exceptional execution. The stage design exceeded all expectations.",
-        submittedAt: "2026-03-02T14:30:00Z",
-    },
-    {
-        id: "sr2",
-        templateName: "Post-Event CSAT",
-        respondentName: "James Chen",
-        respondentEmail: "james@redbull.com",
-        entityName: "Red Bull Festival Activation",
-        overallRating: 4,
-        npsScore: 8,
-        comments: "Great experience overall. Minor delays on day 2 setup.",
-        submittedAt: "2026-03-01T10:15:00Z",
-    },
-    {
-        id: "sr3",
-        templateName: "Project Completion NPS",
-        respondentName: "Sarah Williams",
-        respondentEmail: "sarah@adidas.com",
-        entityName: "Adidas Originals Pop-Up",
-        overallRating: 5,
-        npsScore: 10,
-        comments: "Best vendor we've ever worked with. Will definitely use again.",
-        submittedAt: "2026-02-28T16:45:00Z",
-    },
-    {
-        id: "sr4",
-        templateName: "Vendor Experience",
-        respondentName: "Tom Rivera",
-        respondentEmail: "tom@stageco.com",
-        entityName: "Coachella Main Stage",
-        overallRating: 3,
-        npsScore: 6,
-        comments: "Communication could be improved. Project scope changed multiple times.",
-        submittedAt: "2026-02-27T09:00:00Z",
-    },
-    {
-        id: "sr5",
-        templateName: "Post-Event CSAT",
-        respondentName: "Lisa Park",
-        respondentEmail: "lisa@samsung.com",
-        entityName: "Samsung Galaxy Pop-Up",
-        overallRating: 4,
-        npsScore: 8,
-        comments: "Smooth execution. Would appreciate more frequent status updates.",
-        submittedAt: "2026-02-25T11:30:00Z",
-    },
-];
 
 const TYPE_BADGE: Record<string, "default" | "info" | "warning" | "success"> = {
     csat: "success",
@@ -203,43 +100,110 @@ export default function SurveysPage() {
         validValues: ["templates", "responses", "analytics"],
     });
 
+    const { data: sbTemplates, isLoading: loadingTemplates } = useSurveyTemplates();
+    const { data: sbResponses, isLoading: loadingResponses } = useSurveyResponses();
+
+    const templates: SurveyTemplate[] = useMemo(
+        () =>
+            (sbTemplates ?? []).map((t: Record<string, unknown>) => {
+                const questions = (t.questions as unknown[] | null) ?? [];
+                return {
+                    id: String(t.id),
+                    name: String(t.name ?? ""),
+                    type: (t.survey_type as SurveyTemplate["type"]) ?? "custom",
+                    questionCount: questions.length,
+                    responseCount: 0,
+                    averageRating: 0,
+                    triggerOn: String(t.trigger_on ?? "manual"),
+                    isActive: t.is_active !== false,
+                    createdAt: String(t.created_at ?? ""),
+                };
+            }),
+        [sbTemplates]
+    );
+
+    const responses: SurveyResponse[] = useMemo(
+        () =>
+            (sbResponses ?? []).map((r: Record<string, unknown>) => {
+                const tpl = r.survey_templates as Record<string, unknown> | null;
+                return {
+                    id: String(r.id),
+                    templateName: String(tpl?.name ?? ""),
+                    respondentName: String(r.respondent_name ?? r.respondent_email ?? "Anonymous"),
+                    respondentEmail: String(r.respondent_email ?? ""),
+                    entityName: String(r.entity_type ?? ""),
+                    overallRating: Number(r.overall_rating ?? 0),
+                    npsScore: r.nps_score != null ? Number(r.nps_score) : null,
+                    comments: String(r.comments ?? ""),
+                    submittedAt: String(r.submitted_at ?? r.created_at ?? ""),
+                };
+            }),
+        [sbResponses]
+    );
+
+    // Enrich templates with response counts and avg ratings
+    const enrichedTemplates: SurveyTemplate[] = useMemo(() => {
+        const countByTemplate = new Map<string, { count: number; ratingSum: number }>();
+        for (const r of responses) {
+            const key = r.templateName;
+            const prev = countByTemplate.get(key) ?? { count: 0, ratingSum: 0 };
+            countByTemplate.set(key, {
+                count: prev.count + 1,
+                ratingSum: prev.ratingSum + r.overallRating,
+            });
+        }
+        return templates.map((t) => {
+            const stats = countByTemplate.get(t.name);
+            return {
+                ...t,
+                responseCount: stats?.count ?? 0,
+                averageRating: stats ? stats.ratingSum / stats.count : 0,
+            };
+        });
+    }, [templates, responses]);
+
+    const isLoading = loadingTemplates || loadingResponses;
+
     const TAB_VALUES: SurveysTab[] = ["templates", "responses", "analytics"];
     const tabs = [
         {
             id: "templates" as const,
             label: "Templates",
-            count: PLACEHOLDER_TEMPLATES.length,
+            count: enrichedTemplates.length,
             icon: <ClipboardList className="h-4 w-4" />,
         },
         {
             id: "responses" as const,
             label: "Responses",
-            count: PLACEHOLDER_RESPONSES.length,
+            count: responses.length,
             icon: <MessageSquare className="h-4 w-4" />,
         },
         { id: "analytics" as const, label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
     ];
 
-    const totalResponses = PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.responseCount, 0);
+    const totalResponses = responses.length;
     const avgRating =
-        PLACEHOLDER_TEMPLATES.reduce((s, t) => s + t.averageRating, 0) /
-        PLACEHOLDER_TEMPLATES.length;
+        responses.length > 0
+            ? responses.reduce((s, r) => s + r.overallRating, 0) / responses.length
+            : 0;
+    const npsResponses = responses.filter((r) => r.npsScore !== null);
     const npsAvg =
-        PLACEHOLDER_RESPONSES.filter((r) => r.npsScore !== null).reduce(
-            (s, r) => s + (r.npsScore || 0),
-            0
-        ) / PLACEHOLDER_RESPONSES.filter((r) => r.npsScore !== null).length;
-    const promoters = PLACEHOLDER_RESPONSES.filter((r) => (r.npsScore || 0) >= 9).length;
+        npsResponses.length > 0
+            ? npsResponses.reduce((s, r) => s + (r.npsScore || 0), 0) / npsResponses.length
+            : 0;
+    const promoters = responses.filter((r) => (r.npsScore || 0) >= 9).length;
 
-    const filteredTemplates = PLACEHOLDER_TEMPLATES.filter(
+    const filteredTemplates = enrichedTemplates.filter(
         (t) => !search || t.name.toLowerCase().includes(search.toLowerCase())
     );
-    const filteredResponses = PLACEHOLDER_RESPONSES.filter(
+    const filteredResponses = responses.filter(
         (r) =>
             !search ||
             r.respondentName.toLowerCase().includes(search.toLowerCase()) ||
             r.entityName.toLowerCase().includes(search.toLowerCase())
     );
+
+    if (isLoading) return <LoadingState />;
 
     return (
         <PermissionGate resource="surveys" action="read">
@@ -258,17 +222,19 @@ export default function SurveysPage() {
                     <StatCard title="Avg. Rating" value={avgRating.toFixed(1)} icon={Star} />
                     <StatCard
                         title="NPS Score"
-                        value={Math.round(
-                            (promoters / PLACEHOLDER_RESPONSES.length) * 100 -
-                                ((PLACEHOLDER_RESPONSES.length - promoters) /
-                                    PLACEHOLDER_RESPONSES.length) *
-                                    100
-                        )}
+                        value={
+                            responses.length > 0
+                                ? Math.round(
+                                      (promoters / responses.length) * 100 -
+                                          ((responses.length - promoters) / responses.length) * 100
+                                  )
+                                : 0
+                        }
                         icon={TrendingUp}
                     />
                     <StatCard
                         title="Active Templates"
-                        value={PLACEHOLDER_TEMPLATES.filter((t) => t.isActive).length}
+                        value={enrichedTemplates.filter((t) => t.isActive).length}
                         icon={ClipboardList}
                     />
                 </div>
@@ -295,7 +261,7 @@ export default function SurveysPage() {
                                 {filteredTemplates.map((template) => (
                                     <StaggerItem
                                         key={template.id}
-                                        index={PLACEHOLDER_TEMPLATES.indexOf(template)}
+                                        index={enrichedTemplates.indexOf(template)}
                                     >
                                         <Card className="hover:border-primary/30 transition-colors">
                                             <CardContent className="p-4">
@@ -394,7 +360,7 @@ export default function SurveysPage() {
                                 {filteredResponses.map((response) => (
                                     <StaggerItem
                                         key={response.id}
-                                        index={PLACEHOLDER_RESPONSES.indexOf(response)}
+                                        index={responses.indexOf(response)}
                                     >
                                         <Card>
                                             <CardContent className="p-4">
@@ -454,12 +420,15 @@ export default function SurveysPage() {
                                         </CardHeader>
                                         <CardContent className="space-y-3">
                                             {[5, 4, 3, 2, 1].map((rating) => {
-                                                const count = PLACEHOLDER_RESPONSES.filter(
+                                                const count = responses.filter(
                                                     (r) => r.overallRating === rating
                                                 ).length;
-                                                const pct = Math.round(
-                                                    (count / PLACEHOLDER_RESPONSES.length) * 100
-                                                );
+                                                const pct =
+                                                    responses.length > 0
+                                                        ? Math.round(
+                                                              (count / responses.length) * 100
+                                                          )
+                                                        : 0;
                                                 return (
                                                     <div
                                                         key={rating}
@@ -493,14 +462,14 @@ export default function SurveysPage() {
                                             {[
                                                 {
                                                     label: "Promoters (9-10)",
-                                                    count: PLACEHOLDER_RESPONSES.filter(
+                                                    count: responses.filter(
                                                         (r) => (r.npsScore || 0) >= 9
                                                     ).length,
                                                     color: "bg-success",
                                                 },
                                                 {
                                                     label: "Passives (7-8)",
-                                                    count: PLACEHOLDER_RESPONSES.filter(
+                                                    count: responses.filter(
                                                         (r) =>
                                                             (r.npsScore || 0) >= 7 &&
                                                             (r.npsScore || 0) < 9
@@ -509,7 +478,7 @@ export default function SurveysPage() {
                                                 },
                                                 {
                                                     label: "Detractors (0-6)",
-                                                    count: PLACEHOLDER_RESPONSES.filter(
+                                                    count: responses.filter(
                                                         (r) => (r.npsScore || 0) < 7
                                                     ).length,
                                                     color: "bg-destructive",
@@ -528,8 +497,7 @@ export default function SurveysPage() {
                                                     <span className="text-sm font-bold">
                                                         {seg.count} (
                                                         {Math.round(
-                                                            (seg.count /
-                                                                PLACEHOLDER_RESPONSES.length) *
+                                                            (seg.count / (responses.length || 1)) *
                                                                 100
                                                         )}
                                                         %)
@@ -557,13 +525,32 @@ export default function SurveysPage() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        {[
-                                            "Adidas Originals Pop-Up",
-                                            "Air Max Launch Experience",
-                                            "Samsung Galaxy Pop-Up",
-                                        ].map((name, i) => (
+                                        {(() => {
+                                            const byEntity = new Map<
+                                                string,
+                                                { sum: number; count: number }
+                                            >();
+                                            for (const r of responses) {
+                                                if (!r.entityName) continue;
+                                                const prev = byEntity.get(r.entityName) ?? {
+                                                    sum: 0,
+                                                    count: 0,
+                                                };
+                                                byEntity.set(r.entityName, {
+                                                    sum: prev.sum + r.overallRating,
+                                                    count: prev.count + 1,
+                                                });
+                                            }
+                                            return Array.from(byEntity.entries())
+                                                .map(([name, s]) => ({
+                                                    name,
+                                                    avg: s.sum / s.count,
+                                                }))
+                                                .sort((a, b) => b.avg - a.avg)
+                                                .slice(0, 5);
+                                        })().map((entry, i) => (
                                             <div
-                                                key={name}
+                                                key={entry.name}
                                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -571,10 +558,10 @@ export default function SurveysPage() {
                                                         #{i + 1}
                                                     </span>
                                                     <span className="text-sm font-semibold">
-                                                        {name}
+                                                        {entry.name}
                                                     </span>
                                                 </div>
-                                                <StarRating rating={5 - i * 0.5 >= 4 ? 5 - i : 4} />
+                                                <StarRating rating={Math.round(entry.avg)} />
                                             </div>
                                         ))}
                                     </CardContent>

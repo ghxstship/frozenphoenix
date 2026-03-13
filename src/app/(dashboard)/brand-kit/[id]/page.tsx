@@ -172,7 +172,9 @@ export default function BrandKitDetailPage() {
                         </div>
                         <div>
                             <p className="text-sm font-medium">{clientName}</p>
-                            <p className="text-xs text-muted-foreground">{updatedAt ? `Updated ${updatedAt}` : ""}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {updatedAt ? `Updated ${updatedAt}` : ""}
+                            </p>
                         </div>
                     </div>
                 </CardContent>
@@ -223,9 +225,7 @@ export default function BrandKitDetailPage() {
     );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -248,11 +248,11 @@ export default function BrandKitDetailPage() {
             }
             actions={
                 <>
-                    <Button variant="outline" size="sm" onClick={() => console.log("Export brand kit ZIP:", kitId)}>
+                    <Button variant="outline" size="sm" disabled>
                         <Download className="h-4 w-4 mr-1" />
                         Export ZIP
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => console.log("Export brand kit PDF:", kitId)}>
+                    <Button variant="outline" size="sm" onClick={() => window.print()}>
                         <FileText className="h-4 w-4 mr-1" />
                         Export PDF
                     </Button>
@@ -437,7 +437,7 @@ export default function BrandKitDetailPage() {
                                 )
                             )}
                         </div>
-                        <Button size="sm" onClick={() => console.log("Upload asset to brand kit:", kitId)}>
+                        <Button size="sm" disabled>
                             <Upload className="h-4 w-4 mr-1" />
                             Upload Asset
                         </Button>
@@ -484,7 +484,12 @@ export default function BrandKitDetailPage() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => console.log("Download asset:", asset.id)}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="shrink-0"
+                                            disabled
+                                        >
                                             <Download className="h-3.5 w-3.5" />
                                         </Button>
                                     </div>
@@ -517,11 +522,23 @@ export default function BrandKitDetailPage() {
                             deliverables.
                         </p>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => console.log("Export guidelines PDF:", kitId)}>
+                            <Button variant="outline" size="sm" onClick={() => window.print()}>
                                 <Download className="h-4 w-4 mr-1" />
                                 Export PDF
                             </Button>
-                            <Button size="sm" onClick={() => setGuidelineSections((prev) => [...prev, { id: `g-${Date.now()}`, title: "New Section", content: "" }])}>
+                            <Button
+                                size="sm"
+                                onClick={() =>
+                                    setGuidelineSections((prev) => [
+                                        ...prev,
+                                        {
+                                            id: `g-${Date.now()}`,
+                                            title: "New Section",
+                                            content: "",
+                                        },
+                                    ])
+                                }
+                            >
                                 <Plus className="h-4 w-4 mr-1" />
                                 Add Section
                             </Button>

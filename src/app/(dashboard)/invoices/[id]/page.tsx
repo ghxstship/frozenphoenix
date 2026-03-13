@@ -100,7 +100,10 @@ export default function InvoiceDetailPage() {
     const poNumber = (inv?.po_number as string) ?? "";
     const createdBy = (inv?.created_by_name as string) ?? "";
 
-    const subtotal = useMemo(() => lineItems.reduce((sum, item) => sum + item.total, 0), [lineItems]);
+    const subtotal = useMemo(
+        () => lineItems.reduce((sum, item) => sum + item.total, 0),
+        [lineItems]
+    );
     const taxAmount = useMemo(() => subtotal * (taxRate / 100), [subtotal, taxRate]);
     const total = subtotal + taxAmount;
     const balance = total - paidAmount;
@@ -193,15 +196,30 @@ export default function InvoiceDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "reminder_sent" })}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => handleUpdate({ status: "reminder_sent" })}
+                    >
                         <Send className="mr-2 h-3.5 w-3.5" />
                         Send Reminder
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setActiveTab("payments" as TabId)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab("payments" as TabId)}
+                    >
                         <CreditCard className="mr-2 h-3.5 w-3.5" />
                         Record Payment
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.print()}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => window.print()}
+                    >
                         <Download className="mr-2 h-3.5 w-3.5" />
                         Export PDF
                     </Button>
@@ -239,8 +257,14 @@ export default function InvoiceDetailPage() {
                 </>
             }
             menuItems={[
-                { label: "Record Payment", onClick: () => router.push(`/invoices/${entityId}/edit?section=payments`) },
-                { label: "Duplicate", onClick: () => router.push(`/invoices/new?duplicateFrom=${entityId}`) },
+                {
+                    label: "Record Payment",
+                    onClick: () => router.push(`/invoices/${entityId}/edit?section=payments`),
+                },
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/invoices/new?duplicateFrom=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -263,9 +287,7 @@ export default function InvoiceDetailPage() {
                                     <p className="text-xs text-muted-foreground font-medium mb-1">
                                         Bill To
                                     </p>
-                                    <p className="text-sm font-semibold">
-                                        {companyName}
-                                    </p>
+                                    <p className="text-sm font-semibold">{companyName}</p>
                                     <p className="text-xs text-muted-foreground mt-1">
                                         {companyAddress}
                                     </p>
@@ -274,9 +296,7 @@ export default function InvoiceDetailPage() {
                                     <p className="text-xs text-muted-foreground font-medium mb-1">
                                         Project
                                     </p>
-                                    <p className="text-sm font-semibold">
-                                        {projectName}
-                                    </p>
+                                    <p className="text-sm font-semibold">{projectName}</p>
                                     <p className="text-xs text-muted-foreground mt-1">
                                         {createdBy ? `Created by ${createdBy}` : ""}
                                     </p>
@@ -368,7 +388,7 @@ export default function InvoiceDetailPage() {
                             <CreditCard className="h-4 w-4" />
                             Payment History
                         </CardTitle>
-                        <Button size="sm" onClick={() => console.log("Record payment for invoice:", entityId)}>
+                        <Button size="sm" onClick={() => void 0}>
                             <CreditCard className="h-4 w-4 mr-1" />
                             Record Payment
                         </Button>

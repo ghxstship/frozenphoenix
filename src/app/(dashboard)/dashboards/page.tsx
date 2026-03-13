@@ -20,8 +20,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { PermissionGate } from "@/components/permission-guard";
-
-// NEXT: Wire to Supabase when dashboard aggregation queries are available
+import {
+    useApprovals,
+    useCrewMembers,
+    useDeals,
+    useProjects,
+    useTasks,
+} from "@/lib/supabase/hooks";
+import { useActivities } from "@/lib/supabase/hooks-extended";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useMemo } from "react";
 
 interface DashboardWidget {
     id: string;
@@ -33,79 +41,6 @@ interface DashboardWidget {
     data?: unknown;
 }
 
-const mockWidgets: DashboardWidget[] = [
-    {
-        id: "1",
-        title: "Total Revenue",
-        type: "number",
-        value: "$2.4M",
-        change: 12.5,
-        changeLabel: "vs last month",
-    },
-    {
-        id: "2",
-        title: "Active Projects",
-        type: "number",
-        value: 24,
-        change: 3,
-        changeLabel: "new this month",
-    },
-    {
-        id: "3",
-        title: "Team Utilization",
-        type: "number",
-        value: "78%",
-        change: -2.3,
-        changeLabel: "vs last week",
-    },
-    {
-        id: "4",
-        title: "Open Proposals",
-        type: "number",
-        value: 8,
-        change: 2,
-        changeLabel: "pending response",
-    },
-    {
-        id: "5",
-        title: "Pipeline Value",
-        type: "number",
-        value: "$1.8M",
-        change: 15,
-        changeLabel: "weighted",
-    },
-    {
-        id: "6",
-        title: "Overdue Tasks",
-        type: "number",
-        value: 12,
-        change: -5,
-        changeLabel: "resolved this week",
-    },
-];
-
-const projectProfitability = [
-    { name: "Nike Air Max Launch", revenue: 485000, cost: 320000, margin: 34 },
-    { name: "Red Bull Festival", revenue: 320000, cost: 245000, margin: 23 },
-    { name: "Coachella Experience", revenue: 750000, cost: 520000, margin: 31 },
-    { name: "TechStart Launch", revenue: 125000, cost: 95000, margin: 24 },
-];
-
-const utilizationByDepartment = [
-    { department: "Production", utilization: 85, headcount: 12 },
-    { department: "Technical", utilization: 92, headcount: 8 },
-    { department: "Fabrication", utilization: 78, headcount: 15 },
-    { department: "Logistics", utilization: 65, headcount: 6 },
-    { department: "Scenic", utilization: 88, headcount: 10 },
-];
-
-const pipelineStages = [
-    { stage: "Lead", count: 5, value: 450000 },
-    { stage: "Qualified", count: 3, value: 680000 },
-    { stage: "Proposal", count: 4, value: 920000 },
-    { stage: "Negotiation", count: 2, value: 350000 },
-];
-
 export default function DashboardsPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const DASHBOARD_TABS = ["overview", "projects", "sales", "resources"] as const;
@@ -114,6 +49,159 @@ export default function DashboardsPage() {
         defaultValue: "overview",
         validValues: DASHBOARD_TABS,
     });
+
+    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
+    const { data: sbDeals } = useDeals();
+    const { data: sbTasks } = useTasks();
+    const { data: sbCrew } = useCrewMembers();
+    const { data: sbApprovals } = useApprovals();
+
+    const projects = useMemo(
+        () => (sbProjects ?? []) as Array<Record<string, unknown>>,
+        [sbProjects]
+    );
+    const deals = useMemo(() => (sbDeals ?? []) as Array<Record<string, unknown>>, [sbDeals]);
+    const tasks = useMemo(() => (sbTasks ?? []) as Array<Record<string, unknown>>, [sbTasks]);
+    const crew = useMemo(() => (sbCrew ?? []) as Array<Record<string, unknown>>, [sbCrew]);
+
+    const activeProjects = useMemo(
+        () => projects.filter((p) => p.status === "active" || p.status === "in_progress"),
+        [projects]
+    );
+    const overdueTasks = useMemo(
+        () =>
+            tasks.filter((t) => {
+                const due = t.due_date as string | null;
+                return (
+                    due &&
+                    new Date(due) < new Date() &&
+                    t.status !== "done" &&
+                    t.status !== "completed"
+                );
+            }),
+        [tasks]
+    );
+    const totalRevenue = useMemo(
+        () => projects.reduce((sum, p) => sum + Number(p.budget_planned ?? 0), 0),
+        [projects]
+    );
+    const pipelineValue = useMemo(
+        () => deals.reduce((sum, d) => sum + Number(d.value ?? 0), 0),
+        [deals]
+    );
+    const pendingApprovals = useMemo(
+        () =>
+            (sbApprovals ?? []).filter((a: Record<string, unknown>) => a.status === "pending")
+                .length,
+        [sbApprovals]
+    );
+    const crewUtilization = useMemo(() => {
+        const assigned = crew.filter((c) => c.status === "assigned").length;
+        return crew.length > 0 ? Math.round((assigned / crew.length) * 100) : 0;
+    }, [crew]);
+
+    const widgets: DashboardWidget[] = useMemo(
+        () => [
+            {
+                id: "1",
+                title: "Total Revenue",
+                type: "number",
+                value: formatCompactCurrency(totalRevenue),
+            },
+            { id: "2", title: "Active Projects", type: "number", value: activeProjects.length },
+            { id: "3", title: "Team Utilization", type: "number", value: `${crewUtilization}%` },
+            { id: "4", title: "Pending Approvals", type: "number", value: pendingApprovals },
+            {
+                id: "5",
+                title: "Pipeline Value",
+                type: "number",
+                value: formatCompactCurrency(pipelineValue),
+            },
+            { id: "6", title: "Overdue Tasks", type: "number", value: overdueTasks.length },
+        ],
+        [
+            totalRevenue,
+            activeProjects.length,
+            crewUtilization,
+            pendingApprovals,
+            pipelineValue,
+            overdueTasks.length,
+        ]
+    );
+
+    const projectProfitability = useMemo(
+        () =>
+            projects.slice(0, 4).map((p) => {
+                const revenue = Number(p.budget_planned ?? 0);
+                const cost = Number(p.budget_actual ?? 0);
+                const margin = revenue > 0 ? Math.round(((revenue - cost) / revenue) * 100) : 0;
+                return { name: String(p.name ?? ""), revenue, cost, margin };
+            }),
+        [projects]
+    );
+
+    const utilizationByDepartment = useMemo(() => {
+        const deptMap = new Map<string, { count: number; assigned: number }>();
+        for (const c of crew) {
+            const dept = String(c.department ?? "General");
+            const entry = deptMap.get(dept) ?? { count: 0, assigned: 0 };
+            entry.count++;
+            if (c.status === "assigned") entry.assigned++;
+            deptMap.set(dept, entry);
+        }
+        return Array.from(deptMap.entries()).map(([department, stats]) => ({
+            department,
+            utilization: stats.count > 0 ? Math.round((stats.assigned / stats.count) * 100) : 0,
+            headcount: stats.count,
+        }));
+    }, [crew]);
+
+    const pipelineStages = useMemo(() => {
+        const stageMap = new Map<string, { count: number; value: number }>();
+        for (const d of deals) {
+            const stage = String(d.stage ?? "unknown");
+            const entry = stageMap.get(stage) ?? { count: 0, value: 0 };
+            entry.count++;
+            entry.value += Number(d.value ?? 0);
+            stageMap.set(stage, entry);
+        }
+        return Array.from(stageMap.entries()).map(([stage, stats]) => ({
+            stage,
+            count: stats.count,
+            value: stats.value,
+        }));
+    }, [deals]);
+
+    const { data: sbActivities } = useActivities();
+    const recentActivities: Array<{ action: string; project: string; time: string; type: string }> =
+        useMemo(() => {
+            const acts = (sbActivities ?? []) as Array<Record<string, unknown>>;
+            const now = new Date();
+            return acts.slice(0, 5).map((a) => {
+                const createdAt = a.created_at as string | null;
+                let time = "";
+                if (createdAt) {
+                    const diff = now.getTime() - new Date(createdAt).getTime();
+                    const hours = Math.floor(diff / 3600000);
+                    time =
+                        hours < 1
+                            ? "Just now"
+                            : hours < 24
+                              ? `${hours}h ago`
+                              : `${Math.floor(hours / 24)}d ago`;
+                }
+                return {
+                    action: String(a.title ?? a.activity_type ?? "Activity"),
+                    project: String(a.description ?? ""),
+                    time,
+                    type: "info",
+                };
+            });
+        }, [sbActivities]);
+
+    if (loadingProjects) {
+        return <LoadingState />;
+    }
 
     return (
         <PermissionGate resource="dashboards" action="read">
@@ -152,7 +240,7 @@ export default function DashboardsPage() {
 
                 {/* KPI Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                    {mockWidgets.map((widget) => (
+                    {widgets.map((widget) => (
                         <Card key={widget.id}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -335,66 +423,47 @@ export default function DashboardsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {[
-                                    {
-                                        action: "Proposal accepted",
-                                        project: "Nike Air Max Launch",
-                                        time: "2 hours ago",
-                                        type: "success",
-                                    },
-                                    {
-                                        action: "Task completed",
-                                        project: "Red Bull Festival",
-                                        time: "4 hours ago",
-                                        type: "info",
-                                    },
-                                    {
-                                        action: "Budget warning",
-                                        project: "Coachella Experience",
-                                        time: "6 hours ago",
-                                        type: "warning",
-                                    },
-                                    {
-                                        action: "New comment",
-                                        project: "TechStart Launch",
-                                        time: "8 hours ago",
-                                        type: "info",
-                                    },
-                                    {
-                                        action: "Milestone approved",
-                                        project: "Nike Air Max Launch",
-                                        time: "1 day ago",
-                                        type: "success",
-                                    },
-                                ].map((activity, index) => (
-                                    <div key={index} className="flex items-start gap-3">
-                                        <div
-                                            className={cn(
-                                                "h-2 w-2 rounded-full mt-2",
-                                                activity.type === "success"
-                                                    ? "bg-success"
-                                                    : activity.type === "warning"
-                                                      ? "bg-warning"
-                                                      : "bg-info"
-                                            )}
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium">{activity.action}</p>
-                                            <p className="text-xs text-muted-foreground truncate">
-                                                {activity.project}
-                                            </p>
+                                {recentActivities.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        No recent activity
+                                    </p>
+                                ) : (
+                                    recentActivities.map((activity, index) => (
+                                        <div key={index} className="flex items-start gap-3">
+                                            <div
+                                                className={cn(
+                                                    "h-2 w-2 rounded-full mt-2",
+                                                    activity.type === "success"
+                                                        ? "bg-success"
+                                                        : activity.type === "warning"
+                                                          ? "bg-warning"
+                                                          : "bg-info"
+                                                )}
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium">
+                                                    {activity.action}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground truncate">
+                                                    {activity.project}
+                                                </p>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                {activity.time}
+                                            </span>
                                         </div>
-                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                            {activity.time}
-                                        </span>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
-            <CreateEntityDialog config={CREATE_DASHBOARD_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_DASHBOARD_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

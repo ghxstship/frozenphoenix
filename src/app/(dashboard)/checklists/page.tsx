@@ -14,9 +14,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { CheckCircle2, Circle, Clock, ListChecks, Loader2, Percent, Plus } from "lucide-react";
+import { CheckCircle2, Circle, Clock, ListChecks, Percent, Plus } from "lucide-react";
 import type { ChecklistTemplate } from "@/types/vendor-lifecycle";
-import { useChecklists } from "@/lib/supabase/hooks-pages";
+import { useChecklists, useChecklistTemplates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar } from "@/components/ui/tab-bar";
 
@@ -69,13 +69,20 @@ export default function ChecklistsPage() {
             completedBy: (item.completed_by as string) ?? undefined,
         })),
     }));
-    // NEXT: Wire to useChecklistTemplates() when hook is available
-    const templates: ChecklistTemplate[] = [];
+    const { data: sbTemplates } = useChecklistTemplates();
+    const templates: ChecklistTemplate[] = (sbTemplates ?? []).map(
+        (t: Record<string, unknown>) => ({
+            id: (t.id as string) ?? "",
+            name: (t.name as string) ?? "",
+            description: (t.description as string) ?? "",
+            category: (t.category as string) ?? "general",
+            items: (t.items as Array<Record<string, unknown>>) ?? [],
+            isDefault: (t.is_default as boolean) ?? false,
+        })
+    );
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredChecklists = checklists.filter(
@@ -258,7 +265,11 @@ export default function ChecklistsPage() {
                     </div>
                 )}
             </div>
-            <CreateEntityDialog config={CREATE_CHECKLIST_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_CHECKLIST_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

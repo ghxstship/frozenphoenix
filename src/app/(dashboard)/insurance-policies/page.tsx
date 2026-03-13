@@ -12,9 +12,9 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_INSURANCE_POLICY_CONFIG } from "@/config/create-entity-configs";
-import { AlertTriangle, CheckCircle2, Clock, Loader2, Plus, Shield, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Plus, Shield, XCircle } from "lucide-react";
 import type { InsurancePolicy, InsuranceRequirement } from "@/types/governance";
-import { useInsurancePolicies } from "@/lib/supabase/hooks-pages";
+import { useInsurancePolicies, useInsuranceRequirements } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { InsurancePolicyStatus } from "@/types/governance";
 
@@ -59,8 +59,9 @@ export default function InsurancePoliciesPage() {
     const { data: sbPolicies, isLoading } = useInsurancePolicies();
 
     const policies = (sbPolicies ?? []) as InsurancePolicy[];
-    // NEXT: Wire to useInsuranceRequirements() when hook is available
-    const requirements: InsuranceRequirement[] = [];
+    const { data: sbRequirements } = useInsuranceRequirements();
+    const requirements: InsuranceRequirement[] = (sbRequirements ??
+        []) as unknown as InsuranceRequirement[];
 
     const filtered = policies.filter((p) => {
         const holderName = holderNames[p.holder_id] || p.holder_id;
@@ -80,9 +81,7 @@ export default function InsurancePoliciesPage() {
         .reduce((sum, p) => sum + p.coverage_amount, 0);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -122,7 +121,11 @@ export default function InsurancePoliciesPage() {
                                         `${expiringSoon} policy(ies) expiring within 30 days.`}
                                 </p>
                             </div>
-                            <Button size="sm" variant="destructive" onClick={() => setStatusFilter("expired")}>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setStatusFilter("expired")}
+                            >
                                 View Alerts
                             </Button>
                         </CardContent>

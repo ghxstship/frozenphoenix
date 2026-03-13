@@ -12,6 +12,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import type { Invitation } from "@/types/user-lifecycle";
+import { useInvitationsList, useUpdateInvitation } from "@/lib/supabase/hooks-pages";
 import { CheckCircle2, Clock, Mail, RotateCcw, Send, UserPlus, XCircle } from "lucide-react";
 import type { InvitationStatus, PermissionLevel } from "@/types";
 
@@ -31,9 +32,13 @@ export default function InvitationsPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<InvitationStatus | "all">("all");
     const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const updateInvitation = useUpdateInvitation();
 
-    // NEXT: Wire to useInvitations() when hook is available
-    const invitations = useMemo<Invitation[]>(() => [], []);
+    const { data: sbInvitations } = useInvitationsList();
+    const invitations = useMemo<Invitation[]>(
+        () => (sbInvitations ?? []) as unknown as Invitation[],
+        [sbInvitations]
+    );
 
     const filtered = useMemo(() => {
         return invitations.filter((inv) => {
@@ -156,7 +161,14 @@ export default function InvitationsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             title="Resend"
-                                                            onClick={() => console.log("Resend invitation:", inv.id)}
+                                                            disabled={updateInvitation.isPending}
+                                                            onClick={() =>
+                                                                updateInvitation.mutate({
+                                                                    id: inv.id,
+                                                                    sent_at:
+                                                                        new Date().toISOString(),
+                                                                })
+                                                            }
                                                         >
                                                             <RotateCcw className="h-3 w-3" />
                                                         </Button>
@@ -164,7 +176,13 @@ export default function InvitationsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             title="Revoke"
-                                                            onClick={() => console.log("Revoke invitation:", inv.id)}
+                                                            disabled={updateInvitation.isPending}
+                                                            onClick={() =>
+                                                                updateInvitation.mutate({
+                                                                    id: inv.id,
+                                                                    status: "revoked",
+                                                                })
+                                                            }
                                                         >
                                                             <XCircle className="h-3 w-3" />
                                                         </Button>
@@ -186,7 +204,11 @@ export default function InvitationsPage() {
                     </div>
                 </CardContent>
             </Card>
-            <CreateEntityDialog config={CREATE_USER_INVITE_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_USER_INVITE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </div>
     );
 }

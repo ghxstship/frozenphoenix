@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCreateClientInvoice } from "@/lib/supabase/hooks-pages";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,8 @@ interface LineItem {
 const WIZARD_STEPS = ["Client & Project", "Line Items", "Terms & Notes", "Review"];
 
 export default function NewInvoicePage() {
+    const router = useRouter();
+    const createInvoice = useCreateClientInvoice();
     const [step, setStep] = useState(0);
     const [client, setClient] = useState({ companyName: "", projectName: "", poNumber: "" });
     const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -365,8 +369,27 @@ export default function NewInvoicePage() {
                     </Button>
                 ) : (
                     <Button
-                        disabled={!client.companyName || lineItems.every((li) => !li.description)}
-                        onClick={() => console.log("Create invoice:", { client, lineItems, terms })}
+                        disabled={
+                            !client.companyName ||
+                            lineItems.every((li) => !li.description) ||
+                            createInvoice.isPending
+                        }
+                        onClick={() =>
+                            createInvoice.mutate(
+                                {
+                                    client_name: client.companyName,
+                                    notes: terms.notes,
+                                    payment_terms: terms.paymentTerms,
+                                    due_date: new Date(
+                                        Date.now() + Number(terms.dueInDays) * 86400000
+                                    )
+                                        .toISOString()
+                                        .slice(0, 10),
+                                    status: "draft",
+                                },
+                                { onSuccess: () => router.push("/invoices") }
+                            )
+                        }
                     >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Create Invoice

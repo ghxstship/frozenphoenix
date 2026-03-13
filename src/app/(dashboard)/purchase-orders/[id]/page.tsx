@@ -18,7 +18,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, DollarSign, FileText, Loader2, Package, Truck } from "lucide-react";
+import { Calendar, DollarSign, FileText, Package, Truck } from "lucide-react";
 
 type TabId = "details" | "items" | "chatter";
 const TAB_VALUES = ["details", "items", "chatter"] as const;
@@ -34,6 +34,7 @@ export default function PurchaseOrderDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: po, isLoading } = usePurchaseOrder(entityId);
+    const updatePo = useUpdatePurchaseOrder();
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Purchase Order",
@@ -57,9 +58,7 @@ export default function PurchaseOrderDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!po) {
@@ -124,18 +123,32 @@ export default function PurchaseOrderDetailPage() {
             }
             actions={
                 po.status === "draft" ? (
-                    <Button size="sm" onClick={() => console.log("Issue PO:", entityId)}>
+                    <Button
+                        size="sm"
+                        disabled={updatePo.isPending}
+                        onClick={() => updatePo.mutate({ id: entityId, status: "issued" })}
+                    >
                         <Truck className="h-4 w-4 mr-1" />
                         Issue PO
                     </Button>
                 ) : po.status === "issued" ? (
-                    <Button size="sm" onClick={() => console.log("Mark received:", entityId)}>
+                    <Button
+                        size="sm"
+                        disabled={updatePo.isPending}
+                        onClick={() => updatePo.mutate({ id: entityId, status: "received" })}
+                    >
                         <Package className="h-4 w-4 mr-1" />
                         Mark Received
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Purchase Order", onClick: () => router.push(`/purchase-orders/${entityId}/edit`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Edit Purchase Order",
+                    onClick: () => router.push(`/purchase-orders/${entityId}/edit`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

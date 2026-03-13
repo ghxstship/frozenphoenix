@@ -62,7 +62,7 @@ export default function CatalogAdminPage() {
                 title="Catalog Management"
                 description="Manage catalog categories and items"
                 actions={
-                    <Button disabled onClick={() => console.log("Add catalog item")}>
+                    <Button disabled onClick={() => void 0}>
                         <Plus className="h-4 w-4" />
                         Add Item
                     </Button>

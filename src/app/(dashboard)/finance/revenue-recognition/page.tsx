@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,11 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import {
+    useRevenueRecognitionEntries,
+    useRevenueRecognitionSummary,
+} from "@/lib/supabase/hooks-v2-features";
 
 type RevRecTab = "entries" | "summary" | "schedules";
 
@@ -50,88 +56,6 @@ interface RevenueSummary {
     unbilledRevenue: number;
 }
 
-const PLACEHOLDER_ENTRIES: RevenueEntry[] = [
-    {
-        id: "re1",
-        projectName: "Nike Air Max Launch",
-        invoiceNumber: "INV-2026-0001",
-        totalAmount: 125000,
-        recognizedAmount: 81250,
-        deferredAmount: 43750,
-        recognitionMethod: "percentage_of_completion",
-        period: "2026-03",
-        status: "partial",
-    },
-    {
-        id: "re2",
-        projectName: "Red Bull Festival Activation",
-        invoiceNumber: "INV-2026-0003",
-        totalAmount: 195000,
-        recognizedAmount: 195000,
-        deferredAmount: 0,
-        recognitionMethod: "completed_contract",
-        period: "2026-02",
-        status: "recognized",
-    },
-    {
-        id: "re3",
-        projectName: "Adidas Originals Pop-Up",
-        invoiceNumber: "INV-2026-0005",
-        totalAmount: 62500,
-        recognizedAmount: 0,
-        deferredAmount: 62500,
-        recognitionMethod: "milestone",
-        period: "2026-03",
-        status: "deferred",
-    },
-    {
-        id: "re4",
-        projectName: "Samsung Galaxy Pop-Up",
-        invoiceNumber: "INV-2026-0008",
-        totalAmount: 88000,
-        recognizedAmount: 44000,
-        deferredAmount: 44000,
-        recognitionMethod: "time_and_materials",
-        period: "2026-03",
-        status: "partial",
-    },
-    {
-        id: "re5",
-        projectName: "Coachella Main Stage 2026",
-        invoiceNumber: "INV-2026-0012",
-        totalAmount: 450000,
-        recognizedAmount: 0,
-        deferredAmount: 450000,
-        recognitionMethod: "milestone",
-        period: "2026-04",
-        status: "pending_review",
-    },
-];
-
-const PLACEHOLDER_SUMMARY: RevenueSummary[] = [
-    {
-        period: "2026-01",
-        totalRevenue: 380000,
-        recognizedRevenue: 310000,
-        deferredRevenue: 70000,
-        unbilledRevenue: 45000,
-    },
-    {
-        period: "2026-02",
-        totalRevenue: 520000,
-        recognizedRevenue: 435000,
-        deferredRevenue: 85000,
-        unbilledRevenue: 62000,
-    },
-    {
-        period: "2026-03",
-        totalRevenue: 720500,
-        recognizedRevenue: 320250,
-        deferredRevenue: 400250,
-        unbilledRevenue: 95000,
-    },
-];
-
 const STATUS_BADGE: Record<string, "default" | "success" | "warning" | "info" | "destructive"> = {
     recognized: "success",
     deferred: "warning",
@@ -153,22 +77,61 @@ export default function RevenueRecognitionPage() {
         validValues: ["entries", "summary", "schedules"],
     });
 
-    const totalRecognized = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.recognizedAmount, 0);
-    const totalDeferred = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.deferredAmount, 0);
-    const totalRevenue = PLACEHOLDER_ENTRIES.reduce((s, e) => s + e.totalAmount, 0);
-    const pendingReview = PLACEHOLDER_ENTRIES.filter((e) => e.status === "pending_review").length;
+    const { data: sbEntries, isLoading: loadingEntries } = useRevenueRecognitionEntries();
+    const { data: sbSummary, isLoading: loadingSummary } = useRevenueRecognitionSummary();
+
+    const entries: RevenueEntry[] = useMemo(
+        () =>
+            (sbEntries ?? []).map((e: Record<string, unknown>) => {
+                const proj = e.projects as Record<string, unknown> | null;
+                return {
+                    id: String(e.id),
+                    projectName: String(proj?.name ?? e.project_id ?? ""),
+                    invoiceNumber: String(e.invoice_number ?? ""),
+                    totalAmount: Number(e.total_amount ?? 0),
+                    recognizedAmount: Number(e.recognized_amount ?? 0),
+                    deferredAmount: Number(e.deferred_amount ?? 0),
+                    recognitionMethod:
+                        (e.recognition_method as RevenueEntry["recognitionMethod"]) ??
+                        "completed_contract",
+                    period: String(e.period ?? ""),
+                    status: (e.status as RevenueEntry["status"]) ?? "pending_review",
+                };
+            }),
+        [sbEntries]
+    );
+
+    const summaries: RevenueSummary[] = useMemo(
+        () =>
+            (sbSummary ?? []).map((s: Record<string, unknown>) => ({
+                period: String(s.period ?? ""),
+                totalRevenue: Number(s.total_revenue ?? 0),
+                recognizedRevenue: Number(s.recognized_revenue ?? 0),
+                deferredRevenue: Number(s.deferred_revenue ?? 0),
+                unbilledRevenue: Number(s.unbilled_revenue ?? 0),
+            })),
+        [sbSummary]
+    );
+
+    const isLoading = loadingEntries || loadingSummary;
+    if (isLoading) return <LoadingState />;
+
+    const totalRecognized = entries.reduce((s, e) => s + e.recognizedAmount, 0);
+    const totalDeferred = entries.reduce((s, e) => s + e.deferredAmount, 0);
+    const totalRevenue = entries.reduce((s, e) => s + e.totalAmount, 0);
+    const pendingReview = entries.filter((e) => e.status === "pending_review").length;
 
     const tabs = [
         {
             id: "entries" as const,
             label: "Entries",
-            count: PLACEHOLDER_ENTRIES.length,
+            count: entries.length,
             icon: <FileText className="h-4 w-4" />,
         },
         {
             id: "summary" as const,
             label: "Period Summary",
-            count: PLACEHOLDER_SUMMARY.length,
+            count: summaries.length,
             icon: <BarChart3 className="h-4 w-4" />,
         },
         {
@@ -217,7 +180,7 @@ export default function RevenueRecognitionPage() {
 
                 <TabPanel value="entries" activeValue={activeTab}>
                     <div className="space-y-3">
-                        {PLACEHOLDER_ENTRIES.map((entry) => {
+                        {entries.map((entry) => {
                             const pct = Math.round(
                                 (entry.recognizedAmount / entry.totalAmount) * 100
                             );
@@ -289,7 +252,7 @@ export default function RevenueRecognitionPage() {
 
                 <TabPanel value="summary" activeValue={activeTab}>
                     <div className="space-y-4">
-                        {PLACEHOLDER_SUMMARY.map((period) => {
+                        {summaries.map((period) => {
                             const recognizedPct = Math.round(
                                 (period.recognizedRevenue / period.totalRevenue) * 100
                             );
@@ -358,26 +321,27 @@ export default function RevenueRecognitionPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {["January 2026", "February 2026", "March 2026"].map((month, i) => {
-                                const amounts = [310000, 435000, 320250];
-                                const targets = [350000, 450000, 500000];
-                                const pct = Math.round((amounts[i]! / targets[i]!) * 100);
+                            {summaries.map((s) => {
+                                const pct =
+                                    s.totalRevenue > 0
+                                        ? Math.round((s.recognizedRevenue / s.totalRevenue) * 100)
+                                        : 0;
                                 return (
-                                    <div key={month} className="p-4 rounded-lg bg-secondary/30">
+                                    <div key={s.period} className="p-4 rounded-lg bg-secondary/30">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium">{month}</span>
+                                            <span className="text-sm font-medium">{s.period}</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-bold">
-                                                    {formatCurrency(amounts[i]!)}
+                                                    {formatCurrency(s.recognizedRevenue)}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    / {formatCurrency(targets[i]!)}
+                                                    / {formatCurrency(s.totalRevenue)}
                                                 </span>
                                             </div>
                                         </div>
                                         <ProgressBar value={pct} size="sm" />
                                         <p className="text-[10px] text-muted-foreground mt-1">
-                                            {pct}% of target recognized
+                                            {pct}% of total recognized
                                         </p>
                                     </div>
                                 );

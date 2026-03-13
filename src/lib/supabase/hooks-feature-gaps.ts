@@ -265,6 +265,28 @@ export interface QualityCheckRow {
     profiles?: { name: string } | null;
 }
 
+export function useAllQualityChecks() {
+    return useQuery({
+        queryKey: ["quality_checks", "all"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("quality_checks")
+                .select(
+                    "*, profiles(name), quality_check_templates(name, description, entity_type, check_items)"
+                )
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return (data ?? []) as (QualityCheckRow & {
+                quality_check_templates?: {
+                    name: string;
+                    description: string | null;
+                    entity_type: string;
+                    check_items: unknown[];
+                } | null;
+            })[];
+        },
+    });
+}
+
 export function useQualityChecks(entityType: string, entityId: string) {
     return useQuery({
         queryKey: ["quality_checks", entityType, entityId],
@@ -287,6 +309,22 @@ export function useCreateQualityCheck() {
         mutationFn: async (check: Record<string, unknown>) => {
             const { data, error } = await fromTable("quality_checks")
                 .insert(check)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["quality_checks"] }),
+    });
+}
+
+export function useUpdateQualityCheck() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("quality_checks")
+                .update(updates)
+                .eq("id", id)
                 .select()
                 .single();
             if (error) throw error;
@@ -379,11 +417,16 @@ export function useGoals(ownerId?: string) {
     return useQuery({
         queryKey: ["goals", ownerId],
         queryFn: async () => {
-            let query = fromTable("goals").select("*").order("created_at", { ascending: false });
+            let query = fromTable("goals")
+                .select("*, profiles(name), projects(name)")
+                .order("created_at", { ascending: false });
             if (ownerId) query = query.eq("owner_id", ownerId);
             const { data, error } = await query;
             if (error) throw error;
-            return (data ?? []) as GoalRow[];
+            return (data ?? []) as (GoalRow & {
+                profiles?: { name: string } | null;
+                projects?: { name: string } | null;
+            })[];
         },
     });
 }

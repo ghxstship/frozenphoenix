@@ -1,37 +1,66 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Badge } from "@/components/ui/badge";
-import type { Project } from "@/types";
 import { User } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { useCrewMembers, useProjects } from "@/lib/supabase/hooks";
+import { LoadingState } from "@/components/layouts/loading-state";
 
-// NEXT: Wire to Supabase when org_chart/crew_assignments queries are available
+interface OrgNode {
+    role: string;
+    name: string;
+    level: number;
+    children: string[];
+}
+
+const ROLE_HIERARCHY: Record<string, number> = {
+    "executive producer": 0,
+    producer: 0,
+    director: 0,
+    "technical director": 1,
+    "production manager": 1,
+    "client lead": 1,
+    supervisor: 1,
+    lead: 1,
+};
 
 export default function OrgChartPage() {
-    // NEXT: Wire to useProjects() when hook integration is ready
-    const projects: Project[] = [];
+    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
+    const { data: sbCrew, isLoading: loadingCrew } = useCrewMembers();
 
-    const orgTree = [
-        {
-            role: "Executive Producer",
-            name: "Alex Rivera",
-            level: 0,
-            children: ["Technical Director", "Client Lead"],
-        },
-        {
-            role: "Technical Director",
-            name: "Marcus Johnson",
-            level: 1,
-            children: ["Lead Fabricator", "Electrician"],
-        },
-        { role: "Client Lead", name: "Derek Allen", level: 1, children: [] },
-        { role: "Lead Fabricator", name: "Crew TBD", level: 2, children: [] },
-        { role: "Electrician", name: "Tommy Rodriguez", level: 2, children: [] },
-    ];
+    const projects = useMemo(
+        () => (sbProjects ?? []) as Array<Record<string, unknown>>,
+        [sbProjects]
+    );
+    const crew = useMemo(() => (sbCrew ?? []) as Array<Record<string, unknown>>, [sbCrew]);
+
+    const orgTree: OrgNode[] = useMemo(() => {
+        if (crew.length === 0) return [];
+        const nodes: OrgNode[] = crew.map((c) => {
+            const role = String(c.role ?? c.specialty ?? "Team Member");
+            const roleLower = role.toLowerCase();
+            const level = ROLE_HIERARCHY[roleLower] ?? 2;
+            return { role, name: String(c.name ?? ""), level, children: [] };
+        });
+        const level0 = nodes.filter((n) => n.level === 0);
+        const level1 = nodes.filter((n) => n.level === 1);
+        if (level0.length > 0) {
+            level0[0]!.children = level1.map((n) => n.role);
+        }
+        const level2 = nodes.filter((n) => n.level === 2);
+        for (const l1 of level1) {
+            l1.children = level2.slice(0, 2).map((n) => n.role);
+        }
+        return nodes;
+    }, [crew]);
+
+    if (loadingProjects || loadingCrew) {
+        return <LoadingState />;
+    }
 
     return (
         <PermissionGate resource="org_chart" action="read">
@@ -42,8 +71,8 @@ export default function OrgChartPage() {
                 >
                     <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
                         {projects.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.name}
+                            <option key={String(p.id)} value={String(p.id)}>
+                                {String(p.name ?? "")}
                             </option>
                         ))}
                     </select>

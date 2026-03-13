@@ -409,6 +409,24 @@ export function useSlaStatus() {
 // CUSTOM FIELD DEFINITIONS & VALUES (Theme I2)
 // ═══════════════════════════════════════════════════════════════
 
+export interface CustomFieldDefinitionRow {
+    id: string;
+    name: string;
+    field_key: string;
+    field_type: string;
+    entity_types: string[];
+    is_required: boolean | null;
+    is_filterable: boolean | null;
+    options: unknown;
+    default_value: string | null;
+    display_order: number | null;
+    section: string | null;
+    created_by: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+    organization_id: string | null;
+}
+
 export function useCustomFieldDefinitions(entityType?: string) {
     return useQuery({
         queryKey: ["custom_field_definitions", entityType],
@@ -417,7 +435,7 @@ export function useCustomFieldDefinitions(entityType?: string) {
             if (entityType) q = q.contains("entity_types", [entityType]);
             const { data, error } = await q;
             if (error) throw error;
-            return data;
+            return (data ?? []) as CustomFieldDefinitionRow[];
         },
     });
 }

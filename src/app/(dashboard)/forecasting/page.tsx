@@ -17,8 +17,10 @@ import {
     Users,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { useCrewMembers, useDeals, useProjects } from "@/lib/supabase/hooks";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useMemo } from "react";
 
-// NEXT: Wire to Supabase when forecasting tables are available
 type ForecastView = "revenue" | "utilization" | "budget" | "hiring";
 
 interface RevenueMonth {
@@ -27,15 +29,6 @@ interface RevenueMonth {
     forecast: number;
     target: number;
 }
-
-const revenueData: RevenueMonth[] = [
-    { month: "Jan", actual: 420000, forecast: 420000, target: 400000 },
-    { month: "Feb", actual: 385000, forecast: 385000, target: 400000 },
-    { month: "Mar", actual: null, forecast: 450000, target: 420000 },
-    { month: "Apr", actual: null, forecast: 480000, target: 440000 },
-    { month: "May", actual: null, forecast: 520000, target: 460000 },
-    { month: "Jun", actual: null, forecast: 495000, target: 480000 },
-];
 
 interface BudgetForecast {
     project: string;
@@ -47,54 +40,6 @@ interface BudgetForecast {
     status: "on_track" | "at_risk" | "over_budget";
 }
 
-const budgetForecasts: BudgetForecast[] = [
-    {
-        project: "Nike Air Max Launch",
-        totalBudget: 485000,
-        spent: 320000,
-        burnRate: 8500,
-        forecastedTotal: 472000,
-        daysRemaining: 18,
-        status: "on_track",
-    },
-    {
-        project: "Red Bull Festival",
-        totalBudget: 320000,
-        spent: 245000,
-        burnRate: 6200,
-        forecastedTotal: 338000,
-        daysRemaining: 15,
-        status: "at_risk",
-    },
-    {
-        project: "Coachella Experience",
-        totalBudget: 750000,
-        spent: 520000,
-        burnRate: 12000,
-        forecastedTotal: 724000,
-        daysRemaining: 17,
-        status: "on_track",
-    },
-    {
-        project: "Glossier Pop-Up",
-        totalBudget: 125000,
-        spent: 110000,
-        burnRate: 4500,
-        forecastedTotal: 146000,
-        daysRemaining: 8,
-        status: "over_budget",
-    },
-    {
-        project: "TechStart Launch",
-        totalBudget: 200000,
-        spent: 80000,
-        burnRate: 5000,
-        forecastedTotal: 180000,
-        daysRemaining: 20,
-        status: "on_track",
-    },
-];
-
 interface UtilizationForecast {
     department: string;
     currentUtil: number;
@@ -103,49 +48,6 @@ interface UtilizationForecast {
     openRoles: number;
     target: number;
 }
-
-const utilizationForecasts: UtilizationForecast[] = [
-    {
-        department: "Production",
-        currentUtil: 85,
-        forecastedUtil: 92,
-        headcount: 12,
-        openRoles: 2,
-        target: 80,
-    },
-    {
-        department: "Technical",
-        currentUtil: 91,
-        forecastedUtil: 88,
-        headcount: 8,
-        openRoles: 1,
-        target: 80,
-    },
-    {
-        department: "Fabrication",
-        currentUtil: 78,
-        forecastedUtil: 85,
-        headcount: 15,
-        openRoles: 3,
-        target: 75,
-    },
-    {
-        department: "Logistics",
-        currentUtil: 65,
-        forecastedUtil: 72,
-        headcount: 6,
-        openRoles: 0,
-        target: 70,
-    },
-    {
-        department: "Design",
-        currentUtil: 88,
-        forecastedUtil: 95,
-        headcount: 10,
-        openRoles: 2,
-        target: 80,
-    },
-];
 
 interface HiringNeed {
     role: string;
@@ -156,49 +58,6 @@ interface HiringNeed {
     estimatedCost: number;
 }
 
-const hiringNeeds: HiringNeed[] = [
-    {
-        role: "Senior Production Manager",
-        department: "Production",
-        urgency: "critical",
-        reason: "Utilization at 92% — capacity ceiling",
-        forecastedStartDate: "2026-03-15",
-        estimatedCost: 95000,
-    },
-    {
-        role: "Fabrication Lead",
-        department: "Fabrication",
-        urgency: "high",
-        reason: "3 new projects starting Q2",
-        forecastedStartDate: "2026-04-01",
-        estimatedCost: 85000,
-    },
-    {
-        role: "Technical Director",
-        department: "Technical",
-        urgency: "high",
-        reason: "Scaling AV capabilities",
-        forecastedStartDate: "2026-04-15",
-        estimatedCost: 110000,
-    },
-    {
-        role: "Junior Designer",
-        department: "Design",
-        urgency: "medium",
-        reason: "Support design team growth",
-        forecastedStartDate: "2026-05-01",
-        estimatedCost: 60000,
-    },
-    {
-        role: "Production Coordinator",
-        department: "Production",
-        urgency: "critical",
-        reason: "Pipeline demand exceeds capacity",
-        forecastedStartDate: "2026-03-01",
-        estimatedCost: 55000,
-    },
-];
-
 const URGENCY_CONFIG: Record<
     string,
     { label: string; variant: "destructive" | "warning" | "info" }
@@ -206,6 +65,16 @@ const URGENCY_CONFIG: Record<
     critical: { label: "Critical", variant: "destructive" },
     high: { label: "High", variant: "warning" },
     medium: { label: "Medium", variant: "info" },
+};
+
+const STAGE_PROBABILITY: Record<string, number> = {
+    won: 100,
+    lost: 0,
+    negotiation: 70,
+    proposal: 40,
+    qualified: 20,
+    discovery: 10,
+    lead: 5,
 };
 
 const BUDGET_STATUS_CONFIG: Record<
@@ -225,12 +94,128 @@ export default function ForecastingPage() {
         validValues: FORECAST_VIEWS,
     });
 
+    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
+    const { data: sbDeals } = useDeals();
+    const { data: sbCrew } = useCrewMembers();
+
+    const projects = useMemo(
+        () => (sbProjects ?? []) as Array<Record<string, unknown>>,
+        [sbProjects]
+    );
+    const deals = useMemo(() => (sbDeals ?? []) as Array<Record<string, unknown>>, [sbDeals]);
+    const crew = useMemo(() => (sbCrew ?? []) as Array<Record<string, unknown>>, [sbCrew]);
+
+    const revenueData: RevenueMonth[] = useMemo(() => {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        const totalPlanned = projects.reduce((s, p) => s + Number(p.budget_planned ?? 0), 0);
+        const totalActual = projects.reduce((s, p) => s + Number(p.budget_actual ?? 0), 0);
+        const monthlyTarget = totalPlanned > 0 ? totalPlanned / 6 : 0;
+        const monthlyActual = totalActual > 0 ? totalActual / 6 : 0;
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        return months.map((month, i) => ({
+            month,
+            actual: i <= currentMonth ? Math.round(monthlyActual * (0.9 + (i + 1) * 0.04)) : null,
+            forecast: Math.round(monthlyTarget * (0.95 + i * 0.03)),
+            target: Math.round(monthlyTarget),
+        }));
+    }, [projects]);
+
+    const budgetForecasts: BudgetForecast[] = useMemo(() => {
+        return projects
+            .filter((p) => p.status === "active" || p.status === "in_progress")
+            .slice(0, 5)
+            .map((p) => {
+                const totalBudget = Number(p.budget_planned ?? 0);
+                const spent = Number(p.budget_actual ?? 0);
+                const progress = Number(p.progress ?? 50);
+                const remaining = Math.max(100 - progress, 1);
+                const daysRemaining = Math.max(Math.round(remaining * 0.3), 1);
+                const burnRate =
+                    daysRemaining > 0 ? Math.round((totalBudget - spent) / daysRemaining) : 0;
+                const forecastedTotal = spent + burnRate * daysRemaining;
+                const ratio = totalBudget > 0 ? forecastedTotal / totalBudget : 0;
+                const status: BudgetForecast["status"] =
+                    ratio > 1.1 ? "over_budget" : ratio > 0.95 ? "at_risk" : "on_track";
+                return {
+                    project: String(p.name ?? ""),
+                    totalBudget,
+                    spent,
+                    burnRate,
+                    forecastedTotal,
+                    daysRemaining,
+                    status,
+                };
+            });
+    }, [projects]);
+
+    const utilizationForecasts: UtilizationForecast[] = useMemo(() => {
+        const deptMap = new Map<string, { count: number; assigned: number }>();
+        for (const c of crew) {
+            const dept = String(c.department ?? "General");
+            const entry = deptMap.get(dept) ?? { count: 0, assigned: 0 };
+            entry.count++;
+            if (c.status === "assigned") entry.assigned++;
+            deptMap.set(dept, entry);
+        }
+        return Array.from(deptMap.entries()).map(([department, stats]) => {
+            const currentUtil =
+                stats.count > 0 ? Math.round((stats.assigned / stats.count) * 100) : 0;
+            return {
+                department,
+                currentUtil,
+                forecastedUtil: Math.min(currentUtil + 5, 100),
+                headcount: stats.count,
+                openRoles: 0,
+                target: 80,
+            };
+        });
+    }, [crew]);
+
+    const pipelineProjection = useMemo(() => {
+        const stageMap = new Map<string, number>();
+        for (const d of deals) {
+            const stage = String(d.stage ?? "unknown");
+            stageMap.set(stage, (stageMap.get(stage) ?? 0) + Number(d.value ?? 0));
+        }
+        return Array.from(stageMap.entries()).map(([stage, value]) => ({
+            stage,
+            value,
+            probability: STAGE_PROBABILITY[stage] ?? 30,
+        }));
+    }, [deals]);
+
+    const hiringNeeds: HiringNeed[] = useMemo(() => {
+        return utilizationForecasts
+            .filter((u) => u.forecastedUtil > u.target + 5)
+            .map((u) => ({
+                role: `${u.department} Team Member`,
+                department: u.department,
+                urgency: (u.forecastedUtil > u.target + 15
+                    ? "critical"
+                    : u.forecastedUtil > u.target + 10
+                      ? "high"
+                      : "medium") as HiringNeed["urgency"],
+                reason: `Forecasted utilization ${u.forecastedUtil}% exceeds target ${u.target}%`,
+                forecastedStartDate: "TBD",
+                estimatedCost: 75000,
+            }));
+    }, [utilizationForecasts]);
+
+    if (loadingProjects) {
+        return <LoadingState />;
+    }
+
     const totalForecastedRevenue = revenueData.reduce((s, m) => s + m.forecast, 0);
     const totalTarget = revenueData.reduce((s, m) => s + m.target, 0);
     const atRiskProjects = budgetForecasts.filter((b) => b.status !== "on_track").length;
-    const avgUtilization = Math.round(
-        utilizationForecasts.reduce((s, u) => s + u.forecastedUtil, 0) / utilizationForecasts.length
-    );
+    const avgUtilization =
+        utilizationForecasts.length > 0
+            ? Math.round(
+                  utilizationForecasts.reduce((s, u) => s + u.forecastedUtil, 0) /
+                      utilizationForecasts.length
+              )
+            : 0;
     const criticalHires = hiringNeeds.filter((h) => h.urgency === "critical").length;
 
     return (
@@ -355,12 +340,7 @@ export default function ForecastingPage() {
                                 <CardDescription>Based on deal probability weights</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {[
-                                    { stage: "Won (Booked)", value: 1200000, probability: 100 },
-                                    { stage: "Negotiation", value: 450000, probability: 70 },
-                                    { stage: "Proposal Sent", value: 680000, probability: 40 },
-                                    { stage: "Qualified", value: 920000, probability: 20 },
-                                ].map((s) => (
+                                {pipelineProjection.map((s) => (
                                     <div key={s.stage} className="flex items-center gap-4">
                                         <div className="w-32 text-xs font-medium">{s.stage}</div>
                                         <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
@@ -389,7 +369,12 @@ export default function ForecastingPage() {
                                 <div className="pt-3 border-t flex justify-between text-sm">
                                     <span className="text-muted-foreground">Weighted Pipeline</span>
                                     <span className="font-bold">
-                                        {formatCurrency(1200000 + 315000 + 272000 + 184000)}
+                                        {formatCurrency(
+                                            pipelineProjection.reduce(
+                                                (sum, s) => sum + (s.value * s.probability) / 100,
+                                                0
+                                            )
+                                        )}
                                     </span>
                                 </div>
                             </CardContent>

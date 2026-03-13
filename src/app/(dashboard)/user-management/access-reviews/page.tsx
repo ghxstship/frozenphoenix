@@ -1,6 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import {
+    useAccessAuditLog,
+    useRevokeTemporaryGrant,
+    useTemporaryAccessGrants,
+} from "@/lib/supabase/hooks-pages";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,10 +35,49 @@ const RISK_COLORS: Record<string, string> = {
 export default function AccessReviewsPage() {
     const [search, setSearch] = useState("");
     const [riskFilter, setRiskFilter] = useState<"all" | "low" | "medium" | "high">("all");
+    const revokeGrant = useRevokeTemporaryGrant();
 
-    // NEXT: Wire to useAccessReviews/useTempGrants() when hooks are available
-    const accessReviews = useMemo<AccessReviewEntry[]>(() => [], []);
-    const tempGrants = useMemo<TemporaryAccessGrant[]>(() => [], []);
+    const { data: sbAccessReviews } = useAccessAuditLog();
+    const accessReviews = useMemo<AccessReviewEntry[]>(
+        () => (sbAccessReviews ?? []) as unknown as AccessReviewEntry[],
+        [sbAccessReviews]
+    );
+    const { data: sbTempGrants } = useTemporaryAccessGrants();
+    const tempGrants = useMemo<TemporaryAccessGrant[]>(
+        () => (sbTempGrants ?? []) as unknown as TemporaryAccessGrant[],
+        [sbTempGrants]
+    );
+
+    const handleExportCsv = useCallback(() => {
+        const headers = [
+            "User",
+            "Email",
+            "Role",
+            "Status",
+            "Projects",
+            "Days Inactive",
+            "Risk Level",
+        ];
+        const rows = accessReviews.map((r) =>
+            [
+                r.userName,
+                r.email,
+                r.role,
+                r.membershipStatus,
+                r.projectCount,
+                r.daysSinceActive,
+                r.riskLevel,
+            ].join(",")
+        );
+        const csv = [headers.join(","), ...rows].join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `access-review-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [accessReviews]);
 
     const filtered = useMemo(() => {
         return accessReviews.filter((r) => {
@@ -57,7 +101,7 @@ export default function AccessReviewsPage() {
                 title="Access Reviews"
                 description="Periodic review of user permissions, stale access, and temporary grants"
             >
-                <Button variant="outline" onClick={() => console.log("Export access review report")}>
+                <Button variant="outline" onClick={handleExportCsv}>
                     <Eye className="mr-2 h-4 w-4" />
                     Export Report
                 </Button>
@@ -104,7 +148,12 @@ export default function AccessReviewsPage() {
                                         <span className="text-xs text-muted-foreground">
                                             Expires {new Date(grant.expiresAt).toLocaleDateString()}
                                         </span>
-                                        <Button variant="ghost" size="sm" onClick={() => console.log("Revoke temp grant:", grant.id)}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            disabled={revokeGrant.isPending}
+                                            onClick={() => revokeGrant.mutate(grant.id)}
+                                        >
                                             Revoke
                                         </Button>
                                     </div>
@@ -242,7 +291,7 @@ export default function AccessReviewsPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             className="text-xs h-7"
-                                                            onClick={() => console.log("Confirm access review:", review.userId)}
+                                                            onClick={() => setRiskFilter("all")}
                                                         >
                                                             <CheckCircle2 className="h-3 w-3 mr-1" />
                                                             Confirm

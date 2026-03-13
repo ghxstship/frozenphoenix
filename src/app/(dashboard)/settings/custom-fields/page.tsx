@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
 import { PageHeader } from "@/components/ui/page-header";
@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { useToast } from "@/components/ui/toast";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useCustomFieldDefinitions } from "@/lib/supabase/hooks-v2-features";
 
 interface CustomFieldDefinition {
     id: string;
@@ -51,130 +53,37 @@ const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
     email: <Tag className="h-3.5 w-3.5" />,
 };
 
-const PLACEHOLDER_FIELDS: CustomFieldDefinition[] = [
-    {
-        id: "cf1",
-        name: "Client Industry",
-        fieldKey: "client_industry",
-        fieldType: "select",
-        entityType: "companies",
-        isRequired: false,
-        isSearchable: true,
-        options: [
-            "Technology",
-            "Retail",
-            "Automotive",
-            "FMCG",
-            "Sports",
-            "Entertainment",
-            "Fashion",
-        ],
-        defaultValue: null,
-        usageCount: 45,
-        createdBy: "Anna Williams",
-    },
-    {
-        id: "cf2",
-        name: "Project Risk Level",
-        fieldKey: "project_risk_level",
-        fieldType: "select",
-        entityType: "projects",
-        isRequired: true,
-        isSearchable: true,
-        options: ["Low", "Medium", "High", "Critical"],
-        defaultValue: "Medium",
-        usageCount: 38,
-        createdBy: "Marcus Chen",
-    },
-    {
-        id: "cf3",
-        name: "Venue Capacity",
-        fieldKey: "venue_capacity",
-        fieldType: "number",
-        entityType: "locations",
-        isRequired: false,
-        isSearchable: false,
-        options: null,
-        defaultValue: null,
-        usageCount: 22,
-        createdBy: "Jake Morrison",
-    },
-    {
-        id: "cf4",
-        name: "Permit Expiry",
-        fieldKey: "permit_expiry",
-        fieldType: "date",
-        entityType: "projects",
-        isRequired: false,
-        isSearchable: true,
-        options: null,
-        defaultValue: null,
-        usageCount: 15,
-        createdBy: "Sarah Kim",
-    },
-    {
-        id: "cf5",
-        name: "VIP Event",
-        fieldKey: "is_vip_event",
-        fieldType: "boolean",
-        entityType: "events",
-        isRequired: false,
-        isSearchable: true,
-        options: null,
-        defaultValue: "false",
-        usageCount: 31,
-        createdBy: "Lisa Park",
-    },
-    {
-        id: "cf6",
-        name: "Sponsor Tier",
-        fieldKey: "sponsor_tier",
-        fieldType: "select",
-        entityType: "companies",
-        isRequired: false,
-        isSearchable: true,
-        options: ["Platinum", "Gold", "Silver", "Bronze"],
-        defaultValue: null,
-        usageCount: 12,
-        createdBy: "Tom Rivera",
-    },
-    {
-        id: "cf7",
-        name: "Equipment Tags",
-        fieldKey: "equipment_tags",
-        fieldType: "multi_select",
-        entityType: "assets",
-        isRequired: false,
-        isSearchable: true,
-        options: ["Audio", "Video", "Lighting", "Rigging", "Power", "Staging", "Furniture"],
-        defaultValue: null,
-        usageCount: 56,
-        createdBy: "Marcus Chen",
-    },
-    {
-        id: "cf8",
-        name: "Vendor Portal URL",
-        fieldKey: "vendor_portal_url",
-        fieldType: "url",
-        entityType: "vendors",
-        isRequired: false,
-        isSearchable: false,
-        options: null,
-        defaultValue: null,
-        usageCount: 8,
-        createdBy: "Anna Williams",
-    },
-];
-
-const ENTITY_TYPES = ["all", ...new Set(PLACEHOLDER_FIELDS.map((f) => f.entityType))];
-
 export default function CustomFieldsPage() {
     const { addToast } = useToast();
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [entityFilter, setEntityFilter] = useState("all");
 
-    const filtered = PLACEHOLDER_FIELDS.filter((f) => {
+    const { data: sbFields, isLoading } = useCustomFieldDefinitions();
+
+    const fields: CustomFieldDefinition[] = useMemo(
+        () =>
+            (sbFields ?? []).map((f) => ({
+                id: f.id,
+                name: f.name,
+                fieldKey: f.field_key,
+                fieldType: (f.field_type as CustomFieldDefinition["fieldType"]) ?? "text",
+                entityType: (f.entity_types ?? [])[0] ?? "",
+                isRequired: f.is_required === true,
+                isSearchable: f.is_filterable === true,
+                options: (f.options as string[] | null) ?? null,
+                defaultValue: f.default_value,
+                usageCount: 0,
+                createdBy: "",
+            })),
+        [sbFields]
+    );
+
+    if (isLoading) return <LoadingState />;
+
+    const entityTypes = ["all", ...new Set(fields.map((f) => f.entityType))];
+
+    const filtered = fields.filter((f) => {
         const matchesSearch =
             !search ||
             f.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -183,8 +92,8 @@ export default function CustomFieldsPage() {
         return matchesSearch && matchesEntity;
     });
 
-    const totalUsage = PLACEHOLDER_FIELDS.reduce((s, f) => s + f.usageCount, 0);
-    const entityCoverage = new Set(PLACEHOLDER_FIELDS.map((f) => f.entityType)).size;
+    const totalUsage = fields.reduce((s, f) => s + f.usageCount, 0);
+    const entityCoverage = new Set(fields.map((f) => f.entityType)).size;
 
     return (
         <PermissionGate resource="settings" action="read">
@@ -199,16 +108,12 @@ export default function CustomFieldsPage() {
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Custom Fields"
-                        value={PLACEHOLDER_FIELDS.length}
-                        icon={Settings}
-                    />
+                    <StatCard title="Custom Fields" value={fields.length} icon={Settings} />
                     <StatCard title="Total Usage" value={totalUsage} icon={Layers} />
                     <StatCard title="Entity Types" value={entityCoverage} icon={Tag} />
                     <StatCard
                         title="Required Fields"
-                        value={PLACEHOLDER_FIELDS.filter((f) => f.isRequired).length}
+                        value={fields.filter((f) => f.isRequired).length}
                         icon={CheckSquare}
                     />
                 </div>
@@ -221,7 +126,7 @@ export default function CustomFieldsPage() {
                         className="max-w-sm"
                     />
                     <div className="flex gap-1">
-                        {ENTITY_TYPES.map((entity) => (
+                        {entityTypes.map((entity) => (
                             <Button
                                 key={entity}
                                 size="sm"
@@ -311,7 +216,13 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0"
-                                                onClick={() => addToast({ title: "Coming soon", description: `Editing ${field.name} is not yet available.`, variant: "default" })}
+                                                onClick={() =>
+                                                    addToast({
+                                                        title: "Coming soon",
+                                                        description: `Editing ${field.name} is not yet available.`,
+                                                        variant: "default",
+                                                    })
+                                                }
                                             >
                                                 <Pencil className="h-3.5 w-3.5" />
                                             </Button>
@@ -319,7 +230,13 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0 text-destructive"
-                                                onClick={() => addToast({ title: "Coming soon", description: `Deleting ${field.name} is not yet available.`, variant: "default" })}
+                                                onClick={() =>
+                                                    addToast({
+                                                        title: "Coming soon",
+                                                        description: `Deleting ${field.name} is not yet available.`,
+                                                        variant: "default",
+                                                    })
+                                                }
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
@@ -339,7 +256,11 @@ export default function CustomFieldsPage() {
                     ))}
                 </div>
             </div>
-            <CreateEntityDialog config={CREATE_CUSTOM_FIELD_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_CUSTOM_FIELD_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }

@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/locale";
 import { useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_DOCUMENT_CONFIG } from "@/config/create-entity-configs";
+import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/ui/page-header";
@@ -16,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { getStatusLabel } from "@/config/ui-variants";
 import { StatusBadge } from "@/components/ui/status-badge";
+import type { DocumentStatus, DocumentType } from "@/types";
 import {
     BookOpen,
     Clock,
@@ -25,7 +27,6 @@ import {
     FolderOpen,
     Globe,
     LayoutTemplate,
-    Loader2,
     Lock,
     MessageSquare,
     Pencil,
@@ -39,21 +40,12 @@ import {
 import { useDocuments } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
-type DocType =
-    | "doc"
-    | "wiki"
-    | "meeting_notes"
-    | "specification"
-    | "proposal_doc"
-    | "sow"
-    | "template";
-type DocStatus = "draft" | "pending_review" | "published" | "archived";
 interface DocItem {
     id: string;
     title: string;
     icon: string | null;
-    documentType: DocType;
-    status: DocStatus;
+    documentType: DocumentType;
+    status: DocumentStatus;
     projectName: string | null;
     ownerName: string;
     lastEditedBy: string;
@@ -70,7 +62,7 @@ interface DocItem {
     parentTitle: string | null;
 }
 
-const DOC_TYPE_ICONS: Record<DocType, React.ElementType> = {
+const DOC_TYPE_ICONS: Record<DocumentType, React.ElementType> = {
     doc: FileText,
     wiki: BookOpen,
     meeting_notes: StickyNote,
@@ -80,15 +72,9 @@ const DOC_TYPE_ICONS: Record<DocType, React.ElementType> = {
     template: LayoutTemplate,
 };
 
-const DOC_TYPE_LABELS: Record<DocType, string> = {
-    doc: "Document",
-    wiki: "Wiki",
-    meeting_notes: "Meeting Notes",
-    specification: "Specification",
-    proposal_doc: "Proposal",
-    sow: "Scope of Work",
-    template: "Template",
-};
+const DOC_TYPE_LABELS: Record<DocumentType, string> = Object.fromEntries(
+    Object.entries(DOCUMENT_TYPE_MAP).map(([k, v]) => [k, v.label])
+) as Record<DocumentType, string>;
 
 export default function DocumentsPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -120,8 +106,8 @@ export default function DocumentsPage() {
         id: (d.id as string) ?? "",
         title: (d.title as string) ?? "",
         icon: (d.icon as string) ?? null,
-        documentType: ((d.document_type as string) ?? "doc") as DocType,
-        status: ((d.status as string) ?? "draft") as DocStatus,
+        documentType: ((d.document_type as string) ?? "doc") as DocumentType,
+        status: ((d.status as string) ?? "draft") as DocumentStatus,
         projectName: (d.project_name as string) ?? null,
         ownerName: (d.owner_name as string) ?? "",
         lastEditedBy: (d.last_edited_by as string) ?? "",
@@ -139,9 +125,7 @@ export default function DocumentsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = docs.filter((d) => {
@@ -174,93 +158,97 @@ export default function DocumentsPage() {
 
     return (
         <>
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Documents"
-                description="Create, collaborate, and share documents across your team and projects"
-            >
-                <Button onClick={openCreate}>
-                    <Plus className="mr-2 h-4 w-4" /> New Document
-                </Button>
-            </PageHeader>
+            <div className="space-y-6 animate-fade-in">
+                <PageHeader
+                    title="Documents"
+                    description="Create, collaborate, and share documents across your team and projects"
+                >
+                    <Button onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> New Document
+                    </Button>
+                </PageHeader>
 
-            {/* Filters */}
-            <div className="flex items-center gap-4 flex-wrap">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search documents..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="Document type filter"
-                    value={typeFilter}
-                    onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All Types" },
-                        ...(
-                            [
-                                "doc",
-                                "wiki",
-                                "meeting_notes",
-                                "specification",
-                                "sow",
-                                "template",
-                            ] as const
-                        ).map((t) => ({ value: t, label: DOC_TYPE_LABELS[t] })),
-                    ]}
-                />
-                <SegmentedControl
-                    ariaLabel="Document status filter"
-                    value={statusFilter}
-                    onValueChange={(v) => setStatusFilter(v as (typeof STATUS_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All" },
-                        { value: "draft", label: getStatusLabel("draft") },
-                        { value: "published", label: getStatusLabel("published") },
-                        { value: "pending_review", label: getStatusLabel("pending_review") },
-                    ]}
-                />
-            </div>
+                {/* Filters */}
+                <div className="flex items-center gap-4 flex-wrap">
+                    <SearchInput
+                        value={search}
+                        onValueChange={setSearch}
+                        placeholder="Search documents..."
+                        className="flex-1 max-w-sm"
+                    />
+                    <SegmentedControl
+                        ariaLabel="Document type filter"
+                        value={typeFilter}
+                        onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
+                        size="sm"
+                        options={[
+                            { value: "all", label: "All Types" },
+                            ...(
+                                [
+                                    "doc",
+                                    "wiki",
+                                    "meeting_notes",
+                                    "specification",
+                                    "sow",
+                                    "template",
+                                ] as const
+                            ).map((t) => ({ value: t, label: DOC_TYPE_LABELS[t] })),
+                        ]}
+                    />
+                    <SegmentedControl
+                        ariaLabel="Document status filter"
+                        value={statusFilter}
+                        onValueChange={(v) => setStatusFilter(v as (typeof STATUS_FILTERS)[number])}
+                        size="sm"
+                        options={[
+                            { value: "all", label: "All" },
+                            { value: "draft", label: getStatusLabel("draft") },
+                            { value: "published", label: getStatusLabel("published") },
+                            { value: "pending_review", label: getStatusLabel("pending_review") },
+                        ]}
+                    />
+                </div>
 
-            {/* Starred Docs */}
-            {starred.length > 0 && (
+                {/* Starred Docs */}
+                {starred.length > 0 && (
+                    <div className="space-y-2">
+                        <OverlineText as="h3" className="flex items-center gap-1">
+                            <Star className="h-3 w-3" /> Starred
+                        </OverlineText>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {starred.map((doc) => (
+                                <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Recent Docs */}
                 <div className="space-y-2">
-                    <OverlineText as="h3" className="flex items-center gap-1">
-                        <Star className="h-3 w-3" /> Starred
-                    </OverlineText>
+                    {starred.length > 0 && (
+                        <OverlineText as="h3" className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> Recent
+                        </OverlineText>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {starred.map((doc) => (
+                        {recent.map((doc) => (
                             <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />
                         ))}
                     </div>
                 </div>
-            )}
 
-            {/* Recent Docs */}
-            <div className="space-y-2">
-                {starred.length > 0 && (
-                    <OverlineText as="h3" className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Recent
-                    </OverlineText>
+                {filtered.length === 0 && (
+                    <div className="text-center py-16 text-muted-foreground">
+                        <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">No documents found</p>
+                    </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {recent.map((doc) => (
-                        <DocCard key={doc.id} doc={doc} formatTime={formatRelativeTime} />
-                    ))}
-                </div>
             </div>
-
-            {filtered.length === 0 && (
-                <div className="text-center py-16 text-muted-foreground">
-                    <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">No documents found</p>
-                </div>
-            )}
-        </div>
-        <CreateEntityDialog config={CREATE_DOCUMENT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_DOCUMENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </>
     );
 }

@@ -21,7 +21,12 @@ import { Chip } from "@/components/ui/chip";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { CampaignAsset, CampaignChannel, CampaignKpi } from "@/types/creative-brand";
-import { useCampaigns } from "@/lib/supabase/hooks-pages";
+import {
+    useCampaignAssets,
+    useCampaignChannels,
+    useCampaignKpis,
+    useCampaigns,
+} from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
@@ -30,7 +35,6 @@ import {
     ChevronRight,
     DollarSign,
     Filter,
-    Loader2,
     Megaphone,
     Plus,
     TrendingUp,
@@ -62,10 +66,15 @@ export default function CampaignsPage() {
     const { data: sbCampaigns, isLoading } = useCampaigns();
 
     const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);
-    // NEXT: Wire to useCampaignChannels/Assets/Kpis() when hooks are available
-    const channels: CampaignChannel[] = [];
-    const assets: CampaignAsset[] = [];
-    const kpis: CampaignKpi[] = [];
+    const { data: sbChannels } = useCampaignChannels();
+    const { data: sbAssets } = useCampaignAssets();
+    const { data: sbKpis } = useCampaignKpis();
+    const channels = useMemo(
+        () => (sbChannels ?? []) as unknown as CampaignChannel[],
+        [sbChannels]
+    );
+    const assets = useMemo(() => (sbAssets ?? []) as unknown as CampaignAsset[], [sbAssets]);
+    const kpis = useMemo(() => (sbKpis ?? []) as unknown as CampaignKpi[], [sbKpis]);
 
     const filtered = useMemo(() => {
         return campaigns.filter((c) => {
@@ -89,9 +98,7 @@ export default function CampaignsPage() {
     })();
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     function getChannelsForCampaign(campaignId: string) {

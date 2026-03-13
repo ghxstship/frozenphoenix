@@ -27,6 +27,7 @@ import {
     useBudgetAlerts,
     useBudgetProfitability,
 } from "@/lib/supabase/hooks-feature-gaps";
+import { useBudgetLines } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import {
     AlertTriangle,
@@ -36,7 +37,6 @@ import {
     ChevronUp,
     Clock,
     DollarSign,
-    Loader2,
     PieChart,
     Plus,
     TrendingDown,
@@ -49,18 +49,6 @@ const STATUS_VARIANTS: Record<string, string> = {
     approved: "success",
     locked: "info",
 };
-
-// NEXT: Replace with real burn data from Supabase when available
-const PLACEHOLDER_BURN_DATA = [
-    { label: "Wk 1", planned: 50000, actual: 45000 },
-    { label: "Wk 2", planned: 100000, actual: 98000 },
-    { label: "Wk 3", planned: 150000, actual: 162000 },
-    { label: "Wk 4", planned: 200000, actual: 215000 },
-    { label: "Wk 5", planned: 250000, actual: 270000 },
-    { label: "Wk 6", planned: 300000, actual: 0, forecast: 330000 },
-    { label: "Wk 7", planned: 350000, actual: 0, forecast: 395000 },
-    { label: "Wk 8", planned: 400000, actual: 0, forecast: 460000 },
-];
 
 export default function BudgetsPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -101,15 +89,13 @@ export default function BudgetsPage() {
         createdAt: p.created_at ?? new Date().toISOString(),
     }));
 
-    // NEXT: Wire to useBudgetLines() when hook is available
-    const budgetLines: BudgetLineItem[] = [];
+    const { data: sbBudgetLines } = useBudgetLines();
+    const budgetLines: BudgetLineItem[] = (sbBudgetLines ?? []) as unknown as BudgetLineItem[];
 
     const isLoading = loadingBudgets || loadingProjects;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filteredBudgets = budgets.filter((budget) => {
@@ -344,7 +330,25 @@ export default function BudgetsPage() {
                                                 Aggregate Budget Burn Forecast
                                             </p>
                                             <BurnChart
-                                                data={PLACEHOLDER_BURN_DATA}
+                                                data={
+                                                    budgetLines.length > 0
+                                                        ? budgetLines.slice(0, 8).map((bl, i) => {
+                                                              const r = bl as unknown as Record<
+                                                                  string,
+                                                                  unknown
+                                                              >;
+                                                              return {
+                                                                  label: `Wk ${i + 1}`,
+                                                                  planned: Number(
+                                                                      r.estimated_amount ?? 0
+                                                                  ),
+                                                                  actual: Number(
+                                                                      r.actual_amount ?? 0
+                                                                  ),
+                                                              };
+                                                          })
+                                                        : []
+                                                }
                                                 budgetTotal={totalBudgeted || 400000}
                                                 formatValue={(v) => formatCurrency(v)}
                                                 height={180}

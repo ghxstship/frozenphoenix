@@ -215,7 +215,6 @@ export async function updateSession(request: NextRequest) {
                     // Redirect to the appropriate step page
                     const gateRoutes: Record<string, string> = {
                         verify_email: "/settings/security",
-                        complete_compliance: "/settings/security",
                     };
 
                     const redirectPath = gateRoutes[step.step_key];

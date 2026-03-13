@@ -1,12 +1,17 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_BUDGET_LINE_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteBudget, useUpdateBudget } from "@/lib/supabase/hooks-pages";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,55 +27,10 @@ import { useBudget, useBudgetLines } from "@/lib/supabase/hooks-pages";
 import { useProjects } from "@/lib/supabase/hooks";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-    CheckCircle,
-    DollarSign,
-    Edit,
-    FileText,
-    Loader2,
-    TrendingDown,
-    TrendingUp,
-} from "lucide-react";
+import { CheckCircle, DollarSign, Edit, FileText, TrendingDown, TrendingUp } from "lucide-react";
 
 type TabId = "overview" | "line-items" | "approvals" | "chatter";
 const TAB_VALUES = ["overview", "line-items", "approvals", "chatter"] as const;
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "Sarah Chen",
-        entityType: "budget",
-        entityName: "this budget",
-        createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "approved",
-        actorName: "Jordan Lee",
-        entityType: "budget",
-        description: "Budget approved",
-        createdAt: new Date(Date.now() - 25 * 86400000).toISOString(),
-    },
-    {
-        id: "a3",
-        action: "updated",
-        actorName: "Sarah Chen",
-        entityType: "budget",
-        description: "Added catering line item",
-        createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u2",
-        authorName: "Jordan Lee",
-        content: "Budget approved. Keep contingency at 10% — we may need it for AV overages.",
-        createdAt: new Date(Date.now() - 25 * 86400000).toISOString(),
-    },
-];
 
 export default function BudgetDetailPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -89,9 +49,36 @@ export default function BudgetDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
-
     const { data: budget, isLoading } = useBudget(budgetId);
+    const { data: sbActivity } = useRecordActivityLog("budget", budgetId);
+    const { data: sbComments } = useRecordComments("budget", budgetId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
     const { data: sbLines } = useBudgetLines(budgetId);
     const { data: sbProjects } = useProjects();
     type BudgetLineView = {
@@ -118,9 +105,7 @@ export default function BudgetDetailPage() {
         : null;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!budget) {
@@ -140,16 +125,12 @@ export default function BudgetDetailPage() {
     const isOverBudget = remaining < 0;
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "budget",
+            entity_id: budgetId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -239,7 +220,10 @@ export default function BudgetDetailPage() {
             }
             menuItems={[
                 { label: "Export PDF", onClick: () => window.print() },
-                { label: "Create New Version", onClick: () => router.push(`/budgets/new?duplicateFrom=${budgetId}`) },
+                {
+                    label: "Create New Version",
+                    onClick: () => router.push(`/budgets/new?duplicateFrom=${budgetId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}
@@ -334,7 +318,9 @@ export default function BudgetDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-base">Line Items</CardTitle>
-                        <Button size="sm" onClick={openCreate}>Add Line Item</Button>
+                        <Button size="sm" onClick={openCreate}>
+                            Add Line Item
+                        </Button>
                     </CardHeader>
                     <CardContent>
                         {lineItems.length === 0 ? (
@@ -428,13 +414,17 @@ export default function BudgetDetailPage() {
                 <RecordChatter
                     recordType="budget"
                     recordId={budgetId}
-                    activityItems={PLACEHOLDER_ACTIVITY}
+                    activityItems={activityItems}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}
                 />
             )}
-            <CreateEntityDialog config={CREATE_BUDGET_LINE_ITEM_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_BUDGET_LINE_ITEM_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </DetailLayout>
     );
 }

@@ -10,10 +10,15 @@ import {
     useApprovals,
     useCrewMembers,
     useDeals,
+    useMyTaskCounts,
+    useMyTasks,
     useNotifications,
     useProjects,
-    useTasks,
 } from "@/lib/supabase/hooks";
+import { useMyDocuments } from "@/lib/supabase/hooks-pages";
+import { TaskRow } from "@/components/home/task-row";
+import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
+import type { DocumentType, TaskPriority, TaskStatus } from "@/types";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -22,10 +27,9 @@ import {
     AlertTriangle,
     ArrowRight,
     CheckCircle2,
-    Clock,
     DollarSign,
+    FileText,
     FolderKanban,
-    Loader2,
     TrendingUp,
     Users,
 } from "lucide-react";
@@ -37,8 +41,10 @@ export default function DashboardPage() {
     const { data: sbDeals, isLoading: loadingDeals } = useDeals();
     const { data: sbNotifications } = useNotifications();
     const { data: sbApprovals } = useApprovals();
-    const { data: sbTasks } = useTasks();
     const { data: sbCrew } = useCrewMembers();
+    const { data: myTasks } = useMyTasks();
+    const { data: myTaskCounts } = useMyTaskCounts();
+    const { data: myDocs } = useMyDocuments();
 
     const isLoading = loadingProjects || loadingDeals;
 
@@ -103,40 +109,15 @@ export default function DashboardPage() {
         timelineImpactDays: a.timeline_impact_days,
     }));
 
-    const tasks = (sbTasks ?? []).map((t) => ({
-        id: t.id,
-        projectId: t.project_id,
-        parentId: t.parent_id,
-        title: t.title,
-        description: t.description,
-        status: t.status,
-        priority: t.priority,
-        assigneeId: t.assignee_id,
-        phase: t.phase,
-        fabricationStatus: t.fabrication_status,
-        materialCost: t.material_cost,
-        startDate: t.start_date,
-        dueDate: t.due_date,
-        completedAt: t.completed_at,
-        dependencies:
-            (t as { task_dependencies?: { depends_on_id: string }[] }).task_dependencies?.map(
-                (d: { depends_on_id: string }) => d.depends_on_id
-            ) || [],
-        createdAt: t.created_at,
-    }));
-
     const activeProjects = projects.filter((p) => p.status === "active");
     const pipelineValue = deals
         .filter((d) => !["won", "lost"].includes(d.stage))
         .reduce((sum, d) => sum + d.value, 0);
     const wonValue = deals.filter((d) => d.stage === "won").reduce((sum, d) => sum + d.value, 0);
     const overdueApprovals = approvals.filter((a) => a.status === "overdue");
-    const activeTasks = tasks.filter((t) => t.status === "in_progress");
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -293,28 +274,90 @@ export default function DashboardPage() {
                             </Card>
                         )}
 
-                        {/* Active Tasks */}
+                        {/* My Tasks Widget */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">In Progress</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-base">
+                                        My Tasks
+                                        {(myTaskCounts?.overdue ?? 0) > 0 && (
+                                            <Badge
+                                                variant="destructive"
+                                                className="ml-2 text-[9px]"
+                                            >
+                                                {myTaskCounts?.overdue} overdue
+                                            </Badge>
+                                        )}
+                                    </CardTitle>
+                                    <Link
+                                        href="/home/tasks"
+                                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                                    >
+                                        View all <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-0.5">
+                                {(myTasks ?? []).slice(0, 5).map((t) => (
+                                    <TaskRow
+                                        key={t.id}
+                                        task={{
+                                            id: t.id,
+                                            title: t.title,
+                                            status: t.status as TaskStatus,
+                                            priority: t.priority as TaskPriority,
+                                            dueDate: t.due_date,
+                                            projectName: t.projects?.name ?? null,
+                                        }}
+                                    />
+                                ))}
+                                {(myTasks ?? []).length === 0 && (
+                                    <p className="text-xs text-muted-foreground py-4 text-center">
+                                        No tasks assigned
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Recent Documents Widget */}
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-base">Recent Documents</CardTitle>
+                                    <Link
+                                        href="/home/documents"
+                                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                                    >
+                                        View all <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                </div>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                                {activeTasks.map((task) => (
-                                    <div
-                                        key={task.id}
+                                {(myDocs ?? []).slice(0, 4).map((d: Record<string, unknown>) => (
+                                    <Link
+                                        key={d.id as string}
+                                        href={`/documents/${d.id as string}`}
                                         className="flex items-start gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
                                     >
-                                        <Clock className="h-3.5 w-3.5 text-info mt-0.5 shrink-0" />
-                                        <div>
-                                            <p className="text-xs font-medium">{task.title}</p>
-                                            {task.materialCost && (
-                                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                    Material: {formatCurrency(task.materialCost)}
-                                                </p>
-                                            )}
+                                        <FileText className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-medium truncate">
+                                                {(d.title as string) ?? "Untitled"}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {DOCUMENT_TYPE_MAP[
+                                                    ((d.document_type as string) ??
+                                                        "doc") as DocumentType
+                                                ]?.label ?? "Document"}
+                                            </p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
+                                {(myDocs ?? []).length === 0 && (
+                                    <p className="text-xs text-muted-foreground py-4 text-center">
+                                        No documents found
+                                    </p>
+                                )}
                             </CardContent>
                         </Card>
 

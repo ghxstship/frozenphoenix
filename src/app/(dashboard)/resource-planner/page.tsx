@@ -15,12 +15,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useResourceBookings } from "@/lib/supabase/hooks-productive";
+import { useCrewMembers } from "@/lib/supabase/hooks";
 
-// NEXT: Wire to Supabase when resource_bookings queries are available
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
 
-interface ResourceBooking {
+interface ResourceBookingView {
     id: string;
     crewMemberId: string;
     crewMemberName: string;
@@ -37,143 +39,13 @@ interface ResourceBooking {
     hasConflict: boolean;
 }
 
-interface CrewMember {
+interface CrewMemberView {
     id: string;
     name: string;
     role: string;
     department: string;
-    avatar?: string;
     utilizationPercent: number;
 }
-
-const mockCrewMembers: CrewMember[] = [
-    {
-        id: "1",
-        name: "Alex Rivera",
-        role: "Production Manager",
-        department: "Production",
-        utilizationPercent: 85,
-    },
-    {
-        id: "2",
-        name: "Jordan Kim",
-        role: "Technical Director",
-        department: "Technical",
-        utilizationPercent: 92,
-    },
-    {
-        id: "3",
-        name: "Sam Chen",
-        role: "Fabrication Lead",
-        department: "Fabrication",
-        utilizationPercent: 78,
-    },
-    {
-        id: "4",
-        name: "Taylor Morgan",
-        role: "Logistics Coordinator",
-        department: "Logistics",
-        utilizationPercent: 65,
-    },
-    {
-        id: "5",
-        name: "Casey Johnson",
-        role: "AV Technician",
-        department: "Technical",
-        utilizationPercent: 45,
-    },
-    {
-        id: "6",
-        name: "Morgan Lee",
-        role: "Scenic Artist",
-        department: "Scenic",
-        utilizationPercent: 100,
-    },
-];
-
-const mockBookings: ResourceBooking[] = [
-    {
-        id: "1",
-        crewMemberId: "1",
-        crewMemberName: "Alex Rivera",
-        projectId: "p1",
-        projectName: "Nike Air Max Launch",
-        bookingType: "project_work",
-        status: "confirmed",
-        startDate: "2026-02-23",
-        endDate: "2026-02-27",
-        hoursPerDay: 8,
-        role: "Production Manager",
-        hasConflict: false,
-    },
-    {
-        id: "2",
-        crewMemberId: "2",
-        crewMemberName: "Jordan Kim",
-        projectId: "p1",
-        projectName: "Nike Air Max Launch",
-        bookingType: "project_work",
-        status: "confirmed",
-        startDate: "2026-02-24",
-        endDate: "2026-02-28",
-        hoursPerDay: 8,
-        role: "Technical Director",
-        hasConflict: false,
-    },
-    {
-        id: "3",
-        crewMemberId: "3",
-        crewMemberName: "Sam Chen",
-        projectId: "p2",
-        projectName: "Red Bull Festival",
-        bookingType: "project_work",
-        status: "tentative",
-        startDate: "2026-02-25",
-        endDate: "2026-03-01",
-        hoursPerDay: 8,
-        role: "Fabrication Lead",
-        hasConflict: false,
-    },
-    {
-        id: "4",
-        crewMemberId: "4",
-        crewMemberName: "Taylor Morgan",
-        bookingType: "time_off",
-        status: "confirmed",
-        startDate: "2026-02-26",
-        endDate: "2026-02-28",
-        hoursPerDay: 8,
-        hasConflict: false,
-    },
-    {
-        id: "5",
-        crewMemberId: "5",
-        crewMemberName: "Casey Johnson",
-        projectId: "p1",
-        projectName: "Nike Air Max Launch",
-        bookingType: "project_work",
-        status: "confirmed",
-        startDate: "2026-02-23",
-        endDate: "2026-02-25",
-        hoursPerDay: 4,
-        role: "AV Technician",
-        hasConflict: false,
-    },
-    {
-        id: "6",
-        crewMemberId: "6",
-        crewMemberName: "Morgan Lee",
-        projectId: "p1",
-        projectName: "Nike Air Max Launch",
-        bookingType: "project_work",
-        status: "confirmed",
-        startDate: "2026-02-23",
-        endDate: "2026-02-28",
-        hoursPerDay: 8,
-        role: "Scenic Artist",
-        hasConflict: true,
-    },
-];
 
 const bookingColors: Record<BookingType, string> = {
     project_work: "bg-info",
@@ -227,6 +99,60 @@ export default function ResourcePlannerPage() {
 
     const weekDates = useMemo(() => getWeekDates(currentWeekStart), [currentWeekStart]);
 
+    const { data: sbBookings, isLoading: loadingBookings } = useResourceBookings();
+    const { data: sbCrew, isLoading: loadingCrew } = useCrewMembers();
+
+    const bookings: ResourceBookingView[] = useMemo(
+        () =>
+            (sbBookings ?? []).map((r: Record<string, unknown>) => ({
+                id: (r.id as string) ?? "",
+                crewMemberId: (r.crew_member_id as string) ?? "",
+                crewMemberName:
+                    ((r.crew_members as Record<string, unknown>)?.name as string) ?? "Unassigned",
+                projectId: (r.project_id as string) ?? undefined,
+                projectName: ((r.projects as Record<string, unknown>)?.name as string) ?? undefined,
+                placeholderName: (r.placeholder_name as string) ?? undefined,
+                bookingType: ((r.booking_type as string) ?? "project_work") as BookingType,
+                status: ((r.status as string) ?? "confirmed") as BookingStatus,
+                startDate: (r.start_date as string) ?? "",
+                endDate: (r.end_date as string) ?? "",
+                hoursPerDay: (r.hours_per_day as number) ?? 8,
+                role: (r.role as string) ?? undefined,
+                department: (r.department as string) ?? undefined,
+                hasConflict: (r.has_conflict as boolean) ?? false,
+            })),
+        [sbBookings]
+    );
+
+    const crewMembers: CrewMemberView[] = useMemo(() => {
+        const members = (sbCrew ?? []).map((c: Record<string, unknown>) => {
+            const memberId = c.id as string;
+            const memberBookings = bookings.filter((b) => b.crewMemberId === memberId);
+            // Simple utilization: total booked hours / (40h week) as percentage
+            const totalHours = memberBookings.reduce((sum, b) => {
+                const days = Math.max(
+                    1,
+                    Math.round(
+                        (new Date(b.endDate).getTime() - new Date(b.startDate).getTime()) / 86400000
+                    ) + 1
+                );
+                return sum + b.hoursPerDay * days;
+            }, 0);
+            // Rough weekly utilization (cap at 200)
+            const utilizationPercent = Math.min(200, Math.round((totalHours / 40) * 100));
+            return {
+                id: memberId,
+                name: (c.name as string) ?? "Unknown",
+                role: (c.role as string) ?? "",
+                department: (c.department as string) ?? "",
+                utilizationPercent,
+            };
+        });
+        return members;
+    }, [sbCrew, bookings]);
+
+    if (loadingBookings || loadingCrew) return <LoadingState />;
+
     const navigateWeek = (direction: "prev" | "next") => {
         setCurrentWeekStart((prev) => {
             const newDate = new Date(prev);
@@ -243,19 +169,20 @@ export default function ResourcePlannerPage() {
     };
 
     const getBookingsForCrewOnDate = (crewMemberId: string, date: string) => {
-        return mockBookings.filter(
+        return bookings.filter(
             (b) => b.crewMemberId === crewMemberId && isDateInRange(date, b.startDate, b.endDate)
         );
     };
 
     const stats = {
-        totalCrew: mockCrewMembers.length,
-        avgUtilization: Math.round(
-            mockCrewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) /
-                mockCrewMembers.length
-        ),
-        overbooked: mockCrewMembers.filter((c) => c.utilizationPercent >= 100).length,
-        available: mockCrewMembers.filter((c) => c.utilizationPercent < 50).length,
+        totalCrew: crewMembers.length,
+        avgUtilization: crewMembers.length
+            ? Math.round(
+                  crewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) / crewMembers.length
+              )
+            : 0,
+        overbooked: crewMembers.filter((c) => c.utilizationPercent >= 100).length,
+        available: crewMembers.filter((c) => c.utilizationPercent < 50).length,
     };
 
     return (
@@ -373,10 +300,17 @@ export default function ResourcePlannerPage() {
                 {/* Resource Grid */}
                 <Card>
                     <div className="overflow-x-auto">
-                        <div className="min-w-[900px]" role="grid" aria-label="Weekly resource schedule">
+                        <div
+                            className="min-w-[900px]"
+                            role="grid"
+                            aria-label="Weekly resource schedule"
+                        >
                             {/* Header Row */}
                             <div role="row" className="grid grid-cols-8 border-b">
-                                <div role="columnheader" className="p-3 font-medium text-sm border-r bg-muted/50">
+                                <div
+                                    role="columnheader"
+                                    className="p-3 font-medium text-sm border-r bg-muted/50"
+                                >
                                     Team Member
                                 </div>
                                 {weekDates.map((date) => (
@@ -401,14 +335,17 @@ export default function ResourcePlannerPage() {
                             </div>
 
                             {/* Crew Rows */}
-                            {mockCrewMembers.map((crew) => (
+                            {crewMembers.map((crew) => (
                                 <div
                                     key={crew.id}
                                     role="row"
                                     className="grid grid-cols-8 border-b last:border-b-0 hover:bg-muted/20"
                                 >
                                     {/* Crew Info */}
-                                    <div role="rowheader" className="p-3 border-r flex items-center gap-3">
+                                    <div
+                                        role="rowheader"
+                                        className="p-3 border-r flex items-center gap-3"
+                                    >
                                         <div
                                             className={cn(
                                                 "h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium",

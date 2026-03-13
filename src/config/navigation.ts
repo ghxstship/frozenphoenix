@@ -225,6 +225,18 @@ export const navigationConfig: NavSection[] = [
                 permission: "dashboard.read",
             },
             {
+                title: "Tasks",
+                path: "/home/tasks",
+                icon: CheckSquare,
+                permission: "tasks.read",
+            },
+            {
+                title: "Documents",
+                path: "/home/documents",
+                icon: FileCheck,
+                permission: "documents.read",
+            },
+            {
                 title: "Calendar",
                 path: "/calendar",
                 icon: CalendarDays,

@@ -1,10 +1,15 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteShipment, useUpdateShipment } from "@/lib/supabase/hooks-pages";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +27,6 @@ import {
     Calendar,
     DollarSign,
     Edit,
-    Loader2,
     MapPin,
     Package,
     Truck,
@@ -31,35 +35,6 @@ import {
 
 type TabId = "overview" | "items" | "tracking" | "chatter";
 const TAB_VALUES = ["overview", "items", "tracking", "chatter"] as const;
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "Sarah Chen",
-        entityType: "shipment",
-        entityName: "this shipment",
-        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "status_changed",
-        actorName: "System",
-        entityType: "shipment",
-        description: "Status changed to Booked",
-        createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u1",
-        authorName: "Sarah Chen",
-        content: "Carrier confirmed pickup for 6 AM. Need to have staging area clear by 5:30 AM.",
-        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-];
 
 export default function ShipmentDetailPage() {
     const params = useParams();
@@ -77,9 +52,36 @@ export default function ShipmentDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
-
     const { data: shipment, isLoading } = useShipment(shipmentId);
+    const { data: sbActivity } = useRecordActivityLog("shipment", shipmentId);
+    const { data: sbComments } = useRecordComments("shipment", shipmentId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
     const s = shipment as Record<string, unknown> | null;
@@ -95,9 +97,7 @@ export default function ShipmentDetailPage() {
         : null;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!shipment) {
@@ -115,16 +115,12 @@ export default function ShipmentDetailPage() {
     }
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "shipment",
+            entity_id: shipmentId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -475,7 +471,7 @@ export default function ShipmentDetailPage() {
                 <RecordChatter
                     recordType="shipment"
                     recordId={shipmentId}
-                    activityItems={PLACEHOLDER_ACTIVITY}
+                    activityItems={activityItems}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

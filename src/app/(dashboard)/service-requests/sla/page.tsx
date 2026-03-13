@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ import {
     Zap,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useSlaPolicies, useSlaStatus } from "@/lib/supabase/hooks-v2-features";
 
 type SlaTab = "policies" | "active" | "metrics";
 
@@ -53,108 +55,6 @@ interface ActiveSla {
     timeRemainingMinutes: number;
     elapsedMinutes: number;
 }
-
-const PLACEHOLDER_POLICIES: SlaPolicy[] = [
-    {
-        id: "sp1",
-        name: "Critical — Production Down",
-        priority: "critical",
-        responseTimeMinutes: 15,
-        resolutionTimeMinutes: 120,
-        escalationAfterMinutes: 30,
-        autoAssign: true,
-        assignToTeam: "Senior Engineers",
-        isActive: true,
-    },
-    {
-        id: "sp2",
-        name: "High — Client-Facing",
-        priority: "high",
-        responseTimeMinutes: 60,
-        resolutionTimeMinutes: 480,
-        escalationAfterMinutes: 120,
-        autoAssign: true,
-        assignToTeam: "Support Team",
-        isActive: true,
-    },
-    {
-        id: "sp3",
-        name: "Medium — Internal",
-        priority: "medium",
-        responseTimeMinutes: 240,
-        resolutionTimeMinutes: 1440,
-        escalationAfterMinutes: 480,
-        autoAssign: false,
-        assignToTeam: "General Queue",
-        isActive: true,
-    },
-    {
-        id: "sp4",
-        name: "Low — Enhancement",
-        priority: "low",
-        responseTimeMinutes: 1440,
-        resolutionTimeMinutes: 10080,
-        escalationAfterMinutes: 2880,
-        autoAssign: false,
-        assignToTeam: "Backlog",
-        isActive: true,
-    },
-];
-
-const PLACEHOLDER_ACTIVE_SLAS: ActiveSla[] = [
-    {
-        id: "as1",
-        ticketNumber: "SR-2026-0142",
-        ticketTitle: "LED panel failure — Stage Left",
-        policyName: "Critical — Production Down",
-        priority: "critical",
-        status: "at_risk",
-        responseDeadline: "2026-03-12T14:30:00Z",
-        resolutionDeadline: "2026-03-12T16:15:00Z",
-        assignee: "Jake Morrison",
-        timeRemainingMinutes: 22,
-        elapsedMinutes: 93,
-    },
-    {
-        id: "as2",
-        ticketNumber: "SR-2026-0143",
-        ticketTitle: "Client access to project dashboard broken",
-        policyName: "High — Client-Facing",
-        priority: "high",
-        status: "within_sla",
-        responseDeadline: "2026-03-12T15:00:00Z",
-        resolutionDeadline: "2026-03-12T22:15:00Z",
-        assignee: "Sarah Kim",
-        timeRemainingMinutes: 310,
-        elapsedMinutes: 170,
-    },
-    {
-        id: "as3",
-        ticketNumber: "SR-2026-0138",
-        ticketTitle: "Update vendor payment terms",
-        policyName: "Medium — Internal",
-        priority: "medium",
-        status: "within_sla",
-        responseDeadline: "2026-03-12T18:00:00Z",
-        resolutionDeadline: "2026-03-13T14:15:00Z",
-        assignee: "Lisa Park",
-        timeRemainingMinutes: 1200,
-        elapsedMinutes: 240,
-    },
-    {
-        id: "as4",
-        ticketNumber: "SR-2026-0135",
-        ticketTitle: "Audio sync issue on Barclays playback",
-        policyName: "Critical — Production Down",
-        priority: "critical",
-        status: "breached",
-        responseDeadline: "2026-03-11T10:00:00Z",
-        resolutionDeadline: "2026-03-11T12:00:00Z",
-        assignee: "Marcus Chen",
-        timeRemainingMinutes: -180,
-        elapsedMinutes: 300,
-    },
-];
 
 const PRIORITY_BADGE: Record<string, "destructive" | "warning" | "info" | "default"> = {
     critical: "destructive",
@@ -185,22 +85,63 @@ export default function SlaPage() {
         validValues: ["policies", "active", "metrics"],
     });
 
-    const breached = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "breached").length;
-    const atRisk = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "at_risk").length;
-    const withinSla = PLACEHOLDER_ACTIVE_SLAS.filter((s) => s.status === "within_sla").length;
-    const complianceRate = Math.round((withinSla / PLACEHOLDER_ACTIVE_SLAS.length) * 100);
+    const { data: sbPolicies, isLoading: loadingPolicies } = useSlaPolicies();
+    const { data: sbSlaStatus, isLoading: loadingSla } = useSlaStatus();
+
+    const policies: SlaPolicy[] = useMemo(
+        () =>
+            (sbPolicies ?? []).map((p: Record<string, unknown>) => ({
+                id: String(p.id),
+                name: String(p.name ?? ""),
+                priority: (p.priority as SlaPolicy["priority"]) ?? "medium",
+                responseTimeMinutes: Number(p.response_time_minutes ?? 60),
+                resolutionTimeMinutes: Number(p.resolution_time_minutes ?? 480),
+                escalationAfterMinutes: Number(p.escalation_after_minutes ?? 120),
+                autoAssign: p.auto_assign === true,
+                assignToTeam: String(p.assign_to_team ?? ""),
+                isActive: p.is_active !== false,
+            })),
+        [sbPolicies]
+    );
+
+    const activeSlas: ActiveSla[] = useMemo(
+        () =>
+            (sbSlaStatus ?? []).map((s: Record<string, unknown>) => ({
+                id: String(s.id ?? s.ticket_id ?? ""),
+                ticketNumber: String(s.ticket_number ?? ""),
+                ticketTitle: String(s.ticket_title ?? s.title ?? ""),
+                policyName: String(s.policy_name ?? ""),
+                priority: (s.priority as ActiveSla["priority"]) ?? "medium",
+                status: (s.status as ActiveSla["status"]) ?? "within_sla",
+                responseDeadline: String(s.response_deadline ?? ""),
+                resolutionDeadline: String(s.resolution_deadline ?? ""),
+                assignee: String(s.assignee_name ?? s.assignee ?? ""),
+                timeRemainingMinutes: Number(s.time_remaining_minutes ?? 0),
+                elapsedMinutes: Number(s.elapsed_minutes ?? 0),
+            })),
+        [sbSlaStatus]
+    );
+
+    const isLoading = loadingPolicies || loadingSla;
+    if (isLoading) return <LoadingState />;
+
+    const breached = activeSlas.filter((s) => s.status === "breached").length;
+    const atRisk = activeSlas.filter((s) => s.status === "at_risk").length;
+    const withinSla = activeSlas.filter((s) => s.status === "within_sla").length;
+    const complianceRate =
+        activeSlas.length > 0 ? Math.round((withinSla / activeSlas.length) * 100) : 100;
 
     const tabs = [
         {
             id: "active" as const,
             label: "Active SLAs",
-            count: PLACEHOLDER_ACTIVE_SLAS.length,
+            count: activeSlas.length,
             icon: <Timer className="h-4 w-4" />,
         },
         {
             id: "policies" as const,
             label: "Policies",
-            count: PLACEHOLDER_POLICIES.length,
+            count: policies.length,
             icon: <Shield className="h-4 w-4" />,
         },
         { id: "metrics" as const, label: "Metrics", icon: <TrendingUp className="h-4 w-4" /> },
@@ -247,98 +188,103 @@ export default function SlaPage() {
 
                 <TabPanel value="active" activeValue={activeTab}>
                     <div className="space-y-3">
-                        {PLACEHOLDER_ACTIVE_SLAS.filter(
-                            (s) =>
-                                !search ||
-                                s.ticketTitle.toLowerCase().includes(search.toLowerCase()) ||
-                                s.ticketNumber.toLowerCase().includes(search.toLowerCase())
-                        ).map((sla) => {
-                            const totalMinutes =
-                                sla.elapsedMinutes + Math.max(sla.timeRemainingMinutes, 0);
-                            const progressPct = Math.min(
-                                Math.round((sla.elapsedMinutes / totalMinutes) * 100),
-                                100
-                            );
-                            return (
-                                <Card
-                                    key={sla.id}
-                                    className={
-                                        sla.status === "breached"
-                                            ? "border-destructive/30"
-                                            : sla.status === "at_risk"
-                                              ? "border-warning/30"
-                                              : ""
-                                    }
-                                >
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-mono text-muted-foreground">
-                                                        {sla.ticketNumber}
-                                                    </span>
-                                                    <Badge
-                                                        variant={PRIORITY_BADGE[sla.priority]}
-                                                        className="text-[10px]"
-                                                    >
-                                                        {sla.priority}
-                                                    </Badge>
-                                                    <Badge
-                                                        variant={STATUS_BADGE[sla.status]}
-                                                        className="text-[10px]"
-                                                    >
-                                                        {sla.status.replace(/_/g, " ")}
-                                                    </Badge>
+                        {activeSlas
+                            .filter(
+                                (s) =>
+                                    !search ||
+                                    s.ticketTitle.toLowerCase().includes(search.toLowerCase()) ||
+                                    s.ticketNumber.toLowerCase().includes(search.toLowerCase())
+                            )
+                            .map((sla) => {
+                                const totalMinutes =
+                                    sla.elapsedMinutes + Math.max(sla.timeRemainingMinutes, 0);
+                                const progressPct = Math.min(
+                                    Math.round((sla.elapsedMinutes / totalMinutes) * 100),
+                                    100
+                                );
+                                return (
+                                    <Card
+                                        key={sla.id}
+                                        className={
+                                            sla.status === "breached"
+                                                ? "border-destructive/30"
+                                                : sla.status === "at_risk"
+                                                  ? "border-warning/30"
+                                                  : ""
+                                        }
+                                    >
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                                            {sla.ticketNumber}
+                                                        </span>
+                                                        <Badge
+                                                            variant={PRIORITY_BADGE[sla.priority]}
+                                                            className="text-[10px]"
+                                                        >
+                                                            {sla.priority}
+                                                        </Badge>
+                                                        <Badge
+                                                            variant={STATUS_BADGE[sla.status]}
+                                                            className="text-[10px]"
+                                                        >
+                                                            {sla.status.replace(/_/g, " ")}
+                                                        </Badge>
+                                                    </div>
+                                                    <h3 className="text-sm font-semibold mt-1">
+                                                        {sla.ticketTitle}
+                                                    </h3>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                        {sla.policyName} · Assigned to{" "}
+                                                        {sla.assignee}
+                                                    </p>
                                                 </div>
-                                                <h3 className="text-sm font-semibold mt-1">
-                                                    {sla.ticketTitle}
-                                                </h3>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {sla.policyName} · Assigned to {sla.assignee}
-                                                </p>
+                                                <div className="text-right">
+                                                    <p
+                                                        className={`text-sm font-bold ${sla.timeRemainingMinutes < 0 ? "text-destructive" : sla.timeRemainingMinutes < 30 ? "text-warning" : "text-success"}`}
+                                                    >
+                                                        {sla.timeRemainingMinutes < 0
+                                                            ? "BREACHED"
+                                                            : formatMinutes(
+                                                                  sla.timeRemainingMinutes
+                                                              )}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        remaining
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p
-                                                    className={`text-sm font-bold ${sla.timeRemainingMinutes < 0 ? "text-destructive" : sla.timeRemainingMinutes < 30 ? "text-warning" : "text-success"}`}
-                                                >
-                                                    {sla.timeRemainingMinutes < 0
-                                                        ? "BREACHED"
-                                                        : formatMinutes(sla.timeRemainingMinutes)}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    remaining
-                                                </p>
+                                            <div className="grid grid-cols-2 gap-4 mb-3 text-xs">
+                                                <div>
+                                                    <p className="text-muted-foreground">
+                                                        Response Deadline
+                                                    </p>
+                                                    <p className="font-medium">
+                                                        {formatDate(sla.responseDeadline)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-muted-foreground">
+                                                        Resolution Deadline
+                                                    </p>
+                                                    <p className="font-medium">
+                                                        {formatDate(sla.resolutionDeadline)}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 mb-3 text-xs">
-                                            <div>
-                                                <p className="text-muted-foreground">
-                                                    Response Deadline
-                                                </p>
-                                                <p className="font-medium">
-                                                    {formatDate(sla.responseDeadline)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-muted-foreground">
-                                                    Resolution Deadline
-                                                </p>
-                                                <p className="font-medium">
-                                                    {formatDate(sla.resolutionDeadline)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <ProgressBar value={progressPct} size="sm" />
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                                            <ProgressBar value={progressPct} size="sm" />
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                     </div>
                 </TabPanel>
 
                 <TabPanel value="policies" activeValue={activeTab}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {PLACEHOLDER_POLICIES.map((policy) => (
+                        {policies.map((policy) => (
                             <Card key={policy.id}>
                                 <CardContent className="p-4 space-y-3">
                                     <div className="flex items-center justify-between">
@@ -422,25 +368,40 @@ export default function SlaPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {[
-                                    { priority: "Critical", rate: 75, total: 8, breached: 2 },
-                                    { priority: "High", rate: 88, total: 16, breached: 2 },
-                                    { priority: "Medium", rate: 95, total: 24, breached: 1 },
-                                    { priority: "Low", rate: 100, total: 12, breached: 0 },
-                                ].map((metric) => (
-                                    <div key={metric.priority}>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-sm font-medium">
-                                                {metric.priority}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {metric.rate}% ({metric.total - metric.breached}/
-                                                {metric.total})
-                                            </span>
+                                {(["critical", "high", "medium", "low"] as const)
+                                    .map((p) => {
+                                        const matching = activeSlas.filter((s) => s.priority === p);
+                                        const total = matching.length;
+                                        const breachedCount = matching.filter(
+                                            (s) => s.status === "breached"
+                                        ).length;
+                                        const rate =
+                                            total > 0
+                                                ? Math.round(
+                                                      ((total - breachedCount) / total) * 100
+                                                  )
+                                                : 100;
+                                        return {
+                                            priority: p.charAt(0).toUpperCase() + p.slice(1),
+                                            rate,
+                                            total,
+                                            breached: breachedCount,
+                                        };
+                                    })
+                                    .map((metric) => (
+                                        <div key={metric.priority}>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-sm font-medium">
+                                                    {metric.priority}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {metric.rate}% ({metric.total - metric.breached}
+                                                    /{metric.total})
+                                                </span>
+                                            </div>
+                                            <ProgressBar value={metric.rate} size="sm" />
                                         </div>
-                                        <ProgressBar value={metric.rate} size="sm" />
-                                    </div>
-                                ))}
+                                    ))}
                             </CardContent>
                         </Card>
                         <Card>
@@ -451,26 +412,25 @@ export default function SlaPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {[
-                                    {
-                                        week: "Week 10",
-                                        avgResponse: "12m",
-                                        avgResolution: "2.1h",
-                                        compliance: 92,
-                                    },
-                                    {
-                                        week: "Week 11",
-                                        avgResponse: "8m",
-                                        avgResolution: "1.8h",
-                                        compliance: 95,
-                                    },
-                                    {
-                                        week: "Week 12",
-                                        avgResponse: "15m",
-                                        avgResolution: "2.5h",
-                                        compliance: 88,
-                                    },
-                                ].map((week) => (
+                                {(() => {
+                                    if (activeSlas.length === 0) return [];
+                                    const avgElapsed = Math.round(
+                                        activeSlas.reduce((s, a) => s + a.elapsedMinutes, 0) /
+                                            activeSlas.length
+                                    );
+                                    const compliant = activeSlas.filter(
+                                        (a) => a.status !== "breached"
+                                    ).length;
+                                    const pct = Math.round((compliant / activeSlas.length) * 100);
+                                    return [
+                                        {
+                                            week: "Current",
+                                            avgResponse: formatMinutes(avgElapsed),
+                                            avgResolution: "—",
+                                            compliance: pct,
+                                        },
+                                    ];
+                                })().map((week) => (
                                     <div
                                         key={week.week}
                                         className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"

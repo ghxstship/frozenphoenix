@@ -21,6 +21,8 @@ import type {
     DamageSeverity,
     DealStage,
     DepartmentLiveStatus,
+    DocumentStatus,
+    DocumentType,
     EquipmentLiveStatus,
     FabricationStatus,
     FohZoneType,
@@ -178,6 +180,33 @@ export const FABRICATION_STATUSES: EnumConfig<FabricationStatus>[] = [
 export const FABRICATION_STATUS_MAP = Object.fromEntries(
     FABRICATION_STATUSES.map((s) => [s.value, s])
 ) as Record<FabricationStatus, EnumConfig<FabricationStatus>>;
+
+// ─── Document Type ───
+export const DOCUMENT_TYPES: EnumConfig<DocumentType>[] = [
+    { value: "doc", label: "Document", variant: "default" },
+    { value: "wiki", label: "Wiki", variant: "info" },
+    { value: "meeting_notes", label: "Meeting Notes", variant: "secondary" },
+    { value: "specification", label: "Specification", variant: "ghost" },
+    { value: "proposal_doc", label: "Proposal", variant: "warning" },
+    { value: "sow", label: "Scope of Work", variant: "info" },
+    { value: "template", label: "Template", variant: "ghost" },
+];
+
+export const DOCUMENT_TYPE_MAP = Object.fromEntries(
+    DOCUMENT_TYPES.map((t) => [t.value, t])
+) as Record<DocumentType, EnumConfig<DocumentType>>;
+
+// ─── Document Status ───
+export const DOCUMENT_STATUSES: EnumConfig<DocumentStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "pending_review", label: "Pending Review", variant: "warning" },
+    { value: "published", label: "Published", variant: "success" },
+    { value: "archived", label: "Archived", variant: "secondary" },
+];
+
+export const DOCUMENT_STATUS_MAP = Object.fromEntries(
+    DOCUMENT_STATUSES.map((s) => [s.value, s])
+) as Record<DocumentStatus, EnumConfig<DocumentStatus>>;
 
 // ─── Asset Condition ───
 export const ASSET_CONDITIONS: EnumConfig<AssetCondition>[] = [
@@ -1466,10 +1495,30 @@ export const RENTAL_AGREEMENT_STATUS_MAP = Object.fromEntries(
 // ─── Messaging: Channel Categories ───
 export const CHANNEL_CATEGORIES = [
     { value: "general", label: "General", icon: "Hash", description: "Open discussion channels" },
-    { value: "project", label: "Project", icon: "Briefcase", description: "Project-scoped channels" },
-    { value: "department", label: "Department", icon: "Building2", description: "Department channels" },
-    { value: "announcement", label: "Announcement", icon: "Megaphone", description: "One-way announcement channels" },
-    { value: "support", label: "Support", icon: "LifeBuoy", description: "Support and help channels" },
+    {
+        value: "project",
+        label: "Project",
+        icon: "Briefcase",
+        description: "Project-scoped channels",
+    },
+    {
+        value: "department",
+        label: "Department",
+        icon: "Building2",
+        description: "Department channels",
+    },
+    {
+        value: "announcement",
+        label: "Announcement",
+        icon: "Megaphone",
+        description: "One-way announcement channels",
+    },
+    {
+        value: "support",
+        label: "Support",
+        icon: "LifeBuoy",
+        description: "Support and help channels",
+    },
 ] as const;
 
 export type ChannelCategory = (typeof CHANNEL_CATEGORIES)[number]["value"];

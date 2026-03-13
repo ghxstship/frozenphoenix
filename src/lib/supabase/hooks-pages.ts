@@ -6,7 +6,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable } from "./client";
+import { fromTable, getSupabase } from "./client";
 
 // ═══════════════════════════════════════════════════════════════
 // CAMPAIGNS
@@ -511,6 +511,28 @@ export function useDocuments(projectId?: string) {
                 .order("created_at", { ascending: false });
             if (projectId) query = query.eq("project_id", projectId);
             const { data, error } = await query;
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// USER-SCOPED DOCUMENTS (Home module)
+// ═══════════════════════════════════════════════════════════════
+
+export function useMyDocuments() {
+    return useQuery({
+        queryKey: ["my-documents"],
+        queryFn: async () => {
+            const {
+                data: { user },
+            } = await getSupabase().auth.getUser();
+            if (!user) return [];
+            const { data, error } = await fromTable("vault_documents")
+                .select("*, profiles(name)")
+                .or(`owner_id.eq.${user.id},shared_with_user_ids.cs.{${user.id}}`)
+                .order("updated_at", { ascending: false });
             if (error) throw error;
             return data;
         },
@@ -2413,7 +2435,9 @@ export function useTeamDetail(teamId?: string | null) {
         queryKey: ["teams", "detail", teamId],
         queryFn: async () => {
             const { data, error } = await fromTable("teams")
-                .select("*, team_members(id, user_id, role, joined_at, user_profiles(display_name, avatar_url, email))")
+                .select(
+                    "*, team_members(id, user_id, role, joined_at, user_profiles(display_name, avatar_url, email))"
+                )
                 .eq("id", teamId!)
                 .single();
             if (error) throw error;
@@ -2432,7 +2456,8 @@ export function useCreateTeam() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to create team");
+            if (!res.ok)
+                throw new Error((await res.json()).error?.message ?? "Failed to create team");
             return (await res.json()).data;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
@@ -2448,7 +2473,8 @@ export function useUpdateTeam() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updates),
             });
-            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to update team");
+            if (!res.ok)
+                throw new Error((await res.json()).error?.message ?? "Failed to update team");
             return (await res.json()).data;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
@@ -2460,7 +2486,8 @@ export function useDeleteTeam() {
     return useMutation({
         mutationFn: async (id: string) => {
             const res = await fetch(`/api/teams/${id}`, { method: "DELETE" });
-            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to delete team");
+            if (!res.ok)
+                throw new Error((await res.json()).error?.message ?? "Failed to delete team");
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
     });
@@ -2481,13 +2508,21 @@ export function useTeamMembersPage(teamId?: string | null) {
 export function useAddTeamMember() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async ({ teamId, ...payload }: { teamId: string; user_id: string; role?: string }) => {
+        mutationFn: async ({
+            teamId,
+            ...payload
+        }: {
+            teamId: string;
+            user_id: string;
+            role?: string;
+        }) => {
             const res = await fetch(`/api/teams/${teamId}/members`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to add member");
+            if (!res.ok)
+                throw new Error((await res.json()).error?.message ?? "Failed to add member");
             return (await res.json()).data;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
@@ -2498,9 +2533,510 @@ export function useRemoveTeamMember() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async ({ teamId, memberId }: { teamId: string; memberId: string }) => {
-            const res = await fetch(`/api/teams/${teamId}/members/${memberId}`, { method: "DELETE" });
-            if (!res.ok) throw new Error((await res.json()).error?.message ?? "Failed to remove member");
+            const res = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
+                method: "DELETE",
+            });
+            if (!res.ok)
+                throw new Error((await res.json()).error?.message ?? "Failed to remove member");
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SYSTEM HEALTH — SLA, RESILIENCE, DOMAIN EVENTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useSlaDefinitions() {
+    return useQuery({
+        queryKey: ["sla_definitions"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("sla_definitions")
+                .select("*")
+                .eq("is_active", true)
+                .order("name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useSlaTracking() {
+    return useQuery({
+        queryKey: ["sla_tracking"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("sla_tracking")
+                .select("*, sla_definitions(name, target_hours)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useResilienceTargets() {
+    return useQuery({
+        queryKey: ["resilience_targets"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("resilience_targets")
+                .select("*")
+                .order("service_name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useDomainEvents(limit = 20) {
+    return useQuery({
+        queryKey: ["domain_events", limit],
+        queryFn: async () => {
+            const { data, error } = await fromTable("domain_events")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA EXPORT REQUESTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useDataExportRequests() {
+    return useQuery({
+        queryKey: ["data_export_requests"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("data_export_requests")
+                .select("*")
+                .order("requested_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useCreateDataExportRequest() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: { export_format: string }) => {
+            const { data: userData } = await getSupabase().auth.getUser();
+            if (!userData?.user) throw new Error("Not authenticated");
+            const { data, error } = await fromTable("data_export_requests")
+                .insert({ ...payload, user_id: userData.user.id })
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["data_export_requests"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKLIST TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+
+export function useChecklistTemplates() {
+    return useQuery({
+        queryKey: ["checklist_templates"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("checklist_templates")
+                .select("*")
+                .order("name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BRAND GUIDELINE SECTIONS
+// ═══════════════════════════════════════════════════════════════
+
+export function useBrandGuidelineSections() {
+    return useQuery({
+        queryKey: ["brand_guideline_sections"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("brand_guideline_sections")
+                .select("*")
+                .order("sort_order");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BRIEF TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+
+export function useBriefTemplates() {
+    return useQuery({
+        queryKey: ["brief_templates"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("brief_templates").select("*").order("name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INSURANCE REQUIREMENTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useInsuranceRequirements() {
+    return useQuery({
+        queryKey: ["insurance_requirements"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("insurance_requirements")
+                .select("*")
+                .order("requirement_name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPLIANCE REQUIREMENTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useComplianceRequirements() {
+    return useQuery({
+        queryKey: ["compliance_requirements"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("compliance_requirements")
+                .select("*")
+                .order("name");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CREATIVE REVIEWS
+// ═══════════════════════════════════════════════════════════════
+
+export function useCreativeReviews() {
+    return useQuery({
+        queryKey: ["creative_reviews"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("creative_reviews")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORKER ONBOARDING / OFFBOARDING RUNS
+// ═══════════════════════════════════════════════════════════════
+
+export function useWorkerOnboardingRuns() {
+    return useQuery({
+        queryKey: ["worker_onboarding_runs"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("worker_onboarding_runs")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useWorkerOffboardingRuns() {
+    return useQuery({
+        queryKey: ["worker_offboarding_runs"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("worker_offboarding_runs")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORKER REVIEWS
+// ═══════════════════════════════════════════════════════════════
+
+export function useWorkerReviewsList() {
+    return useQuery({
+        queryKey: ["worker_reviews"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("worker_reviews")
+                .select("*, profiles(name)")
+                .order("review_date", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOGIN AUDIT LOG
+// ═══════════════════════════════════════════════════════════════
+
+export function useLoginAuditLog(limit = 100) {
+    return useQuery({
+        queryKey: ["login_audit_log", limit],
+        queryFn: async () => {
+            const { data, error } = await fromTable("login_audit_log")
+                .select("*")
+                .order("attempted_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROLE CHANGE LOG
+// ═══════════════════════════════════════════════════════════════
+
+export function useRoleChangeLog(limit = 100) {
+    return useQuery({
+        queryKey: ["role_change_log", limit],
+        queryFn: async () => {
+            const { data, error } = await fromTable("role_change_log")
+                .select("*, profiles(name)")
+                .order("changed_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACCESS REVIEWS & TEMPORARY GRANTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useAccessAuditLog(limit = 100) {
+    return useQuery({
+        queryKey: ["access_audit_log", limit],
+        queryFn: async () => {
+            const { data, error } = await fromTable("access_audit_log")
+                .select("*, profiles(name)")
+                .order("performed_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useTemporaryAccessGrants() {
+    return useQuery({
+        queryKey: ["temporary_access_grants"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("temporary_access_grants")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INVITATIONS
+// ═══════════════════════════════════════════════════════════════
+
+export function useInvitationsList() {
+    return useQuery({
+        queryKey: ["invitations"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("invitations")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useUpdateInvitation() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+            const { data, error } = await fromTable("invitations")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["invitations"] }),
+    });
+}
+
+export function useRevokeTemporaryGrant() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { data, error } = await fromTable("temporary_access_grants")
+                .update({ status: "revoked", revoked_at: new Date().toISOString() })
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["temporary_access_grants"] }),
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CASE STUDIES (public page)
+// ═══════════════════════════════════════════════════════════════
+
+export function usePublicCaseStudies() {
+    return useQuery({
+        queryKey: ["case_studies_public"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("case_studies")
+                .select("*")
+                .eq("is_published", true)
+                .order("published_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PURCHASE REQUISITIONS (procurement page)
+// ═══════════════════════════════════════════════════════════════
+
+export function usePurchaseRequisitionsList() {
+    return useQuery({
+        queryKey: ["purchase_requisitions_list"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("purchase_requisitions")
+                .select("*, projects(name), profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD AGGREGATION HOOKS
+// ═══════════════════════════════════════════════════════════════
+
+export function useDashboardWidgets() {
+    return useQuery({
+        queryKey: ["dashboard_widgets"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("dashboard_widgets")
+                .select("*, dashboards(name)")
+                .order("sort_order");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useActivityLogRecent(limit = 10) {
+    return useQuery({
+        queryKey: ["activity_log_recent", limit],
+        queryFn: async () => {
+            const { data, error } = await fromTable("activity_log")
+                .select("*, projects(name)")
+                .order("created_at", { ascending: false })
+                .limit(limit);
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORECASTING
+// ═══════════════════════════════════════════════════════════════
+
+export function useRevenueSchedulesList() {
+    return useQuery({
+        queryKey: ["revenue_schedules_list"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("revenue_schedules")
+                .select("*, projects(name)")
+                .order("period_start", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useResourceBookings() {
+    return useQuery({
+        queryKey: ["resource_bookings"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("resource_bookings")
+                .select("*, profiles(name), projects(name)")
+                .order("start_date");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+export function useGoals() {
+    return useQuery({
+        queryKey: ["goals"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("goals")
+                .select("*, profiles(name)")
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORG CHART — CREW ASSIGNMENTS
+// ═══════════════════════════════════════════════════════════════
+
+export function useLiveCrewAssignments() {
+    return useQuery({
+        queryKey: ["live_crew_assignments"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("live_crew_assignments")
+                .select("*, profiles(name)")
+                .order("role");
+            if (error) throw error;
+            return data;
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APPROVAL STEPS (lifecycle stages)
+// ═══════════════════════════════════════════════════════════════
+
+export function useApprovalSteps() {
+    return useQuery({
+        queryKey: ["approval_steps"],
+        queryFn: async () => {
+            const { data, error } = await fromTable("approval_steps")
+                .select("*, profiles(name)")
+                .order("step_order");
+            if (error) throw error;
+            return data;
+        },
     });
 }

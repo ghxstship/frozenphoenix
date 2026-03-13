@@ -1,11 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteLead, useUpdateLead } from "@/lib/supabase/hooks-pages";
+import { useLead } from "@/lib/supabase/hooks-crm";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,98 +36,6 @@ import {
 type TabId = "overview" | "activity" | "chatter";
 const TAB_VALUES = ["overview", "activity", "chatter"] as const;
 
-const DEMO_LEADS = [
-    {
-        id: "lead-1",
-        first_name: "Sarah",
-        last_name: "Mitchell",
-        email: "sarah@techcorp.com",
-        phone: "+1 (555) 123-4567",
-        company: "TechCorp Global",
-        job_title: "VP of Marketing",
-        project_type: "brand_activation",
-        budget_range: "500k_1m",
-        status: "qualified",
-        score: 85,
-        source: "website",
-        notes: "Interested in a multi-city brand activation tour. Budget approved internally. Wants to see case studies from similar projects.",
-        created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-        last_contacted_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-    },
-    {
-        id: "lead-2",
-        first_name: "Marcus",
-        last_name: "Chen",
-        email: "mchen@festivalprod.com",
-        phone: "+1 (555) 987-6543",
-        company: "Festival Productions Inc",
-        job_title: "Event Director",
-        project_type: "festival_production",
-        budget_range: "1m_5m",
-        status: "new",
-        score: 72,
-        source: "referral",
-        notes: "Referred by Derek Allen (Coachella). Looking for full production services for a new festival concept in Austin.",
-        created_at: new Date(Date.now() - 6 * 3600000).toISOString(),
-        last_contacted_at: null,
-    },
-    {
-        id: "lead-3",
-        first_name: "Jennifer",
-        last_name: "Walsh",
-        email: "jwalsh@luxuryauto.com",
-        phone: null,
-        company: "Luxury Auto Group",
-        job_title: "Brand Manager",
-        project_type: "immersive_installation",
-        budget_range: "150k_500k",
-        status: "proposal_sent",
-        score: 68,
-        source: "trade_show",
-        notes: "Met at SXSW. Looking for an immersive product launch experience for their new EV model.",
-        created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-        last_contacted_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "System",
-        entityType: "lead",
-        entityName: "this lead",
-        createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "updated",
-        actorName: "Alex Rivera",
-        entityType: "lead",
-        description: "Score updated to 85",
-        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-    {
-        id: "a3",
-        action: "status_changed",
-        actorName: "Alex Rivera",
-        entityType: "lead",
-        description: "Status changed to Qualified",
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u1",
-        authorName: "Alex Rivera",
-        content:
-            "Had a great discovery call. They have budget approved and are ready to move fast. Setting up proposal meeting for next week.",
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-];
-
 export default function LeadDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -137,9 +52,38 @@ export default function LeadDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
+    const { data: lead, isLoading } = useLead(leadId);
+    const { data: sbActivity } = useRecordActivityLog("lead", leadId);
+    const { data: sbComments } = useRecordComments("lead", leadId);
+    const createComment = useCreateRecordComment();
 
-    const lead = DEMO_LEADS.find((l) => l.id === leadId);
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
+
+    if (isLoading) return <LoadingState />;
 
     if (!lead) {
         return (
@@ -152,20 +96,16 @@ export default function LeadDetailPage() {
         );
     }
 
-    const fullName = `${lead.first_name} ${lead.last_name}`;
-    const initials = `${lead.first_name[0]}${lead.last_name[0]}`;
+    const fullName = `${lead.first_name} ${lead.last_name ?? ""}`;
+    const initials = `${lead.first_name[0]}${(lead.last_name ?? " ")[0]}`.trim();
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Alex Rivera",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "lead",
+            entity_id: leadId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -185,28 +125,36 @@ export default function LeadDetailPage() {
                         <span className="text-muted-foreground">Score</span>
                         <Badge
                             variant={
-                                lead.score >= 80
+                                (lead.score ?? 0) >= 80
                                     ? "success"
-                                    : lead.score >= 50
+                                    : (lead.score ?? 0) >= 50
                                       ? "warning"
                                       : "secondary"
                             }
                         >
-                            {lead.score}
+                            {lead.score ?? 0}
                         </Badge>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Source</span>
-                        <span className="capitalize">{lead.source.replace(/_/g, " ")}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Project Type</span>
-                        <span className="capitalize">{lead.project_type.replace(/_/g, " ")}</span>
-                    </div>
+                    {lead.source && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Source</span>
+                            <span className="capitalize">{lead.source.replace(/_/g, " ")}</span>
+                        </div>
+                    )}
+                    {lead.project_type && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Project Type</span>
+                            <span className="capitalize">
+                                {lead.project_type.replace(/_/g, " ")}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Budget</span>
                         <span className="font-medium">
-                            {LEAD_BUDGET_LABELS[lead.budget_range] ?? lead.budget_range}
+                            {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ??
+                                lead.budget_range ??
+                                "—"}
                         </span>
                     </div>
                     <div className="flex justify-between">
@@ -226,16 +174,33 @@ export default function LeadDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.open(`mailto:${lead.email}`)}>                        <Mail className="h-4 w-4 mr-2" />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => window.open(`mailto:${lead.email}`)}
+                    >
+                        {" "}
+                        <Mail className="h-4 w-4 mr-2" />
                         Send Email
                     </Button>
                     {lead.phone && (
-                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.open(`tel:${lead.phone}`)}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => window.open(`tel:${lead.phone}`)}
+                        >
                             <Phone className="h-4 w-4 mr-2" />
                             Call
                         </Button>
                     )}
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => router.push(`/deals/new?fromLead=${leadId}`)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => router.push(`/deals/new?fromLead=${leadId}`)}
+                    >
                         <DollarSign className="h-4 w-4 mr-2" />
                         Convert to Deal
                     </Button>
@@ -251,8 +216,8 @@ export default function LeadDetailPage() {
             entityType="leads"
             entityId={leadId}
             title={fullName}
-            subtitle={`${lead.job_title} at ${lead.company}`}
-            status={lead.status}
+            subtitle={`${lead.job_title ?? ""} at ${lead.company ?? ""}`}
+            status={lead.status ?? undefined}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-lg font-bold text-primary-foreground">
                     {initials}
@@ -270,7 +235,13 @@ export default function LeadDetailPage() {
                     </Button>
                 </>
             }
-            menuItems={[{ label: "Convert to Deal", onClick: () => router.push(`/deals/new?fromLead=${leadId}`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Convert to Deal",
+                    onClick: () => router.push(`/deals/new?fromLead=${leadId}`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}
@@ -285,7 +256,7 @@ export default function LeadDetailPage() {
                                     <TrendingUp className="h-4 w-4" />
                                     <span className="text-xs">Lead Score</span>
                                 </div>
-                                <p className="text-xl font-bold">{lead.score}/100</p>
+                                <p className="text-xl font-bold">{lead.score ?? 0}/100</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -295,7 +266,8 @@ export default function LeadDetailPage() {
                                     <span className="text-xs">Budget Range</span>
                                 </div>
                                 <p className="text-xl font-bold">
-                                    {LEAD_BUDGET_LABELS[lead.budget_range] ?? "—"}
+                                    {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ??
+                                        "—"}
                                 </p>
                             </CardContent>
                         </Card>
@@ -370,7 +342,7 @@ export default function LeadDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {PLACEHOLDER_ACTIVITY.map((item) => (
+                            {activityItems.map((item) => (
                                 <div key={item.id} className="flex items-start gap-4">
                                     <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
                                     <div>
@@ -393,7 +365,7 @@ export default function LeadDetailPage() {
                 <RecordChatter
                     recordType="lead"
                     recordId={leadId}
-                    activityItems={PLACEHOLDER_ACTIVITY}
+                    activityItems={activityItems}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

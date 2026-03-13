@@ -21,11 +21,12 @@ import {
     XCircle,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useTimeOffRequests } from "@/lib/supabase/hooks-productive";
 
-// NEXT: Wire to Supabase when leave_requests table is available
 type LeaveType = "vacation" | "sick" | "personal" | "training" | "parental" | "bereavement";
 
-const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
+const LEAVE_TYPE_LABELS: Record<string, string> = {
     vacation: "Vacation",
     sick: "Sick",
     personal: "Personal",
@@ -33,21 +34,20 @@ const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
     parental: "Parental",
     bereavement: "Bereavement",
 };
-type LeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
 
-interface LeaveRequest {
+interface LeaveView {
     id: string;
     person: string;
-    type: LeaveType;
+    type: string;
     startDate: string;
     endDate: string;
     days: number;
-    status: LeaveStatus;
+    status: string;
     reason: string;
     approver: string;
 }
 
-const LEAVE_ICONS: Record<LeaveType, React.ElementType> = {
+const LEAVE_ICONS: Record<string, React.ElementType> = {
     vacation: Palmtree,
     sick: Stethoscope,
     personal: Heart,
@@ -56,74 +56,10 @@ const LEAVE_ICONS: Record<LeaveType, React.ElementType> = {
     bereavement: Heart,
 };
 
-const mockRequests: LeaveRequest[] = [
-    {
-        id: "1",
-        person: "Sarah Chen",
-        type: "vacation",
-        startDate: "2026-03-15",
-        endDate: "2026-03-22",
-        days: 5,
-        status: "pending",
-        reason: "Spring break trip",
-        approver: "Mike Johnson",
-    },
-    {
-        id: "2",
-        person: "David Kim",
-        type: "sick",
-        startDate: "2026-02-24",
-        endDate: "2026-02-25",
-        days: 2,
-        status: "approved",
-        reason: "Not feeling well",
-        approver: "Sarah Chen",
-    },
-    {
-        id: "3",
-        person: "Lisa Wang",
-        type: "training",
-        startDate: "2026-03-05",
-        endDate: "2026-03-07",
-        days: 3,
-        status: "approved",
-        reason: "AWS certification boot camp",
-        approver: "Mike Johnson",
-    },
-    {
-        id: "4",
-        person: "Tom Harris",
-        type: "personal",
-        startDate: "2026-03-10",
-        endDate: "2026-03-10",
-        days: 1,
-        status: "pending",
-        reason: "Apartment move",
-        approver: "Sarah Chen",
-    },
-    {
-        id: "5",
-        person: "Mike Johnson",
-        type: "vacation",
-        startDate: "2026-04-01",
-        endDate: "2026-04-10",
-        days: 8,
-        status: "pending",
-        reason: "Family vacation",
-        approver: "Director",
-    },
-    {
-        id: "6",
-        person: "Sarah Chen",
-        type: "sick",
-        startDate: "2026-02-10",
-        endDate: "2026-02-10",
-        days: 1,
-        status: "approved",
-        reason: "Doctor appointment",
-        approver: "Mike Johnson",
-    },
-];
+function daysBetween(a: string, b: string): number {
+    const ms = new Date(b).getTime() - new Date(a).getTime();
+    return Math.max(1, Math.round(ms / 86400000) + 1);
+}
 
 interface BalanceItem {
     type: LeaveType;
@@ -147,15 +83,29 @@ export default function TimeOffPage() {
         defaultValue: "all",
         validValues: STATUS_FILTERS,
     });
+    const { data: sbRequests, isLoading } = useTimeOffRequests();
 
-    const pending = mockRequests.filter((r) => r.status === "pending").length;
-    const approved = mockRequests.filter((r) => r.status === "approved").length;
-    const totalDaysOff = mockRequests
+    if (isLoading) return <LoadingState />;
+
+    const requests: LeaveView[] = (sbRequests ?? []).map((r: Record<string, unknown>) => ({
+        id: r.id as string,
+        person: ((r.crew_members as Record<string, unknown>)?.name as string) ?? "Unknown",
+        type: (r.time_off_type as string) ?? "personal",
+        startDate: r.start_date as string,
+        endDate: r.end_date as string,
+        days: daysBetween(r.start_date as string, r.end_date as string),
+        status: (r.status as string) ?? "pending",
+        reason: (r.reason as string) ?? "",
+        approver: ((r.profiles as Record<string, unknown>)?.name as string) ?? "",
+    }));
+
+    const pending = requests.filter((r) => r.status === "pending").length;
+    const approved = requests.filter((r) => r.status === "approved").length;
+    const totalDaysOff = requests
         .filter((r) => r.status === "approved")
         .reduce((s, r) => s + r.days, 0);
 
-    const filtered =
-        filter === "all" ? mockRequests : mockRequests.filter((r) => r.status === filter);
+    const filtered = filter === "all" ? requests : requests.filter((r) => r.status === filter);
 
     return (
         <PermissionGate resource="time_off" action="read">
@@ -164,7 +114,7 @@ export default function TimeOffPage() {
                     title="Time Off"
                     description="Manage leave requests, approvals, and PTO balances"
                 >
-                    <Button onClick={() => console.log("Request time off")}>
+                    <Button onClick={() => void 0}>
                         <Plus className="mr-2 h-4 w-4" /> Request Time Off
                     </Button>
                 </PageHeader>
@@ -200,7 +150,7 @@ export default function TimeOffPage() {
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {balances.map((b) => {
-                                const Icon = LEAVE_ICONS[b.type];
+                                const Icon = LEAVE_ICONS[b.type] ?? Heart;
                                 const remaining = b.total - b.used - b.pending;
                                 return (
                                     <div
@@ -248,7 +198,7 @@ export default function TimeOffPage() {
                 {/* Requests List */}
                 <div className="space-y-2">
                     {filtered.map((req) => {
-                        const Icon = LEAVE_ICONS[req.type];
+                        const Icon = LEAVE_ICONS[req.type] ?? Heart;
                         return (
                             <Card
                                 key={req.id}
@@ -267,7 +217,7 @@ export default function TimeOffPage() {
                                             />
                                         </div>
                                         <p className="text-xs text-muted-foreground mt-0.5">
-                                            {LEAVE_TYPE_LABELS[req.type]} — {req.reason}
+                                            {LEAVE_TYPE_LABELS[req.type] ?? req.type} — {req.reason}
                                         </p>
                                     </div>
                                     <div className="text-right shrink-0">
@@ -285,7 +235,7 @@ export default function TimeOffPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0 text-success hover:bg-success/10"
-                                                onClick={() => console.log("Approve leave request:", req.id)}
+                                                onClick={() => void 0}
                                             >
                                                 <CheckCircle2 className="h-4 w-4" />
                                             </Button>
@@ -293,7 +243,7 @@ export default function TimeOffPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
-                                                onClick={() => console.log("Reject leave request:", req.id)}
+                                                onClick={() => void 0}
                                             >
                                                 <XCircle className="h-4 w-4" />
                                             </Button>

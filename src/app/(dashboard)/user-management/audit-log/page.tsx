@@ -2,7 +2,7 @@
 
 import { formatDateTime } from "@/lib/locale";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
 import type { LoginAuditEntry, RoleChangeLogEntry } from "@/types/user-lifecycle";
+import { useLoginAuditLog, useRoleChangeLog } from "@/lib/supabase/hooks-pages";
 import {
     AlertTriangle,
     Clock,
@@ -98,9 +99,16 @@ export default function AuditLogPage() {
     const [search, setSearch] = useState("");
     const [eventFilter, setEventFilter] = useState<"all" | "success" | "failure">("all");
 
-    // NEXT: Wire to useLoginAudit/useRoleChanges() when hooks are available
-    const loginAudit = useMemo<LoginAuditEntry[]>(() => [], []);
-    const roleChanges = useMemo<RoleChangeLogEntry[]>(() => [], []);
+    const { data: sbLoginAudit } = useLoginAuditLog();
+    const loginAudit = useMemo<LoginAuditEntry[]>(
+        () => (sbLoginAudit ?? []) as unknown as LoginAuditEntry[],
+        [sbLoginAudit]
+    );
+    const { data: sbRoleChanges } = useRoleChangeLog();
+    const roleChanges = useMemo<RoleChangeLogEntry[]>(
+        () => (sbRoleChanges ?? []) as unknown as RoleChangeLogEntry[],
+        [sbRoleChanges]
+    );
 
     const filteredLogins = useMemo(() => {
         return loginAudit.filter((e) => {
@@ -131,13 +139,67 @@ export default function AuditLogPage() {
     const failureCount = loginAudit.filter((e) => !e.success).length;
     const uniqueIps = new Set(loginAudit.map((e) => e.ipAddress).filter(Boolean)).size;
 
+    const handleExportCsv = useCallback(() => {
+        if (activeTab === "login") {
+            const headers = ["Time", "User", "Email", "Event", "Success", "IP", "User Agent"];
+            const rows = filteredLogins.map((e) =>
+                [
+                    e.createdAt,
+                    e.userName,
+                    e.email,
+                    e.eventType,
+                    e.success,
+                    e.ipAddress,
+                    e.userAgent ?? "",
+                ].join(",")
+            );
+            const csv = [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `login-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } else {
+            const headers = [
+                "Time",
+                "User",
+                "Change Type",
+                "Old Role",
+                "New Role",
+                "Changed By",
+                "Reason",
+            ];
+            const rows = filteredRoleChanges.map((r) =>
+                [
+                    r.createdAt,
+                    r.userName,
+                    r.changeType,
+                    r.oldValue ?? "",
+                    r.newValue ?? "",
+                    r.changedByName ?? "",
+                    r.reason ?? "",
+                ].join(",")
+            );
+            const csv = [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `role-changes-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }, [activeTab, filteredLogins, filteredRoleChanges]);
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="Audit Log"
                 description="Immutable log of authentication events, role changes, and access modifications"
             >
-                <Button variant="outline" onClick={() => console.log("Export audit log")}>
+                <Button variant="outline" onClick={handleExportCsv}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
                 </Button>

@@ -12,7 +12,7 @@ import { OverlineText } from "@/components/ui/overline-text";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import { useBrandGuidelines } from "@/lib/supabase/hooks-pages";
+import { useBrandGuidelines, useBrandGuidelineSections } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_BRAND_GUIDELINE_CONFIG } from "@/config/create-entity-configs";
@@ -74,8 +74,17 @@ export default function BrandGuidelinesPage() {
         () => (sbGuidelines ?? []) as unknown as BrandGuideline[],
         [sbGuidelines]
     );
-    // NEXT: Wire to useBrandGuidelineSections() when hook is available
-    const sections: BrandGuidelineSection[] = [];
+    const { data: sbSections } = useBrandGuidelineSections();
+    const sections: BrandGuidelineSection[] = (sbSections ?? []).map(
+        (s: Record<string, unknown>) => ({
+            id: (s.id as string) ?? "",
+            brand_guideline_id: (s.brand_guideline_id as string) ?? "",
+            title: (s.title as string) ?? "",
+            content: (s.content as string) ?? "",
+            section_type: (s.section_type as string) ?? "general",
+            sort_order: (s.sort_order as number) ?? 0,
+        })
+    ) as BrandGuidelineSection[];
 
     const filtered = useMemo(() => {
         if (!search) return guidelines;
@@ -101,9 +110,7 @@ export default function BrandGuidelinesPage() {
     const rootGuidelines = filtered.filter((g) => g.parent_id === null);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

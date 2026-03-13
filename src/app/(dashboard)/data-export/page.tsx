@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,49 +13,13 @@ import {
     Download,
     FileJson,
     FileSpreadsheet,
+    Inbox,
     Shield,
     User,
 } from "lucide-react";
 import type { DataExportStatus } from "@/types";
 import { PermissionGate } from "@/components/permission-guard";
-
-// NEXT: Wire to Supabase when data_exports table is available
-
-interface ExportRequest {
-    id: string;
-    format: "json" | "csv";
-    status: DataExportStatus;
-    requestedAt: string;
-    completedAt: string | null;
-    fileSize: string | null;
-}
-
-const mockExports: ExportRequest[] = [
-    {
-        id: "1",
-        format: "json",
-        status: "ready",
-        requestedAt: "2025-02-24 14:30",
-        completedAt: "2025-02-24 14:32",
-        fileSize: "2.4 MB",
-    },
-    {
-        id: "2",
-        format: "csv",
-        status: "expired",
-        requestedAt: "2025-02-17 09:00",
-        completedAt: "2025-02-17 09:05",
-        fileSize: "1.8 MB",
-    },
-    {
-        id: "3",
-        format: "json",
-        status: "downloaded",
-        requestedAt: "2025-02-20 11:15",
-        completedAt: "2025-02-20 11:18",
-        fileSize: "3.1 MB",
-    },
-];
+import { useCreateDataExportRequest, useDataExportRequests } from "@/lib/supabase/hooks-pages";
 
 const statusBadge = (status: DataExportStatus) => {
     const variants: Record<
@@ -70,12 +35,45 @@ const statusBadge = (status: DataExportStatus) => {
     return <Badge variant={variants[status]}>{status}</Badge>;
 };
 
+function formatBytes(bytes: number | null): string | null {
+    if (bytes == null || bytes === 0) return null;
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0;
+    let val = bytes;
+    while (val >= 1024 && i < units.length - 1) {
+        val /= 1024;
+        i++;
+    }
+    return `${val.toFixed(1)} ${units[i]}`;
+}
+
 export default function DataExportPage() {
-    const [requestingFormat, setRequestingFormat] = useState<"json" | "csv" | null>(null);
+    const { data: sbExports, isLoading } = useDataExportRequests();
+    const createExport = useCreateDataExportRequest();
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
+
+    type ExportView = {
+        id: string;
+        format: string;
+        status: DataExportStatus;
+        requestedAt: string;
+        completedAt: string | null;
+        fileSize: string | null;
+    };
+    const exports: ExportView[] = (sbExports ?? []).map((e: Record<string, unknown>) => ({
+        id: e.id as string,
+        format: (e.export_format as string) ?? "json",
+        status: (e.status as DataExportStatus) ?? "requested",
+        requestedAt: (e.requested_at as string) ?? "",
+        completedAt: (e.completed_at as string) ?? null,
+        fileSize: formatBytes(e.file_size_bytes as number | null),
+    }));
 
     const handleRequestExport = (format: "json" | "csv") => {
-        setRequestingFormat(format);
-        setTimeout(() => setRequestingFormat(null), 2000);
+        createExport.mutate({ export_format: format });
     };
 
     return (
@@ -91,13 +89,13 @@ export default function DataExportPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Total Exports"
-                        value={mockExports.length}
+                        value={exports.length}
                         icon={Download}
                         description="All time"
                     />
                     <StatCard
                         title="Available"
-                        value={mockExports.filter((e) => e.status === "ready").length}
+                        value={exports.filter((e) => e.status === "ready").length}
                         icon={CheckCircle2}
                         description="Ready to download"
                     />
@@ -127,20 +125,20 @@ export default function DataExportPage() {
                             <Button
                                 variant="outline"
                                 onClick={() => handleRequestExport("json")}
-                                disabled={requestingFormat !== null}
+                                disabled={createExport.isPending}
                                 className="flex items-center gap-2"
                             >
                                 <FileJson className="h-4 w-4" />
-                                {requestingFormat === "json" ? "Requesting..." : "Export as JSON"}
+                                {createExport.isPending ? "Requesting..." : "Export as JSON"}
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => handleRequestExport("csv")}
-                                disabled={requestingFormat !== null}
+                                disabled={createExport.isPending}
                                 className="flex items-center gap-2"
                             >
                                 <FileSpreadsheet className="h-4 w-4" />
-                                {requestingFormat === "csv" ? "Requesting..." : "Export as CSV"}
+                                {createExport.isPending ? "Requesting..." : "Export as CSV"}
                             </Button>
                         </div>
                     </CardContent>
@@ -156,7 +154,13 @@ export default function DataExportPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockExports.map((exp) => (
+                            {exports.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                                    <Inbox className="h-8 w-8 mb-2 opacity-50" />
+                                    <p className="text-sm">No export requests yet</p>
+                                </div>
+                            )}
+                            {exports.map((exp) => (
                                 <div
                                     key={exp.id}
                                     className="flex items-center justify-between py-3 border-b border-border last:border-0"

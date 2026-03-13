@@ -201,6 +201,17 @@ export interface Task {
     createdAt: string;
 }
 
+// ─── Documents ───
+export type DocumentType =
+    | "doc"
+    | "wiki"
+    | "meeting_notes"
+    | "specification"
+    | "proposal_doc"
+    | "sow"
+    | "template";
+export type DocumentStatus = "draft" | "pending_review" | "published" | "archived";
+
 // ─── Crew & Labor ───
 export type CertificationType =
     | "osha_10"

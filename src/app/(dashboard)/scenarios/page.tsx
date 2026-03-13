@@ -27,8 +27,9 @@ import {
     X,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useScenarios } from "@/lib/supabase/hooks-productive";
 
-// NEXT: Wire to Supabase when scenarios table is available
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
 
@@ -70,183 +71,10 @@ const TYPE_LABELS: Record<ScenarioType, string> = {
     combined: "Combined",
 };
 
-const mockScenarios: Scenario[] = [
-    {
-        id: "1",
-        name: "Nike Q2 — Aggressive Growth",
-        description: "What if we increase the crew by 3 and take on 2 additional projects?",
-        scenarioType: "combined",
-        status: "active",
-        projectName: "Nike Air Max Launch",
-        createdBy: "Sarah Chen",
-        updatedAt: "2026-02-24",
-        tags: ["growth", "hiring"],
-        variables: [
-            {
-                name: "Senior Producer Headcount",
-                baseValue: 2,
-                adjustedValue: 3,
-                unit: "people",
-                category: "resource",
-            },
-            {
-                name: "Project Count (Q2)",
-                baseValue: 4,
-                adjustedValue: 6,
-                unit: "projects",
-                category: "revenue",
-            },
-            {
-                name: "Avg Project Value",
-                baseValue: 250000,
-                adjustedValue: 250000,
-                unit: "USD",
-                category: "revenue",
-            },
-            {
-                name: "Bill Rate — Senior Producer",
-                baseValue: 185,
-                adjustedValue: 195,
-                unit: "USD/hr",
-                category: "pricing",
-            },
-        ],
-        outcomes: [
-            { metric: "Q2 Revenue", baseValue: 1000000, projectedValue: 1500000, type: "currency" },
-            { metric: "Q2 Costs", baseValue: 680000, projectedValue: 920000, type: "currency" },
-            { metric: "Q2 Profit", baseValue: 320000, projectedValue: 580000, type: "currency" },
-            { metric: "Profit Margin", baseValue: 32, projectedValue: 38.7, type: "percentage" },
-            { metric: "Team Utilization", baseValue: 78, projectedValue: 88, type: "percentage" },
-        ],
-    },
-    {
-        id: "2",
-        name: "Nike Q2 — Conservative",
-        description: "Keep current team size, focus on margin improvement",
-        scenarioType: "pricing",
-        status: "active",
-        projectName: "Nike Air Max Launch",
-        createdBy: "Sarah Chen",
-        updatedAt: "2026-02-24",
-        tags: ["conservative", "margin"],
-        variables: [
-            {
-                name: "Bill Rate Increase",
-                baseValue: 0,
-                adjustedValue: 8,
-                unit: "%",
-                category: "pricing",
-            },
-            {
-                name: "Overhead Reduction",
-                baseValue: 0,
-                adjustedValue: 5,
-                unit: "%",
-                category: "budget",
-            },
-        ],
-        outcomes: [
-            { metric: "Q2 Revenue", baseValue: 1000000, projectedValue: 1080000, type: "currency" },
-            { metric: "Q2 Costs", baseValue: 680000, projectedValue: 646000, type: "currency" },
-            { metric: "Q2 Profit", baseValue: 320000, projectedValue: 434000, type: "currency" },
-            { metric: "Profit Margin", baseValue: 32, projectedValue: 40.2, type: "percentage" },
-        ],
-    },
-    {
-        id: "3",
-        name: "Red Bull — What If We Lose?",
-        description: "Impact analysis if the Red Bull deal falls through",
-        scenarioType: "revenue",
-        status: "draft",
-        projectName: "Red Bull Festival",
-        createdBy: "Mike Johnson",
-        updatedAt: "2026-02-22",
-        tags: ["risk", "contingency"],
-        variables: [
-            {
-                name: "Red Bull Revenue",
-                baseValue: 320000,
-                adjustedValue: 0,
-                unit: "USD",
-                category: "revenue",
-            },
-            {
-                name: "Available Capacity",
-                baseValue: 0,
-                adjustedValue: 2400,
-                unit: "hours",
-                category: "resource",
-            },
-        ],
-        outcomes: [
-            { metric: "Q2 Revenue", baseValue: 1000000, projectedValue: 680000, type: "currency" },
-            { metric: "Team Utilization", baseValue: 78, projectedValue: 62, type: "percentage" },
-            { metric: "Idle Cost", baseValue: 0, projectedValue: 180000, type: "currency" },
-        ],
-    },
-    {
-        id: "4",
-        name: "Hiring Plan — 3 New Roles",
-        description: "Cost and capacity impact of planned Q2 hires",
-        scenarioType: "hiring",
-        status: "selected",
-        projectName: null,
-        createdBy: "Mike Johnson",
-        updatedAt: "2026-02-20",
-        tags: ["hiring", "capacity"],
-        variables: [
-            {
-                name: "Production Coordinator",
-                baseValue: 0,
-                adjustedValue: 1,
-                unit: "people",
-                category: "hiring",
-            },
-            {
-                name: "Fabrication Lead",
-                baseValue: 0,
-                adjustedValue: 1,
-                unit: "people",
-                category: "hiring",
-            },
-            {
-                name: "Junior Designer",
-                baseValue: 0,
-                adjustedValue: 1,
-                unit: "people",
-                category: "hiring",
-            },
-            {
-                name: "Annual Salary Total",
-                baseValue: 0,
-                adjustedValue: 200000,
-                unit: "USD",
-                category: "budget",
-            },
-        ],
-        outcomes: [
-            {
-                metric: "Annual Cost Impact",
-                baseValue: 0,
-                projectedValue: 200000,
-                type: "currency",
-            },
-            { metric: "Capacity Added", baseValue: 0, projectedValue: 4800, type: "hours" },
-            {
-                metric: "Break-Even Revenue",
-                baseValue: 0,
-                projectedValue: 312000,
-                type: "currency",
-            },
-            {
-                metric: "Team Utilization (Post-Hire)",
-                baseValue: 85,
-                projectedValue: 76,
-                type: "percentage",
-            },
-        ],
-    },
-];
+function parseMetadataArray<T>(metadata: Record<string, unknown> | null, key: string): T[] {
+    if (!metadata || !Array.isArray(metadata[key])) return [];
+    return metadata[key] as T[];
+}
 
 // ─── Outcome Bar Visualization ───
 function OutcomeBar({
@@ -382,11 +210,35 @@ export default function ScenariosPage() {
         defaultValue: "all",
         validValues: TYPE_FILTERS,
     });
-    const [expandedId, setExpandedId] = useState<string | null>("1");
+    const [expandedId, setExpandedId] = useState<string | null>(null);
     const [compareMode, setCompareMode] = useState(false);
     const [adjustedVariables, setAdjustedVariables] = useState<
         Record<string, Record<number, number>>
     >({});
+
+    const { data: sbScenarios, isLoading } = useScenarios();
+
+    const scenarios: Scenario[] = useMemo(
+        () =>
+            (sbScenarios ?? []).map((row) => {
+                const r = row as unknown as Record<string, unknown>;
+                const meta = (r.metadata ?? {}) as Record<string, unknown>;
+                return {
+                    id: (r.id as string) ?? "",
+                    name: (r.name as string) ?? "",
+                    description: (r.description as string) ?? "",
+                    scenarioType: ((r.scenario_type as string) ?? "combined") as ScenarioType,
+                    status: ((r.status as string) ?? "draft") as ScenarioStatus,
+                    projectName: ((r.projects as Record<string, unknown>)?.name as string) ?? null,
+                    createdBy: (r.created_by as string) ?? "",
+                    updatedAt: (r.updated_at as string)?.slice(0, 10) ?? "",
+                    variables: parseMetadataArray<ScenarioVariable>(meta, "variables"),
+                    outcomes: parseMetadataArray<ScenarioOutcome>(meta, "outcomes"),
+                    tags: (r.tags as string[]) ?? [],
+                };
+            }),
+        [sbScenarios]
+    );
 
     const getAdjustedScenario = useCallback(
         (scenario: Scenario): Scenario => {
@@ -413,26 +265,27 @@ export default function ScenariosPage() {
         }));
     }, []);
 
-    const filtered = mockScenarios.filter((s) => {
+    if (isLoading) return <LoadingState />;
+
+    const filtered = scenarios.filter((s) => {
         if (typeFilter !== "all" && s.scenarioType !== typeFilter) return false;
         if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
-    const activeScenarios = useMemo(() => mockScenarios.filter((s) => s.status === "active"), []);
+    const activeScenarios = scenarios.filter((s) => s.status === "active");
 
-    const bestProfit = Math.max(
-        ...mockScenarios.flatMap((s) =>
-            s.outcomes
-                .filter((o) => o.metric.includes("Profit") && o.type === "currency")
-                .map((o) => o.projectedValue)
-        )
+    const profitValues = scenarios.flatMap((s) =>
+        s.outcomes
+            .filter((o) => o.metric.includes("Profit") && o.type === "currency")
+            .map((o) => o.projectedValue)
     );
-    const bestMargin = Math.max(
-        ...mockScenarios.flatMap((s) =>
-            s.outcomes.filter((o) => o.metric.includes("Margin")).map((o) => o.projectedValue)
-        )
+    const bestProfit = profitValues.length > 0 ? Math.max(...profitValues) : 0;
+
+    const marginValues = scenarios.flatMap((s) =>
+        s.outcomes.filter((o) => o.metric.includes("Margin")).map((o) => o.projectedValue)
     );
+    const bestMargin = marginValues.length > 0 ? Math.max(...marginValues) : 0;
 
     return (
         <PermissionGate resource="scenarios" action="read">
@@ -449,7 +302,7 @@ export default function ScenariosPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Active Scenarios"
-                        value={mockScenarios.filter((s) => s.status === "active").length}
+                        value={scenarios.filter((s) => s.status === "active").length}
                         description="being evaluated"
                         icon={FlaskConical}
                     />
@@ -468,7 +321,7 @@ export default function ScenariosPage() {
                     />
                     <StatCard
                         title="Selected Plans"
-                        value={mockScenarios.filter((s) => s.status === "selected").length}
+                        value={scenarios.filter((s) => s.status === "selected").length}
                         description="approved for execution"
                         icon={CheckCircle2}
                     />

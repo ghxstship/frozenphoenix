@@ -66,6 +66,7 @@ export default function OpportunityDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: opp, isLoading } = useOpportunity(entityId);
+    const updateOpp = useUpdateOpportunity();
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Opportunity",
@@ -88,9 +89,7 @@ export default function OpportunityDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!opp) {
@@ -232,15 +231,30 @@ export default function OpportunityDetailPage() {
                     <Target className="h-7 w-7 text-primary-foreground" />
                 </div>
             }
-            actions={
-                <Button size="sm" onClick={() => console.log("Advance stage for opportunity:", entityId)}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Advance Stage
-                </Button>
-            }
+            actions={(() => {
+                const stageIds = OPPORTUNITY_STAGES.map((s) => s.id);
+                const idx = stageIds.indexOf(opp.stage);
+                const nextStage = idx >= 0 && idx < stageIds.length - 1 ? stageIds[idx + 1] : null;
+                return nextStage ? (
+                    <Button
+                        size="sm"
+                        disabled={updateOpp.isPending}
+                        onClick={() => updateOpp.mutate({ id: entityId, stage: nextStage })}
+                    >
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Advance Stage
+                    </Button>
+                ) : undefined;
+            })()}
             menuItems={[
-                { label: "Edit Opportunity", onClick: () => router.push(`/opportunities/${entityId}/edit`) },
-                { label: "Clone Opportunity", onClick: () => router.push(`/opportunities/new?duplicateFrom=${entityId}`) },
+                {
+                    label: "Edit Opportunity",
+                    onClick: () => router.push(`/opportunities/${entityId}/edit`),
+                },
+                {
+                    label: "Clone Opportunity",
+                    onClick: () => router.push(`/opportunities/new?duplicateFrom=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

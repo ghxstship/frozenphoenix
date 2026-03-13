@@ -12,8 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
-import { Calendar, DollarSign, Loader2, Pause, Play, Plus, RefreshCw } from "lucide-react";
-import { useRecurringInvoices } from "@/lib/supabase/hooks-pages";
+import { Calendar, DollarSign, Pause, Play, Plus, RefreshCw } from "lucide-react";
+import { useRecurringInvoices, useUpdateRecurringInvoice } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 
 type RecurringStatus = "active" | "paused" | "completed" | "cancelled";
@@ -44,6 +44,7 @@ const FREQ_LABELS: Record<Frequency, string> = {
 
 export default function RecurringInvoicesPage() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const updateRecurring = useUpdateRecurringInvoice();
     const [search, setSearch] = useState("");
 
     const { data: sbRecurring, isLoading } = useRecurringInvoices();
@@ -64,9 +65,7 @@ export default function RecurringInvoicesPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const filtered = invoices.filter(
@@ -197,7 +196,13 @@ export default function RecurringInvoicesPage() {
                                                 size="sm"
                                                 className="h-8 w-8 p-0"
                                                 title="Pause"
-                                                onClick={() => console.log("Pause recurring invoice:", r.id)}
+                                                disabled={updateRecurring.isPending}
+                                                onClick={() =>
+                                                    updateRecurring.mutate({
+                                                        id: r.id,
+                                                        status: "paused",
+                                                    })
+                                                }
                                             >
                                                 <Pause className="h-4 w-4" />
                                             </Button>
@@ -208,7 +213,13 @@ export default function RecurringInvoicesPage() {
                                                 size="sm"
                                                 className="h-8 w-8 p-0"
                                                 title="Resume"
-                                                onClick={() => console.log("Resume recurring invoice:", r.id)}
+                                                disabled={updateRecurring.isPending}
+                                                onClick={() =>
+                                                    updateRecurring.mutate({
+                                                        id: r.id,
+                                                        status: "active",
+                                                    })
+                                                }
                                             >
                                                 <Play className="h-4 w-4" />
                                             </Button>

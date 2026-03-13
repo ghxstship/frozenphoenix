@@ -115,26 +115,47 @@ interface LifecycleStageItem {
     completedAt?: string;
 }
 
-// FUTURE: Replace mockLifecycleStages with useLifecycleStages() hook when available
-const mockLifecycleStages: LifecycleStageItem[] = LIFECYCLE_STAGES.map((ls, i) => ({
-    stage: ls.value,
-    label: ls.label,
-    description: ls.description ?? "",
-    status: i < 6 ? "completed" : i === 6 ? "active" : i === 7 ? "pending" : "pending",
-    approver:
-        i < 7
-            ? [
-                  "Sarah Chen",
-                  "Mike Johnson",
-                  "Legal Team",
-                  "Finance",
-                  "PM Team",
-                  "Creative Dir.",
-                  "QC Lead",
-              ][i % 7]
-            : undefined,
-    completedAt: i < 6 ? `2026-0${Math.min(i + 1, 2)}-${10 + i}` : undefined,
-}));
+function buildLifecycleStages(approvals: Approval[]): LifecycleStageItem[] {
+    const approvalByMilestone = new Map<string, Approval>();
+    for (const a of approvals) {
+        if (a.milestoneName) {
+            approvalByMilestone.set(a.milestoneName.toLowerCase(), a);
+        }
+    }
+    let foundActive = false;
+    return LIFECYCLE_STAGES.map((ls) => {
+        const match = approvalByMilestone.get(ls.label.toLowerCase());
+        let status: LifecycleStatus;
+        let approver: string | undefined;
+        let completedAt: string | undefined;
+        if (match) {
+            if (match.status === "approved") {
+                status = "completed";
+                approver = match.approverName || undefined;
+                completedAt = match.approvedAt;
+            } else if (match.status === "revision_requested") {
+                status = "blocked";
+                approver = match.approverName || undefined;
+            } else {
+                status = "active";
+                foundActive = true;
+                approver = match.approverName || undefined;
+            }
+        } else if (foundActive) {
+            status = "pending";
+        } else {
+            status = "pending";
+        }
+        return {
+            stage: ls.value,
+            label: ls.label,
+            description: ls.description ?? "",
+            status,
+            approver,
+            completedAt,
+        };
+    });
+}
 
 export default function ApprovalsPage() {
     const [activeTab, setActiveTab] = useQueryTabState<"approvals" | "lifecycle">({
@@ -189,16 +210,15 @@ export default function ApprovalsPage() {
     }));
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const pending = approvals.filter((a) => a.status === "pending");
     const overdue = approvals.filter((a) => a.status === "overdue");
     const approved = approvals.filter((a) => a.status === "approved");
-    const lifecycleCompleted = mockLifecycleStages.filter((s) => s.status === "completed").length;
-    const lifecycleTotal = mockLifecycleStages.length;
+    const lifecycleStages = buildLifecycleStages(approvals);
+    const lifecycleCompleted = lifecycleStages.filter((s) => s.status === "completed").length;
+    const lifecycleTotal = lifecycleStages.length;
 
     return (
         <PermissionGate resource="approvals" action="read">
@@ -249,12 +269,8 @@ export default function ApprovalsPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-warning/40 bg-warning/5 px-3 py-2 text-xs text-warning">
-                                <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                                <span>Lifecycle stages shown below are placeholder data. Live stage tracking will be available once the approval engine is wired.</span>
-                            </div>
                             <div className="space-y-1">
-                                {mockLifecycleStages.map((stage, i) => {
+                                {lifecycleStages.map((stage: LifecycleStageItem, i: number) => {
                                     const statusColors: Record<LifecycleStatus, string> = {
                                         completed: "bg-success text-success-foreground",
                                         active: "bg-primary text-primary-foreground animate-pulse",
@@ -281,7 +297,7 @@ export default function ApprovalsPage() {
                                                         i + 1
                                                     )}
                                                 </div>
-                                                {i < mockLifecycleStages.length - 1 && (
+                                                {i < lifecycleStages.length - 1 && (
                                                     <div
                                                         className={`w-0.5 h-8 ${lineColors[stage.status]}`}
                                                     />

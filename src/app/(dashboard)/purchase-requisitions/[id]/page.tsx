@@ -18,7 +18,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, ClipboardList, DollarSign, Loader2, Send, User } from "lucide-react";
+import { Calendar, ClipboardList, DollarSign, Send, User } from "lucide-react";
 
 type TabId = "details" | "line-items" | "chatter";
 const TAB_VALUES = ["details", "line-items", "chatter"] as const;
@@ -41,6 +41,7 @@ export default function PurchaseRequisitionDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: req, isLoading } = usePurchaseRequisition(entityId);
+    const updateReq = useUpdatePurchaseRequisition();
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Requisition",
@@ -64,9 +65,7 @@ export default function PurchaseRequisitionDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!req) {
@@ -153,13 +152,25 @@ export default function PurchaseRequisitionDetailPage() {
             }
             actions={
                 req.status === "draft" ? (
-                    <Button size="sm" onClick={() => console.log("Submit requisition for approval:", entityId)}>
+                    <Button
+                        size="sm"
+                        disabled={updateReq.isPending}
+                        onClick={() =>
+                            updateReq.mutate({ id: entityId, status: "pending_approval" })
+                        }
+                    >
                         <Send className="h-4 w-4 mr-1" />
                         Submit for Approval
                     </Button>
                 ) : undefined
             }
-            menuItems={[{ label: "Edit Requisition", onClick: () => router.push(`/purchase-requisitions/${entityId}/edit`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Edit Requisition",
+                    onClick: () => router.push(`/purchase-requisitions/${entityId}/edit`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}

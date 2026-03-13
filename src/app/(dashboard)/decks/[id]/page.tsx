@@ -331,7 +331,7 @@ export default function DeckEditorPage() {
             }
             actions={
                 <>
-                    <Button variant="outline" size="sm" onClick={() => console.log("Export deck:", deckId)}>
+                    <Button variant="outline" size="sm" onClick={() => window.print()}>
                         <Download className="h-4 w-4 mr-1" />
                         Export
                     </Button>
@@ -345,7 +345,13 @@ export default function DeckEditorPage() {
                     </Button>
                 </>
             }
-            menuItems={[{ label: "Duplicate Deck", onClick: () => router.push(`/decks/new?duplicateFrom=${deckId}`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Duplicate Deck",
+                    onClick: () => router.push(`/decks/new?duplicateFrom=${deckId}`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as DeckTabId)}

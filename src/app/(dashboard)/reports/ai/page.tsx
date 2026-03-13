@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useAiReportQueries } from "@/lib/supabase/hooks-v2-features";
 
 interface AiReportQuery {
     id: string;
@@ -38,59 +40,6 @@ interface SuggestedQuery {
     query: string;
     category: string;
 }
-
-const PLACEHOLDER_QUERIES: AiReportQuery[] = [
-    {
-        id: "aq1",
-        query: "Show me project profitability by client for Q1 2026",
-        generatedTitle: "Q1 2026 Project Profitability by Client",
-        chartType: "bar",
-        status: "completed",
-        createdAt: "2026-03-12T14:30:00Z",
-        executionTimeMs: 1250,
-        dataPoints: 8,
-    },
-    {
-        id: "aq2",
-        query: "What is the utilization trend for the last 6 months?",
-        generatedTitle: "Crew Utilization Trend — Oct 2025 to Mar 2026",
-        chartType: "line",
-        status: "completed",
-        createdAt: "2026-03-12T14:15:00Z",
-        executionTimeMs: 890,
-        dataPoints: 24,
-    },
-    {
-        id: "aq3",
-        query: "Revenue breakdown by project category",
-        generatedTitle: "Revenue Distribution by Category",
-        chartType: "pie",
-        status: "completed",
-        createdAt: "2026-03-12T13:45:00Z",
-        executionTimeMs: 650,
-        dataPoints: 6,
-    },
-    {
-        id: "aq4",
-        query: "Top 10 overbudget projects this quarter",
-        generatedTitle: "Top 10 Over-Budget Projects — Q1 2026",
-        chartType: "table",
-        status: "completed",
-        createdAt: "2026-03-11T16:00:00Z",
-        executionTimeMs: 1100,
-        dataPoints: 10,
-    },
-    {
-        id: "aq5",
-        query: "Average time to close deals by stage",
-        generatedTitle: "Deal Cycle Time by Pipeline Stage",
-        chartType: "bar",
-        status: "completed",
-        createdAt: "2026-03-11T11:30:00Z",
-        executionTimeMs: 780,
-        dataPoints: 7,
-    },
-];
 
 const SUGGESTED_QUERIES: SuggestedQuery[] = [
     {
@@ -133,20 +82,31 @@ const CHART_ICONS: Record<string, React.ReactNode> = {
     metric: <TrendingUp className="h-4 w-4" />,
 };
 
-const PLACEHOLDER_BAR_DATA = [
-    { label: "Nike", value: 82 },
-    { label: "Red Bull", value: 65 },
-    { label: "Adidas", value: 45 },
-    { label: "Samsung", value: 71 },
-    { label: "Glossier", value: 58 },
-    { label: "Apple", value: 90 },
-];
-
 export default function AiReportsPage() {
     const [queryInput, setQueryInput] = useState("");
-    const [selectedQuery, setSelectedQuery] = useState<AiReportQuery | null>(
-        PLACEHOLDER_QUERIES[0] || null
+
+    const { data: sbQueries, isLoading } = useAiReportQueries();
+
+    const queries: AiReportQuery[] = useMemo(
+        () =>
+            (sbQueries ?? []).map((q: Record<string, unknown>) => ({
+                id: String(q.id),
+                query: String(q.query ?? ""),
+                generatedTitle: String(q.generated_title ?? q.title ?? ""),
+                chartType: (q.chart_type as AiReportQuery["chartType"]) ?? "bar",
+                status: (q.status as AiReportQuery["status"]) ?? "completed",
+                createdAt: String(q.created_at ?? ""),
+                executionTimeMs: Number(q.execution_time_ms ?? 0),
+                dataPoints: Number(q.data_points ?? 0),
+            })),
+        [sbQueries]
     );
+
+    const [selectedQuery, setSelectedQuery] = useState<AiReportQuery | null>(null);
+
+    const activeQuery = selectedQuery ?? queries[0] ?? null;
+
+    if (isLoading) return <LoadingState />;
 
     return (
         <PermissionGate resource="reports" action="read">
@@ -162,19 +122,19 @@ export default function AiReportsPage() {
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Reports Generated"
-                        value={PLACEHOLDER_QUERIES.length}
-                        icon={BarChart3}
-                    />
+                    <StatCard title="Reports Generated" value={queries.length} icon={BarChart3} />
                     <StatCard
                         title="Avg Response"
-                        value={`${Math.round(PLACEHOLDER_QUERIES.reduce((s, q) => s + q.executionTimeMs, 0) / PLACEHOLDER_QUERIES.length)}ms`}
+                        value={
+                            queries.length > 0
+                                ? `${Math.round(queries.reduce((s, q) => s + q.executionTimeMs, 0) / queries.length)}ms`
+                                : "—"
+                        }
                         icon={Clock}
                     />
                     <StatCard
                         title="Data Points"
-                        value={PLACEHOLDER_QUERIES.reduce((s, q) => s + q.dataPoints, 0)}
+                        value={queries.reduce((s, q) => s + q.dataPoints, 0)}
                         icon={Table2}
                     />
                     <StatCard
@@ -237,11 +197,11 @@ export default function AiReportsPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            {PLACEHOLDER_QUERIES.map((q) => (
+                            {queries.map((q) => (
                                 <button
                                     key={q.id}
                                     onClick={() => setSelectedQuery(q)}
-                                    className={`w-full text-left p-3 rounded-lg transition-colors ${selectedQuery?.id === q.id ? "bg-primary/10 border border-primary/30" : "bg-secondary/30 hover:bg-secondary/50"}`}
+                                    className={`w-full text-left p-3 rounded-lg transition-colors ${activeQuery?.id === q.id ? "bg-primary/10 border border-primary/30" : "bg-secondary/30 hover:bg-secondary/50"}`}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         {CHART_ICONS[q.chartType]}
@@ -263,9 +223,9 @@ export default function AiReportsPage() {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-base">
-                                    {selectedQuery?.generatedTitle || "Select a query"}
+                                    {activeQuery?.generatedTitle || "Select a query"}
                                 </CardTitle>
-                                {selectedQuery && (
+                                {activeQuery && (
                                     <div className="flex gap-1">
                                         <Button size="sm" variant="outline">
                                             <RefreshCw className="h-3.5 w-3.5" />
@@ -278,162 +238,28 @@ export default function AiReportsPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {selectedQuery ? (
+                            {activeQuery ? (
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        {CHART_ICONS[selectedQuery.chartType]}
+                                        {CHART_ICONS[activeQuery.chartType]}
                                         <span className="capitalize">
-                                            {selectedQuery.chartType} chart
+                                            {activeQuery.chartType} chart
                                         </span>
                                         <span>·</span>
-                                        <span>{selectedQuery.dataPoints} data points</span>
+                                        <span>{activeQuery.dataPoints} data points</span>
                                         <span>·</span>
-                                        <span>{selectedQuery.executionTimeMs}ms</span>
+                                        <span>{activeQuery.executionTimeMs}ms</span>
                                     </div>
 
-                                    {/* Mock Chart Visualization */}
-                                    {selectedQuery.chartType === "bar" && (
-                                        <div className="space-y-3">
-                                            {PLACEHOLDER_BAR_DATA.map((item) => (
-                                                <div
-                                                    key={item.label}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    <span className="text-xs w-16 text-right text-muted-foreground">
-                                                        {item.label}
-                                                    </span>
-                                                    <div className="flex-1 h-6 bg-secondary/30 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-primary/60 rounded-full transition-all"
-                                                            style={{ width: `${item.value}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-xs font-bold w-10">
-                                                        {item.value}%
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedQuery.chartType === "line" && (
-                                        <div className="h-48 flex items-end gap-1 px-4">
-                                            {[
-                                                35, 42, 38, 55, 48, 62, 58, 70, 65, 72, 78, 75, 82,
-                                                88, 80, 85, 90, 87, 92, 88, 95, 91, 88, 93,
-                                            ].map((val, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="flex-1 bg-primary/40 rounded-t transition-all hover:bg-primary/60"
-                                                    style={{ height: `${val}%` }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedQuery.chartType === "pie" && (
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {[
-                                                {
-                                                    label: "Activations",
-                                                    pct: 35,
-                                                    color: "bg-primary",
-                                                },
-                                                { label: "Pop-Ups", pct: 22, color: "bg-info" },
-                                                {
-                                                    label: "Festivals",
-                                                    pct: 18,
-                                                    color: "bg-warning",
-                                                },
-                                                {
-                                                    label: "Corporate",
-                                                    pct: 15,
-                                                    color: "bg-success",
-                                                },
-                                                {
-                                                    label: "Launches",
-                                                    pct: 7,
-                                                    color: "bg-destructive",
-                                                },
-                                                {
-                                                    label: "Other",
-                                                    pct: 3,
-                                                    color: "bg-muted-foreground",
-                                                },
-                                            ].map((seg) => (
-                                                <div
-                                                    key={seg.label}
-                                                    className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30"
-                                                >
-                                                    <span
-                                                        className={`h-3 w-3 rounded-full ${seg.color}`}
-                                                    />
-                                                    <span className="text-xs">{seg.label}</span>
-                                                    <span className="text-xs font-bold ml-auto">
-                                                        {seg.pct}%
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedQuery.chartType === "table" && (
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-xs">
-                                                <thead>
-                                                    <tr className="border-b text-left text-muted-foreground">
-                                                        <th className="py-2 pr-4">Project</th>
-                                                        <th className="py-2 pr-4">Budget</th>
-                                                        <th className="py-2 pr-4">Actual</th>
-                                                        <th className="py-2">Variance</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {[
-                                                        {
-                                                            project: "Coachella Main Stage",
-                                                            budget: "$450K",
-                                                            actual: "$520K",
-                                                            variance: "+$70K",
-                                                        },
-                                                        {
-                                                            project: "Nike Air Max Launch",
-                                                            budget: "$125K",
-                                                            actual: "$138K",
-                                                            variance: "+$13K",
-                                                        },
-                                                        {
-                                                            project: "Samsung Galaxy Pop-Up",
-                                                            budget: "$88K",
-                                                            actual: "$95K",
-                                                            variance: "+$7K",
-                                                        },
-                                                    ].map((row) => (
-                                                        <tr
-                                                            key={row.project}
-                                                            className="border-b last:border-0"
-                                                        >
-                                                            <td className="py-2 pr-4 font-medium">
-                                                                {row.project}
-                                                            </td>
-                                                            <td className="py-2 pr-4">
-                                                                {row.budget}
-                                                            </td>
-                                                            <td className="py-2 pr-4">
-                                                                {row.actual}
-                                                            </td>
-                                                            <td className="py-2 text-destructive font-bold">
-                                                                {row.variance}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
+                                    <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+                                        {CHART_ICONS[activeQuery.chartType]}
+                                        <p className="text-sm mt-2">
+                                            Chart visualization requires result data
+                                        </p>
+                                    </div>
 
                                     <p className="text-[10px] text-muted-foreground italic mt-2">
-                                        &ldquo;{selectedQuery.query}&rdquo;
+                                        &ldquo;{activeQuery.query}&rdquo;
                                     </p>
                                 </div>
                             ) : (

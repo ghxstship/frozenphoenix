@@ -21,7 +21,6 @@ import {
     Calendar,
     CheckCircle2,
     DollarSign,
-    Loader2,
     MapPin,
     ScrollText,
 } from "lucide-react";
@@ -42,6 +41,7 @@ export default function PermitDetailPage() {
     const router = useRouter();
     const entityId = params.id as string;
     const { data: permit, isLoading } = usePermit(entityId);
+    const updatePermit = useUpdatePermit();
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Permit",
@@ -53,9 +53,7 @@ export default function PermitDetailPage() {
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!permit) {
@@ -215,11 +213,22 @@ export default function PermitDetailPage() {
             }
             actions={
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => console.log("Renew permit:", entityId)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={updatePermit.isPending}
+                        onClick={() =>
+                            updatePermit.mutate({ id: entityId, status: "pending_renewal" })
+                        }
+                    >
                         <Calendar className="h-4 w-4 mr-1" />
                         Renew
                     </Button>
-                    <Button size="sm" onClick={() => console.log("Mark permit approved:", entityId)}>
+                    <Button
+                        size="sm"
+                        disabled={updatePermit.isPending}
+                        onClick={() => updatePermit.mutate({ id: entityId, status: "approved" })}
+                    >
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Mark Approved
                     </Button>
@@ -227,7 +236,11 @@ export default function PermitDetailPage() {
             }
             menuItems={[
                 { label: "Edit Permit", onClick: () => router.push(`/permits/${entityId}/edit`) },
-                { label: "Upload Document", onClick: () => router.push(`/documents/new?entityType=permit&entityId=${entityId}`) },
+                {
+                    label: "Upload Document",
+                    onClick: () =>
+                        router.push(`/documents/new?entityType=permit&entityId=${entityId}`),
+                },
                 ...crudMenuItems,
             ]}
             tabs={tabs}

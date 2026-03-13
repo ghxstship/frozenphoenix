@@ -1,10 +1,15 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteIncident, useUpdateIncident } from "@/lib/supabase/hooks-pages";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +28,6 @@ import {
     DollarSign,
     Edit,
     FileText,
-    Loader2,
     MapPin,
     Shield,
     Users,
@@ -38,36 +42,6 @@ const SEVERITY_CONFIG: Record<string, { label: string; variant: string; color: s
     major: { label: "Major", variant: "destructive", color: "text-destructive" },
     critical: { label: "Critical", variant: "destructive", color: "text-destructive" },
 };
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "David Kim",
-        entityType: "incident",
-        entityName: "this incident",
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "status_changed",
-        actorName: "Marcus Johnson",
-        entityType: "incident",
-        description: "Status changed to Investigating",
-        createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u1",
-        authorName: "Marcus Johnson",
-        content:
-            "Vendor has been contacted. Replacement panel is being shipped overnight. ETA tomorrow morning.",
-        createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    },
-];
 
 export default function IncidentDetailPage() {
     const params = useParams();
@@ -85,9 +59,36 @@ export default function IncidentDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
-
     const { data: incident, isLoading } = useIncident(incidentId);
+    const { data: sbActivity } = useRecordActivityLog("incident", incidentId);
+    const { data: sbComments } = useRecordComments("incident", incidentId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
     const location = incident
@@ -108,9 +109,7 @@ export default function IncidentDetailPage() {
         : 0;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!incident) {
@@ -131,16 +130,12 @@ export default function IncidentDetailPage() {
     };
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Marcus Johnson",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "incident",
+            entity_id: incidentId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -241,7 +236,10 @@ export default function IncidentDetailPage() {
                 </Button>
             }
             menuItems={[
-                { label: "File Insurance Claim", onClick: () => router.push(`/insurance-policies/new?incidentId=${incidentId}`) },
+                {
+                    label: "File Insurance Claim",
+                    onClick: () => router.push(`/insurance-policies/new?incidentId=${incidentId}`),
+                },
                 { label: "Close Incident", onClick: () => handleUpdate({ status: "closed" }) },
                 ...crudMenuItems,
             ]}
@@ -403,7 +401,7 @@ export default function IncidentDetailPage() {
                 <RecordChatter
                     recordType="incident"
                     recordId={incidentId}
-                    activityItems={PLACEHOLDER_ACTIVITY}
+                    activityItems={activityItems}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

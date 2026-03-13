@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,9 @@ import {
     XCircle,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useTimeTrackingCompliance, useTimeTrackingPolicy } from "@/lib/supabase/hooks-v2-features";
+import { useCrewMembers } from "@/lib/supabase/hooks";
 
 interface CompliancePolicy {
     id: string;
@@ -57,150 +61,6 @@ interface WorkerCompliance {
     status: "compliant" | "at_risk" | "non_compliant";
 }
 
-const PLACEHOLDER_POLICIES: CompliancePolicy[] = [
-    {
-        id: "cp1",
-        name: "Standard Crew",
-        maxDailyHours: 10,
-        maxWeeklyHours: 45,
-        loggingDeadlineDays: 2,
-        requiresApproval: true,
-        overtimeThreshold: 8,
-        isActive: true,
-    },
-    {
-        id: "cp2",
-        name: "Event Day",
-        maxDailyHours: 14,
-        maxWeeklyHours: 60,
-        loggingDeadlineDays: 1,
-        requiresApproval: true,
-        overtimeThreshold: 10,
-        isActive: true,
-    },
-    {
-        id: "cp3",
-        name: "Office Staff",
-        maxDailyHours: 8,
-        maxWeeklyHours: 40,
-        loggingDeadlineDays: 5,
-        requiresApproval: false,
-        overtimeThreshold: 8,
-        isActive: true,
-    },
-];
-
-const PLACEHOLDER_VIOLATIONS: ComplianceViolation[] = [
-    {
-        id: "v1",
-        workerName: "Jake Morrison",
-        violationType: "max_daily_exceeded",
-        description: "Logged 12.5 hours on Mar 10 — exceeds 10h daily limit",
-        severity: "critical",
-        date: "2026-03-10",
-        resolved: false,
-    },
-    {
-        id: "v2",
-        workerName: "Sarah Kim",
-        violationType: "late_logging",
-        description: "Time entries for Feb 28 submitted 5 days late",
-        severity: "warning",
-        date: "2026-03-05",
-        resolved: false,
-    },
-    {
-        id: "v3",
-        workerName: "Marcus Chen",
-        violationType: "max_weekly_exceeded",
-        description: "48h logged in week of Mar 3 — exceeds 45h weekly limit",
-        severity: "critical",
-        date: "2026-03-09",
-        resolved: false,
-    },
-    {
-        id: "v4",
-        workerName: "Lisa Park",
-        violationType: "missing_entries",
-        description: "No time entries for Mar 7-8",
-        severity: "warning",
-        date: "2026-03-09",
-        resolved: true,
-    },
-    {
-        id: "v5",
-        workerName: "Tom Rivera",
-        violationType: "unapproved_overtime",
-        description: "4h overtime on Mar 11 without pre-approval",
-        severity: "info",
-        date: "2026-03-11",
-        resolved: false,
-    },
-];
-
-const PLACEHOLDER_WORKERS: WorkerCompliance[] = [
-    {
-        id: "w1",
-        name: "Jake Morrison",
-        role: "Lead Rigger",
-        totalHoursThisWeek: 48,
-        maxWeeklyHours: 45,
-        loggingRate: 92,
-        violations: 2,
-        status: "non_compliant",
-    },
-    {
-        id: "w2",
-        name: "Sarah Kim",
-        role: "Production Coordinator",
-        totalHoursThisWeek: 38,
-        maxWeeklyHours: 40,
-        loggingRate: 78,
-        violations: 1,
-        status: "at_risk",
-    },
-    {
-        id: "w3",
-        name: "Marcus Chen",
-        role: "Audio Engineer",
-        totalHoursThisWeek: 42,
-        maxWeeklyHours: 45,
-        loggingRate: 95,
-        violations: 1,
-        status: "at_risk",
-    },
-    {
-        id: "w4",
-        name: "Lisa Park",
-        role: "Stage Manager",
-        totalHoursThisWeek: 36,
-        maxWeeklyHours: 45,
-        loggingRate: 100,
-        violations: 0,
-        status: "compliant",
-    },
-    {
-        id: "w5",
-        name: "Tom Rivera",
-        role: "Lighting Tech",
-        totalHoursThisWeek: 44,
-        maxWeeklyHours: 45,
-        loggingRate: 88,
-        violations: 1,
-        status: "at_risk",
-    },
-    {
-        id: "w6",
-        name: "Anna Williams",
-        role: "Event Director",
-        totalHoursThisWeek: 32,
-        maxWeeklyHours: 40,
-        loggingRate: 100,
-        violations: 0,
-        status: "compliant",
-    },
-];
-
 const SEVERITY_BADGE: Record<string, "destructive" | "warning" | "info"> = {
     critical: "destructive",
     warning: "warning",
@@ -214,12 +74,81 @@ const STATUS_BADGE: Record<string, "success" | "warning" | "destructive"> = {
 };
 
 export default function TimeTrackingCompliancePage() {
-    const totalViolations = PLACEHOLDER_VIOLATIONS.filter((v) => !v.resolved).length;
-    const compliantWorkers = PLACEHOLDER_WORKERS.filter((w) => w.status === "compliant").length;
-    const avgLoggingRate = Math.round(
-        PLACEHOLDER_WORKERS.reduce((s, w) => s + w.loggingRate, 0) / PLACEHOLDER_WORKERS.length
+    const { data: sbPolicies, isLoading: loadingPolicies } = useTimeTrackingPolicy();
+    const { data: sbCompliance, isLoading: loadingCompliance } = useTimeTrackingCompliance();
+    const { data: sbCrew, isLoading: loadingCrew } = useCrewMembers();
+
+    const policies: CompliancePolicy[] = useMemo(
+        () =>
+            (sbPolicies ?? []).map((p: Record<string, unknown>) => ({
+                id: String(p.id),
+                name: String(p.name ?? ""),
+                maxDailyHours: Number(p.max_daily_hours ?? 10),
+                maxWeeklyHours: Number(p.max_weekly_hours ?? 45),
+                loggingDeadlineDays: Number(p.logging_deadline_days ?? 2),
+                requiresApproval: p.requires_approval === true,
+                overtimeThreshold: Number(p.overtime_threshold ?? 8),
+                isActive: p.is_active !== false,
+            })),
+        [sbPolicies]
     );
-    const atRiskCount = PLACEHOLDER_WORKERS.filter((w) => w.status !== "compliant").length;
+
+    const violations: ComplianceViolation[] = useMemo(() => {
+        if (!sbCompliance) return [];
+        return (sbCompliance as Record<string, unknown>[])
+            .filter((c) => c.violation_type)
+            .map((c) => ({
+                id: String(c.crew_member_id ?? c.id ?? ""),
+                workerName: String(c.crew_member_name ?? ""),
+                violationType:
+                    (c.violation_type as ComplianceViolation["violationType"]) ?? "missing_entries",
+                description: String(c.violation_description ?? c.violation_type ?? ""),
+                severity: (c.severity as ComplianceViolation["severity"]) ?? "warning",
+                date: String(c.violation_date ?? c.period_end ?? ""),
+                resolved: c.resolved === true,
+            }));
+    }, [sbCompliance]);
+
+    const workers: WorkerCompliance[] = useMemo(
+        () =>
+            (sbCrew ?? []).map((c: Record<string, unknown>) => {
+                const compliance = ((sbCompliance as Record<string, unknown>[] | null) ?? []).find(
+                    (r: Record<string, unknown>) => String(r.crew_member_id) === String(c.id)
+                ) as Record<string, unknown> | undefined;
+                const hoursWeek = Number(compliance?.hours_this_week ?? 0);
+                const maxWeek = Number(compliance?.max_weekly_hours ?? 45);
+                const logRate = Number(compliance?.logging_rate ?? 100);
+                const vCount = Number(compliance?.violation_count ?? 0);
+                const status: WorkerCompliance["status"] =
+                    vCount > 1
+                        ? "non_compliant"
+                        : vCount > 0 || logRate < 85 || hoursWeek > maxWeek * 0.95
+                          ? "at_risk"
+                          : "compliant";
+                return {
+                    id: String(c.id),
+                    name: String(c.name ?? ""),
+                    role: String(c.role ?? ""),
+                    totalHoursThisWeek: hoursWeek,
+                    maxWeeklyHours: maxWeek,
+                    loggingRate: logRate,
+                    violations: vCount,
+                    status,
+                };
+            }),
+        [sbCrew, sbCompliance]
+    );
+
+    const isLoading = loadingPolicies || loadingCompliance || loadingCrew;
+    if (isLoading) return <LoadingState />;
+
+    const totalViolations = violations.filter((v) => !v.resolved).length;
+    const compliantWorkers = workers.filter((w) => w.status === "compliant").length;
+    const avgLoggingRate =
+        workers.length > 0
+            ? Math.round(workers.reduce((s, w) => s + w.loggingRate, 0) / workers.length)
+            : 0;
+    const atRiskCount = workers.filter((w) => w.status !== "compliant").length;
 
     return (
         <PermissionGate resource="time_tracking" action="read">
@@ -246,7 +175,7 @@ export default function TimeTrackingCompliancePage() {
                     />
                     <StatCard
                         title="Compliant Workers"
-                        value={`${compliantWorkers}/${PLACEHOLDER_WORKERS.length}`}
+                        value={`${compliantWorkers}/${workers.length}`}
                         icon={CheckCircle2}
                     />
                     <StatCard title="Avg Logging Rate" value={`${avgLoggingRate}%`} icon={Timer} />
@@ -263,56 +192,64 @@ export default function TimeTrackingCompliancePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {PLACEHOLDER_POLICIES.filter((p) => p.isActive).map((policy) => (
-                                <div
-                                    key={policy.id}
-                                    className="p-4 rounded-lg bg-secondary/30 space-y-3"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-sm font-semibold">{policy.name}</h4>
-                                        <Badge variant="success" className="text-[10px]">
-                                            Active
-                                        </Badge>
+                            {policies
+                                .filter((p) => p.isActive)
+                                .map((policy) => (
+                                    <div
+                                        key={policy.id}
+                                        className="p-4 rounded-lg bg-secondary/30 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-sm font-semibold">{policy.name}</h4>
+                                            <Badge variant="success" className="text-[10px]">
+                                                Active
+                                            </Badge>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div>
+                                                <p className="text-muted-foreground">Max Daily</p>
+                                                <p className="font-semibold">
+                                                    {policy.maxDailyHours}h
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Max Weekly</p>
+                                                <p className="font-semibold">
+                                                    {policy.maxWeeklyHours}h
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">
+                                                    Log Deadline
+                                                </p>
+                                                <p className="font-semibold">
+                                                    {policy.loggingDeadlineDays}d
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">
+                                                    OT Threshold
+                                                </p>
+                                                <p className="font-semibold">
+                                                    {policy.overtimeThreshold}h
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                            {policy.requiresApproval ? (
+                                                <>
+                                                    <CheckCircle2 className="h-3 w-3 text-success" />
+                                                    Approval required
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <XCircle className="h-3 w-3 text-muted-foreground" />
+                                                    No approval needed
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                        <div>
-                                            <p className="text-muted-foreground">Max Daily</p>
-                                            <p className="font-semibold">{policy.maxDailyHours}h</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-muted-foreground">Max Weekly</p>
-                                            <p className="font-semibold">
-                                                {policy.maxWeeklyHours}h
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-muted-foreground">Log Deadline</p>
-                                            <p className="font-semibold">
-                                                {policy.loggingDeadlineDays}d
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-muted-foreground">OT Threshold</p>
-                                            <p className="font-semibold">
-                                                {policy.overtimeThreshold}h
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                        {policy.requiresApproval ? (
-                                            <>
-                                                <CheckCircle2 className="h-3 w-3 text-success" />
-                                                Approval required
-                                            </>
-                                        ) : (
-                                            <>
-                                                <XCircle className="h-3 w-3 text-muted-foreground" />
-                                                No approval needed
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </CardContent>
                 </Card>
@@ -326,49 +263,51 @@ export default function TimeTrackingCompliancePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {PLACEHOLDER_VIOLATIONS.filter((v) => !v.resolved).map((violation) => (
-                            <div
-                                key={violation.id}
-                                className="flex items-start justify-between p-3 rounded-lg bg-secondary/30"
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div
-                                        className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${violation.severity === "critical" ? "bg-destructive" : violation.severity === "warning" ? "bg-warning" : "bg-info"}`}
-                                    />
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="text-sm font-semibold">
-                                                {violation.workerName}
-                                            </h4>
-                                            <Badge
-                                                variant={SEVERITY_BADGE[violation.severity]}
-                                                className="text-[10px]"
-                                            >
-                                                {violation.severity}
-                                            </Badge>
-                                            <Badge variant="ghost" className="text-[10px]">
-                                                {violation.violationType.replace(/_/g, " ")}
-                                            </Badge>
+                        {violations
+                            .filter((v) => !v.resolved)
+                            .map((violation) => (
+                                <div
+                                    key={violation.id}
+                                    className="flex items-start justify-between p-3 rounded-lg bg-secondary/30"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div
+                                            className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${violation.severity === "critical" ? "bg-destructive" : violation.severity === "warning" ? "bg-warning" : "bg-info"}`}
+                                        />
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="text-sm font-semibold">
+                                                    {violation.workerName}
+                                                </h4>
+                                                <Badge
+                                                    variant={SEVERITY_BADGE[violation.severity]}
+                                                    className="text-[10px]"
+                                                >
+                                                    {violation.severity}
+                                                </Badge>
+                                                <Badge variant="ghost" className="text-[10px]">
+                                                    {violation.violationType.replace(/_/g, " ")}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                {violation.description}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                                                <Calendar className="h-3 w-3" />
+                                                {formatDate(violation.date)}
+                                            </p>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                            {violation.description}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
-                                            {formatDate(violation.date)}
-                                        </p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button size="sm" variant="outline">
+                                            Resolve
+                                        </Button>
+                                        <Button size="sm" variant="outline">
+                                            Waive
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    <Button size="sm" variant="outline">
-                                        Resolve
-                                    </Button>
-                                    <Button size="sm" variant="outline">
-                                        Waive
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
                     </CardContent>
                 </Card>
 
@@ -381,7 +320,7 @@ export default function TimeTrackingCompliancePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {PLACEHOLDER_WORKERS.map((worker) => {
+                        {workers.map((worker) => {
                             const hoursPct = Math.round(
                                 (worker.totalHoursThisWeek / worker.maxWeeklyHours) * 100
                             );

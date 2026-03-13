@@ -57,7 +57,8 @@ export default function ExpenseDetailPage() {
     const approvedBy = (ex?.approved_by as string) ?? (ex?.approvedBy as string) ?? "";
     const approvedAt = (ex?.approved_at as string) ?? (ex?.approvedAt as string) ?? "";
     const expNotes = (ex?.notes as string) ?? "";
-    const reimbursementMethod = (ex?.reimbursement_method as string) ?? (ex?.reimbursementMethod as string) ?? "";
+    const reimbursementMethod =
+        (ex?.reimbursement_method as string) ?? (ex?.reimbursementMethod as string) ?? "";
     const costCenter = (ex?.cost_center as string) ?? (ex?.costCenter as string) ?? "";
 
     const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
@@ -102,7 +103,9 @@ export default function ExpenseDetailPage() {
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Category</span>
                         <Badge variant="outline">
-                            {EXPENSE_CATEGORY_LABELS[expCategory as keyof typeof EXPENSE_CATEGORY_LABELS] ?? expCategory}
+                            {EXPENSE_CATEGORY_LABELS[
+                                expCategory as keyof typeof EXPENSE_CATEGORY_LABELS
+                            ] ?? expCategory}
                         </Badge>
                     </div>
                     <div className="flex justify-between">
@@ -130,9 +133,7 @@ export default function ExpenseDetailPage() {
                         <div>
                             <p className="font-medium">{submittedBy || "—"}</p>
                             {projectName && (
-                                <p className="text-xs text-muted-foreground">
-                                    {projectName}
-                                </p>
+                                <p className="text-xs text-muted-foreground">{projectName}</p>
                             )}
                         </div>
                     </div>
@@ -144,11 +145,21 @@ export default function ExpenseDetailPage() {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "approved" })}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => handleUpdate({ status: "approved" })}
+                    >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Approve
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setActiveTab("receipt" as TabId)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab("receipt" as TabId)}
+                    >
                         <Upload className="mr-2 h-4 w-4" />
                         Upload Receipt
                     </Button>
@@ -177,7 +188,10 @@ export default function ExpenseDetailPage() {
                     Approve
                 </Button>
             }
-            menuItems={[{ label: "Edit Expense", onClick: () => router.push(`/expenses/${entityId}/edit`) }, ...crudMenuItems]}
+            menuItems={[
+                { label: "Edit Expense", onClick: () => router.push(`/expenses/${entityId}/edit`) },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}
@@ -247,9 +261,7 @@ export default function ExpenseDetailPage() {
                         <CardContent className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Method</span>
-                                <span className="font-medium">
-                                    {reimbursementMethod || "—"}
-                                </span>
+                                <span className="font-medium">{reimbursementMethod || "—"}</span>
                             </div>
                             {approvedBy && (
                                 <div className="flex justify-between">
@@ -260,9 +272,7 @@ export default function ExpenseDetailPage() {
                             {approvedAt && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Approved At</span>
-                                    <span className="font-medium">
-                                        {formatDate(approvedAt)}
-                                    </span>
+                                    <span className="font-medium">{formatDate(approvedAt)}</span>
                                 </div>
                             )}
                         </CardContent>
@@ -286,7 +296,7 @@ export default function ExpenseDetailPage() {
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <Upload className="h-10 w-10 text-muted-foreground/30 mb-3" />
                                 <p className="text-sm text-muted-foreground">No receipt uploaded</p>
-                                <Button variant="outline" size="sm" className="mt-3" onClick={() => console.log("Upload receipt:", entityId)}>
+                                <Button variant="outline" size="sm" className="mt-3" disabled>
                                     <Upload className="mr-2 h-4 w-4" />
                                     Upload Receipt
                                 </Button>

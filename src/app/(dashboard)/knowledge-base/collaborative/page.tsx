@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import {
     Users,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { useKnowledgeArticles } from "@/lib/supabase/hooks-feature-gaps";
 
 interface CollaborativeDocument {
     id: string;
@@ -52,141 +54,6 @@ interface VersionEntry {
     deletions: number;
 }
 
-const PLACEHOLDER_DOCUMENTS: CollaborativeDocument[] = [
-    {
-        id: "cd1",
-        title: "Event Production Handbook",
-        category: "Operations",
-        lastEditedBy: "Anna Williams",
-        lastEditedAt: "2026-03-12T14:30:00Z",
-        activeEditors: [
-            {
-                id: "e1",
-                name: "Anna Williams",
-                avatarColor: "bg-chart-1",
-                cursor: "Section 3.2",
-                lastActive: "2026-03-12T14:30:00Z",
-            },
-            {
-                id: "e2",
-                name: "Marcus Chen",
-                avatarColor: "bg-chart-4",
-                cursor: "Section 5.1",
-                lastActive: "2026-03-12T14:28:00Z",
-            },
-        ],
-        version: 42,
-        status: "published",
-        conflictCount: 0,
-    },
-    {
-        id: "cd2",
-        title: "Safety Protocol — Large Venues",
-        category: "Safety",
-        lastEditedBy: "Jake Morrison",
-        lastEditedAt: "2026-03-12T13:15:00Z",
-        activeEditors: [
-            {
-                id: "e3",
-                name: "Jake Morrison",
-                avatarColor: "bg-chart-3",
-                cursor: "Emergency Procedures",
-                lastActive: "2026-03-12T13:15:00Z",
-            },
-        ],
-        version: 18,
-        status: "draft",
-        conflictCount: 1,
-    },
-    {
-        id: "cd3",
-        title: "Brand Guidelines Template",
-        category: "Creative",
-        lastEditedBy: "Lisa Park",
-        lastEditedAt: "2026-03-12T11:00:00Z",
-        activeEditors: [],
-        version: 7,
-        status: "published",
-        conflictCount: 0,
-    },
-    {
-        id: "cd4",
-        title: "Vendor Onboarding Checklist",
-        category: "Operations",
-        lastEditedBy: "Sarah Kim",
-        lastEditedAt: "2026-03-11T16:45:00Z",
-        activeEditors: [
-            {
-                id: "e4",
-                name: "Sarah Kim",
-                avatarColor: "bg-chart-2",
-                cursor: "Document Requirements",
-                lastActive: "2026-03-11T16:45:00Z",
-            },
-            {
-                id: "e5",
-                name: "Tom Rivera",
-                avatarColor: "bg-chart-5",
-                cursor: "Insurance Checklist",
-                lastActive: "2026-03-11T16:40:00Z",
-            },
-            {
-                id: "e6",
-                name: "Lisa Park",
-                avatarColor: "bg-chart-7",
-                cursor: "Compliance Section",
-                lastActive: "2026-03-11T16:35:00Z",
-            },
-        ],
-        version: 31,
-        status: "locked",
-        conflictCount: 0,
-    },
-];
-
-const PLACEHOLDER_VERSIONS: VersionEntry[] = [
-    {
-        version: 42,
-        author: "Anna Williams",
-        timestamp: "2026-03-12T14:30:00Z",
-        changes: "Updated Section 3.2 — Load-in procedures",
-        additions: 12,
-        deletions: 3,
-    },
-    {
-        version: 41,
-        author: "Marcus Chen",
-        timestamp: "2026-03-12T14:15:00Z",
-        changes: "Added AV setup checklist to Section 5.1",
-        additions: 28,
-        deletions: 0,
-    },
-    {
-        version: 40,
-        author: "Anna Williams",
-        timestamp: "2026-03-12T10:30:00Z",
-        changes: "Revised safety protocols per venue requirements",
-        additions: 8,
-        deletions: 15,
-    },
-    {
-        version: 39,
-        author: "Jake Morrison",
-        timestamp: "2026-03-11T16:00:00Z",
-        changes: "Added rigging specifications",
-        additions: 45,
-        deletions: 2,
-    },
-    {
-        version: 38,
-        author: "Sarah Kim",
-        timestamp: "2026-03-11T14:00:00Z",
-        changes: "Formatting cleanup and typo fixes",
-        additions: 3,
-        deletions: 5,
-    },
-];
-
 const STATUS_BADGE: Record<string, "success" | "warning" | "default"> = {
     draft: "warning",
     published: "success",
@@ -194,13 +61,33 @@ const STATUS_BADGE: Record<string, "success" | "warning" | "default"> = {
 };
 
 export default function CollaborativeEditingPage() {
-    const [selectedDoc, setSelectedDoc] = useState<CollaborativeDocument | null>(
-        PLACEHOLDER_DOCUMENTS[0] || null
+    const { data: sbArticles, isLoading } = useKnowledgeArticles();
+
+    const documents: CollaborativeDocument[] = useMemo(
+        () =>
+            (sbArticles ?? []).map((a) => ({
+                id: a.id,
+                title: a.title,
+                category: a.category,
+                lastEditedBy: a.profiles?.name ?? "",
+                lastEditedAt: a.updated_at ?? a.created_at,
+                activeEditors: [] as ActiveEditor[],
+                version: a.version,
+                status: (a.status as CollaborativeDocument["status"]) ?? "draft",
+                conflictCount: 0,
+            })),
+        [sbArticles]
     );
 
-    const totalEditors = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.activeEditors.length, 0);
-    const totalVersions = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.version, 0);
-    const conflicts = PLACEHOLDER_DOCUMENTS.reduce((s, d) => s + d.conflictCount, 0);
+    const [selectedDoc, setSelectedDoc] = useState<CollaborativeDocument | null>(null);
+
+    const activeDoc = selectedDoc ?? documents[0] ?? null;
+
+    if (isLoading) return <LoadingState />;
+
+    const totalEditors = documents.reduce((s, d) => s + d.activeEditors.length, 0);
+    const totalVersions = documents.reduce((s, d) => s + d.version, 0);
+    const conflicts = documents.reduce((s, d) => s + d.conflictCount, 0);
 
     return (
         <PermissionGate resource="knowledge_base" action="read">
@@ -216,13 +103,7 @@ export default function CollaborativeEditingPage() {
                 </PageHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Active Documents"
-                        value={
-                            PLACEHOLDER_DOCUMENTS.filter((d) => d.activeEditors.length > 0).length
-                        }
-                        icon={FileText}
-                    />
+                    <StatCard title="Documents" value={documents.length} icon={FileText} />
                     <StatCard title="Active Editors" value={totalEditors} icon={Users} />
                     <StatCard title="Total Revisions" value={totalVersions} icon={GitBranch} />
                     <StatCard title="Conflicts" value={conflicts} icon={Shield} />
@@ -234,10 +115,10 @@ export default function CollaborativeEditingPage() {
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                             Documents
                         </h3>
-                        {PLACEHOLDER_DOCUMENTS.map((doc) => (
+                        {documents.map((doc) => (
                             <Card
                                 key={doc.id}
-                                className={`cursor-pointer transition-colors ${selectedDoc?.id === doc.id ? "border-primary/30 bg-primary/[0.02]" : "hover:border-primary/20"}`}
+                                className={`cursor-pointer transition-colors ${activeDoc?.id === doc.id ? "border-primary/30 bg-primary/[0.02]" : "hover:border-primary/20"}`}
                                 onClick={() => setSelectedDoc(doc)}
                             >
                                 <CardContent className="p-4">
@@ -312,13 +193,13 @@ export default function CollaborativeEditingPage() {
 
                     {/* Selected Document Detail */}
                     <div className="lg:col-span-2 space-y-4">
-                        {selectedDoc ? (
+                        {activeDoc ? (
                             <>
                                 <Card>
                                     <CardHeader>
                                         <div className="flex items-center justify-between">
                                             <CardTitle className="text-base">
-                                                {selectedDoc.title}
+                                                {activeDoc.title}
                                             </CardTitle>
                                             <div className="flex gap-1">
                                                 <Button size="sm" variant="outline">
@@ -329,7 +210,7 @@ export default function CollaborativeEditingPage() {
                                                     Comment
                                                 </Button>
                                                 <Button size="sm">
-                                                    {selectedDoc.status === "locked" ? (
+                                                    {activeDoc.status === "locked" ? (
                                                         <>
                                                             <Unlock className="h-3.5 w-3.5" />{" "}
                                                             Unlock
@@ -345,14 +226,14 @@ export default function CollaborativeEditingPage() {
                                     </CardHeader>
                                     <CardContent>
                                         {/* Presence indicators */}
-                                        {selectedDoc.activeEditors.length > 0 && (
+                                        {activeDoc.activeEditors.length > 0 && (
                                             <div className="mb-4 p-3 rounded-lg bg-secondary/30">
                                                 <h4 className="text-xs font-semibold mb-2 flex items-center gap-1">
                                                     <Circle className="h-2 w-2 fill-success text-success animate-pulse" />
                                                     Currently editing
                                                 </h4>
                                                 <div className="space-y-2">
-                                                    {selectedDoc.activeEditors.map((editor) => (
+                                                    {activeDoc.activeEditors.map((editor) => (
                                                         <div
                                                             key={editor.id}
                                                             className="flex items-center justify-between text-xs"
@@ -382,14 +263,14 @@ export default function CollaborativeEditingPage() {
                                         )}
 
                                         {/* Conflict resolution */}
-                                        {selectedDoc.conflictCount > 0 && (
+                                        {activeDoc.conflictCount > 0 && (
                                             <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <Shield className="h-4 w-4 text-destructive" />
                                                         <span className="text-sm font-semibold text-destructive">
-                                                            {selectedDoc.conflictCount} merge
-                                                            conflict detected
+                                                            {activeDoc.conflictCount} merge conflict
+                                                            detected
                                                         </span>
                                                     </div>
                                                     <Button size="sm" variant="outline">
@@ -414,15 +295,15 @@ export default function CollaborativeEditingPage() {
                                             </div>
                                             <div className="space-y-2 text-sm text-muted-foreground">
                                                 <p>
-                                                    This document contains {selectedDoc.version}{" "}
+                                                    This document contains {activeDoc.version}{" "}
                                                     revisions across{" "}
-                                                    {selectedDoc.activeEditors.length + 2}{" "}
+                                                    {activeDoc.activeEditors.length + 2}{" "}
                                                     contributors.
                                                 </p>
                                                 <p>
                                                     Category:{" "}
                                                     <Badge variant="ghost" className="text-[10px]">
-                                                        {selectedDoc.category}
+                                                        {activeDoc.category}
                                                     </Badge>
                                                 </p>
                                             </div>
@@ -439,7 +320,7 @@ export default function CollaborativeEditingPage() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-2">
-                                        {PLACEHOLDER_VERSIONS.map((v) => (
+                                        {([] as VersionEntry[]).map((v) => (
                                             <div
                                                 key={v.version}
                                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"

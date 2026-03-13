@@ -18,7 +18,7 @@ import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { BriefTemplate } from "@/types/creative-brand";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
-import { useBriefs } from "@/lib/supabase/hooks-pages";
+import { useBriefs, useBriefTemplates } from "@/lib/supabase/hooks-pages";
 import { PermissionGate } from "@/components/permission-guard";
 import type { CreativeBrief, CreativeBriefStatus, CreativeBriefType } from "@/types";
 import {
@@ -28,7 +28,6 @@ import {
     FileText,
     Filter,
     LayoutTemplate,
-    Loader2,
     Plus,
     Target,
     Users,
@@ -63,8 +62,8 @@ export default function BriefsPage() {
     const { data: sbBriefs, isLoading } = useBriefs();
 
     const briefs = useMemo(() => (sbBriefs ?? []) as unknown as CreativeBrief[], [sbBriefs]);
-    // NEXT: Wire to useBriefTemplates() when hook is available
-    const templates: BriefTemplate[] = [];
+    const { data: sbTemplates } = useBriefTemplates();
+    const templates: BriefTemplate[] = (sbTemplates ?? []) as unknown as BriefTemplate[];
 
     const filtered = useMemo(() => {
         return briefs.filter((b) => {
@@ -93,9 +92,7 @@ export default function BriefsPage() {
     }
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (

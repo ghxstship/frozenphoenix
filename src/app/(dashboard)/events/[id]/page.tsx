@@ -1,10 +1,15 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteEvent, useUpdateEvent } from "@/lib/supabase/hooks-pages";
+import {
+    useCreateRecordComment,
+    useRecordActivityLog,
+    useRecordComments,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,39 +24,10 @@ import { useEvent } from "@/lib/supabase/hooks-pages";
 import { useActivations, useCrewShifts, useLocations, useProjects } from "@/lib/supabase/hooks";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, Clock, DollarSign, Edit, Loader2, MapPin, Play, Users } from "lucide-react";
+import { Calendar, Clock, DollarSign, Edit, MapPin, Play, Users } from "lucide-react";
 
 type TabId = "overview" | "run-of-show" | "crew" | "logistics" | "chatter";
 const TAB_VALUES = ["overview", "run-of-show", "crew", "logistics", "chatter"] as const;
-
-const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-    {
-        id: "a1",
-        action: "created",
-        actorName: "Sarah Chen",
-        entityType: "event",
-        entityName: "this event",
-        createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-    },
-    {
-        id: "a2",
-        action: "status_changed",
-        actorName: "Mike Johnson",
-        entityType: "event",
-        description: "Status changed to Confirmed",
-        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-];
-
-const PLACEHOLDER_COMMENTS: CommentItem[] = [
-    {
-        id: "c1",
-        authorId: "u1",
-        authorName: "Marcus Johnson",
-        content: "Run of show is locked. All cues tested and working.",
-        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-];
 
 export default function EventDetailPage() {
     const params = useParams();
@@ -69,9 +45,36 @@ export default function EventDetailPage() {
         defaultValue: "overview",
         validValues: TAB_VALUES,
     });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>(PLACEHOLDER_COMMENTS);
-
     const { data: event, isLoading } = useEvent(eventId);
+    const { data: sbActivity } = useRecordActivityLog("event", eventId);
+    const { data: sbComments } = useRecordComments("event", eventId);
+    const createComment = useCreateRecordComment();
+
+    const activityItems: ActivityItem[] = useMemo(
+        () =>
+            (sbActivity ?? []).map((a) => ({
+                id: a.id,
+                action: a.action as ActivityItem["action"],
+                actorName: a.profiles?.name ?? "System",
+                entityType: a.entity_type,
+                description: (a.metadata?.description as string) ?? undefined,
+                createdAt: a.created_at,
+            })),
+        [sbActivity]
+    );
+
+    const chatterComments: CommentItem[] = useMemo(
+        () =>
+            (sbComments ?? []).map((c) => ({
+                id: c.id,
+                authorId: c.author_id,
+                authorName: c.profiles?.name ?? "",
+                content: c.body,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+            })),
+        [sbComments]
+    );
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
     const { data: sbActivations } = useActivations();
@@ -91,9 +94,7 @@ export default function EventDetailPage() {
         : [];
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     if (!event) {
@@ -111,16 +112,12 @@ export default function EventDetailPage() {
     const TypeIcon = typeConfig?.icon ?? Calendar;
 
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        await createComment.mutateAsync({
+            entity_type: "event",
+            entity_id: eventId,
+            author_id: "u1",
+            body: content,
+        });
     };
 
     const tabs = [
@@ -239,7 +236,13 @@ export default function EventDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[{ label: "Duplicate", onClick: () => router.push(`/events/new?duplicateFrom=${eventId}`) }, ...crudMenuItems]}
+            menuItems={[
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/events/new?duplicateFrom=${eventId}`),
+                },
+                ...crudMenuItems,
+            ]}
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={(id) => setActiveTab(id as TabId)}
@@ -478,7 +481,7 @@ export default function EventDetailPage() {
                 <RecordChatter
                     recordType="event"
                     recordId={eventId}
-                    activityItems={PLACEHOLDER_ACTIVITY}
+                    activityItems={activityItems}
                     comments={chatterComments}
                     currentUserId="u1"
                     onAddComment={handleAddComment}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -14,45 +15,31 @@ import {
     Database,
     Gauge,
     HardDrive,
+    Inbox,
     Shield,
     Users,
     XCircle,
     Zap,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import {
+    useDomainEvents,
+    useResilienceTargets,
+    useSlaDefinitions,
+} from "@/lib/supabase/hooks-pages";
 
-// NEXT: Wire to Supabase when system_health monitoring queries are available
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";
 
-interface ServiceHealth {
+// Static service-health config — infrastructure monitoring has no DB table
+const SERVICES: {
     id: string;
     name: string;
     status: HealthStatus;
     latency: number;
     uptime: number;
     lastCheck: string;
-}
-
-interface SystemAlert {
-    id: string;
-    severity: AlertSeverity;
-    message: string;
-    source: string;
-    timestamp: string;
-    acknowledged: boolean;
-}
-
-interface SlaMetric {
-    id: string;
-    name: string;
-    target: string;
-    current: number;
-    status: "on_track" | "at_risk" | "breached";
-}
-
-// Mock data for system health monitoring
-const mockServices: ServiceHealth[] = [
+}[] = [
     {
         id: "1",
         name: "Database (Supabase)",
@@ -103,74 +90,6 @@ const mockServices: ServiceHealth[] = [
     },
 ];
 
-const mockAlerts: SystemAlert[] = [
-    {
-        id: "1",
-        severity: "info",
-        message: "Database backup completed successfully",
-        source: "Supabase",
-        timestamp: "10 min ago",
-        acknowledged: true,
-    },
-    {
-        id: "2",
-        severity: "warning",
-        message: "Edge function cold start latency > 500ms detected",
-        source: "Edge Functions",
-        timestamp: "25 min ago",
-        acknowledged: false,
-    },
-    {
-        id: "3",
-        severity: "info",
-        message: "RLS policy audit: 217 policies active, 0 violations",
-        source: "Security",
-        timestamp: "1 hour ago",
-        acknowledged: true,
-    },
-    {
-        id: "4",
-        severity: "info",
-        message: "Migration 022 applied: audit remediation schema",
-        source: "Database",
-        timestamp: "2 hours ago",
-        acknowledged: true,
-    },
-];
-
-const mockSlaMetrics: SlaMetric[] = [
-    {
-        id: "1",
-        name: "Task Completion (48h)",
-        target: "< 48 hours",
-        current: 92,
-        status: "on_track",
-    },
-    {
-        id: "2",
-        name: "Approval Turnaround (24h)",
-        target: "< 24 hours",
-        current: 87,
-        status: "on_track",
-    },
-    {
-        id: "3",
-        name: "Incident Response (2h)",
-        target: "< 2 hours",
-        current: 95,
-        status: "on_track",
-    },
-    { id: "4", name: "Invoice Payment (30d)", target: "< 30 days", current: 78, status: "at_risk" },
-    { id: "5", name: "Onboarding (5d)", target: "< 5 days", current: 90, status: "on_track" },
-    {
-        id: "6",
-        name: "Support Response (4h)",
-        target: "< 4 hours",
-        current: 96,
-        status: "on_track",
-    },
-];
-
 const statusIcon = (status: HealthStatus) => {
     switch (status) {
         case "healthy":
@@ -215,15 +134,91 @@ const slaStatusColor = (status: string) => {
     }
 };
 
-export default function SystemHealthPage() {
-    const healthyCount = mockServices.filter((s) => s.status === "healthy").length;
-    const avgLatency = Math.round(
-        mockServices.reduce((sum, s) => sum + s.latency, 0) / mockServices.length
+function EmptyRow({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Inbox className="h-8 w-8 mb-2 opacity-50" />
+            <p className="text-sm">{message}</p>
+        </div>
     );
-    const avgUptime = (
-        mockServices.reduce((sum, s) => sum + s.uptime, 0) / mockServices.length
-    ).toFixed(2);
-    const activeAlerts = mockAlerts.filter((a) => !a.acknowledged).length;
+}
+
+function formatMinutes(m: number): string {
+    if (m < 60) return `${m} min`;
+    if (m < 1440) return `${Math.round(m / 60)}h`;
+    return `${Math.round(m / 1440)}d`;
+}
+
+export default function SystemHealthPage() {
+    const { data: sbSlaDefs, isLoading: slaLoading } = useSlaDefinitions();
+    const { data: sbResilience, isLoading: resLoading } = useResilienceTargets();
+    const { data: sbEvents, isLoading: evtLoading } = useDomainEvents(20);
+
+    const isLoading = slaLoading || resLoading || evtLoading;
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
+
+    type SlaView = { id: string; name: string; target: string; current: number; status: string };
+    const slaMetrics: SlaView[] = (sbSlaDefs ?? []).map((s: Record<string, unknown>) => ({
+        id: s.id as string,
+        name: (s.name as string) ?? "",
+        target: `< ${s.target_hours as number}h`,
+        current: 0,
+        status: "on_track",
+    }));
+
+    type EventView = {
+        id: string;
+        severity: AlertSeverity;
+        message: string;
+        source: string;
+        timestamp: string;
+        acknowledged: boolean;
+    };
+    const alerts: EventView[] = (sbEvents ?? []).map((e: Record<string, unknown>) => {
+        const status = (e.status as string) ?? "pending";
+        let severity: AlertSeverity = "info";
+        if (status === "failed") severity = "critical";
+        else if (status === "expired") severity = "warning";
+        return {
+            id: e.id as string,
+            severity,
+            message: (e.event_type as string) ?? "",
+            source: (e.source_domain as string) ?? "",
+            timestamp: (e.created_at as string) ?? "",
+            acknowledged: status === "delivered",
+        };
+    });
+
+    type ResilienceView = {
+        id: string;
+        service: string;
+        rto: string;
+        rpo: string;
+        backup: string;
+        lastTest: string;
+        result: string;
+    };
+    const resilienceTargets: ResilienceView[] = (sbResilience ?? []).map(
+        (r: Record<string, unknown>) => ({
+            id: r.id as string,
+            service: (r.service_name as string) ?? "",
+            rto: formatMinutes(r.rto_minutes as number),
+            rpo: formatMinutes(r.rpo_minutes as number),
+            backup: (r.backup_frequency as string) ?? "daily",
+            lastTest: (r.last_tested_at as string) ?? "",
+            result: (r.test_result as string) ?? "unknown",
+        })
+    );
+
+    const healthyCount = SERVICES.filter((s) => s.status === "healthy").length;
+    const avgLatency = Math.round(
+        SERVICES.reduce((sum, s) => sum + s.latency, 0) / SERVICES.length
+    );
+    const avgUptime = (SERVICES.reduce((sum, s) => sum + s.uptime, 0) / SERVICES.length).toFixed(2);
+    const activeAlerts = alerts.filter((a) => !a.acknowledged).length;
 
     return (
         <PermissionGate resource="system_health" action="read">
@@ -239,7 +234,7 @@ export default function SystemHealthPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Services"
-                        value={`${healthyCount}/${mockServices.length}`}
+                        value={`${healthyCount}/${SERVICES.length}`}
                         icon={Activity}
                         description="All operational"
                     />
@@ -274,7 +269,7 @@ export default function SystemHealthPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {mockServices.map((service) => (
+                                {SERVICES.map((service) => (
                                     <div
                                         key={service.id}
                                         className="flex items-center justify-between py-2 border-b border-border last:border-0"
@@ -315,7 +310,10 @@ export default function SystemHealthPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {mockSlaMetrics.map((sla) => (
+                                {slaMetrics.length === 0 && (
+                                    <EmptyRow message="No SLA definitions configured" />
+                                )}
+                                {slaMetrics.map((sla) => (
                                     <div key={sla.id} className="space-y-1.5">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="font-medium">{sla.name}</span>
@@ -344,7 +342,8 @@ export default function SystemHealthPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {mockAlerts.map((alert) => (
+                            {alerts.length === 0 && <EmptyRow message="No recent events" />}
+                            {alerts.map((alert) => (
                                 <div
                                     key={alert.id}
                                     className="flex items-start gap-3 py-2 border-b border-border last:border-0"
@@ -386,56 +385,10 @@ export default function SystemHealthPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[
-                                {
-                                    service: "Database",
-                                    rto: "15 min",
-                                    rpo: "5 min",
-                                    backup: "Continuous WAL",
-                                    lastTest: "2025-02-20",
-                                    result: "passed",
-                                },
-                                {
-                                    service: "Authentication",
-                                    rto: "5 min",
-                                    rpo: "0 min",
-                                    backup: "Replicated",
-                                    lastTest: "2025-02-18",
-                                    result: "passed",
-                                },
-                                {
-                                    service: "Storage / CDN",
-                                    rto: "30 min",
-                                    rpo: "1 hour",
-                                    backup: "Daily snapshot",
-                                    lastTest: "2025-02-15",
-                                    result: "passed",
-                                },
-                                {
-                                    service: "Application",
-                                    rto: "10 min",
-                                    rpo: "0 min",
-                                    backup: "Stateless / redeployable",
-                                    lastTest: "2025-02-22",
-                                    result: "passed",
-                                },
-                                {
-                                    service: "Email / Notifications",
-                                    rto: "60 min",
-                                    rpo: "N/A",
-                                    backup: "Queue-based retry",
-                                    lastTest: "2025-02-10",
-                                    result: "passed",
-                                },
-                                {
-                                    service: "Edge Functions",
-                                    rto: "5 min",
-                                    rpo: "0 min",
-                                    backup: "Redeployable",
-                                    lastTest: "2025-02-21",
-                                    result: "passed",
-                                },
-                            ].map((target) => (
+                            {resilienceTargets.length === 0 && (
+                                <EmptyRow message="No resilience targets configured" />
+                            )}
+                            {resilienceTargets.map((target) => (
                                 <div
                                     key={target.service}
                                     className="p-3 rounded-lg border border-border"

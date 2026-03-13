@@ -1,7 +1,7 @@
 "use client";
 
 import { logger } from "@/lib/logger";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { PermissionGate } from "@/components/permission-guard";
 import { useCreateProposal } from "@/lib/supabase/hooks-pages";
+import { useAllRateCardItems, useCompanies, useContacts } from "@/lib/supabase/hooks-productive";
+import { useDeals } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
 import {
     ArrowLeft,
@@ -61,132 +63,56 @@ const STEPS = [
 
 type StepId = (typeof STEPS)[number]["id"];
 
-// ─── Mock companies & deals for demo mode ───
-const PLACEHOLDER_COMPANIES = [
-    { id: "co1", name: "Nike" },
-    { id: "co2", name: "Red Bull" },
-    { id: "co3", name: "Coachella Valley Music" },
-    { id: "co4", name: "TechStart Inc" },
-    { id: "co5", name: "Momentum Worldwide" },
-];
-
-const PLACEHOLDER_CONTACTS = [
-    { id: "ct1", name: "John Smith", companyId: "co1", email: "john@nike.com" },
-    { id: "ct2", name: "Maria Garcia", companyId: "co2", email: "maria@redbull.com" },
-    { id: "ct3", name: "Alex Johnson", companyId: "co3", email: "alex@coachella.com" },
-    { id: "ct4", name: "Sam Wilson", companyId: "co4", email: "sam@techstart.com" },
-    { id: "ct5", name: "Chris Lee", companyId: "co5", email: "chris@momentum.com" },
-];
-
-const PLACEHOLDER_DEALS = [
-    { id: "d1", title: "Air Max Launch Experience", companyId: "co1", value: 500000 },
-    { id: "d2", title: "Festival Activation 2026", companyId: "co2", value: 350000 },
-    { id: "d3", title: "Brand Experience Package", companyId: "co3", value: 800000 },
-];
-
-const PLACEHOLDER_RATE_CARD_ITEMS: RateCardItem[] = [
-    {
-        id: "rc1",
-        name: "Creative Direction",
-        description: "Creative Direction & Concept Development",
-        unit: "lot",
-        rate: 45000,
-        category: "Creative",
-    },
-    {
-        id: "rc2",
-        name: "3D Rendering",
-        description: "3D Rendering & Visualization (per view)",
-        unit: "ea",
-        rate: 3500,
-        category: "Creative",
-    },
-    {
-        id: "rc3",
-        name: "Brand Adaptation",
-        description: "Brand Guidelines Application",
-        unit: "lot",
-        rate: 8000,
-        category: "Creative",
-    },
-    {
-        id: "rc4",
-        name: "Custom Booth (20x30)",
-        description: "Custom Activation Booth 20×30ft",
-        unit: "ea",
-        rate: 125000,
-        category: "Fabrication",
-    },
-    {
-        id: "rc5",
-        name: "LED Wall (16x9)",
-        description: "LED Video Wall 16×9ft 2.5mm pitch",
-        unit: "ea",
-        rate: 65000,
-        category: "Fabrication",
-    },
-    {
-        id: "rc6",
-        name: "Display Pedestals",
-        description: "Interactive Product Display Pedestals",
-        unit: "ea",
-        rate: 4500,
-        category: "Fabrication",
-    },
-    {
-        id: "rc7",
-        name: "RFID Tracking",
-        description: "RFID Experience Tracking System",
-        unit: "lot",
-        rate: 35000,
-        category: "Technology",
-    },
-    {
-        id: "rc8",
-        name: "AR Activation",
-        description: "AR Photo Activation (Custom Filter)",
-        unit: "ea",
-        rate: 28000,
-        category: "Technology",
-    },
-    {
-        id: "rc9",
-        name: "Project Management",
-        description: "Project Management (per week)",
-        unit: "wk",
-        rate: 5000,
-        category: "Production",
-    },
-    {
-        id: "rc10",
-        name: "Install Crew",
-        description: "Install & Strike Crew (per man-day)",
-        unit: "man-day",
-        rate: 850,
-        category: "Production",
-    },
-    {
-        id: "rc11",
-        name: "Shipping",
-        description: "Shipping & Freight (domestic)",
-        unit: "lot",
-        rate: 18000,
-        category: "Logistics",
-    },
-    {
-        id: "rc12",
-        name: "On-Site PM",
-        description: "On-Site Production Manager (per day)",
-        unit: "day",
-        rate: 2500,
-        category: "Production",
-    },
-];
-
 export default function NewProposalPage() {
     const router = useRouter();
     const createProposal = useCreateProposal();
     const counterRef = useRef(0);
+
+    // ─── Live data hooks ───
+    const { data: sbCompanies } = useCompanies();
+    const { data: sbContacts } = useContacts();
+    const { data: sbDeals } = useDeals();
+    const { data: sbRateCardItems } = useAllRateCardItems();
+
+    const companies = useMemo(
+        () => (sbCompanies ?? []).map((c) => ({ id: c.id, name: c.name })),
+        [sbCompanies]
+    );
+
+    const contacts = useMemo(
+        () =>
+            (sbContacts ?? []).map((c) => ({
+                id: c.id,
+                name: c.full_name ?? `${c.first_name} ${c.last_name}`,
+                companyId: c.company_id ?? "",
+                email: c.email ?? "",
+            })),
+        [sbContacts]
+    );
+
+    const deals = useMemo(
+        () =>
+            (sbDeals ?? []).map((d) => ({
+                id: d.id,
+                title: d.title,
+                companyId: d.company_id ?? "",
+                value: d.value,
+            })),
+        [sbDeals]
+    );
+
+    const rateCardItems: RateCardItem[] = useMemo(
+        () =>
+            (sbRateCardItems ?? []).map((item) => ({
+                id: item.id,
+                name: item.service_name,
+                description: item.service_description ?? "",
+                unit: item.unit_name ?? "ea",
+                rate: item.unit_rate ?? item.daily_rate ?? item.hourly_rate ?? 0,
+                category: item.department ?? "General",
+            })),
+        [sbRateCardItems]
+    );
 
     // ─── Step state ───
     const [currentStep, setCurrentStep] = useState<StepId>("client");
@@ -225,15 +151,13 @@ export default function NewProposalPage() {
         0
     );
 
-    const filteredContacts = PLACEHOLDER_CONTACTS.filter(
+    const filteredContacts = contacts.filter(
         (c) => !selectedCompany || c.companyId === selectedCompany
     );
 
-    const filteredDeals = PLACEHOLDER_DEALS.filter(
-        (d) => !selectedCompany || d.companyId === selectedCompany
-    );
+    const filteredDeals = deals.filter((d) => !selectedCompany || d.companyId === selectedCompany);
 
-    const filteredRateItems = PLACEHOLDER_RATE_CARD_ITEMS.filter(
+    const filteredRateItems = rateCardItems.filter(
         (item) =>
             !rateCardSearch ||
             item.name.toLowerCase().includes(rateCardSearch.toLowerCase()) ||
@@ -465,7 +389,7 @@ export default function NewProposalPage() {
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         >
                                             <option value="">Select a company</option>
-                                            {PLACEHOLDER_COMPANIES.map((c) => (
+                                            {companies.map((c) => (
                                                 <option key={c.id} value={c.id}>
                                                     {c.name}
                                                 </option>
@@ -854,9 +778,8 @@ export default function NewProposalPage() {
                                                 Company
                                             </span>
                                             <span className="font-medium">
-                                                {PLACEHOLDER_COMPANIES.find(
-                                                    (c) => c.id === selectedCompany
-                                                )?.name ?? "—"}
+                                                {companies.find((c) => c.id === selectedCompany)
+                                                    ?.name ?? "—"}
                                             </span>
                                         </div>
                                         {selectedDeal && (
@@ -865,9 +788,8 @@ export default function NewProposalPage() {
                                                     Linked Deal
                                                 </span>
                                                 <span className="font-medium">
-                                                    {PLACEHOLDER_DEALS.find(
-                                                        (d) => d.id === selectedDeal
-                                                    )?.title ?? "—"}
+                                                    {deals.find((d) => d.id === selectedDeal)
+                                                        ?.title ?? "—"}
                                                 </span>
                                             </div>
                                         )}

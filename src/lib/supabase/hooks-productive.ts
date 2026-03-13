@@ -543,6 +543,20 @@ export function useCreateRateCardItem() {
     });
 }
 
+export function useAllRateCardItems() {
+    return useQuery({
+        queryKey: ["rate_card_items"],
+        queryFn: async () => {
+            const { data, error } = await getSupabase()
+                .from("rate_card_items")
+                .select("*")
+                .order("service_name", { ascending: true });
+            if (error) throw error;
+            return data as unknown as Tables<"rate_card_items">[];
+        },
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // SECTION 8: RESOURCE BOOKINGS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1242,6 +1256,45 @@ export function useInvoiceAging() {
                 days_overdue: number;
                 aging_bucket: string;
             }[];
+        },
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SECTION 17: SCENARIOS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface ScenarioWithProject {
+    id: string;
+    name: string;
+    description: string | null;
+    scenario_type: string;
+    status: string;
+    project_id: string | null;
+    created_by: string | null;
+    tags: string[] | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string | null;
+    updated_at: string | null;
+    projects: { name: string } | null;
+}
+
+export function useScenarios(status?: string) {
+    return useQuery({
+        queryKey: ["scenarios", { status }],
+        queryFn: async () => {
+            let query = getSupabase()
+                .from("scenarios")
+                .select("*, projects(name)")
+                .order("updated_at", { ascending: false });
+
+            if (status) {
+                query = query.eq("status", filterValue(status));
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+            return data as unknown as ScenarioWithProject[];
         },
     });
 }

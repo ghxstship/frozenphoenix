@@ -22,7 +22,11 @@ export default function AdvanceTemplatesPage() {
     const filtered = React.useMemo(() => {
         if (!searchQuery) return list;
         const q = searchQuery.toLowerCase();
-        return list.filter((t) => String(t.name ?? "").toLowerCase().includes(q));
+        return list.filter((t) =>
+            String(t.name ?? "")
+                .toLowerCase()
+                .includes(q)
+        );
     }, [list, searchQuery]);
 
     return (
@@ -31,7 +35,7 @@ export default function AdvanceTemplatesPage() {
                 title="Advance Templates"
                 description="Create and manage reusable advance templates"
                 actions={
-                    <Button disabled onClick={() => console.log("Create advance template")}>
+                    <Button disabled onClick={() => void 0}>
                         <Plus className="h-4 w-4" />
                         New Template
                     </Button>
@@ -58,10 +62,8 @@ export default function AdvanceTemplatesPage() {
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {filtered.map((tpl) => {
                             const itemCount =
-                                (
-                                    (tpl.template_data as Record<string, unknown>)
-                                        ?.items as unknown[]
-                                )?.length ?? 0;
+                                ((tpl.template_data as Record<string, unknown>)?.items as unknown[])
+                                    ?.length ?? 0;
                             return (
                                 <Card key={tpl.id as string}>
                                     <CardContent className="flex flex-col gap-2 pt-4">
@@ -79,16 +81,19 @@ export default function AdvanceTemplatesPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="sm" disabled onClick={() => console.log("Delete template:", tpl.id)}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                disabled
+                                                onClick={() => void 0}
+                                            >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                             <span>{itemCount} items</span>
                                             {Boolean(tpl.advance_type) && (
-                                                <span>
-                                                    Type: {String(tpl.advance_type)}
-                                                </span>
+                                                <span>Type: {String(tpl.advance_type)}</span>
                                             )}
                                             {Boolean(tpl.is_global) && (
                                                 <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">

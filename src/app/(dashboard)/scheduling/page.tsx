@@ -135,7 +135,7 @@ export default function SchedulingPage() {
     const projects: Project[] = (sbProjects ?? []).map((p) => ({
         id: p.id,
         name: p.name,
-        client: p.client,
+        client: p.companies?.name ?? "",
         clientLogo: p.client_logo ?? undefined,
         status: p.status as ProjectStatus,
         currentPhase: p.current_phase as ProjectPhase,

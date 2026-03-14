@@ -1,12 +1,9 @@
 "use client";
 
-import { logger } from "@/lib/logger";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FormLayout, FormSection } from "@/components/layouts/form-layout";
-import { Input } from "@/components/ui/input";
-import { FormField, Select, Textarea } from "@/components/ui/form";
+import { useMemo } from "react";
 import { useCreateVendor } from "@/lib/supabase/hooks";
+import { FormPageShell } from "@/components/shells/form-page-shell";
+import type { FormPageConfig } from "@/types/form-page-config";
 
 const SPECIALTY_OPTIONS = [
     { value: "Fabrication", label: "Fabrication" },
@@ -27,135 +24,110 @@ const STATUS_OPTIONS = [
     { value: "pending", label: "Pending Approval" },
 ];
 
+const CONFIG: FormPageConfig = {
+    entityKey: "vendors",
+    title: "Add Vendor",
+    description: "Add a new vendor to your network",
+    backHref: "/vendors",
+    backLabel: "Vendors",
+    mode: "create",
+    submitLabel: "Add Vendor",
+    sections: [
+        {
+            id: "company",
+            title: "Company Information",
+            description: "Basic vendor details",
+            fields: [
+                {
+                    id: "name",
+                    label: "Company Name",
+                    type: "text",
+                    required: true,
+                    placeholder: "Enter company name",
+                    fullWidth: true,
+                },
+                {
+                    id: "specialty",
+                    label: "Specialty",
+                    type: "select",
+                    required: true,
+                    options: SPECIALTY_OPTIONS,
+                    placeholder: "Select specialty",
+                },
+                {
+                    id: "status",
+                    label: "Status",
+                    type: "select",
+                    options: STATUS_OPTIONS,
+                    defaultValue: "pending",
+                },
+            ],
+        },
+        {
+            id: "contact",
+            title: "Contact Information",
+            description: "Primary contact details",
+            fields: [
+                {
+                    id: "contactName",
+                    label: "Contact Name",
+                    type: "text",
+                    placeholder: "Primary contact name",
+                    fullWidth: true,
+                },
+                {
+                    id: "email",
+                    label: "Email",
+                    type: "email",
+                    required: true,
+                    placeholder: "vendor@example.com",
+                },
+                { id: "phone", label: "Phone", type: "tel", placeholder: "(555) 123-4567" },
+            ],
+        },
+        {
+            id: "additional",
+            title: "Additional Information",
+            fields: [
+                {
+                    id: "notes",
+                    label: "Notes",
+                    type: "textarea",
+                    description: "Any additional notes about this vendor",
+                    placeholder: "Enter any notes...",
+                    fullWidth: true,
+                },
+            ],
+        },
+    ],
+    transformSubmit: (data) => ({
+        name: data.name,
+        contact_name: (data.contactName as string) || null,
+        email: data.email,
+        phone: (data.phone as string) || null,
+        specialty: data.specialty,
+        status: data.status,
+        notes: (data.notes as string) || null,
+    }),
+};
+
 export default function NewVendorPage() {
-    const router = useRouter();
     const createVendor = useCreateVendor();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        contactName: "",
-        email: "",
-        phone: "",
-        specialty: "",
-        status: "pending",
-        notes: "",
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            const vendorData = {
-                name: formData.name,
-                contact_name: formData.contactName || null,
-                email: formData.email,
-                phone: formData.phone || null,
-                specialty: formData.specialty,
-                status: formData.status,
-                notes: formData.notes || null,
-            };
+    const handleSubmit = useMemo(
+        () => async (data: Record<string, unknown>) => {
             await createVendor.mutateAsync(
-                vendorData as unknown as Parameters<typeof createVendor.mutateAsync>[0]
+                data as unknown as Parameters<typeof createVendor.mutateAsync>[0]
             );
-            router.push("/vendors");
-        } catch (error) {
-            logger.error("Failed to create vendor", { error });
-        }
-    };
-
-    const isValid =
-        formData.name.trim() !== "" && formData.email.trim() !== "" && formData.specialty !== "";
+        },
+        [createVendor]
+    );
 
     return (
-        <FormLayout
-            backHref="/vendors"
-            backLabel="Vendors"
-            title="Add Vendor"
-            description="Add a new vendor to your network"
+        <FormPageShell
+            config={CONFIG}
             onSubmit={handleSubmit}
             isSubmitting={createVendor.isPending}
-            isValid={isValid}
-            submitLabel="Add Vendor"
-        >
-            <FormSection title="Company Information" description="Basic vendor details">
-                <FormField label="Company Name" htmlFor="name" required>
-                    <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter company name"
-                    />
-                </FormField>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Specialty" htmlFor="specialty" required>
-                        <Select
-                            id="specialty"
-                            value={formData.specialty}
-                            onChange={(e) =>
-                                setFormData({ ...formData, specialty: e.target.value })
-                            }
-                            options={SPECIALTY_OPTIONS}
-                            placeholder="Select specialty"
-                        />
-                    </FormField>
-                    <FormField label="Status" htmlFor="status">
-                        <Select
-                            id="status"
-                            value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                            options={STATUS_OPTIONS}
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Contact Information" description="Primary contact details">
-                <FormField label="Contact Name" htmlFor="contactName">
-                    <Input
-                        id="contactName"
-                        value={formData.contactName}
-                        onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                        placeholder="Primary contact name"
-                    />
-                </FormField>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Email" htmlFor="email" required>
-                        <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            placeholder="vendor@example.com"
-                        />
-                    </FormField>
-                    <FormField label="Phone" htmlFor="phone">
-                        <Input
-                            id="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="(555) 123-4567"
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Additional Information">
-                <FormField
-                    label="Notes"
-                    htmlFor="notes"
-                    description="Any additional notes about this vendor"
-                >
-                    <Textarea
-                        id="notes"
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        placeholder="Enter any notes..."
-                    />
-                </FormField>
-            </FormSection>
-        </FormLayout>
+        />
     );
 }

@@ -70,7 +70,7 @@ export default function CalendarPage() {
     const projects: Project[] = (sbProjects ?? []).map((p) => ({
         id: p.id,
         name: p.name,
-        client: p.client,
+        client: p.companies?.name ?? "",
         clientLogo: p.client_logo ?? undefined,
         status: p.status as ProjectStatus,
         currentPhase: p.current_phase as ProjectPhase,
@@ -120,9 +120,7 @@ export default function CalendarPage() {
     const isLoading = loadingProjects || loadingTasks || loadingApprovals;
 
     if (isLoading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     const year = currentDate.getFullYear();
@@ -230,7 +228,10 @@ export default function CalendarPage() {
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </button>
-                                <h2 className="text-lg font-bold min-w-48 text-center" id="calendar-month-label">
+                                <h2
+                                    className="text-lg font-bold min-w-48 text-center"
+                                    id="calendar-month-label"
+                                >
                                     {monthName}
                                 </h2>
                                 <button
@@ -367,7 +368,11 @@ export default function CalendarPage() {
                     </Card>
                 </div>
             </div>
-            <CreateEntityDialog config={CREATE_EVENT_CONFIG} open={createOpen} onClose={closeCreate} />
+            <CreateEntityDialog
+                config={CREATE_EVENT_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+            />
         </PermissionGate>
     );
 }
@@ -403,13 +408,15 @@ function CalendarGrid({
                     nextIndex = focusableIndices.find((i) => i > focusedIndex) ?? null;
                     break;
                 case "ArrowLeft":
-                    nextIndex = [...focusableIndices].reverse().find((i) => i < focusedIndex) ?? null;
+                    nextIndex =
+                        [...focusableIndices].reverse().find((i) => i < focusedIndex) ?? null;
                     break;
                 case "ArrowDown":
                     nextIndex = focusableIndices.find((i) => i >= focusedIndex + 7) ?? null;
                     break;
                 case "ArrowUp":
-                    nextIndex = [...focusableIndices].reverse().find((i) => i <= focusedIndex - 7) ?? null;
+                    nextIndex =
+                        [...focusableIndices].reverse().find((i) => i <= focusedIndex - 7) ?? null;
                     break;
                 case "Home":
                     nextIndex = focusableIndices[0] ?? null;
@@ -424,7 +431,9 @@ function CalendarGrid({
             if (nextIndex !== null) {
                 e.preventDefault();
                 setFocusedIndex(nextIndex);
-                const cell = gridRef.current?.querySelector(`[data-cell-index="${nextIndex}"]`) as HTMLElement | null;
+                const cell = gridRef.current?.querySelector(
+                    `[data-cell-index="${nextIndex}"]`
+                ) as HTMLElement | null;
                 cell?.focus();
             }
         },
@@ -472,7 +481,14 @@ function CalendarGrid({
                                 <div
                                     key={cellIndex}
                                     role="gridcell"
-                                    tabIndex={day ? (focusedIndex === cellIndex || (focusedIndex === null && isToday(day)) ? 0 : -1) : undefined}
+                                    tabIndex={
+                                        day
+                                            ? focusedIndex === cellIndex ||
+                                              (focusedIndex === null && isToday(day))
+                                                ? 0
+                                                : -1
+                                            : undefined
+                                    }
                                     aria-label={dateLabel}
                                     aria-selected={day ? isToday(day) : undefined}
                                     data-cell-index={cellIndex}

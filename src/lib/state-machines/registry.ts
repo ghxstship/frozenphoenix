@@ -26,6 +26,13 @@ import { APPROVAL_INSTANCE_MACHINE } from "./approval-instance";
 import { ESTIMATE_MACHINE } from "./estimate";
 import { RENTAL_AGREEMENT_MACHINE } from "./rental-agreement";
 import { RIGHTS_MACHINE } from "./rights";
+import { LEAD_MACHINE } from "./lead";
+import { CAMPAIGN_MACHINE } from "./campaign";
+import { PROPOSAL_MACHINE } from "./proposal";
+import { CLIENT_INVOICE_MACHINE } from "./client-invoice";
+import { PAYMENT_MACHINE } from "./payment";
+import { ACTIVATION_MACHINE } from "./activation";
+import { PERMIT_MACHINE } from "./permit";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const REGISTRY: Record<string, StateMachineDefinition<any>> = {
@@ -59,6 +66,13 @@ const REGISTRY: Record<string, StateMachineDefinition<any>> = {
     rental_agreement: RENTAL_AGREEMENT_MACHINE,
     rights: RIGHTS_MACHINE,
     rights_license: RIGHTS_MACHINE,
+    lead: LEAD_MACHINE,
+    campaign: CAMPAIGN_MACHINE,
+    proposal: PROPOSAL_MACHINE,
+    client_invoice: CLIENT_INVOICE_MACHINE,
+    payment: PAYMENT_MACHINE,
+    activation: ACTIVATION_MACHINE,
+    permit: PERMIT_MACHINE,
 };
 
 /**

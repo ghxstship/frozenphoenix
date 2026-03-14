@@ -15,6 +15,10 @@ import { FormField } from "@/components/ui/form/form-field";
 import { Select, type SelectOption } from "@/components/ui/form/select";
 import { Textarea } from "@/components/ui/form/textarea";
 import { CurrencyInput } from "@/components/ui/form/currency-input";
+import {
+    type EntityLookupConfig,
+    EntityLookupSelect,
+} from "@/components/ui/form/entity-lookup-select";
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -32,7 +36,8 @@ export interface CreateFieldDef {
         | "datetime-local"
         | "select"
         | "textarea"
-        | "currency";
+        | "currency"
+        | "entity-lookup";
     placeholder?: string;
     required?: boolean;
     description?: string;
@@ -41,6 +46,7 @@ export interface CreateFieldDef {
     min?: number;
     max?: number;
     step?: number;
+    lookupConfig?: EntityLookupConfig;
 }
 
 // ─── Entity Form Config ───
@@ -190,6 +196,18 @@ export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEn
                                         onChange={(e) => setValue(field.key, e.target.value)}
                                         disabled={submitting}
                                         rows={3}
+                                    />
+                                ) : field.type === "entity-lookup" && field.lookupConfig ? (
+                                    <EntityLookupSelect
+                                        id={`create-${field.key}`}
+                                        lookupConfig={field.lookupConfig}
+                                        placeholder={
+                                            field.placeholder ??
+                                            `Select ${field.label.toLowerCase()}...`
+                                        }
+                                        value={(values[field.key] as string) ?? ""}
+                                        onChange={(v) => setValue(field.key, v)}
+                                        disabled={submitting}
                                     />
                                 ) : field.type === "currency" ? (
                                     <CurrencyInput

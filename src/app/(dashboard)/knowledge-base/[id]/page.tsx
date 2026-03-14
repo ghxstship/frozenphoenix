@@ -10,24 +10,21 @@ import {
     useRecordComments,
 } from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
-import { LoadingState } from "@/components/layouts/loading-state";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/form/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     BookOpen,
     CheckSquare,
     Edit,
-    Eye,
     FileText,
     Link2,
     Plus,
@@ -47,13 +44,21 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     training: Users,
 };
 
-// ─── Tab config ───
-type TabId = "view" | "edit" | "linked" | "chatter";
-const TAB_VALUES = ["view", "edit", "linked", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "knowledge_base",
+    titleKey: "title",
+    statusKey: "status",
+    icon: BookOpen,
+    backHref: "/knowledge-base",
+    backLabel: "Knowledge Base",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function KBArticleDetailPage() {
     const params = useParams();
-    const router = useRouter();
+    const _router = useRouter();
     const articleId = params.id as string;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: articleId,
@@ -61,12 +66,6 @@ export default function KBArticleDetailPage() {
         listPath: "/knowledge-base",
         useUpdateHook: useUpdateKBArticle,
         useDeleteHook: useDeleteKBArticle,
-    });
-
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "view",
-        validValues: TAB_VALUES,
     });
 
     const [editTitle, setEditTitle] = useState("");
@@ -123,47 +122,15 @@ export default function KBArticleDetailPage() {
         setEditContent(article.body);
         setEditTags((article.tags ?? []).join(", "));
         setIsEditing(true);
-        setActiveTab("edit");
     };
 
     const cancelEditing = () => {
         setIsEditing(false);
-        setActiveTab("view");
     };
 
-    const tabs = useMemo(
-        () => [
-            { id: "view" as const, label: "View", icon: <Eye className="h-3.5 w-3.5" /> },
-            { id: "edit" as const, label: "Edit", icon: <Edit className="h-3.5 w-3.5" /> },
-            {
-                id: "linked" as const,
-                label: "Linked Records",
-                count: 0,
-            },
-            { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-        ],
-        [chatterComments.length]
-    );
+    const CategoryIcon = article ? (CATEGORY_ICONS[article.category] ?? BookOpen) : BookOpen;
 
-    if (isLoading) return <LoadingState />;
-
-    if (!article) {
-        return (
-            <EmptyState
-                icon={BookOpen}
-                title="Article not found"
-                description="The article you're looking for doesn't exist."
-                action={{
-                    label: "Back to Knowledge Base",
-                    onClick: () => router.push("/knowledge-base"),
-                }}
-            />
-        );
-    }
-
-    const CategoryIcon = CATEGORY_ICONS[article.category] ?? BookOpen;
-
-    const sidebar = (
+    const sidebarSlot = article ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -214,95 +181,72 @@ export default function KBArticleDetailPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
 
-    return (
-        <PermissionGate resource="knowledge_base" action="read">
-            <DetailLayout
-                backHref="/knowledge-base"
-                backLabel="Knowledge Base"
-                entityType="knowledge-base"
-                entityId={articleId}
-                title={article.title}
-                subtitle={article.body.substring(0, 120)}
-                avatar={<CategoryIcon className="h-5 w-5 text-primary" />}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(t) => setActiveTab(t as TabId)}
-                sidebar={sidebar}
-                actions={
-                    <Button onClick={startEditing} variant="outline" size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" /> Edit Article
-                    </Button>
-                }
-                menuItems={[
-                    {
-                        label: "Publish New Version",
-                        onClick: () =>
-                            handleUpdate({
-                                status: "published",
-                                version: (article?.version ?? 0) + 1,
-                            }),
-                    },
-                    ...crudMenuItems,
-                ]}
-            >
-                {/* View Tab */}
-                {activeTab === "view" && (
-                    <Card>
-                        <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                            {article.body.split("\n").map((line, i) => {
-                                if (line.startsWith("## "))
-                                    return (
-                                        <h2 key={i} className="text-lg font-semibold mt-6 mb-3">
-                                            {line.replace("## ", "")}
-                                        </h2>
-                                    );
-                                if (line.startsWith("- [ ] "))
-                                    return (
-                                        <div key={i} className="flex items-center gap-2 py-0.5">
-                                            <input type="checkbox" disabled className="rounded" />
-                                            <span className="text-sm">
-                                                {line.replace("- [ ] ", "")}
-                                            </span>
-                                        </div>
-                                    );
-                                if (line.startsWith("- **")) {
-                                    const match = line.match(/- \*\*(.+?)\*\*\s*(.*)/);
-                                    if (match)
-                                        return (
-                                            <div key={i} className="flex items-start gap-2 py-0.5">
-                                                <span className="text-sm">
-                                                    <strong>{match[1]}</strong> {match[2]}
-                                                </span>
-                                            </div>
-                                        );
-                                }
-                                if (line.match(/^\d+\.\s/))
-                                    return (
-                                        <div key={i} className="text-sm py-0.5 pl-4">
-                                            {line}
-                                        </div>
-                                    );
-                                if (line.startsWith("- "))
-                                    return (
-                                        <div key={i} className="text-sm py-0.5 pl-4">
-                                            {line}
-                                        </div>
-                                    );
-                                if (line.trim() === "") return <div key={i} className="h-2" />;
-                                return (
-                                    <p key={i} className="text-sm">
-                                        {line}
-                                    </p>
-                                );
-                            })}
-                        </CardContent>
-                    </Card>
-                )}
+    const overviewSlot = article ? (
+        <Card>
+            <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
+                {article.body.split("\n").map((line, i) => {
+                    if (line.startsWith("## "))
+                        return (
+                            <h2 key={i} className="text-lg font-semibold mt-6 mb-3">
+                                {line.replace("## ", "")}
+                            </h2>
+                        );
+                    if (line.startsWith("- [ ] "))
+                        return (
+                            <div key={i} className="flex items-center gap-2 py-0.5">
+                                <input type="checkbox" disabled className="rounded" />
+                                <span className="text-sm">{line.replace("- [ ] ", "")}</span>
+                            </div>
+                        );
+                    if (line.startsWith("- **")) {
+                        const match = line.match(/- \*\*(.+?)\*\*\s*(.*)/);
+                        if (match)
+                            return (
+                                <div key={i} className="flex items-start gap-2 py-0.5">
+                                    <span className="text-sm">
+                                        <strong>{match[1]}</strong> {match[2]}
+                                    </span>
+                                </div>
+                            );
+                    }
+                    if (line.match(/^\d+\.\s/))
+                        return (
+                            <div key={i} className="text-sm py-0.5 pl-4">
+                                {line}
+                            </div>
+                        );
+                    if (line.startsWith("- "))
+                        return (
+                            <div key={i} className="text-sm py-0.5 pl-4">
+                                {line}
+                            </div>
+                        );
+                    if (line.trim() === "") return <div key={i} className="h-2" />;
+                    return (
+                        <p key={i} className="text-sm">
+                            {line}
+                        </p>
+                    );
+                })}
+            </CardContent>
+        </Card>
+    ) : undefined;
 
-                {/* Edit Tab */}
-                {activeTab === "edit" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: (rec) => {
+            const body = (rec as Record<string, unknown>)?.body;
+            return typeof body === "string" ? body.substring(0, 120) : "";
+        },
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "edit",
+                label: "Edit",
+                content: article ? (
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
@@ -317,7 +261,6 @@ export default function KBArticleDetailPage() {
                                         size="sm"
                                         onClick={() => {
                                             setIsEditing(false);
-                                            setActiveTab("view");
                                         }}
                                     >
                                         <Save className="h-3.5 w-3.5 mr-1" /> Save Changes
@@ -393,10 +336,13 @@ export default function KBArticleDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-                )}
-
-                {/* Linked Records Tab */}
-                {activeTab === "linked" && (
+                ) : null,
+            },
+            {
+                id: "linked",
+                label: "Linked Records",
+                count: 0,
+                content: (
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -440,10 +386,13 @@ export default function KBArticleDetailPage() {
                             </CardHeader>
                         </Card>
                     </div>
-                )}
-
-                {/* Chatter Tab */}
-                {activeTab === "chatter" && (
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
                     <RecordChatter
                         recordType="kb_article"
                         recordId={articleId}
@@ -452,8 +401,39 @@ export default function KBArticleDetailPage() {
                         currentUserId="u1"
                         onAddComment={handleAddComment}
                     />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
+
+    const rec = article as unknown as Record<string, unknown> | null;
+    const record = rec ? { ...rec } : null;
+
+    return (
+        <PermissionGate resource="knowledge_base" action="read">
+            <DetailPageShell
+                config={config}
+                id={articleId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    {
+                        label: "Publish New Version",
+                        onClick: () =>
+                            handleUpdate({
+                                status: "published",
+                                version: (article?.version ?? 0) + 1,
+                            }),
+                    },
+                    ...crudMenuItems,
+                ]}
+                avatar={<CategoryIcon className="h-5 w-5 text-primary" />}
+                actions={
+                    <Button onClick={startEditing} variant="outline" size="sm">
+                        <Edit className="mr-1.5 h-3.5 w-3.5" /> Edit Article
+                    </Button>
+                }
+            />
         </PermissionGate>
     );
 }

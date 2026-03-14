@@ -41,7 +41,10 @@ export async function POST(request: NextRequest) {
 
     const orgId = membership.organization_id as string;
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14-day trial
+
+    // Starter tier is free — activate immediately with no trial
+    const isFree = pricing_tier === "starter";
+    const trialEnd = isFree ? null : new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14-day trial
     const periodEnd =
         billing_cycle === "annual"
             ? new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000)
@@ -53,10 +56,10 @@ export async function POST(request: NextRequest) {
                 organization_id: orgId,
                 pricing_tier,
                 billing_cycle,
-                status: "trialing",
+                status: isFree ? "active" : "trialing",
                 current_period_start: now.toISOString(),
                 current_period_end: periodEnd.toISOString(),
-                trial_ends_at: trialEnd.toISOString(),
+                trial_ends_at: trialEnd?.toISOString() ?? null,
             },
             { onConflict: "organization_id" }
         )

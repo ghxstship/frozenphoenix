@@ -1,27 +1,12 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useState } from "react";
+import React, { useMemo } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { useAssets, useVehicles } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
-import {
-    AlertTriangle,
-    Clock,
-    LayoutGrid,
-    MapPin,
-    Package,
-    Plus,
-    QrCode,
-    Table2,
-    Truck,
-    Upload,
-} from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Package, QrCode, Truck } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ASSET_CONDITION_MAP as ASSET_CONDITION_CONFIG } from "@/config/domain-config";
 import type { Asset, AssetCondition, Vehicle } from "@/types";
@@ -32,12 +17,10 @@ import {
     LocationField,
     PhoneField,
 } from "@/components/data-view/field-renderers";
-import { PermissionGate } from "@/components/permission-guard";
-import { CsvExportButton } from "@/components/csv/csv-export-button";
-import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_ASSET_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { ListPageShell } from "@/components/shells/list-page-shell";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 function computeDaysUntilReturn(dateStr: string): number {
     return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -225,262 +208,231 @@ const vehicleColumns: ColumnDef<Vehicle>[] = [
     },
 ];
 
-export default function AssetsPage() {
+// ─── Asset Card ──────────────────────────────────────────────
+function AssetCard({ asset }: { asset: Asset }) {
+    const daysUntilReturn = asset.rentalReturnDate
+        ? computeDaysUntilReturn(asset.rentalReturnDate)
+        : null;
+    return (
+        <Card>
+            <CardContent>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <p className="text-sm font-bold">{asset.name}</p>
+                        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground mt-0.5">
+                            <QrCode className="h-3 w-3" />
+                            {asset.barcode}
+                        </span>
+                    </div>
+                    <Badge
+                        variant={ASSET_CONDITION_CONFIG[asset.condition]?.variant ?? "ghost"}
+                        className="text-[10px]"
+                    >
+                        {asset.condition.replace("_", " ")}
+                    </Badge>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                        <p className="text-muted-foreground">Category</p>
+                        <p className="font-medium">{asset.category}</p>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Location</p>
+                        <p className="font-medium flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {asset.location}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Type</p>
+                        <Badge
+                            variant={asset.ownedOrRental === "owned" ? "secondary" : "warning"}
+                            className="text-[9px]"
+                        >
+                            {asset.ownedOrRental}
+                        </Badge>
+                        {daysUntilReturn !== null && (
+                            <span
+                                className={`ml-1 text-[10px] ${daysUntilReturn <= 3 ? "text-destructive" : "text-muted-foreground"}`}
+                            >
+                                {daysUntilReturn}d
+                            </span>
+                        )}
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Value</p>
+                        <p className="font-medium">
+                            {asset.purchasePrice
+                                ? formatCurrency(asset.purchasePrice)
+                                : asset.dailyRentalCost
+                                  ? `${formatCurrency(asset.dailyRentalCost)}/day`
+                                  : "—"}
+                        </p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// ─── Content Component (table + cards) ──────────────────────
+function AssetsContent({ assets }: { assets: Asset[] }) {
     const VIEW_MODES = ["table", "cards"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
         key: "view",
         defaultValue: "table",
         validValues: VIEW_MODES,
     });
-    const { data: sbAssets, isLoading: loadingAssets, refetch: refetchAssets } = useAssets();
-    const [importOpen, setImportOpen] = useState(false);
-    const [createOpen, openCreate, closeCreate] = useCreateAction();
-
-    const handleImportComplete = useCallback(() => {
-        void refetchAssets();
-    }, [refetchAssets]);
-    const { data: sbVehicles, isLoading: loadingVehicles } = useVehicles();
-
-    const assets: Asset[] = (sbAssets ?? []).map((a) => ({
-        id: a.id,
-        name: a.name,
-        category: a.category,
-        barcode: a.barcode,
-        condition: a.condition as AssetCondition,
-        location: a.location,
-        ownedOrRental: a.owned_or_rental as "owned" | "rental",
-        rentalReturnDate: a.rental_return_date ?? undefined,
-        dailyRentalCost: a.daily_rental_cost ?? undefined,
-        purchasePrice: a.purchase_price ?? undefined,
-        imageUrl: a.image_url ?? undefined,
-        notes: a.notes ?? undefined,
-    }));
-
-    const vehicles: Vehicle[] = (sbVehicles ?? []).map((v) => ({
-        id: v.id,
-        name: v.name,
-        type: v.type,
-        licensePlate: v.license_plate,
-        dockHeight: v.dock_height,
-        driverName: v.driver_name,
-        driverPhone: v.driver_phone,
-        gpsEnabled: v.gps_enabled,
-        status: v.status as "available" | "in_transit" | "loading" | "maintenance",
-    }));
-
-    const isLoading = loadingAssets || loadingVehicles;
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const rentalAssets = assets.filter((a) => a.ownedOrRental === "rental");
-    const needsRepair = assets.filter((a) => a.condition === "needs_repair");
-    const totalValue = assets
-        .filter((a) => a.purchasePrice)
-        .reduce((sum, a) => sum + (a.purchasePrice || 0), 0);
 
     return (
         <>
-            <PermissionGate resource="assets" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Asset & Fleet Ledger"
-                        description="Equipment inventory, rental tracking, and vehicle fleet management"
-                    >
-                        <div className="flex items-center gap-2">
-                            <SegmentedControl<ViewMode>
-                                ariaLabel="Asset view mode"
-                                value={viewMode}
-                                onValueChange={setViewMode}
-                                options={[
-                                    {
-                                        value: "table",
-                                        label: "Table",
-                                        icon: <Table2 className="h-4 w-4" />,
-                                        labelHidden: true,
-                                    },
-                                    {
-                                        value: "cards",
-                                        label: "Cards",
-                                        icon: <LayoutGrid className="h-4 w-4" />,
-                                        labelHidden: true,
-                                    },
-                                ]}
-                            />
-                            <CsvExportButton entity="assets" />
-                            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                                <Upload className="h-4 w-4" />
-                                Import CSV
-                            </Button>
-                            <Button size="sm" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />
-                                Add Asset
-                            </Button>
-                        </div>
-                    </PageHeader>
-                    <CsvImportDialog
-                        entity="assets"
-                        open={importOpen}
-                        onOpenChange={setImportOpen}
-                        onImportComplete={handleImportComplete}
-                    />
+            <div className="flex justify-end">
+                <SegmentedControl<ViewMode>
+                    ariaLabel="Asset view mode"
+                    value={viewMode}
+                    onValueChange={setViewMode}
+                    options={[
+                        { value: "table", label: "Table" },
+                        { value: "cards", label: "Cards" },
+                    ]}
+                />
+            </div>
 
-                    {/* KPIs */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard title="Total Assets" value={assets.length} icon={Package} />
-                        <StatCard
-                            title="Portfolio Value"
-                            value={formatCurrency(totalValue)}
-                            icon={Package}
-                        />
-                        <StatCard
-                            title="Active Rentals"
-                            value={rentalAssets.length}
-                            description="with return dates"
-                            icon={Clock}
-                        />
-                        <StatCard
-                            title="Needs Repair"
-                            value={needsRepair.length}
-                            icon={AlertTriangle}
-                        />
-                    </div>
-
-                    {/* Equipment Inventory — Table View */}
-                    {viewMode === "table" && (
-                        <DataTable<Asset>
-                            data={assets}
-                            columns={assetColumns}
-                            keyField="id"
-                            searchable
-                            searchPlaceholder="Search assets..."
-                            pageSize={15}
-                            stickyHeader
-                            hoverable
-                        />
-                    )}
-
-                    {/* Equipment Inventory — Card View */}
-                    {viewMode === "cards" && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {assets.map((asset, i) => {
-                                const daysUntilReturn = asset.rentalReturnDate
-                                    ? computeDaysUntilReturn(asset.rentalReturnDate)
-                                    : null;
-                                return (
-                                    <StaggerItem key={asset.id} index={i} stagger="relaxed">
-                                        <Card>
-                                            <CardContent>
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <p className="text-sm font-bold">
-                                                            {asset.name}
-                                                        </p>
-                                                        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground mt-0.5">
-                                                            <QrCode className="h-3 w-3" />
-                                                            {asset.barcode}
-                                                        </span>
-                                                    </div>
-                                                    <Badge
-                                                        variant={
-                                                            ASSET_CONDITION_CONFIG[asset.condition]
-                                                                ?.variant ?? "ghost"
-                                                        }
-                                                        className="text-[10px]"
-                                                    >
-                                                        {asset.condition.replace("_", " ")}
-                                                    </Badge>
-                                                </div>
-                                                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                                                    <div>
-                                                        <p className="text-muted-foreground">
-                                                            Category
-                                                        </p>
-                                                        <p className="font-medium">
-                                                            {asset.category}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-muted-foreground">
-                                                            Location
-                                                        </p>
-                                                        <p className="font-medium flex items-center gap-1">
-                                                            <MapPin className="h-3 w-3" />
-                                                            {asset.location}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-muted-foreground">
-                                                            Type
-                                                        </p>
-                                                        <Badge
-                                                            variant={
-                                                                asset.ownedOrRental === "owned"
-                                                                    ? "secondary"
-                                                                    : "warning"
-                                                            }
-                                                            className="text-[9px]"
-                                                        >
-                                                            {asset.ownedOrRental}
-                                                        </Badge>
-                                                        {daysUntilReturn !== null && (
-                                                            <span
-                                                                className={`ml-1 text-[10px] ${daysUntilReturn <= 3 ? "text-destructive" : "text-muted-foreground"}`}
-                                                            >
-                                                                {daysUntilReturn}d
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-muted-foreground">
-                                                            Value
-                                                        </p>
-                                                        <p className="font-medium">
-                                                            {asset.purchasePrice
-                                                                ? formatCurrency(
-                                                                      asset.purchasePrice
-                                                                  )
-                                                                : asset.dailyRentalCost
-                                                                  ? `${formatCurrency(asset.dailyRentalCost)}/day`
-                                                                  : "—"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </StaggerItem>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {/* Vehicle Fleet — DataTable */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Truck className="h-5 w-5" />
-                                Vehicle Fleet
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <DataTable<Vehicle>
-                                data={vehicles}
-                                columns={vehicleColumns}
-                                keyField="id"
-                                searchable
-                                searchPlaceholder="Search vehicles..."
-                                hoverable
-                            />
-                        </CardContent>
-                    </Card>
+            {viewMode === "table" ? (
+                <DataTable<Asset>
+                    data={assets}
+                    columns={assetColumns}
+                    keyField="id"
+                    searchable
+                    searchPlaceholder="Search assets..."
+                    pageSize={15}
+                    stickyHeader
+                    hoverable
+                />
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {assets.map((asset, i) => (
+                        <StaggerItem key={asset.id} index={i} stagger="relaxed">
+                            <AssetCard asset={asset} />
+                        </StaggerItem>
+                    ))}
                 </div>
-            </PermissionGate>
-            <CreateEntityDialog
-                config={CREATE_ASSET_CONFIG}
-                open={createOpen}
-                onClose={closeCreate}
-            />
+            )}
         </>
+    );
+}
+
+// ─── Vehicle Fleet Footer ───────────────────────────────────
+function VehicleFleetSection({ vehicles }: { vehicles: Vehicle[] }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Truck className="h-5 w-5" />
+                    Vehicle Fleet
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <DataTable<Vehicle>
+                    data={vehicles}
+                    columns={vehicleColumns}
+                    keyField="id"
+                    searchable
+                    searchPlaceholder="Search vehicles..."
+                    hoverable
+                />
+            </CardContent>
+        </Card>
+    );
+}
+
+// ─── Page ────────────────────────────────────────────────────
+export default function AssetsPage() {
+    const { data: sbAssets, isLoading: loadingAssets } = useAssets();
+    const { data: sbVehicles, isLoading: loadingVehicles } = useVehicles();
+
+    const assets: Asset[] = useMemo(
+        () =>
+            (sbAssets ?? []).map((a) => ({
+                id: a.id,
+                name: a.name,
+                category: a.category,
+                barcode: a.barcode,
+                condition: a.condition as AssetCondition,
+                location: a.location,
+                ownedOrRental: a.owned_or_rental as "owned" | "rental",
+                rentalReturnDate: a.rental_return_date ?? undefined,
+                dailyRentalCost: a.daily_rental_cost ?? undefined,
+                purchasePrice: a.purchase_price ?? undefined,
+                imageUrl: a.image_url ?? undefined,
+                notes: a.notes ?? undefined,
+            })),
+        [sbAssets]
+    );
+
+    const vehicles: Vehicle[] = useMemo(
+        () =>
+            (sbVehicles ?? []).map((v) => ({
+                id: v.id,
+                name: v.name,
+                type: v.type,
+                licensePlate: v.license_plate,
+                dockHeight: v.dock_height,
+                driverName: v.driver_name,
+                driverPhone: v.driver_phone,
+                gpsEnabled: v.gps_enabled,
+                status: v.status as "available" | "in_transit" | "loading" | "maintenance",
+            })),
+        [sbVehicles]
+    );
+
+    const isLoading = loadingAssets || loadingVehicles;
+
+    const config: ListPageConfig = useMemo(
+        () => ({
+            entityKey: "assets",
+            title: "Asset & Fleet Ledger",
+            description: "Equipment inventory, rental tracking, and vehicle fleet management",
+            icon: Package,
+            createConfig: CREATE_ASSET_CONFIG,
+            createLabel: "Add Asset",
+            exportable: true,
+            importable: true,
+            searchKeys: ["name", "barcode", "category", "location"],
+            stats: [
+                { label: "Total Assets", icon: Package, compute: (r) => r.length },
+                {
+                    label: "Portfolio Value",
+                    icon: Package,
+                    compute: (r) =>
+                        formatCurrency(
+                            r
+                                .filter((a) => a.purchasePrice)
+                                .reduce((sum, a) => sum + ((a.purchasePrice as number) || 0), 0)
+                        ),
+                },
+                {
+                    label: "Active Rentals",
+                    icon: Clock,
+                    filter: (r) => r.ownedOrRental === "rental",
+                },
+                {
+                    label: "Needs Repair",
+                    icon: AlertTriangle,
+                    filter: (r) => r.condition === "needs_repair",
+                },
+            ],
+            contentSlot: <AssetsContent assets={assets} />,
+            footerSlot: <VehicleFleetSection vehicles={vehicles} />,
+        }),
+        [assets, vehicles]
+    );
+
+    return (
+        <ListPageShell
+            config={config}
+            data={assets as unknown as Record<string, unknown>[]}
+            isLoading={isLoading}
+        />
     );
 }

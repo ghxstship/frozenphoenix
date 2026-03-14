@@ -1,12 +1,9 @@
 "use client";
 
-import { logger } from "@/lib/logger";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FormLayout, FormSection } from "@/components/layouts/form-layout";
-import { Input } from "@/components/ui/input";
-import { CurrencyInput, FormField, Select } from "@/components/ui/form";
+import { useMemo } from "react";
 import { useCreateCrewMember } from "@/lib/supabase/hooks";
+import { FormPageShell } from "@/components/shells/form-page-shell";
+import type { FormPageConfig } from "@/types/form-page-config";
 
 const STATUS_OPTIONS = [
     { value: "available", label: "Available" },
@@ -27,120 +24,96 @@ const ROLE_OPTIONS = [
     { value: "General Labor", label: "General Labor" },
 ];
 
+const CONFIG: FormPageConfig = {
+    entityKey: "crew",
+    title: "Add Crew Member",
+    description: "Add a new crew member to your team",
+    backHref: "/crew",
+    backLabel: "Crew",
+    mode: "create",
+    submitLabel: "Add Crew Member",
+    sections: [
+        {
+            id: "personal",
+            title: "Personal Information",
+            description: "Basic contact details",
+            fields: [
+                {
+                    id: "name",
+                    label: "Full Name",
+                    type: "text",
+                    required: true,
+                    placeholder: "Enter full name",
+                    fullWidth: true,
+                },
+                {
+                    id: "email",
+                    label: "Email",
+                    type: "email",
+                    required: true,
+                    placeholder: "email@example.com",
+                },
+                { id: "phone", label: "Phone", type: "tel", placeholder: "(555) 123-4567" },
+            ],
+        },
+        {
+            id: "employment",
+            title: "Employment",
+            description: "Role and compensation details",
+            fields: [
+                {
+                    id: "role",
+                    label: "Role",
+                    type: "select",
+                    required: true,
+                    options: ROLE_OPTIONS,
+                    placeholder: "Select role",
+                },
+                {
+                    id: "status",
+                    label: "Status",
+                    type: "select",
+                    options: STATUS_OPTIONS,
+                    defaultValue: "available",
+                },
+                {
+                    id: "hourlyRate",
+                    label: "Hourly Rate",
+                    type: "currency",
+                    description: "Standard hourly rate for this crew member",
+                    placeholder: "0.00",
+                    fullWidth: true,
+                },
+            ],
+        },
+    ],
+    transformSubmit: (data) => ({
+        name: data.name,
+        email: data.email,
+        phone: (data.phone as string) || null,
+        role: data.role,
+        hourly_rate: (data.hourlyRate as number) || null,
+        status: data.status,
+    }),
+};
+
 export default function NewCrewMemberPage() {
-    const router = useRouter();
     const createCrewMember = useCreateCrewMember();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        role: "",
-        hourlyRate: 0,
-        status: "available",
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            const memberData = {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone || null,
-                role: formData.role,
-                hourly_rate: formData.hourlyRate || null,
-                status: formData.status,
-            };
+    const handleSubmit = useMemo(
+        () => async (data: Record<string, unknown>) => {
             await createCrewMember.mutateAsync(
-                memberData as unknown as Parameters<typeof createCrewMember.mutateAsync>[0]
+                data as unknown as Parameters<typeof createCrewMember.mutateAsync>[0]
             );
-            router.push("/crew");
-        } catch (error) {
-            logger.error("Failed to create crew member", { error });
-        }
-    };
-
-    const isValid =
-        formData.name.trim() !== "" && formData.email.trim() !== "" && formData.role !== "";
+        },
+        [createCrewMember]
+    );
 
     return (
-        <FormLayout
-            backHref="/crew"
-            backLabel="Crew"
-            title="Add Crew Member"
-            description="Add a new crew member to your team"
+        <FormPageShell
+            config={CONFIG}
             onSubmit={handleSubmit}
             isSubmitting={createCrewMember.isPending}
-            isValid={isValid}
-            submitLabel="Add Crew Member"
-        >
-            <FormSection title="Personal Information" description="Basic contact details">
-                <FormField label="Full Name" htmlFor="name" required>
-                    <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter full name"
-                    />
-                </FormField>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Email" htmlFor="email" required>
-                        <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            placeholder="email@example.com"
-                        />
-                    </FormField>
-                    <FormField label="Phone" htmlFor="phone">
-                        <Input
-                            id="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="(555) 123-4567"
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Employment" description="Role and compensation details">
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Role" htmlFor="role" required>
-                        <Select
-                            id="role"
-                            value={formData.role}
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            options={ROLE_OPTIONS}
-                            placeholder="Select role"
-                        />
-                    </FormField>
-                    <FormField label="Status" htmlFor="status">
-                        <Select
-                            id="status"
-                            value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                            options={STATUS_OPTIONS}
-                        />
-                    </FormField>
-                </div>
-
-                <FormField
-                    label="Hourly Rate"
-                    htmlFor="hourlyRate"
-                    description="Standard hourly rate for this crew member"
-                >
-                    <CurrencyInput
-                        id="hourlyRate"
-                        value={formData.hourlyRate}
-                        onChange={(value) => setFormData({ ...formData, hourlyRate: value || 0 })}
-                        placeholder="0.00"
-                    />
-                </FormField>
-            </FormSection>
-        </FormLayout>
+        />
     );
 }

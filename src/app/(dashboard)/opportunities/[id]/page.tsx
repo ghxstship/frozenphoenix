@@ -1,12 +1,10 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteOpportunity, useUpdateOpportunity } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +16,7 @@ import {
     OPPORTUNITY_TYPE_MAP,
 } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     Calendar,
@@ -33,10 +32,7 @@ import {
 import { useParams } from "next/navigation";
 import { useOpportunity } from "@/lib/supabase/hooks-pages";
 
-type TabId = "overview" | "activity" | "chatter";
-const TAB_VALUES = ["overview", "activity", "chatter"] as const;
-
-interface ActivityItem {
+interface OppActivityItem {
     id: string;
     type: string;
     description: string;
@@ -44,7 +40,7 @@ interface ActivityItem {
     user: string;
 }
 
-function parseActivities(raw: unknown): ActivityItem[] {
+function parseActivities(raw: unknown): OppActivityItem[] {
     if (!Array.isArray(raw)) return [];
     return (raw as Record<string, unknown>[]).map((a, i) => ({
         id: String(a.id ?? `a-${i}`),
@@ -55,13 +51,19 @@ function parseActivities(raw: unknown): ActivityItem[] {
     }));
 }
 
-export default function OpportunityDetailPage() {
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "opportunities",
+    titleKey: "name",
+    statusKey: "stage",
+    icon: Target,
+    backHref: "/opportunities",
+    backLabel: "Opportunities",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
+export default function OpportunityDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
@@ -77,7 +79,7 @@ export default function OpportunityDetailPage() {
 
     const activities = parseActivities((opp as Record<string, unknown> | null)?.activities);
 
-    const expectedClose = opp?.expectedCloseDate ?? null;
+    const expectedClose = opp?.expected_close_date ?? null;
     const daysToClose = useMemo(() => {
         if (!expectedClose) return null;
         const now = new Date();
@@ -86,44 +88,20 @@ export default function OpportunityDetailPage() {
         );
     }, [expectedClose]);
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (!opp) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <p className="text-muted-foreground">Record not found</p>
-            </div>
-        );
-    }
-    const stageCfg = OPPORTUNITY_STAGES.find((s) => s.id === opp.stage);
-    const typeCfg = OPPORTUNITY_TYPE_MAP[opp.type as keyof typeof OPPORTUNITY_TYPE_MAP];
-    const stageIndex = OPPORTUNITY_STAGES.findIndex((s) => s.id === opp.stage);
-    const stageProgress =
-        stageIndex >= 0 ? Math.round(((stageIndex + 1) / OPPORTUNITY_STAGES.length) * 100) : 0;
+    const chatterComments: CommentItem[] = [];
     const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
+        void content;
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "activity" as const, label: "Activity", count: activities.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
+    const stageCfg = opp ? OPPORTUNITY_STAGES.find((s) => s.id === opp.stage) : undefined;
+    const typeCfg = opp
+        ? OPPORTUNITY_TYPE_MAP[opp.type as keyof typeof OPPORTUNITY_TYPE_MAP]
+        : undefined;
+    const stageIndex = opp ? OPPORTUNITY_STAGES.findIndex((s) => s.id === opp.stage) : -1;
+    const stageProgress =
+        stageIndex >= 0 ? Math.round(((stageIndex + 1) / OPPORTUNITY_STAGES.length) * 100) : 0;
 
-    const sidebar = (
+    const sidebarSlot = opp ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -146,7 +124,9 @@ export default function OpportunityDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Weighted</span>
-                        <span className="font-medium">{formatCurrency(opp.weightedValue)}</span>
+                        <span className="font-medium">
+                            {formatCurrency(opp.weighted_value ?? 0)}
+                        </span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Probability</span>
@@ -155,7 +135,7 @@ export default function OpportunityDetailPage() {
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Close Date</span>
                         <span className="font-medium">
-                            {opp.expectedCloseDate ? formatDate(opp.expectedCloseDate) : "TBD"}
+                            {opp.expected_close_date ? formatDate(opp.expected_close_date) : "TBD"}
                         </span>
                     </div>
                     {daysToClose !== null && (
@@ -176,19 +156,19 @@ export default function OpportunityDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span>{opp.companyName}</span>
+                        <span>{opp.company_id}</span>
                     </div>
-                    {opp.contactName && (
+                    {opp.primary_contact_id && (
                         <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{opp.contactName}</span>
+                            <span>{opp.primary_contact_id}</span>
                         </div>
                     )}
                     <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <span className="text-xs">
                             contact@
-                            {(opp.companyName ?? "company").toLowerCase().replace(/\s/g, "")}.com
+                            {(opp.company_id ?? "company").toLowerCase().replace(/\s/g, "")}.com
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -208,44 +188,205 @@ export default function OpportunityDetailPage() {
                             <User className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                            <p className="font-medium">{opp.assignedToName ?? "Unassigned"}</p>
+                            <p className="font-medium">{opp.assigned_to ?? "Unassigned"}</p>
                             <p className="text-xs text-muted-foreground">Account Executive</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
+
+    const overviewSlot = opp ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <DollarSign className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Deal Value</p>
+                                <p className="text-lg font-bold">{formatCurrency(opp.value)}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
+                                <TrendingUp className="h-5 w-5 text-info" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Weighted Value</p>
+                                <p className="text-lg font-bold">
+                                    {formatCurrency(opp.weighted_value ?? 0)}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                                <Calendar className="h-5 w-5 text-warning" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Expected Close</p>
+                                <p className="text-sm font-semibold">
+                                    {opp.expected_close_date
+                                        ? formatDate(opp.expected_close_date)
+                                        : "TBD"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Pipeline Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ProgressBar value={stageProgress} size="md" className="mb-3" />
+                    <div className="flex flex-wrap gap-2">
+                        {OPPORTUNITY_STAGES.map((stage, i) => (
+                            <Badge
+                                key={stage.id}
+                                variant={i <= stageIndex ? "default" : "ghost"}
+                                className="text-[10px]"
+                                style={
+                                    i <= stageIndex
+                                        ? { backgroundColor: stage.color, color: "#fff" }
+                                        : {}
+                                }
+                            >
+                                {stage.label}
+                            </Badge>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {opp.next_step && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Next Step
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{opp.next_step}</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            {opp.lost_reason_id && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Lost Reason</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{opp.lost_reason_id}</p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    ) : undefined;
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => `${opp?.company_id ?? ""} · ${typeCfg?.label ?? opp?.type ?? ""}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "activity",
+                label: "Activity",
+                count: activities.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Activity Timeline</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {activities.map((activity) => (
+                                    <div
+                                        key={activity.id}
+                                        className="flex gap-3 p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                            <User className="h-4 w-4 text-primary" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm">{activity.description}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-xs text-muted-foreground">
+                                                    {activity.user}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    ·
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatDate(activity.date)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                content: (
+                    <RecordChatter
+                        recordType="opportunity"
+                        recordId={entityId}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
+
+    const advanceAction = (() => {
+        if (!opp) return undefined;
+        const stageIds = OPPORTUNITY_STAGES.map((s) => s.id);
+        const idx = stageIds.indexOf(opp.stage);
+        const nextStage = idx >= 0 && idx < stageIds.length - 1 ? stageIds[idx + 1] : null;
+        return nextStage ? (
+            <Button
+                size="sm"
+                disabled={updateOpp.isPending}
+                onClick={() => updateOpp.mutate({ id: entityId, stage: nextStage })}
+            >
+                <CheckCircle2 className="h-4 w-4 mr-1" />
+                Advance Stage
+            </Button>
+        ) : undefined;
+    })();
+
+    const rec = opp as unknown as Record<string, unknown> | null;
+    const record = rec ? { ...rec } : null;
 
     return (
-        <DetailLayout
-            backHref="/opportunities"
-            backLabel="Opportunities"
-            entityType="opportunities"
-            entityId={entityId}
-            title={opp.name}
-            subtitle={`${opp.companyName} · ${typeCfg?.label ?? opp.type}`}
-            status={opp.stage}
-            avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Target className="h-7 w-7 text-primary-foreground" />
-                </div>
-            }
-            actions={(() => {
-                const stageIds = OPPORTUNITY_STAGES.map((s) => s.id);
-                const idx = stageIds.indexOf(opp.stage);
-                const nextStage = idx >= 0 && idx < stageIds.length - 1 ? stageIds[idx + 1] : null;
-                return nextStage ? (
-                    <Button
-                        size="sm"
-                        disabled={updateOpp.isPending}
-                        onClick={() => updateOpp.mutate({ id: entityId, stage: nextStage })}
-                    >
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
-                        Advance Stage
-                    </Button>
-                ) : undefined;
-            })()}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={record}
+            isLoading={isLoading}
             menuItems={[
                 {
                     label: "Edit Opportunity",
@@ -257,162 +398,12 @@ export default function OpportunityDetailPage() {
                 },
                 ...crudMenuItems,
             ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                        <DollarSign className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Deal Value</p>
-                                        <p className="text-lg font-bold">
-                                            {formatCurrency(opp.value)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
-                                        <TrendingUp className="h-5 w-5 text-info" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Weighted Value
-                                        </p>
-                                        <p className="text-lg font-bold">
-                                            {formatCurrency(opp.weightedValue)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                                        <Calendar className="h-5 w-5 text-warning" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Expected Close
-                                        </p>
-                                        <p className="text-sm font-semibold">
-                                            {opp.expectedCloseDate
-                                                ? formatDate(opp.expectedCloseDate)
-                                                : "TBD"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Pipeline Progress</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ProgressBar value={stageProgress} size="md" className="mb-3" />
-                            <div className="flex flex-wrap gap-2">
-                                {OPPORTUNITY_STAGES.map((stage, i) => (
-                                    <Badge
-                                        key={stage.id}
-                                        variant={i <= stageIndex ? "default" : "ghost"}
-                                        className="text-[10px]"
-                                        style={
-                                            i <= stageIndex
-                                                ? { backgroundColor: stage.color, color: "#fff" }
-                                                : {}
-                                        }
-                                    >
-                                        {stage.label}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {opp.nextStep && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    Next Step
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{opp.nextStep}</p>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {opp.lostReasonId && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Lost Reason</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{opp.lostReasonId}</p>
-                            </CardContent>
-                        </Card>
-                    )}
+            avatar={
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <Target className="h-7 w-7 text-primary-foreground" />
                 </div>
-            )}
-
-            {activeTab === "activity" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Activity Timeline</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {activities.map((activity) => (
-                                <div
-                                    key={activity.id}
-                                    className="flex gap-3 p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                        <User className="h-4 w-4 text-primary" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm">{activity.description}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs text-muted-foreground">
-                                                {activity.user}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">·</span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {formatDate(activity.date)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="opportunity"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+            }
+            actions={advanceAction}
+        />
     );
 }

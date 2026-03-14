@@ -1,20 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCompany, useDeleteCompany, useUpdateCompany } from "@/lib/supabase/hooks-pages";
 import { useProjects } from "@/lib/supabase/hooks";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     DollarSign,
@@ -28,10 +24,6 @@ import {
     User,
     Users,
 } from "lucide-react";
-
-type TabId = "overview" | "projects" | "contacts" | "chatter";
-const TAB_VALUES = ["overview", "projects", "contacts", "chatter"] as const;
-
 
 const statusVariants: Record<string, "success" | "info" | "ghost" | "destructive"> = {
     active: "success",
@@ -47,6 +39,18 @@ const typeVariants: Record<string, "default" | "warning" | "info" | "secondary">
     vendor: "secondary",
 };
 
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "companies",
+    titleKey: "name",
+    statusKey: "status",
+    icon: Building2,
+    backHref: "/companies",
+    backLabel: "Companies",
+    chatterRecordType: "company",
+    fields: [],
+    tabs: [],
+};
+
 export default function CompanyDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -55,7 +59,7 @@ export default function CompanyDetailPage() {
     const co = sbRecord as Record<string, unknown> | null;
     const { data: sbProjects } = useProjects();
 
-    const companyName = (co?.name as string) ?? "";
+    const _companyName = (co?.name as string) ?? "";
     const legalName = (co?.legal_name as string) ?? "";
     const industry = (co?.industry as string) ?? "";
     const website = (co?.website as string) ?? "";
@@ -74,7 +78,7 @@ export default function CompanyDetailPage() {
     const companyProjects = (sbProjects ?? []).filter(
         (p: Record<string, unknown>) => (p.company_id as string) === entityId
     ) as Record<string, unknown>[];
-    const contacts = ((co?.contacts ?? []) as Record<string, unknown>[]);
+    const contacts = (co?.contacts ?? []) as Record<string, unknown>[];
     const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Company",
@@ -82,34 +86,8 @@ export default function CompanyDetailPage() {
         useUpdateHook: useUpdateCompany,
         useDeleteHook: useDeleteCompany,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "projects" as const, label: "Projects", count: companyProjects.length },
-        { id: "contacts" as const, label: "Contacts", count: contacts.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -118,15 +96,11 @@ export default function CompanyDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Type</span>
-                        <Badge variant={typeVariants[companyType]}>
-                            {companyType}
-                        </Badge>
+                        <Badge variant={typeVariants[companyType]}>{companyType}</Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge variant={statusVariants[companyStatus]}>
-                            {companyStatus}
-                        </Badge>
+                        <Badge variant={statusVariants[companyStatus]}>{companyStatus}</Badge>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Industry</span>
@@ -138,36 +112,35 @@ export default function CompanyDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Contact Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                     {website && (
-                    <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <a
-                            href={website}
-                            className="text-primary hover:underline text-xs"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {website.replace("https://", "")}
-                        </a>
-                    </div>
+                        <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-muted-foreground" />
+                            <a
+                                href={website}
+                                className="text-primary hover:underline text-xs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {website.replace("https://", "")}
+                            </a>
+                        </div>
                     )}
                     {companyPhone && (
-                    <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs">{companyPhone}</span>
-                    </div>
+                        <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs">{companyPhone}</span>
+                        </div>
                     )}
                     {companyEmail && (
-                    <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs">{companyEmail}</span>
-                    </div>
+                        <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs">{companyEmail}</span>
+                        </div>
                     )}
                     <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -177,7 +150,6 @@ export default function CompanyDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Account Manager</CardTitle>
@@ -194,7 +166,6 @@ export default function CompanyDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Tags</CardTitle>
@@ -212,17 +183,201 @@ export default function CompanyDetailPage() {
         </div>
     );
 
-    if (isLoading) return <LoadingState />;
+    const overviewSlot = (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <DollarSign className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Total Revenue</p>
+                                <p className="text-lg font-bold">{formatCurrency(totalRevenue)}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
+                                <FolderOpen className="h-5 w-5 text-info" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Projects</p>
+                                <p className="text-lg font-bold">{companyProjects.length}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                                <Star className="h-5 w-5 text-warning" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Tier</p>
+                                <p className="text-lg font-bold">Tier 1</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            {!!companyNotes && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            {companyNotes}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => [industry, city, state].filter(Boolean).join(" · "),
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "projects",
+                label: "Projects",
+                count: companyProjects.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <FolderOpen className="h-4 w-4" />
+                                Projects ({companyProjects.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {companyProjects.map((project) => (
+                                    <div
+                                        key={project.id as string}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-semibold">
+                                                {String(project.name ?? "")}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Started {String(project.start_date ?? "")}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-medium">
+                                                {formatCurrency((project.budget as number) ?? 0)}
+                                            </span>
+                                            <Badge
+                                                variant={getStatusVariant(
+                                                    (project.status as string) ?? ""
+                                                )}
+                                            >
+                                                {getStatusLabel((project.status as string) ?? "")}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "contacts",
+                label: "Contacts",
+                count: contacts.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                Contacts ({contacts.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {contacts.map((contact) => (
+                                    <div
+                                        key={contact.id as string}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                <User className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-semibold">
+                                                        {String(contact.name ?? "")}
+                                                    </p>
+                                                    {Boolean(contact.primary) && (
+                                                        <Badge
+                                                            variant="warning"
+                                                            className="text-[9px]"
+                                                        >
+                                                            Primary
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {String(contact.title ?? "")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right text-xs text-muted-foreground space-y-1">
+                                            <div className="flex items-center gap-1 justify-end">
+                                                <Mail className="h-3 w-3" />
+                                                {String(contact.email ?? "")}
+                                            </div>
+                                            <div className="flex items-center gap-1 justify-end">
+                                                <Phone className="h-3 w-3" />
+                                                {String(contact.phone ?? "")}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+        ],
+    };
+
+    const record = co ? { ...(co as Record<string, unknown>) } : null;
 
     return (
-        <DetailLayout
-            backHref="/companies"
-            backLabel="Companies"
-            entityType="companies"
-            entityId={entityId}
-            title={companyName}
-            subtitle={[industry, city, state].filter(Boolean).join(" · ")}
-            status={companyStatus}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={record}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "Edit Company",
+                    onClick: () => router.push(`/companies/${entityId}/edit`),
+                },
+                {
+                    label: "Add Contact",
+                    onClick: () => router.push(`/contacts/new?companyId=${entityId}`),
+                },
+                {
+                    label: "Create Project",
+                    onClick: () => router.push(`/projects/new?companyId=${entityId}`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Building2 className="h-7 w-7 text-primary-foreground" />
@@ -234,179 +389,6 @@ export default function CompanyDetailPage() {
                     Visit Website
                 </Button>
             }
-            menuItems={[
-                { label: "Edit Company", onClick: () => router.push(`/companies/${entityId}/edit`) },
-                { label: "Add Contact", onClick: () => router.push(`/contacts/new?companyId=${entityId}`) },
-                { label: "Create Project", onClick: () => router.push(`/projects/new?companyId=${entityId}`) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                        <DollarSign className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Total Revenue
-                                        </p>
-                                        <p className="text-lg font-bold">
-                                            {formatCurrency(totalRevenue)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
-                                        <FolderOpen className="h-5 w-5 text-info" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Projects</p>
-                                        <p className="text-lg font-bold">
-                                            {companyProjects.length}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                                        <Star className="h-5 w-5 text-warning" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Tier</p>
-                                        <p className="text-lg font-bold">Tier 1</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {companyNotes && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Notes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {companyNotes}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "projects" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <FolderOpen className="h-4 w-4" />
-                            Projects ({companyProjects.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {companyProjects.map((project) => (
-                                <div
-                                    key={project.id as string}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div>
-                                        <p className="text-sm font-semibold">{String(project.name ?? "")}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Started {String(project.start_date ?? "")}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-medium">
-                                            {formatCurrency((project.budget as number) ?? 0)}
-                                        </span>
-                                        <Badge variant={getStatusVariant((project.status as string) ?? "")}>
-                                            {getStatusLabel((project.status as string) ?? "")}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "contacts" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Contacts ({contacts.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {contacts.map((contact) => (
-                                <div
-                                    key={contact.id as string}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <User className="h-5 w-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-semibold">
-                                                    {String(contact.name ?? "")}
-                                                </p>
-                                                {Boolean(contact.primary) && (
-                                                    <Badge variant="warning" className="text-[9px]">
-                                                        Primary
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                {String(contact.title ?? "")}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right text-xs text-muted-foreground space-y-1">
-                                        <div className="flex items-center gap-1 justify-end">
-                                            <Mail className="h-3 w-3" />
-                                            {String(contact.email ?? "")}
-                                        </div>
-                                        <div className="flex items-center gap-1 justify-end">
-                                            <Phone className="h-3 w-3" />
-                                            {String(contact.phone ?? "")}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="company"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

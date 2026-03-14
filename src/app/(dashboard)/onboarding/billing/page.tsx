@@ -1,92 +1,122 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Check, CreditCard, Loader2, Sparkles, Users, Zap } from "lucide-react";
+import {
+    ArrowRight,
+    Bot,
+    Brain,
+    Check,
+    CreditCard,
+    Crown,
+    Loader2,
+    Lock,
+    Palette,
+    Plug,
+    Shield,
+    Users,
+    Workflow,
+    Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBillingPlan, useSelectPlan } from "@/lib/supabase/hooks-pages";
+import {
+    formatTierPrice,
+    type PricingTier,
+    TIER_DISPLAY,
+    TIER_ENTITLEMENTS,
+} from "@/config/tier-entitlements";
 
-interface PlanTier {
-    id: string;
-    name: string;
-    description: string;
-    monthlyPrice: number;
-    annualPrice: number;
+// ─── Capability-focused feature descriptions per tier ────────
+
+interface PlanCard {
+    tier: PricingTier;
     icon: React.ElementType;
-    features: string[];
-    limits: { seats: string; storage: string; projects: string };
+    highlights: string[];
     recommended?: boolean;
 }
 
-const PLANS: PlanTier[] = [
+const PLAN_CARDS: PlanCard[] = [
     {
-        id: "starter",
-        name: "Starter",
-        description: "For small teams getting started with production management",
-        monthlyPrice: 29,
-        annualPrice: 290,
+        tier: "starter",
         icon: Zap,
-        features: [
-            "Up to 5 team members",
-            "3 active projects",
-            "Time tracking & timesheets",
-            "Basic reporting",
-            "Email support",
+        highlights: [
+            "CRM & pipeline management",
+            "3 users included",
+            "Basic time tracking",
+            "Community support",
         ],
-        limits: { seats: "5", storage: "10 GB", projects: "3" },
     },
     {
-        id: "professional",
-        name: "Professional",
-        description: "For growing teams that need full production workflows",
-        monthlyPrice: 79,
-        annualPrice: 790,
-        icon: Users,
-        features: [
-            "Up to 25 team members",
-            "Unlimited projects",
-            "Resource planner & scheduling",
-            "Approvals & lifecycle matrix",
-            "Client portal access",
-            "Advanced reports & CSV export",
-            "Priority support",
+        tier: "core",
+        icon: Shield,
+        highlights: [
+            "Everything in Starter",
+            "CRM + Finance modules",
+            "5 seats included",
+            "Email support",
         ],
-        limits: { seats: "25", storage: "100 GB", projects: "Unlimited" },
+    },
+    {
+        tier: "team",
+        icon: Users,
+        highlights: [
+            "Everything in Core",
+            "Invoicing & resource planner",
+            "All 6 RBAC roles",
+            "10 automation rules",
+            "Read-only API access",
+            "Logo & accent customization",
+        ],
         recommended: true,
     },
     {
-        id: "enterprise",
-        name: "Enterprise",
-        description: "For large organizations with complex compliance needs",
-        monthlyPrice: 199,
-        annualPrice: 1990,
-        icon: Sparkles,
-        features: [
-            "Unlimited team members",
-            "Unlimited projects",
-            "Everything in Professional",
-            "SSO & MFA enforcement",
-            "Custom roles & RBAC",
-            "AI report generation",
-            "Audit logs & compliance",
-            "Dedicated account manager",
+        tier: "pro",
+        icon: Crown,
+        highlights: [
+            "Everything in Team",
+            "Production, Live Ops, Creative, Legal",
+            "Field-level masking",
+            "Webhooks & full API",
+            "AI copilot & reports",
+            "Custom brand kit & PDF templates",
         ],
-        limits: { seats: "Unlimited", storage: "1 TB", projects: "Unlimited" },
+    },
+    {
+        tier: "enterprise",
+        icon: Brain,
+        highlights: [
+            "Everything in Pro",
+            "Spatial hierarchy & revenue engine",
+            "Custom roles & ABAC",
+            "SSO, bi-directional sync",
+            "Multi-step automations",
+            "AI summaries, NL query, predictions",
+            "White-label domain & multi-brand",
+        ],
     },
 ];
 
-const PLAN_TO_TIER: Record<string, "core" | "pro" | "enterprise"> = {
-    starter: "core",
-    professional: "pro",
-    enterprise: "enterprise",
+// ─── Capability dimension icons ──────────────────────────────
+
+const DIMENSION_ICONS: Record<string, React.ElementType> = {
+    modules: Zap,
+    rbac: Shield,
+    integrations: Plug,
+    automations: Workflow,
+    ai: Bot,
+    customization: Palette,
 };
 
-const TIER_TO_PLAN: Record<string, string> = {
-    core: "starter",
-    pro: "professional",
-    enterprise: "enterprise",
+const DIMENSION_LABELS: Record<string, string> = {
+    modules: "Modules",
+    rbac: "Access Control",
+    integrations: "Integrations",
+    automations: "Automations",
+    ai: "AI",
+    customization: "Customization",
 };
 
 export default function BillingSetupPage() {
@@ -100,30 +130,30 @@ export default function BillingSetupPage() {
         );
     }
 
-    const resolvedPlan = existingPlan
-        ? (TIER_TO_PLAN[existingPlan.pricing_tier as string] ?? "professional")
-        : "professional";
+    const resolvedTier: PricingTier = existingPlan
+        ? ((existingPlan.pricing_tier as PricingTier) ?? "team")
+        : "team";
     const resolvedCycle: "monthly" | "annual" = existingPlan
         ? (existingPlan.billing_cycle as string) === "monthly"
             ? "monthly"
             : "annual"
         : "annual";
 
-    return <BillingForm defaultPlan={resolvedPlan} defaultCycle={resolvedCycle} />;
+    return <BillingForm defaultTier={resolvedTier} defaultCycle={resolvedCycle} />;
 }
 
 function BillingForm({
-    defaultPlan,
+    defaultTier,
     defaultCycle,
 }: {
-    defaultPlan: string;
+    defaultTier: PricingTier;
     defaultCycle: "monthly" | "annual";
 }) {
     const router = useRouter();
     const [billingStepId, setBillingStepId] = useState<string | null>(null);
     const [completing, setCompleting] = useState(false);
     const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(defaultCycle);
-    const [selectedPlan, setSelectedPlan] = useState<string>(defaultPlan);
+    const [selectedTier, setSelectedTier] = useState<PricingTier>(defaultTier);
     const selectPlan = useSelectPlan();
 
     useEffect(() => {
@@ -146,8 +176,10 @@ function BillingForm({
     const handleSelectPlanAndContinue = useCallback(async () => {
         setCompleting(true);
         try {
-            const tier = PLAN_TO_TIER[selectedPlan] ?? "core";
-            await selectPlan.mutateAsync({ pricing_tier: tier, billing_cycle: billingCycle });
+            await selectPlan.mutateAsync({
+                pricing_tier: selectedTier,
+                billing_cycle: billingCycle,
+            });
         } catch {
             // Subscription creation failed — still allow navigation
         }
@@ -166,7 +198,7 @@ function BillingForm({
             // Non-critical — navigate regardless
         }
         router.push("/dashboard");
-    }, [billingStepId, router, selectedPlan, billingCycle, selectPlan]);
+    }, [billingStepId, router, selectedTier, billingCycle, selectPlan]);
 
     const skipAndNavigate = useCallback(async () => {
         setCompleting(true);
@@ -187,14 +219,21 @@ function BillingForm({
         router.push("/dashboard");
     }, [billingStepId, router]);
 
-    const annualSavings = Math.round(
-        ((PLANS[1]!.monthlyPrice * 12 - PLANS[1]!.annualPrice) / (PLANS[1]!.monthlyPrice * 12)) *
-            100
-    );
+    const annualSavings = useMemo(() => {
+        const ent = TIER_ENTITLEMENTS.team;
+        if (ent.pricing.monthlyBaseCents === 0) return 0;
+        return Math.round(
+            ((ent.pricing.monthlyBaseCents * 12 - ent.pricing.annualBaseCents) /
+                (ent.pricing.monthlyBaseCents * 12)) *
+                100
+        );
+    }, []);
+
+    const selectedDisplay = TIER_DISPLAY[selectedTier];
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-4xl space-y-8">
+            <div className="w-full max-w-6xl space-y-8">
                 {/* Progress indicator */}
                 <div className="flex items-center gap-2 justify-center">
                     <div className="h-2 w-12 rounded-full bg-primary" />
@@ -207,8 +246,9 @@ function BillingForm({
                         <CreditCard className="h-7 w-7 text-primary" aria-hidden="true" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight">Choose your plan</h1>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Select a plan that fits your team. You can upgrade or downgrade anytime.
+                    <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+                        Plans differ by capabilities — not just seats. Unlock modules, integrations,
+                        automations, AI, and customization as your team grows.
                     </p>
                 </div>
 
@@ -235,53 +275,55 @@ function BillingForm({
                         )}
                     >
                         Annual
-                        <Badge variant="success" className="text-[10px] px-1.5">
-                            Save {annualSavings}%
-                        </Badge>
+                        {annualSavings > 0 && (
+                            <Badge variant="success" className="text-[10px] px-1.5">
+                                Save {annualSavings}%
+                            </Badge>
+                        )}
                     </button>
                 </div>
 
-                {/* Plan cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {PLANS.map((plan) => {
-                        const price =
-                            billingCycle === "monthly"
-                                ? plan.monthlyPrice
-                                : Math.round(plan.annualPrice / 12);
-                        const isSelected = selectedPlan === plan.id;
-                        const Icon = plan.icon;
+                {/* Plan cards — 5 tiers */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {PLAN_CARDS.map((card) => {
+                        const display = TIER_DISPLAY[card.tier];
+                        const entitlements = TIER_ENTITLEMENTS[card.tier];
+                        const priceLabel = formatTierPrice(card.tier, billingCycle);
+                        const isSelected = selectedTier === card.tier;
+                        const isFree = entitlements.pricing.monthlyBaseCents === 0;
+                        const Icon = card.icon;
 
                         return (
                             <button
-                                key={plan.id}
-                                onClick={() => setSelectedPlan(plan.id)}
+                                key={card.tier}
+                                onClick={() => setSelectedTier(card.tier)}
                                 className={cn(
-                                    "relative rounded-xl border p-6 text-left transition-all",
+                                    "relative rounded-xl border p-5 text-left transition-all flex flex-col",
                                     isSelected
                                         ? "border-primary ring-2 ring-primary/20 bg-primary/[0.02]"
                                         : "border-border hover:border-primary/40 bg-card"
                                 )}
                             >
-                                {plan.recommended && (
+                                {card.recommended && (
                                     <Badge
                                         variant="default"
                                         className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px]"
                                     >
-                                        Recommended
+                                        Most popular
                                     </Badge>
                                 )}
 
-                                <div className="space-y-4">
+                                <div className="space-y-3 flex-1">
                                     <div className="flex items-center gap-2">
                                         <div
                                             className={cn(
-                                                "h-9 w-9 rounded-lg flex items-center justify-center",
+                                                "h-8 w-8 rounded-lg flex items-center justify-center",
                                                 isSelected ? "bg-primary/10" : "bg-muted"
                                             )}
                                         >
                                             <Icon
                                                 className={cn(
-                                                    "h-4.5 w-4.5",
+                                                    "h-4 w-4",
                                                     isSelected
                                                         ? "text-primary"
                                                         : "text-muted-foreground"
@@ -289,65 +331,81 @@ function BillingForm({
                                             />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-sm">{plan.name}</h3>
+                                            <h3 className="font-semibold text-sm">
+                                                {display.name}
+                                            </h3>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {display.tagline}
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        {plan.description}
-                                    </p>
-
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl font-bold">${price}</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            /seat/mo
-                                        </span>
+                                        <span className="text-2xl font-bold">{priceLabel}</span>
+                                        {!isFree && (
+                                            <span className="text-[10px] text-muted-foreground">
+                                                /mo base
+                                            </span>
+                                        )}
                                     </div>
 
-                                    {billingCycle === "annual" && (
+                                    {!isFree && (
                                         <p className="text-[10px] text-muted-foreground">
-                                            ${plan.annualPrice}/year billed annually
+                                            {entitlements.pricing.includedSeats} seats included
+                                            {entitlements.pricing.overagePerSeatCents > 0 &&
+                                                ` · $${(entitlements.pricing.overagePerSeatCents / 100).toFixed(0)}/extra seat`}
                                         </p>
                                     )}
 
-                                    <div className="border-t pt-4 space-y-2">
-                                        {plan.features.map((feature) => (
+                                    <div className="border-t pt-3 space-y-1.5">
+                                        {card.highlights.map((hl) => (
                                             <div
-                                                key={feature}
-                                                className="flex items-start gap-2 text-xs"
+                                                key={hl}
+                                                className="flex items-start gap-1.5 text-[11px]"
                                             >
-                                                <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
-                                                <span>{feature}</span>
+                                                <Check className="h-3 w-3 text-success shrink-0 mt-0.5" />
+                                                <span>{hl}</span>
                                             </div>
                                         ))}
                                     </div>
+                                </div>
 
-                                    <div className="border-t pt-3 grid grid-cols-3 gap-2 text-center">
-                                        <div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                Seats
-                                            </div>
-                                            <div className="text-xs font-medium">
-                                                {plan.limits.seats}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                Storage
-                                            </div>
-                                            <div className="text-xs font-medium">
-                                                {plan.limits.storage}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                Projects
-                                            </div>
-                                            <div className="text-xs font-medium">
-                                                {plan.limits.projects}
-                                            </div>
-                                        </div>
-                                    </div>
+                                {/* Capability dimension badges */}
+                                <div className="border-t pt-3 mt-3 flex flex-wrap gap-1.5">
+                                    {Object.entries(DIMENSION_LABELS).map(([key, label]) => {
+                                        const sectionObj = entitlements[
+                                            key as keyof typeof entitlements
+                                        ] as Record<string, unknown>;
+                                        const hasCapability = Object.values(sectionObj).some(
+                                            (v) =>
+                                                v === true ||
+                                                (typeof v === "number" && v !== 0) ||
+                                                (typeof v === "string" &&
+                                                    v !== "none" &&
+                                                    v !== "") ||
+                                                (Array.isArray(v) && v.length > 0)
+                                        );
+                                        const DimIcon = DIMENSION_ICONS[key] ?? Zap;
+
+                                        return (
+                                            <span
+                                                key={key}
+                                                className={cn(
+                                                    "inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px]",
+                                                    hasCapability
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "bg-muted text-muted-foreground/50"
+                                                )}
+                                            >
+                                                {hasCapability ? (
+                                                    <DimIcon className="h-2.5 w-2.5" />
+                                                ) : (
+                                                    <Lock className="h-2.5 w-2.5" />
+                                                )}
+                                                {label}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             </button>
                         );
@@ -355,7 +413,7 @@ function BillingForm({
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-2 max-w-xl mx-auto">
                     <Button
                         type="button"
                         variant="ghost"
@@ -372,13 +430,13 @@ function BillingForm({
                         className="flex-1"
                     >
                         {completing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Continue with {PLANS.find((p) => p.id === selectedPlan)?.name ?? "plan"}
+                        Continue with {selectedDisplay.name}
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                 </div>
 
                 <p className="text-center text-[10px] text-muted-foreground">
-                    14-day free trial on all plans. No credit card required to start. Payment
+                    14-day free trial on all paid plans. No credit card required to start. Payment
                     processing will be configured in organization settings.
                 </p>
             </div>

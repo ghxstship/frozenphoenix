@@ -1,229 +1,32 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import { useState } from "react";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
-import { CREATE_GL_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
-import { SearchInput } from "@/components/ui/search-input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CircleDollarSign, Plus } from "lucide-react";
-import { EmptyState } from "@/components/layouts/empty-state";
-import type { GLAccount } from "@/types/governance";
+import { ListPageShell } from "@/components/shells";
 import { useGlAccounts } from "@/lib/supabase/hooks-pages";
-import { PermissionGate } from "@/components/permission-guard";
+import { CREATE_GL_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
+import { CircleDollarSign } from "lucide-react";
+import type { ListPageConfig } from "@/types/list-page-config";
 
-const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-    asset: "Asset",
-    liability: "Liability",
-    equity: "Equity",
-    revenue: "Revenue",
-    expense: "Expense",
-};
-
-const ACCOUNT_TYPE_VARIANTS: Record<string, string> = {
-    asset: "info",
-    liability: "warning",
-    equity: "secondary",
-    revenue: "success",
-    expense: "destructive",
+const config: ListPageConfig = {
+    entityKey: "gl_accounts",
+    title: "GL Accounts",
+    description:
+        "Chart of accounts for financial reporting — maps budgets, expenses, invoices, and payments to GL codes",
+    icon: CircleDollarSign,
+    createConfig: CREATE_GL_ACCOUNT_CONFIG,
+    searchKeys: ["name"],
+    columns: [
+        { id: "code", header: "Code", accessorKey: "code" },
+        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "type", header: "Type", accessorKey: "type" },
+        { id: "capex_opex", header: "CapEx / OpEx", accessorKey: "capex_opex" },
+        { id: "department", header: "Department", accessorKey: "department" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+    ],
 };
 
 export default function GLAccountsPage() {
-    const [createOpen, openCreate, closeCreate] = useCreateAction();
-    const [search, setSearch] = useState("");
-    const [typeFilter, setTypeFilter] = useState<string>("all");
+    const { data: rawData, isLoading } = useGlAccounts();
+    const data = (rawData ?? []) as Record<string, unknown>[];
 
-    const { data: sbAccounts, isLoading } = useGlAccounts();
-
-    const accounts: GLAccount[] = (sbAccounts ?? []).map(
-        (a: Record<string, unknown>) =>
-            ({
-                id: (a.id as string) ?? "",
-                code: (a.code as string) ?? (a.account_code as string) ?? "",
-                name: (a.name as string) ?? "",
-                account_type: (a.account_type as string) ?? "expense",
-                description: (a.description as string) ?? undefined,
-                department: (a.department as string) ?? undefined,
-                capex_opex: (a.capex_opex as string) ?? undefined,
-                is_active: (a.is_active as boolean) ?? true,
-            }) as GLAccount
-    );
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const filtered = accounts.filter((a) => {
-        const matchesSearch =
-            !search ||
-            a.name.toLowerCase().includes(search.toLowerCase()) ||
-            a.code.includes(search);
-        const matchesType = typeFilter === "all" || a.account_type === typeFilter;
-        return matchesSearch && matchesType;
-    });
-
-    const revenueAccounts = accounts.filter((a) => a.account_type === "revenue").length;
-    const expenseAccounts = accounts.filter((a) => a.account_type === "expense").length;
-    const assetAccounts = accounts.filter((a) => a.account_type === "asset").length;
-
-    return (
-        <PermissionGate resource="gl_accounts" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="GL Accounts"
-                    description="Chart of accounts for financial reporting — maps budgets, expenses, invoices, and payments to GL codes"
-                >
-                    <Button size="sm" onClick={openCreate}>
-                        <Plus className="h-4 w-4" /> Add Account
-                    </Button>
-                </PageHeader>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Total Accounts"
-                        value={accounts.length}
-                        icon={CircleDollarSign}
-                    />
-                    <StatCard title="Revenue" value={revenueAccounts} icon={CircleDollarSign} />
-                    <StatCard title="Expense" value={expenseAccounts} icon={CircleDollarSign} />
-                    <StatCard title="Asset" value={assetAccounts} icon={CircleDollarSign} />
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <SearchInput
-                        value={search}
-                        onValueChange={setSearch}
-                        placeholder="Search by name or code..."
-                        className="flex-1 max-w-sm"
-                    />
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                        <option value="all">All Types</option>
-                        <option value="asset">Asset</option>
-                        <option value="liability">Liability</option>
-                        <option value="equity">Equity</option>
-                        <option value="revenue">Revenue</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <CircleDollarSign className="h-4 w-4" /> Chart of Accounts (
-                            {filtered.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-border bg-muted/50">
-                                        <th className="text-left p-3 font-medium">Code</th>
-                                        <th className="text-left p-3 font-medium">Name</th>
-                                        <th className="text-left p-3 font-medium">Type</th>
-                                        <th className="text-left p-3 font-medium">CapEx / OpEx</th>
-                                        <th className="text-left p-3 font-medium">Department</th>
-                                        <th className="text-left p-3 font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="p-0">
-                                                <EmptyState
-                                                    icon={CircleDollarSign}
-                                                    title="No GL accounts found"
-                                                    description={
-                                                        search || typeFilter !== "all"
-                                                            ? "Try adjusting your search or filters"
-                                                            : "Add your first GL account"
-                                                    }
-                                                    action={
-                                                        !search && typeFilter === "all"
-                                                            ? {
-                                                                  label: "Add Account",
-                                                                  onClick: openCreate,
-                                                              }
-                                                            : undefined
-                                                    }
-                                                    compact
-                                                />
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filtered.map((a) => (
-                                            <tr
-                                                key={a.id}
-                                                className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-3 font-mono font-medium">
-                                                    {a.code}
-                                                </td>
-                                                <td className="p-3">
-                                                    <div className="font-medium">{a.name}</div>
-                                                    {a.description && (
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {a.description}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="p-3">
-                                                    <Badge
-                                                        variant={
-                                                            (ACCOUNT_TYPE_VARIANTS[
-                                                                a.account_type
-                                                            ] || "ghost") as
-                                                                | "info"
-                                                                | "warning"
-                                                                | "secondary"
-                                                                | "success"
-                                                                | "destructive"
-                                                        }
-                                                        className="text-[10px]"
-                                                    >
-                                                        {ACCOUNT_TYPE_LABELS[a.account_type]}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-3 text-xs">
-                                                    {a.capex_opex
-                                                        ? a.capex_opex === "capex"
-                                                            ? "CapEx"
-                                                            : "OpEx"
-                                                        : "—"}
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
-                                                    {a.department || "—"}
-                                                </td>
-                                                <td className="p-3">
-                                                    <Badge
-                                                        variant={a.is_active ? "success" : "ghost"}
-                                                        className="text-[10px]"
-                                                    >
-                                                        {a.is_active ? "Active" : "Inactive"}
-                                                    </Badge>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            <CreateEntityDialog
-                config={CREATE_GL_ACCOUNT_CONFIG}
-                open={createOpen}
-                onClose={closeCreate}
-            />
-        </PermissionGate>
-    );
+    return <ListPageShell config={config} data={data} isLoading={isLoading} />;
 }

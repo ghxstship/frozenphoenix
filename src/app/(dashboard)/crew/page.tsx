@@ -1,30 +1,15 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useState } from "react";
+import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers } from "@/lib/supabase/hooks";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    AlertTriangle,
-    Kanban,
-    LayoutGrid,
-    Plus,
-    ShieldAlert,
-    ShieldCheck,
-    Table2,
-    Upload,
-} from "lucide-react";
-import { CsvExportButton } from "@/components/csv/csv-export-button";
-import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { AlertTriangle, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import { CREATE_WORKFORCE_CONFIG } from "@/config/create-entity-configs";
 import type { CertificationType, CrewMember } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
@@ -35,8 +20,9 @@ import {
     PhoneField,
     TagsField,
 } from "@/components/data-view/field-renderers";
-import { PermissionGate } from "@/components/permission-guard";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { ListPageShell } from "@/components/shells/list-page-shell";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type ViewMode = "cards" | "table" | "board";
 
@@ -179,7 +165,80 @@ const boardCardFields: CardField<CrewMember>[] = [
     },
 ];
 
-export default function CrewPage() {
+// ─── Crew Card ───────────────────────────────────────────────
+function CrewCard({ member }: { member: CrewMember }) {
+    const hasExpired = member.certifications.some((c) => !c.isValid);
+    return (
+        <Card className={`${hasExpired ? "border-destructive/30" : ""}`}>
+            <CardContent>
+                <div className="flex items-start gap-3">
+                    <Avatar name={member.name} size="lg" />
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold truncate">{member.name}</h3>
+                            <Badge
+                                variant={
+                                    member.status === "available"
+                                        ? "success"
+                                        : member.status === "assigned"
+                                          ? "info"
+                                          : "ghost"
+                                }
+                                className="text-[9px]"
+                            >
+                                {member.status}
+                            </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
+                        <p className="text-xs text-muted-foreground">${member.hourlyRate}/hr</p>
+                    </div>
+                </div>
+
+                {/* Certifications */}
+                <div className="mt-4 space-y-1.5">
+                    <OverlineText>Certifications</OverlineText>
+                    <div className="flex flex-wrap gap-1.5">
+                        {member.certifications.map((cert) => (
+                            <div
+                                key={cert.id}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                                    cert.isValid
+                                        ? "bg-success/10 text-success"
+                                        : "bg-destructive/10 text-destructive"
+                                }`}
+                            >
+                                {cert.isValid ? (
+                                    <ShieldCheck className="h-3 w-3" />
+                                ) : (
+                                    <AlertTriangle className="h-3 w-3" />
+                                )}
+                                {cert.label}
+                                {!cert.isValid && (
+                                    <span className="ml-0.5 opacity-70">EXPIRED</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Assignment Gate Warning */}
+                {hasExpired && (
+                    <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
+                        <div className="flex items-center gap-1.5">
+                            <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
+                            <p className="text-[10px] font-medium text-destructive">
+                                Cannot be assigned — expired credentials
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+// ─── Content Component ──────────────────────────────────────
+function CrewContent({ crew }: { crew: CrewMember[] }) {
     const router = useRouter();
     const VIEW_MODES = ["cards", "table", "board"] as const;
     const [viewMode, setViewMode] = useQueryTabState({
@@ -187,241 +246,170 @@ export default function CrewPage() {
         defaultValue: "cards",
         validValues: VIEW_MODES,
     });
-    const { data: sbCrew, isLoading, refetch } = useCrewMembers();
-    const [importOpen, setImportOpen] = useState(false);
-    const [createOpen, openCreate, closeCreate] = useCreateAction();
-
-    const handleImportComplete = useCallback(() => {
-        void refetch();
-    }, [refetch]);
-
-    const crew: CrewMember[] = (sbCrew ?? []).map((c) => ({
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phone: c.phone,
-        role: c.role,
-        avatar: c.avatar_url ?? undefined,
-        hourlyRate: c.hourly_rate,
-        status: c.status as "available" | "assigned" | "unavailable",
-        certifications: (
-            (
-                c as unknown as {
-                    certifications?: Array<{
-                        id: string;
-                        type: string;
-                        label: string;
-                        issued_date: string;
-                        expiry_date: string;
-                        document_url: string | null;
-                    }>;
-                }
-            ).certifications || []
-        ).map((cert) => ({
-            id: cert.id,
-            type: cert.type as CertificationType,
-            label: cert.label,
-            issuedDate: cert.issued_date,
-            expiryDate: cert.expiry_date,
-            isValid: new Date(cert.expiry_date) > new Date(),
-            documentUrl: cert.document_url ?? undefined,
-        })),
-    }));
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const availableCount = crew.filter((c) => c.status === "available").length;
-    const expiredCerts = crew.flatMap((c) => c.certifications.filter((cert) => !cert.isValid));
 
     return (
         <>
-            <PermissionGate resource="crew" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Crew & Labor Command"
-                        description="Shift scheduling, certifications, and crew management"
-                    >
-                        <div className="flex items-center gap-2">
-                            <SegmentedControl<ViewMode>
-                                ariaLabel="Crew view mode"
-                                value={viewMode}
-                                onValueChange={setViewMode}
-                                options={[
-                                    {
-                                        value: "cards",
-                                        label: "Cards",
-                                        icon: <LayoutGrid className="h-4 w-4" />,
-                                        labelHidden: true,
-                                    },
-                                    {
-                                        value: "table",
-                                        label: "Table",
-                                        icon: <Table2 className="h-4 w-4" />,
-                                        labelHidden: true,
-                                    },
-                                    {
-                                        value: "board",
-                                        label: "Board",
-                                        icon: <Kanban className="h-4 w-4" />,
-                                        labelHidden: true,
-                                    },
-                                ]}
-                            />
-                            <CsvExportButton entity="crew_members" />
-                            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                                <Upload className="h-4 w-4" />
-                                Import CSV
-                            </Button>
-                            <Button size="sm" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />
-                                Add Crew
-                            </Button>
-                        </div>
-                    </PageHeader>
-                    <CsvImportDialog
-                        entity="crew_members"
-                        open={importOpen}
-                        onOpenChange={setImportOpen}
-                        onImportComplete={handleImportComplete}
-                    />
+            <div className="flex justify-end">
+                <SegmentedControl<ViewMode>
+                    ariaLabel="Crew view mode"
+                    value={viewMode}
+                    onValueChange={setViewMode}
+                    options={[
+                        { value: "cards", label: "Cards" },
+                        { value: "table", label: "Table" },
+                        { value: "board", label: "Board" },
+                    ]}
+                />
+            </div>
 
-                    {/* Summary */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium">
-                            <ShieldCheck className="h-3.5 w-3.5" />
-                            {availableCount} Available
-                        </div>
-                        {expiredCerts.length > 0 && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
-                                <ShieldAlert className="h-3.5 w-3.5" />
-                                {expiredCerts.length} Expired Cert
-                                {expiredCerts.length > 1 ? "s" : ""}
-                            </div>
-                        )}
-                    </div>
+            {viewMode === "table" && (
+                <DataTable<CrewMember>
+                    data={crew}
+                    columns={tableColumns}
+                    keyField="id"
+                    searchable
+                    searchPlaceholder="Search crew..."
+                    pageSize={20}
+                />
+            )}
 
-                    {/* Table View */}
-                    {viewMode === "table" && (
-                        <DataTable<CrewMember>
-                            data={crew}
-                            columns={tableColumns}
-                            keyField="id"
-                            searchable
-                            searchPlaceholder="Search crew..."
-                            pageSize={20}
-                        />
-                    )}
+            {viewMode === "board" && (
+                <DataBoard<CrewMember>
+                    data={crew}
+                    columns={boardColumns}
+                    keyField="id"
+                    cardTitle="name"
+                    cardFields={boardCardFields}
+                    onCardClick={(member) => router.push(`/crew/${member.id}`)}
+                />
+            )}
 
-                    {/* Board View */}
-                    {viewMode === "board" && (
-                        <DataBoard<CrewMember>
-                            data={crew}
-                            columns={boardColumns}
-                            keyField="id"
-                            cardTitle="name"
-                            cardFields={boardCardFields}
-                            onCardClick={(member) => router.push(`/crew/${member.id}`)}
-                        />
-                    )}
-
-                    {/* Cards View (original) */}
-                    {viewMode === "cards" && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {crew.map((member, i) => {
-                                const hasExpired = member.certifications.some((c) => !c.isValid);
-                                return (
-                                    <StaggerItem key={member.id} index={i} stagger="relaxed">
-                                        <Card
-                                            className={`${hasExpired ? "border-destructive/30" : ""}`}
-                                        >
-                                            <CardContent>
-                                                <div className="flex items-start gap-3">
-                                                    <Avatar name={member.name} size="lg" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className="text-sm font-bold truncate">
-                                                                {member.name}
-                                                            </h3>
-                                                            <Badge
-                                                                variant={
-                                                                    member.status === "available"
-                                                                        ? "success"
-                                                                        : member.status ===
-                                                                            "assigned"
-                                                                          ? "info"
-                                                                          : "ghost"
-                                                                }
-                                                                className="text-[9px]"
-                                                            >
-                                                                {member.status}
-                                                            </Badge>
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                                            {member.role}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            ${member.hourlyRate}/hr
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Certifications */}
-                                                <div className="mt-4 space-y-1.5">
-                                                    <OverlineText>Certifications</OverlineText>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {member.certifications.map((cert) => (
-                                                            <div
-                                                                key={cert.id}
-                                                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
-                                                                    cert.isValid
-                                                                        ? "bg-success/10 text-success"
-                                                                        : "bg-destructive/10 text-destructive"
-                                                                }`}
-                                                            >
-                                                                {cert.isValid ? (
-                                                                    <ShieldCheck className="h-3 w-3" />
-                                                                ) : (
-                                                                    <AlertTriangle className="h-3 w-3" />
-                                                                )}
-                                                                {cert.label}
-                                                                {!cert.isValid && (
-                                                                    <span className="ml-0.5 opacity-70">
-                                                                        EXPIRED
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* Assignment Gate Warning */}
-                                                {hasExpired && (
-                                                    <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
-                                                            <p className="text-[10px] font-medium text-destructive">
-                                                                Cannot be assigned — expired
-                                                                credentials
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </StaggerItem>
-                                );
-                            })}
-                        </div>
-                    )}
+            {viewMode === "cards" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {crew.map((member, i) => (
+                        <StaggerItem key={member.id} index={i} stagger="relaxed">
+                            <CrewCard member={member} />
+                        </StaggerItem>
+                    ))}
                 </div>
-            </PermissionGate>
-            <CreateEntityDialog
-                config={CREATE_WORKFORCE_CONFIG}
-                open={createOpen}
-                onClose={closeCreate}
-            />
+            )}
         </>
+    );
+}
+
+// ─── Page ────────────────────────────────────────────────────
+export default function CrewPage() {
+    const { data: sbCrew, isLoading } = useCrewMembers();
+
+    const crew: CrewMember[] = useMemo(
+        () =>
+            (sbCrew ?? []).map((c) => ({
+                id: c.id,
+                name: c.name,
+                email: c.email,
+                phone: c.phone,
+                role: c.role,
+                avatar: c.avatar_url ?? undefined,
+                hourlyRate: c.hourly_rate,
+                status: c.status as "available" | "assigned" | "unavailable",
+                certifications: (
+                    (
+                        c as unknown as {
+                            certifications?: Array<{
+                                id: string;
+                                type: string;
+                                label: string;
+                                issued_date: string;
+                                expiry_date: string;
+                                document_url: string | null;
+                            }>;
+                        }
+                    ).certifications || []
+                ).map((cert) => ({
+                    id: cert.id,
+                    type: cert.type as CertificationType,
+                    label: cert.label,
+                    issuedDate: cert.issued_date,
+                    expiryDate: cert.expiry_date,
+                    isValid: new Date(cert.expiry_date) > new Date(),
+                    documentUrl: cert.document_url ?? undefined,
+                })),
+            })),
+        [sbCrew]
+    );
+
+    const config: ListPageConfig = useMemo(
+        () => ({
+            entityKey: "crew_members",
+            title: "Crew & Labor Command",
+            description: "Shift scheduling, certifications, and crew management",
+            icon: Users,
+            createConfig: CREATE_WORKFORCE_CONFIG,
+            createLabel: "Add Crew",
+            exportable: true,
+            importable: true,
+            searchKeys: ["name", "role", "email"],
+            stats: [
+                {
+                    label: "Available",
+                    icon: ShieldCheck,
+                    filter: (r) => r.status === "available",
+                },
+                {
+                    label: "Assigned",
+                    icon: Users,
+                    filter: (r) => r.status === "assigned",
+                },
+                {
+                    label: "Expired Certs",
+                    icon: ShieldAlert,
+                    compute: (r) =>
+                        r.reduce((sum, m) => {
+                            const certs = (m as unknown as CrewMember).certifications ?? [];
+                            return sum + certs.filter((cert) => !cert.isValid).length;
+                        }, 0),
+                },
+            ],
+            alerts: [
+                {
+                    severity: "destructive",
+                    icon: ShieldAlert,
+                    when: (records) =>
+                        records.some((r) => {
+                            const certs = (r as unknown as CrewMember).certifications ?? [];
+                            return certs.some((cert) => !cert.isValid);
+                        }),
+                    message: (records) => {
+                        const count = records.reduce((sum, r) => {
+                            const certs = (r as unknown as CrewMember).certifications ?? [];
+                            return sum + certs.filter((cert) => !cert.isValid).length;
+                        }, 0);
+                        return `${count} expired certification${count > 1 ? "s" : ""} — affected crew cannot be assigned`;
+                    },
+                },
+            ],
+            filters: [
+                {
+                    id: "status",
+                    label: "Status",
+                    column: "status",
+                    options: [
+                        { value: "available", label: "Available" },
+                        { value: "assigned", label: "Assigned" },
+                        { value: "unavailable", label: "Unavailable" },
+                    ],
+                },
+            ],
+            contentSlot: <CrewContent crew={crew} />,
+        }),
+        [crew]
+    );
+
+    return (
+        <ListPageShell
+            config={config}
+            data={crew as unknown as Record<string, unknown>[]}
+            isLoading={isLoading}
+        />
     );
 }

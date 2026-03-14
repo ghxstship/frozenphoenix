@@ -1,12 +1,9 @@
 "use client";
 
-import { logger } from "@/lib/logger";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FormLayout, FormSection } from "@/components/layouts/form-layout";
-import { Input } from "@/components/ui/input";
-import { CurrencyInput, FormField, Select, Textarea } from "@/components/ui/form";
+import { useMemo } from "react";
 import { useCreateAsset } from "@/lib/supabase/hooks";
+import { FormPageShell } from "@/components/shells/form-page-shell";
+import type { FormPageConfig } from "@/types/form-page-config";
 
 const CATEGORY_OPTIONS = [
     { value: "Tools", label: "Tools" },
@@ -33,154 +30,132 @@ const OWNERSHIP_OPTIONS = [
     { value: "rental", label: "Rental" },
 ];
 
+const CONFIG: FormPageConfig = {
+    entityKey: "assets",
+    title: "Add Asset",
+    description: "Add a new asset to your inventory",
+    backHref: "/assets",
+    backLabel: "Assets",
+    mode: "create",
+    submitLabel: "Add Asset",
+    sections: [
+        {
+            id: "info",
+            title: "Asset Information",
+            description: "Basic asset details",
+            fields: [
+                {
+                    id: "name",
+                    label: "Asset Name",
+                    type: "text",
+                    required: true,
+                    placeholder: "Enter asset name",
+                    fullWidth: true,
+                },
+                {
+                    id: "category",
+                    label: "Category",
+                    type: "select",
+                    required: true,
+                    options: CATEGORY_OPTIONS,
+                    placeholder: "Select category",
+                },
+                {
+                    id: "barcode",
+                    label: "Barcode/Serial",
+                    type: "text",
+                    placeholder: "Enter barcode or serial number",
+                },
+            ],
+        },
+        {
+            id: "status",
+            title: "Status & Location",
+            description: "Current status and location",
+            fields: [
+                {
+                    id: "condition",
+                    label: "Condition",
+                    type: "select",
+                    options: CONDITION_OPTIONS,
+                    defaultValue: "good",
+                },
+                {
+                    id: "ownedOrRental",
+                    label: "Ownership",
+                    type: "select",
+                    options: OWNERSHIP_OPTIONS,
+                    defaultValue: "owned",
+                },
+                {
+                    id: "location",
+                    label: "Location",
+                    type: "text",
+                    placeholder: "e.g., Warehouse A, Bay 3",
+                    description: "Current storage or deployment location",
+                    fullWidth: true,
+                },
+            ],
+        },
+        {
+            id: "financial",
+            title: "Financial",
+            description: "Purchase and value information",
+            fields: [
+                {
+                    id: "purchasePrice",
+                    label: "Purchase Price",
+                    type: "currency",
+                    description: "Original purchase price (if owned)",
+                    placeholder: "0.00",
+                    fullWidth: true,
+                },
+            ],
+        },
+        {
+            id: "additional",
+            title: "Additional Information",
+            fields: [
+                {
+                    id: "notes",
+                    label: "Notes",
+                    type: "textarea",
+                    placeholder: "Any additional notes about this asset...",
+                    fullWidth: true,
+                },
+            ],
+        },
+    ],
+    transformSubmit: (data) => ({
+        name: data.name,
+        category: data.category,
+        barcode: (data.barcode as string) || null,
+        location: (data.location as string) || null,
+        condition: data.condition,
+        owned_or_rental: data.ownedOrRental,
+        purchase_price: (data.purchasePrice as number) || null,
+        notes: (data.notes as string) || null,
+        status: "available",
+    }),
+};
+
 export default function NewAssetPage() {
-    const router = useRouter();
     const createAsset = useCreateAsset();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        category: "",
-        barcode: "",
-        location: "",
-        condition: "good",
-        ownedOrRental: "owned",
-        purchasePrice: 0,
-        notes: "",
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            const assetData = {
-                name: formData.name,
-                category: formData.category,
-                barcode: formData.barcode || null,
-                location: formData.location || null,
-                condition: formData.condition,
-                owned_or_rental: formData.ownedOrRental,
-                purchase_price: formData.purchasePrice || null,
-                notes: formData.notes || null,
-                status: "available",
-            };
+    const handleSubmit = useMemo(
+        () => async (data: Record<string, unknown>) => {
             await createAsset.mutateAsync(
-                assetData as unknown as Parameters<typeof createAsset.mutateAsync>[0]
+                data as unknown as Parameters<typeof createAsset.mutateAsync>[0]
             );
-            router.push("/assets");
-        } catch (error) {
-            logger.error("Failed to create asset", { error });
-        }
-    };
-
-    const isValid = formData.name.trim() !== "" && formData.category !== "";
+        },
+        [createAsset]
+    );
 
     return (
-        <FormLayout
-            backHref="/assets"
-            backLabel="Assets"
-            title="Add Asset"
-            description="Add a new asset to your inventory"
+        <FormPageShell
+            config={CONFIG}
             onSubmit={handleSubmit}
             isSubmitting={createAsset.isPending}
-            isValid={isValid}
-            submitLabel="Add Asset"
-        >
-            <FormSection title="Asset Information" description="Basic asset details">
-                <FormField label="Asset Name" htmlFor="name" required>
-                    <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter asset name"
-                    />
-                </FormField>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Category" htmlFor="category" required>
-                        <Select
-                            id="category"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            options={CATEGORY_OPTIONS}
-                            placeholder="Select category"
-                        />
-                    </FormField>
-                    <FormField label="Barcode/Serial" htmlFor="barcode">
-                        <Input
-                            id="barcode"
-                            value={formData.barcode}
-                            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                            placeholder="Enter barcode or serial number"
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Status & Location" description="Current status and location">
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Condition" htmlFor="condition">
-                        <Select
-                            id="condition"
-                            value={formData.condition}
-                            onChange={(e) =>
-                                setFormData({ ...formData, condition: e.target.value })
-                            }
-                            options={CONDITION_OPTIONS}
-                        />
-                    </FormField>
-                    <FormField label="Ownership" htmlFor="ownership">
-                        <Select
-                            id="ownership"
-                            value={formData.ownedOrRental}
-                            onChange={(e) =>
-                                setFormData({ ...formData, ownedOrRental: e.target.value })
-                            }
-                            options={OWNERSHIP_OPTIONS}
-                        />
-                    </FormField>
-                </div>
-
-                <FormField
-                    label="Location"
-                    htmlFor="location"
-                    description="Current storage or deployment location"
-                >
-                    <Input
-                        id="location"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        placeholder="e.g., Warehouse A, Bay 3"
-                    />
-                </FormField>
-            </FormSection>
-
-            <FormSection title="Financial" description="Purchase and value information">
-                <FormField
-                    label="Purchase Price"
-                    htmlFor="purchasePrice"
-                    description="Original purchase price (if owned)"
-                >
-                    <CurrencyInput
-                        id="purchasePrice"
-                        value={formData.purchasePrice}
-                        onChange={(value) =>
-                            setFormData({ ...formData, purchasePrice: value || 0 })
-                        }
-                        placeholder="0.00"
-                    />
-                </FormField>
-            </FormSection>
-
-            <FormSection title="Additional Information">
-                <FormField label="Notes" htmlFor="notes">
-                    <Textarea
-                        id="notes"
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        placeholder="Any additional notes about this asset..."
-                    />
-                </FormField>
-            </FormSection>
-        </FormLayout>
+        />
     );
 }

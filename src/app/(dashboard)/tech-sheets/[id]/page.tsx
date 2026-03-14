@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDeleteTechSheet, useTechSheet, useUpdateTechSheet } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +13,7 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     CheckCircle2,
@@ -71,8 +70,17 @@ function parsePowerCircuits(raw: unknown): PowerCircuit[] {
     }));
 }
 
-type TechSheetTabId = "equipment" | "power" | "chatter";
-const TECH_SHEET_TAB_VALUES = ["equipment", "power", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "tech-sheets",
+    titleKey: "title",
+    statusKey: "status",
+    icon: Cpu,
+    backHref: "/tech-sheets",
+    backLabel: "Tech Sheets",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function TechSheetDetailPage() {
     const params = useParams();
@@ -81,10 +89,8 @@ export default function TechSheetDetailPage() {
     const { data: sbRecord, isLoading } = useTechSheet(sheetId);
     const ts = sbRecord as Record<string, unknown> | null;
 
-    const tsTitle = (ts?.title as string) ?? "";
     const projectName = (ts?.project_name as string) ?? "";
-    const tsVenue = (ts?.venue as string) ?? "";
-    const tsStatus = (ts?.status as string) ?? "draft";
+    const tsVenue = (ts?.venue as string) ?? (ts?.venue_name as string) ?? "";
     const tsDate = (ts?.date as string) ?? "";
     const totalPowerDraw = (ts?.total_power_draw as string) ?? "";
     const networkRequirements = (ts?.network_requirements as string) ?? "";
@@ -101,12 +107,6 @@ export default function TechSheetDetailPage() {
         listPath: "/tech-sheets",
         useUpdateHook: useUpdateTechSheet,
         useDeleteHook: useDeleteTechSheet,
-    });
-
-    const [activeTab, setActiveTab] = useQueryTabState<TechSheetTabId>({
-        key: "tab",
-        defaultValue: "equipment",
-        validValues: TECH_SHEET_TAB_VALUES,
     });
 
     const categories = [...new Set(equipment.map((e) => e.category))];
@@ -126,13 +126,7 @@ export default function TechSheetDetailPage() {
         ]);
     };
 
-    const tabs = [
-        { id: "equipment" as const, label: "Equipment", count: equipment.length },
-        { id: "power" as const, label: "Power", count: powerCircuits.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             {/* Overview Stats */}
             <Card>
@@ -160,9 +154,7 @@ export default function TechSheetDetailPage() {
                         <Server className="h-4 w-4 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Rigging</p>
-                            <p className="text-sm font-semibold">
-                                {riggingPoints} points
-                            </p>
+                            <p className="text-sm font-semibold">{riggingPoints} points</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -186,9 +178,7 @@ export default function TechSheetDetailPage() {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Network</span>
-                        <span className="text-sm font-medium">
-                            {networkRequirements}
-                        </span>
+                        <span className="text-sm font-medium">{networkRequirements}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Rigging Points</span>
@@ -196,9 +186,7 @@ export default function TechSheetDetailPage() {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Max Weight/Point</span>
-                        <span className="text-sm font-medium">
-                            {maxRiggingWeight}
-                        </span>
+                        <span className="text-sm font-medium">{maxRiggingWeight}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -235,11 +223,21 @@ export default function TechSheetDetailPage() {
                 <CardContent className="py-4">
                     <p className="text-xs text-muted-foreground font-medium mb-2">Quick Actions</p>
                     <div className="space-y-2">
-                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleUpdate({ status: "sent" })}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => handleUpdate({ status: "sent" })}
+                        >
                             <Send className="mr-2 h-3.5 w-3.5" />
                             Send to Venue
                         </Button>
-                        <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => window.print()}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => window.print()}
+                        >
                             <Download className="mr-2 h-3.5 w-3.5" />
                             Export PDF
                         </Button>
@@ -249,17 +247,156 @@ export default function TechSheetDetailPage() {
         </div>
     );
 
-    if (isLoading) return <LoadingState />;
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => `${projectName} — ${tsVenue}`,
+        sidebarSlot,
+        overviewSlot: (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Cpu className="h-4 w-4" />
+                        Equipment List ({equipment.length} items)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {categories.map((cat) => (
+                        <div key={cat} className="mb-4 last:mb-0">
+                            <OverlineText className="mb-2 flex items-center gap-1">
+                                {cat === "Video" && <Monitor className="h-3 w-3" />}
+                                {cat === "Lighting" && <Lightbulb className="h-3 w-3" />}
+                                {cat === "Audio" && <Speaker className="h-3 w-3" />}
+                                {cat === "Rigging" && <Server className="h-3 w-3" />}
+                                {cat === "Network" && <Wifi className="h-3 w-3" />}
+                                {cat}
+                            </OverlineText>
+                            <div className="space-y-2">
+                                {equipment
+                                    .filter((e) => e.category === cat)
+                                    .map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {item.status === "confirmed" ? (
+                                                    <CheckCircle2 className="h-4 w-4 text-success" />
+                                                ) : (
+                                                    <AlertTriangle className="h-4 w-4 text-warning" />
+                                                )}
+                                                <div>
+                                                    <p className="text-sm font-semibold">
+                                                        {item.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {item.specs}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-bold">
+                                                    ×{item.quantity}
+                                                </span>
+                                                <Badge
+                                                    variant={getStatusVariant(item.status)}
+                                                    className="text-[10px]"
+                                                >
+                                                    {getStatusLabel(item.status)}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+        ),
+        tabs: [
+            {
+                id: "power",
+                label: "Power",
+                count: powerCircuits.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Zap className="h-4 w-4" />
+                                Power Distribution
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-muted-foreground">
+                                        <th className="text-left py-2 font-medium">Circuit</th>
+                                        <th className="text-right py-2 font-medium">Amps</th>
+                                        <th className="text-right py-2 font-medium">Voltage</th>
+                                        <th className="text-right py-2 font-medium">Phase</th>
+                                        <th className="text-right py-2 font-medium">Dept</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {powerCircuits.map((circuit) => (
+                                        <tr key={circuit.id} className="border-b border-border/50">
+                                            <td className="py-2.5 font-medium">{circuit.label}</td>
+                                            <td className="py-2.5 text-right">
+                                                {circuit.amperage}A
+                                            </td>
+                                            <td className="py-2.5 text-right">
+                                                {circuit.voltage}V
+                                            </td>
+                                            <td className="py-2.5 text-right">{circuit.phase}</td>
+                                            <td className="py-2.5 text-right">
+                                                <Badge variant="ghost" className="text-[10px]">
+                                                    {circuit.department}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td className="py-2 font-bold">Total</td>
+                                        <td className="py-2 text-right font-bold">{totalAmps}A</td>
+                                        <td colSpan={3}></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                content: (
+                    <RecordChatter
+                        recordType="tech_sheet"
+                        recordId={sheetId}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
 
     return (
-        <DetailLayout
-            backHref="/tech-sheets"
-            backLabel="Tech Sheets"
-            entityType="tech-sheets"
-            entityId={sheetId}
-            title={tsTitle}
-            subtitle={`${projectName} — ${tsVenue}`}
-            status={tsStatus}
+        <DetailPageShell
+            config={config}
+            id={sheetId}
+            record={ts}
+            isLoading={isLoading}
+            menuItems={[
+                { label: "Download PDF", onClick: () => window.print() },
+                {
+                    label: "Duplicate Tech Sheet",
+                    onClick: () => router.push(`/tech-sheets/new?duplicateFrom=${sheetId}`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Cpu className="h-7 w-7 text-primary-foreground" />
@@ -271,133 +408,6 @@ export default function TechSheetDetailPage() {
                     Send to Venue
                 </Button>
             }
-            menuItems={[
-                { label: "Download PDF", onClick: () => window.print() },
-                { label: "Duplicate Tech Sheet", onClick: () => router.push(`/tech-sheets/new?duplicateFrom=${sheetId}`) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TechSheetTabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "equipment" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Cpu className="h-4 w-4" />
-                            Equipment List ({equipment.length} items)
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {categories.map((cat) => (
-                            <div key={cat} className="mb-4 last:mb-0">
-                                <OverlineText className="mb-2 flex items-center gap-1">
-                                    {cat === "Video" && <Monitor className="h-3 w-3" />}
-                                    {cat === "Lighting" && <Lightbulb className="h-3 w-3" />}
-                                    {cat === "Audio" && <Speaker className="h-3 w-3" />}
-                                    {cat === "Rigging" && <Server className="h-3 w-3" />}
-                                    {cat === "Network" && <Wifi className="h-3 w-3" />}
-                                    {cat}
-                                </OverlineText>
-                                <div className="space-y-2">
-                                    {equipment
-                                        .filter((e) => e.category === cat)
-                                        .map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/20"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    {item.status === "confirmed" ? (
-                                                        <CheckCircle2 className="h-4 w-4 text-success" />
-                                                    ) : (
-                                                        <AlertTriangle className="h-4 w-4 text-warning" />
-                                                    )}
-                                                    <div>
-                                                        <p className="text-sm font-semibold">
-                                                            {item.name}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {item.specs}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-bold">
-                                                        ×{item.quantity}
-                                                    </span>
-                                                    <Badge
-                                                        variant={getStatusVariant(item.status)}
-                                                        className="text-[10px]"
-                                                    >
-                                                        {getStatusLabel(item.status)}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        ))}
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "power" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Zap className="h-4 w-4" />
-                            Power Distribution
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b text-muted-foreground">
-                                    <th className="text-left py-2 font-medium">Circuit</th>
-                                    <th className="text-right py-2 font-medium">Amps</th>
-                                    <th className="text-right py-2 font-medium">Voltage</th>
-                                    <th className="text-right py-2 font-medium">Phase</th>
-                                    <th className="text-right py-2 font-medium">Dept</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {powerCircuits.map((circuit) => (
-                                    <tr key={circuit.id} className="border-b border-border/50">
-                                        <td className="py-2.5 font-medium">{circuit.label}</td>
-                                        <td className="py-2.5 text-right">{circuit.amperage}A</td>
-                                        <td className="py-2.5 text-right">{circuit.voltage}V</td>
-                                        <td className="py-2.5 text-right">{circuit.phase}</td>
-                                        <td className="py-2.5 text-right">
-                                            <Badge variant="ghost" className="text-[10px]">
-                                                {circuit.department}
-                                            </Badge>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td className="py-2 font-bold">Total</td>
-                                    <td className="py-2 text-right font-bold">{totalAmps}A</td>
-                                    <td colSpan={3}></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="tech_sheet"
-                    recordId={sheetId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

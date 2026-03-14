@@ -1,8 +1,6 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useMemo } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteShipment, useUpdateShipment } from "@/lib/supabase/hooks-pages";
 import {
@@ -11,7 +9,7 @@ import {
     useRecordComments,
 } from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +20,7 @@ import { EntityLink } from "@/components/linked-records/entity-link";
 import { useShipment } from "@/lib/supabase/hooks-pages";
 import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertCircle,
     Calendar,
@@ -33,8 +32,17 @@ import {
     Weight,
 } from "lucide-react";
 
-type TabId = "overview" | "items" | "tracking" | "chatter";
-const TAB_VALUES = ["overview", "items", "tracking", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "shipments",
+    titleKey: "description",
+    statusKey: "status",
+    icon: Truck,
+    backHref: "/logistics/shipments",
+    backLabel: "Shipments",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function ShipmentDetailPage() {
     const params = useParams();
@@ -46,11 +54,6 @@ export default function ShipmentDetailPage() {
         listPath: "/shipments",
         useUpdateHook: useUpdateShipment,
         useDeleteHook: useDeleteShipment,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
     });
     const { data: shipment, isLoading } = useShipment(shipmentId);
     const { data: sbActivity } = useRecordActivityLog("shipment", shipmentId);
@@ -96,24 +99,6 @@ export default function ShipmentDetailPage() {
         ? locs.find((l: Record<string, unknown>) => l.id === s.destination_location_id)
         : null;
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (!shipment) {
-        return (
-            <EmptyState
-                icon={Truck}
-                title="Shipment not found"
-                description="The shipment you're looking for doesn't exist or has been deleted."
-                action={{
-                    label: "Back to Shipments",
-                    onClick: () => router.push("/logistics/shipments"),
-                }}
-            />
-        );
-    }
-
     const handleAddComment = async (content: string) => {
         await createComment.mutateAsync({
             entity_type: "shipment",
@@ -123,21 +108,13 @@ export default function ShipmentDetailPage() {
         });
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "items" as const, label: "Items", count: shipment.items?.length ?? 0 },
-        { id: "tracking" as const, label: "Tracking" },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
+    const formatAddress = (addr: unknown) => {
+        if (!addr || typeof addr !== "object") return "—";
+        const a = addr as Record<string, unknown>;
+        return `${a.street1 ?? ""}, ${a.city ?? ""}, ${a.state ?? ""} ${a.postal_code ?? a.postalCode ?? ""}`;
+    };
 
-    const formatAddress = (addr: {
-        street1: string;
-        city: string;
-        state: string;
-        postalCode: string;
-    }) => `${addr.street1}, ${addr.city}, ${addr.state} ${addr.postalCode}`;
-
-    const sidebar = (
+    const sidebarSlot = shipment ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -156,7 +133,7 @@ export default function ShipmentDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Carrier</span>
-                        <span>{shipment.carrierName}</span>
+                        <span>{shipment.carrier_name}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Priority</span>
@@ -169,17 +146,17 @@ export default function ShipmentDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Cost</span>
-                        <span className="font-medium">{formatCurrency(shipment.cost)}</span>
+                        <span className="font-medium">{formatCurrency(shipment.cost ?? 0)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Weight</span>
                         <span>
-                            {shipment.totalWeight?.toLocaleString()} {shipment.weightUnit}
+                            {shipment.total_weight?.toLocaleString()} {shipment.weight_unit}
                         </span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Pieces</span>
-                        <span>{shipment.totalPieces}</span>
+                        <span>{shipment.total_pieces}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -189,21 +166,21 @@ export default function ShipmentDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
-                        {shipment.liftgateRequired ? (
+                        {shipment.liftgate_required ? (
                             <Badge variant="warning">Liftgate</Badge>
                         ) : (
                             <Badge variant="secondary">No Liftgate</Badge>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {shipment.insideDelivery ? (
+                        {shipment.inside_delivery ? (
                             <Badge variant="info">Inside Delivery</Badge>
                         ) : (
                             <Badge variant="secondary">Dock Delivery</Badge>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {shipment.appointmentRequired ? (
+                        {shipment.appointment_required ? (
                             <Badge variant="warning">Appointment Required</Badge>
                         ) : (
                             <Badge variant="secondary">No Appointment</Badge>
@@ -241,17 +218,244 @@ export default function ShipmentDetailPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : null;
+
+    const overviewSlot = shipment ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-xs">Pickup</span>
+                        </div>
+                        <p className="text-xl font-bold">{formatDate(shipment.pickup_date)}</p>
+                        <p className="text-xs text-muted-foreground">{shipment.pickup_time}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-xs">Est. Delivery</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {formatDate(shipment.estimated_delivery_date)}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Weight className="h-4 w-4" />
+                            <span className="text-xs">Total Weight</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {shipment.total_weight?.toLocaleString()} {shipment.weight_unit}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Shipping Cost</span>
+                        </div>
+                        <p className="text-xl font-bold">{formatCurrency(shipment.cost ?? 0)}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Origin</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div>
+                                <p className="font-medium">{originLoc?.name ?? "—"}</p>
+                                <p className="text-muted-foreground">
+                                    {formatAddress(shipment.origin_address as unknown)}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Destination</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div>
+                                <p className="font-medium">{destLoc?.name ?? "—"}</p>
+                                <p className="text-muted-foreground">
+                                    {formatAddress(shipment.destination_address as unknown)}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            {shipment.special_instructions && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Special Instructions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-start gap-2">
+                            <AlertCircle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                            <p className="text-sm text-muted-foreground">
+                                {shipment.special_instructions}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    ) : null;
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: (r) =>
+            `${(r as Record<string, unknown>).number ?? ""} · ${(r as Record<string, unknown>).carrier_name ?? ""}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "items",
+                label: "Items",
+                count: shipment && Array.isArray(shipment.items) ? shipment.items.length : 0,
+                content: shipment ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Shipment Items</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {!Array.isArray(shipment.items) || shipment.items.length === 0 ? (
+                                <EmptyState
+                                    icon={Package}
+                                    title="No items"
+                                    description="No items in this shipment"
+                                />
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b text-left">
+                                                <th className="py-2 pr-4 font-medium text-muted-foreground">
+                                                    Description
+                                                </th>
+                                                <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                    Qty
+                                                </th>
+                                                <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                    Weight
+                                                </th>
+                                                <th className="py-2 font-medium text-muted-foreground text-right">
+                                                    Value
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {shipment.items.map((rawItem: unknown, i: number) => {
+                                                const item = rawItem as Record<string, unknown>;
+                                                return (
+                                                    <tr
+                                                        key={String(item.id ?? i)}
+                                                        className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
+                                                    >
+                                                        <td className="py-3 pr-4 font-medium">
+                                                            {String(item.description ?? "")}
+                                                        </td>
+                                                        <td className="py-3 pr-4 text-right">
+                                                            {String(item.quantity ?? 0)}
+                                                        </td>
+                                                        <td className="py-3 pr-4 text-right">
+                                                            {Number(
+                                                                item.weight ?? 0
+                                                            ).toLocaleString()}{" "}
+                                                            lbs
+                                                        </td>
+                                                        <td className="py-3 text-right">
+                                                            {formatCurrency(
+                                                                Number(item.value ?? 0)
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                ) : null,
+            },
+            {
+                id: "tracking",
+                label: "Tracking",
+                content: shipment ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Tracking History</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-medium">Shipment Created</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {shipment.created_at
+                                                ? formatDate(shipment.created_at)
+                                                : "—"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-medium">Pickup Scheduled</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDate(shipment.pickup_date)} at{" "}
+                                            {shipment.pickup_time}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : null,
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
+                    <RecordChatter
+                        recordType="shipment"
+                        recordId={shipmentId}
+                        activityItems={activityItems}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
 
     return (
-        <DetailLayout
-            backHref="/logistics/shipments"
-            backLabel="Shipments"
-            entityType="shipments"
-            entityId={shipmentId}
-            title={shipment.description}
-            subtitle={`${shipment.number} · ${shipment.carrierName}`}
-            status={shipment.status}
+        <DetailPageShell
+            config={config}
+            id={shipmentId}
+            record={shipment}
+            isLoading={isLoading}
+            menuItems={[{ label: "Print BOL", onClick: () => window.print() }, ...crudMenuItems]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     <Truck className="h-6 w-6" />
@@ -263,220 +467,6 @@ export default function ShipmentDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[{ label: "Print BOL", onClick: () => window.print() }, ...crudMenuItems]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Calendar className="h-4 w-4" />
-                                    <span className="text-xs">Pickup</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {formatDate(shipment.pickupDate)}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    {shipment.pickupTime}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Calendar className="h-4 w-4" />
-                                    <span className="text-xs">Est. Delivery</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {formatDate(shipment.estimatedDeliveryDate)}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Weight className="h-4 w-4" />
-                                    <span className="text-xs">Total Weight</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {shipment.totalWeight?.toLocaleString()} {shipment.weightUnit}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    <span className="text-xs">Shipping Cost</span>
-                                </div>
-                                <p className="text-xl font-bold">{formatCurrency(shipment.cost)}</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Origin</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-sm">
-                                <div className="flex items-start gap-2">
-                                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                    <div>
-                                        <p className="font-medium">{originLoc?.name ?? "—"}</p>
-                                        <p className="text-muted-foreground">
-                                            {formatAddress(shipment.originAddress)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Destination</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-sm">
-                                <div className="flex items-start gap-2">
-                                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                    <div>
-                                        <p className="font-medium">{destLoc?.name ?? "—"}</p>
-                                        <p className="text-muted-foreground">
-                                            {formatAddress(shipment.destinationAddress)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    {shipment.specialInstructions && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Special Instructions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-start gap-2">
-                                    <AlertCircle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-                                    <p className="text-sm text-muted-foreground">
-                                        {shipment.specialInstructions}
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "items" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Shipment Items</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {!shipment.items || shipment.items.length === 0 ? (
-                            <EmptyState
-                                icon={Package}
-                                title="No items"
-                                description="No items in this shipment"
-                            />
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b text-left">
-                                            <th className="py-2 pr-4 font-medium text-muted-foreground">
-                                                Description
-                                            </th>
-                                            <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
-                                                Qty
-                                            </th>
-                                            <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
-                                                Weight
-                                            </th>
-                                            <th className="py-2 font-medium text-muted-foreground text-right">
-                                                Value
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {shipment.items.map(
-                                            (item: {
-                                                id: string;
-                                                description: string;
-                                                quantity: number;
-                                                weight: number;
-                                                value: number;
-                                            }) => (
-                                                <tr
-                                                    key={item.id}
-                                                    className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
-                                                >
-                                                    <td className="py-3 pr-4 font-medium">
-                                                        {item.description}
-                                                    </td>
-                                                    <td className="py-3 pr-4 text-right">
-                                                        {item.quantity}
-                                                    </td>
-                                                    <td className="py-3 pr-4 text-right">
-                                                        {item.weight.toLocaleString()} lbs
-                                                    </td>
-                                                    <td className="py-3 text-right">
-                                                        {formatCurrency(item.value)}
-                                                    </td>
-                                                </tr>
-                                            )
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "tracking" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Tracking History</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                                <div>
-                                    <p className="text-sm font-medium">Shipment Created</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formatDate(shipment.createdAt)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                                <div>
-                                    <p className="text-sm font-medium">Pickup Scheduled</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formatDate(shipment.pickupDate)} at {shipment.pickupTime}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="shipment"
-                    recordId={shipmentId}
-                    activityItems={activityItems}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

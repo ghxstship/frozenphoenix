@@ -2,11 +2,10 @@
 
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteDeal, useUpdateDeal as useUpdateDealHook } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -19,18 +18,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/layouts/empty-state";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     Calendar,
     DollarSign,
     Edit,
-    Filter,
     FolderKanban,
     Loader2,
     Mail,
@@ -38,15 +34,24 @@ import {
     User,
 } from "lucide-react";
 
-type TabId = "overview" | "activity" | "notes" | "chatter";
-const TAB_VALUES = ["overview", "activity", "notes", "chatter"] as const;
-
 function computeDaysToClose(dateStr: string): number {
     return Math.max(
         0,
         Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     );
 }
+
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "deals",
+    titleKey: "title",
+    statusKey: "stage",
+    icon: DollarSign,
+    backHref: "/pipeline",
+    backLabel: "Pipeline",
+    chatterRecordType: "deal",
+    fields: [],
+    tabs: [],
+};
 
 export default function DealDetailPage() {
     const params = useParams();
@@ -59,33 +64,15 @@ export default function DealDetailPage() {
         useUpdateHook: useUpdateDealHook,
         useDeleteHook: useDeleteDeal,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
     const [noteDialogOpen, setNoteDialogOpen] = useState(false);
     const [noteText, setNoteText] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddChatterComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
     const [convertDialogOpen, setConvertDialogOpen] = useState(false);
     const [convertProjectName, setConvertProjectName] = useState("");
     const [convertBudget, setConvertBudget] = useState(0);
     const updateDeal = useUpdateDeal();
     const createProject = useCreateProject();
     const createComment = useCreateComment();
-    const { data: sbDeals } = useDeals();
+    const { data: sbDeals, isLoading } = useDeals();
 
     const sbDeal = sbDeals?.find((d) => d.id === dealId);
     const deal = sbDeal
@@ -173,180 +160,124 @@ export default function DealDetailPage() {
         }
     };
 
-    if (!deal) {
-        return (
-            <EmptyState
-                icon={Filter}
-                title="Deal not found"
-                description="The deal you're looking for doesn't exist or has been deleted."
-                action={{ label: "Back to Pipeline", onClick: () => router.push("/pipeline") }}
-            />
-        );
-    }
+    const stageConfig = deal ? DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP] : null;
+    const weightedValue = deal ? deal.value * (deal.probability / 100) : 0;
+    const daysToClose = deal ? computeDaysToClose(deal.expectedCloseDate) : 0;
 
-    const stageConfig = DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP];
-    const weightedValue = deal.value * (deal.probability / 100);
-    const daysToClose = computeDaysToClose(deal.expectedCloseDate);
+    const sidebarSlot =
+        deal && stageConfig ? (
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">Deal Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Stage</span>
+                            <Badge variant={stageConfig.variant}>{stageConfig.label}</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Probability</span>
+                            <span className="font-medium">{deal.probability}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Expected Close</span>
+                            <span>{formatDate(deal.expectedCloseDate)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Assigned To</span>
+                            <span>{deal.assignedTo}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">Contact</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span>{deal.contactName}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <a
+                                href={`mailto:${deal.contactEmail}`}
+                                className="text-primary hover:underline"
+                            >
+                                {deal.contactEmail}
+                            </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                            <span>{deal.company}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        ) : undefined;
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "activity" as const, label: "Activity" },
-        { id: "notes" as const, label: "Notes" },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
-        <div className="space-y-4">
+    const overviewSlot = deal ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard title="Deal Value" value={formatCurrency(deal.value)} icon={DollarSign} />
+                <StatCard
+                    title="Weighted Value"
+                    value={formatCurrency(weightedValue)}
+                    icon={TrendingUp}
+                />
+                <StatCard title="Days to Close" value={daysToClose} icon={Calendar} />
+            </div>
+            {!!deal.notes && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{deal.notes}</p>
+                    </CardContent>
+                </Card>
+            )}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Deal Details</CardTitle>
+                    <CardTitle className="text-base">Timeline</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Stage</span>
-                        <Badge variant={stageConfig.variant}>{stageConfig.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Probability</span>
-                        <span className="font-medium">{deal.probability}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Expected Close</span>
-                        <span>{formatDate(deal.expectedCloseDate)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Assigned To</span>
-                        <span>{deal.assignedTo}</span>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Contact</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{deal.contactName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <a
-                            href={`mailto:${deal.contactEmail}`}
-                            className="text-primary hover:underline"
-                        >
-                            {deal.contactEmail}
-                        </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span>{deal.company}</span>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="h-2 w-2 rounded-full bg-primary mt-2" />
+                            <div>
+                                <p className="text-sm font-medium">Deal Created</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {formatDate(deal.createdAt)}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="h-2 w-2 rounded-full bg-muted-foreground mt-2" />
+                            <div>
+                                <p className="text-sm font-medium">Last Updated</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {formatDate(deal.updatedAt)}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
 
-    return (
-        <>
-            <DetailLayout
-                backHref="/pipeline"
-                backLabel="Pipeline"
-                entityType="deals"
-                entityId={dealId}
-                title={deal.title}
-                subtitle={deal.company}
-                status={deal.stage}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
-                        {deal.company.charAt(0)}
-                    </div>
-                }
-                actions={
-                    <Button onClick={() => router.push(`/deals/${dealId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                }
-                menuItems={[
-                    {
-                        label: createProject.isPending ? "Converting..." : "Convert to Project",
-                        onClick: openConvertDialog,
-                    },
-                    {
-                        label: updateDeal.isPending ? "Updating..." : "Mark as Won",
-                        onClick: handleMarkWon,
-                    },
-                    { label: "Mark as Lost", onClick: handleMarkLost, variant: "destructive" },
-                    ...crudMenuItems,
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                sidebar={sidebar}
-            >
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Value Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <StatCard
-                                title="Deal Value"
-                                value={formatCurrency(deal.value)}
-                                icon={DollarSign}
-                            />
-                            <StatCard
-                                title="Weighted Value"
-                                value={formatCurrency(weightedValue)}
-                                icon={TrendingUp}
-                            />
-                            <StatCard title="Days to Close" value={daysToClose} icon={Calendar} />
-                        </div>
-
-                        {/* Notes */}
-                        {deal.notes && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Notes</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground">{deal.notes}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Timeline */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Timeline</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="h-2 w-2 rounded-full bg-primary mt-2" />
-                                        <div>
-                                            <p className="text-sm font-medium">Deal Created</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDate(deal.createdAt)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="h-2 w-2 rounded-full bg-muted-foreground mt-2" />
-                                        <div>
-                                            <p className="text-sm font-medium">Last Updated</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDate(deal.updatedAt)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-
-                {activeTab === "activity" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => deal?.company ?? "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "activity",
+                label: "Activity",
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Activity Log</CardTitle>
@@ -357,9 +288,12 @@ export default function DealDetailPage() {
                             </p>
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "notes" && (
+                ),
+            },
+            {
+                id: "notes",
+                label: "Notes",
+                content: deal ? (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Notes & Comments</CardTitle>
@@ -382,17 +316,46 @@ export default function DealDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-                {activeTab === "chatter" && (
-                    <RecordChatter
-                        recordType="deal"
-                        recordId={dealId}
-                        comments={chatterComments}
-                        currentUserId="u1"
-                        onAddComment={handleAddChatterComment}
-                    />
-                )}
-            </DetailLayout>
+                ) : null,
+            },
+        ],
+    };
+
+    const record = deal ? { ...(deal as unknown as Record<string, unknown>) } : null;
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={dealId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    {
+                        label: createProject.isPending ? "Converting..." : "Convert to Project",
+                        onClick: openConvertDialog,
+                    },
+                    {
+                        label: updateDeal.isPending ? "Updating..." : "Mark as Won",
+                        onClick: handleMarkWon,
+                    },
+                    { label: "Mark as Lost", onClick: handleMarkLost, variant: "destructive" },
+                    ...crudMenuItems,
+                ]}
+                avatar={
+                    deal ? (
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                            {deal.company.charAt(0)}
+                        </div>
+                    ) : undefined
+                }
+                actions={
+                    <Button onClick={() => router.push(`/deals/${dealId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+            />
 
             {/* Convert to Project Dialog */}
             <Dialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>

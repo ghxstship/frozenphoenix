@@ -1,38 +1,64 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteExpense, useExpense, useUpdateExpense } from "@/lib/supabase/hooks-pages";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
-import { Badge } from "@/components/ui/badge";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
-import { EXPENSE_CATEGORY_LABELS, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-    Calendar,
-    CheckCircle2,
-    DollarSign,
-    FolderOpen,
-    Receipt,
-    Upload,
-    User,
-} from "lucide-react";
+import { EXPENSE_CATEGORY_LABELS } from "@/config/ui-variants";
+import type { DetailPageConfig } from "@/types/detail-page-config";
+import { CheckCircle2, Receipt, Upload } from "lucide-react";
 
-type TabId = "details" | "receipt" | "chatter";
-const TAB_VALUES = ["details", "receipt", "chatter"] as const;
+const CONFIG: DetailPageConfig = {
+    entityKey: "expenses",
+    titleKey: "description",
+    subtitleFn: (r) => {
+        const cat = (r.category as string) ?? "other";
+        const proj = (r.project_name as string) ?? "";
+        const label = EXPENSE_CATEGORY_LABELS[cat as keyof typeof EXPENSE_CATEGORY_LABELS] ?? cat;
+        return proj ? `${label} · ${proj}` : label;
+    },
+    statusKey: "status",
+    icon: Receipt,
+    backHref: "/expenses",
+    backLabel: "Expenses",
+    chatterRecordType: "expense",
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status" },
+        { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+        { id: "category", label: "Category", accessorKey: "category" },
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date" },
+        { id: "cost_center", label: "Cost Center", accessorKey: "cost_center" },
+    ],
+    fields: [
+        { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date" },
+        { id: "project_name", label: "Project", accessorKey: "project_name" },
+        { id: "submitted_by", label: "Submitted By", accessorKey: "submitted_by" },
+        {
+            id: "reimbursement_method",
+            label: "Reimbursement Method",
+            accessorKey: "reimbursement_method",
+        },
+        { id: "approved_by", label: "Approved By", accessorKey: "approved_by" },
+        { id: "approved_at", label: "Approved At", accessorKey: "approved_at", fieldType: "date" },
+        { id: "notes", label: "Notes", accessorKey: "notes", fullWidth: true },
+    ],
+    tabs: [
+        {
+            id: "receipt",
+            label: "Receipt",
+        },
+    ],
+};
 
 export default function ExpenseDetailPage() {
     const params = useParams();
     const router = useRouter();
     const entityId = params.id as string;
     const { data: sbRecord, isLoading } = useExpense(entityId);
-    const ex = sbRecord as Record<string, unknown> | null;
+    const rec = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Expense",
@@ -40,247 +66,14 @@ export default function ExpenseDetailPage() {
         useUpdateHook: useUpdateExpense,
         useDeleteHook: useDeleteExpense,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "details",
-        validValues: TAB_VALUES,
-    });
 
-    const expDescription = (ex?.description as string) ?? "";
-    const expCategory = (ex?.category as string) ?? "other";
-    const expAmount = (ex?.amount as number) ?? 0;
-    const expDate = (ex?.date as string) ?? "";
-    const submittedBy = (ex?.submitted_by as string) ?? (ex?.submittedBy as string) ?? "";
-    const projectName = (ex?.project_name as string) ?? (ex?.projectName as string) ?? "";
-    const expStatus = (ex?.status as string) ?? "pending";
-    const receiptUrl = (ex?.receipt_url as string) ?? (ex?.receiptUrl as string) ?? "";
-    const approvedBy = (ex?.approved_by as string) ?? (ex?.approvedBy as string) ?? "";
-    const approvedAt = (ex?.approved_at as string) ?? (ex?.approvedAt as string) ?? "";
-    const expNotes = (ex?.notes as string) ?? "";
-    const reimbursementMethod =
-        (ex?.reimbursement_method as string) ?? (ex?.reimbursementMethod as string) ?? "";
-    const costCenter = (ex?.cost_center as string) ?? (ex?.costCenter as string) ?? "";
+    const receiptUrl = (rec?.receipt_url as string) ?? (rec?.receiptUrl as string) ?? "";
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    if (isLoading) return <LoadingState />;
-
-    const tabs = [
-        { id: "details" as const, label: "Details" },
-        { id: "receipt" as const, label: "Receipt" },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Expense Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(expStatus)}>
-                            {getStatusLabel(expStatus)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Amount</span>
-                        <span className="font-bold">{formatCurrency(expAmount)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Category</span>
-                        <Badge variant="outline">
-                            {EXPENSE_CATEGORY_LABELS[
-                                expCategory as keyof typeof EXPENSE_CATEGORY_LABELS
-                            ] ?? expCategory}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Date</span>
-                        <span className="font-medium">{expDate ? formatDate(expDate) : "—"}</span>
-                    </div>
-                    {costCenter && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Cost Center</span>
-                            <span className="font-mono text-xs">{costCenter}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Submitted By</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                            <p className="font-medium">{submittedBy || "—"}</p>
-                            {projectName && (
-                                <p className="text-xs text-muted-foreground">{projectName}</p>
-                            )}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => handleUpdate({ status: "approved" })}
-                    >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Approve
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => setActiveTab("receipt" as TabId)}
-                    >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Receipt
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    );
-
-    return (
-        <DetailLayout
-            backHref="/expenses"
-            backLabel="Expenses"
-            entityType="expenses"
-            entityId={entityId}
-            title={expDescription}
-            subtitle={`${EXPENSE_CATEGORY_LABELS[expCategory as keyof typeof EXPENSE_CATEGORY_LABELS] ?? expCategory}${projectName ? ` · ${projectName}` : ""}`}
-            status={expStatus}
-            avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Receipt className="h-7 w-7 text-primary-foreground" />
-                </div>
-            }
-            actions={
-                <Button size="sm" onClick={() => handleUpdate({ status: "approved" })}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Approve
-                </Button>
-            }
-            menuItems={[
-                { label: "Edit Expense", onClick: () => router.push(`/expenses/${entityId}/edit`) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "details" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <DollarSign className="h-5 w-5 text-primary" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Amount</p>
-                                        <p className="text-lg font-bold">
-                                            {formatCurrency(expAmount)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="h-5 w-5 text-info" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Date</p>
-                                        <p className="text-sm font-semibold">
-                                            {expDate ? formatDate(expDate) : "—"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <FolderOpen className="h-5 w-5 text-warning" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Project</p>
-                                        <p className="text-sm font-semibold">
-                                            {projectName || "—"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {expNotes && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Notes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {expNotes}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Reimbursement</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Method</span>
-                                <span className="font-medium">{reimbursementMethod || "—"}</span>
-                            </div>
-                            {approvedBy && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Approved By</span>
-                                    <span className="font-medium">{approvedBy}</span>
-                                </div>
-                            )}
-                            {approvedAt && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Approved At</span>
-                                    <span className="font-medium">{formatDate(approvedAt)}</span>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "receipt" && (
+    const receiptTab: DetailPageConfig["tabs"] = [
+        {
+            id: "receipt",
+            label: "Receipt",
+            content: (
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Receipt</CardTitle>
@@ -304,17 +97,33 @@ export default function ExpenseDetailPage() {
                         )}
                     </CardContent>
                 </Card>
-            )}
+            ),
+        },
+    ];
 
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="expense"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+    const config: DetailPageConfig = { ...CONFIG, tabs: receiptTab };
+
+    return (
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={rec}
+            isLoading={isLoading}
+            menuItems={[
+                { label: "Edit Expense", onClick: () => router.push(`/expenses/${entityId}/edit`) },
+                ...crudMenuItems,
+            ]}
+            avatar={
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <Receipt className="h-7 w-7 text-primary-foreground" />
+                </div>
+            }
+            actions={
+                <Button size="sm" onClick={() => handleUpdate({ status: "approved" })}>
+                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    Approve
+                </Button>
+            }
+        />
     );
 }

@@ -2,14 +2,13 @@
 
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import {
     useDeleteCrewMember,
     useUpdateCrewMember as useUpdateCrewMemberHook,
 } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,11 +22,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
 import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Award,
@@ -40,8 +38,17 @@ import {
     Phone,
 } from "lucide-react";
 
-type TabId = "overview" | "certifications" | "schedule" | "history" | "chatter";
-const TAB_VALUES = ["overview", "certifications", "schedule", "history", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "crew",
+    titleKey: "name",
+    statusKey: "status",
+    icon: HardHat,
+    backHref: "/crew",
+    backLabel: "Crew",
+    chatterRecordType: "crew_member",
+    fields: [],
+    tabs: [],
+};
 
 export default function CrewDetailPage() {
     const params = useParams();
@@ -54,31 +61,13 @@ export default function CrewDetailPage() {
         useUpdateHook: useUpdateCrewMemberHook,
         useDeleteHook: useDeleteCrewMember,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
     const [assignOpen, setAssignOpen] = useState(false);
     const [assignProjectId, setAssignProjectId] = useState("");
     const [certOpen, setCertOpen] = useState(false);
     const [certName, setCertName] = useState("");
     const [certExpiry, setCertExpiry] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
     const updateCrewMember = useUpdateCrewMember();
-    const { data: sbCrew } = useCrewMembers();
+    const { data: sbCrew, isLoading } = useCrewMembers();
     const { data: sbProjects } = useProjects();
 
     const sbMember = sbCrew?.find((c) => c.id === crewId);
@@ -114,8 +103,6 @@ export default function CrewDetailPage() {
 
     const handleAssignToProject = async () => {
         if (!assignProjectId.trim()) return;
-        // In production, this would create a project_members record
-        // For now, we log and close the dialog
         logger.info("Assigning crew member", { crewId, projectId: assignProjectId });
         setAssignOpen(false);
         setAssignProjectId("");
@@ -123,43 +110,20 @@ export default function CrewDetailPage() {
 
     const handleAddCertification = async () => {
         if (!certName.trim()) return;
-        // In production, this would insert into a certifications table
         logger.info("Adding certification", { certName, certExpiry, crewId });
         setCertOpen(false);
         setCertName("");
         setCertExpiry("");
     };
 
-    if (!crewMember) {
-        return (
-            <EmptyState
-                icon={HardHat}
-                title="Crew member not found"
-                description="The crew member you're looking for doesn't exist."
-                action={{ label: "Back to Crew", onClick: () => router.push("/crew") }}
-            />
-        );
-    }
-
-    const expiredCerts = crewMember.certifications.filter((c) => !c.isValid);
-    const validCerts = crewMember.certifications.filter((c) => c.isValid);
+    const expiredCerts = crewMember?.certifications.filter((c) => !c.isValid) ?? [];
+    const validCerts = crewMember?.certifications.filter((c) => c.isValid) ?? [];
     const assignedProjects = (sbProjects ?? []).filter((p: Record<string, unknown>) => {
         const teamIds = (p.team_ids ?? p.teamIds) as string[] | undefined;
         return Array.isArray(teamIds) ? teamIds.includes(crewId) : false;
     });
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        {
-            id: "certifications" as const,
-            label: "Certifications",
-            count: crewMember.certifications.length,
-        },
-        { id: "schedule" as const, label: "Schedule" },
-        { id: "history" as const, label: "History" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = crewMember ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -183,7 +147,6 @@ export default function CrewDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Employment</CardTitle>
@@ -205,7 +168,6 @@ export default function CrewDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             {expiredCerts.length > 0 && (
                 <Card className="border-destructive/50 bg-destructive/5">
                     <CardContent className="pt-4">
@@ -221,136 +183,99 @@ export default function CrewDetailPage() {
                 </Card>
             )}
         </div>
-    );
+    ) : undefined;
 
-    return (
-        <>
-            <DetailLayout
-                backHref="/crew"
-                backLabel="Crew"
-                entityType="crew"
-                entityId={crewId}
-                title={crewMember.name}
-                subtitle={crewMember.role}
-                status={crewMember.status}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
-                        {crewMember.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                    </div>
-                }
-                actions={
-                    <Button onClick={() => router.push(`/crew/${crewId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                }
-                menuItems={[
-                    { label: "Assign to Project", onClick: () => setAssignOpen(true) },
-                    {
-                        label: "View Time Entries",
-                        onClick: () => router.push(`/crew/${crewId}/time`),
-                    },
-                    {
-                        label: updateCrewMember.isPending ? "Deactivating..." : "Deactivate",
-                        onClick: handleDeactivate,
-                        variant: "destructive",
-                    },
-                    ...crudMenuItems,
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                sidebar={sidebar}
-            >
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <DollarSign className="h-4 w-4" />
-                                        <span className="text-xs">Hourly Rate</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {formatCurrency(crewMember.hourlyRate)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">per hour</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Award className="h-4 w-4" />
-                                        <span className="text-xs">Certifications</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {validCerts.length}/{crewMember.certifications.length}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">valid</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <HardHat className="h-4 w-4" />
-                                        <span className="text-xs">Projects</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{assignedProjects.length}</p>
-                                    <p className="text-xs text-muted-foreground">assigned</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Clock className="h-4 w-4" />
-                                        <span className="text-xs">This Month</span>
-                                    </div>
-                                    <p className="text-xl font-bold">0h</p>
-                                    <p className="text-xs text-muted-foreground">logged</p>
-                                </CardContent>
-                            </Card>
+    const overviewSlot = crewMember ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Hourly Rate</span>
                         </div>
-
-                        {/* Assigned Projects */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Assigned Projects</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {assignedProjects.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground text-center py-4">
-                                        Not assigned to any projects
-                                    </p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {assignedProjects.map((project) => (
-                                            <div
-                                                key={project.id}
-                                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                            >
-                                                <div>
-                                                    <p className="text-sm font-medium">
-                                                        {project.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {project.client}
-                                                    </p>
-                                                </div>
-                                                <StatusBadge status={project.status} />
-                                            </div>
-                                        ))}
+                        <p className="text-xl font-bold">{formatCurrency(crewMember.hourlyRate)}</p>
+                        <p className="text-xs text-muted-foreground">per hour</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Award className="h-4 w-4" />
+                            <span className="text-xs">Certifications</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {validCerts.length}/{crewMember.certifications.length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">valid</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <HardHat className="h-4 w-4" />
+                            <span className="text-xs">Projects</span>
+                        </div>
+                        <p className="text-xl font-bold">{assignedProjects.length}</p>
+                        <p className="text-xs text-muted-foreground">assigned</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-xs">This Month</span>
+                        </div>
+                        <p className="text-xl font-bold">0h</p>
+                        <p className="text-xs text-muted-foreground">logged</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Assigned Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {assignedProjects.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            Not assigned to any projects
+                        </p>
+                    ) : (
+                        <div className="space-y-3">
+                            {assignedProjects.map((project) => (
+                                <div
+                                    key={project.id}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium">{project.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {
+                                                (project as unknown as Record<string, unknown>)
+                                                    .client as string
+                                            }
+                                        </p>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
+                                    <StatusBadge status={project.status} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    ) : undefined;
 
-                {activeTab === "certifications" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => crewMember?.role ?? "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "certifications",
+                label: "Certifications",
+                content: crewMember ? (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Certifications</CardTitle>
@@ -372,7 +297,7 @@ export default function CrewDetailPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {crewMember.certifications.map((cert) => {
-                                        const config =
+                                        const certConfig =
                                             CERTIFICATION_TYPE_MAP[
                                                 cert.type as keyof typeof CERTIFICATION_TYPE_MAP
                                             ];
@@ -387,7 +312,7 @@ export default function CrewDetailPage() {
                                                     />
                                                     <div>
                                                         <p className="text-sm font-medium">
-                                                            {config?.label || cert.label}
+                                                            {certConfig?.label || cert.label}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
                                                             Expires: {formatDate(cert.expiryDate)}
@@ -408,9 +333,12 @@ export default function CrewDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "schedule" && (
+                ) : null,
+            },
+            {
+                id: "schedule",
+                label: "Schedule",
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Upcoming Schedule</CardTitle>
@@ -423,9 +351,12 @@ export default function CrewDetailPage() {
                             />
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "history" && (
+                ),
+            },
+            {
+                id: "history",
+                label: "History",
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Work History</CardTitle>
@@ -436,17 +367,50 @@ export default function CrewDetailPage() {
                             </p>
                         </CardContent>
                     </Card>
-                )}
-                {activeTab === "chatter" && (
-                    <RecordChatter
-                        recordType="crew_member"
-                        recordId={crewId}
-                        comments={chatterComments}
-                        currentUserId="u1"
-                        onAddComment={handleAddComment}
-                    />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
+
+    const record = crewMember ? { ...(crewMember as unknown as Record<string, unknown>) } : null;
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={crewId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    { label: "Assign to Project", onClick: () => setAssignOpen(true) },
+                    {
+                        label: "View Time Entries",
+                        onClick: () => router.push(`/crew/${crewId}/time`),
+                    },
+                    {
+                        label: updateCrewMember.isPending ? "Deactivating..." : "Deactivate",
+                        onClick: handleDeactivate,
+                        variant: "destructive",
+                    },
+                    ...crudMenuItems,
+                ]}
+                avatar={
+                    crewMember ? (
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                            {crewMember.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                        </div>
+                    ) : undefined
+                }
+                actions={
+                    <Button onClick={() => router.push(`/crew/${crewId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+            />
 
             {/* Assign to Project Dialog */}
             <Dialog open={assignOpen} onOpenChange={setAssignOpen}>

@@ -76,7 +76,7 @@ export function useUpsertSetting() {
                         definition_id: params.definition_id,
                         scope_type: params.scope_type,
                         scope_id: params.scope_id,
-                        value: JSON.stringify(params.value),
+                        value: params.value,
                         changed_by: params.changed_by,
                     },
                     { onConflict: "definition_id,scope_type,scope_id" }
@@ -224,7 +224,7 @@ export function useUpsertFlagOverride() {
                         flag_id: params.flag_id,
                         scope_type: params.scope_type,
                         scope_id: params.scope_id,
-                        value: JSON.stringify(params.value),
+                        value: params.value,
                         reason: params.reason ?? null,
                         created_by: params.created_by ?? null,
                         expires_at: params.expires_at ?? null,
@@ -398,10 +398,22 @@ export function useUpsertNotificationPreferences() {
             push_enabled?: boolean;
             sms_enabled?: boolean;
             in_app_enabled?: boolean;
+            categories?: Record<string, unknown>;
             category_preferences?: Record<string, unknown>;
         }) => {
+            const categories = params.categories ?? params.category_preferences;
             const { data, error } = await fromTable("notification_preferences")
-                .upsert(params, { onConflict: "user_id" })
+                .upsert(
+                    {
+                        user_id: params.user_id,
+                        email_enabled: params.email_enabled,
+                        push_enabled: params.push_enabled,
+                        sms_enabled: params.sms_enabled,
+                        in_app_enabled: params.in_app_enabled,
+                        categories,
+                    },
+                    { onConflict: "user_id" }
+                )
                 .select("*")
                 .single();
             if (error) throw error;

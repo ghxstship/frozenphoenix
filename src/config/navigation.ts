@@ -107,6 +107,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { hasPermission } from "@/config/rbac";
+import { isTierAtLeast, type PricingTier } from "@/config/tier-entitlements";
 import type { PermissionLevel } from "@/types";
 
 export interface NavItem {
@@ -115,6 +116,8 @@ export interface NavItem {
     icon: LucideIcon;
     badge?: string | number;
     permission?: string;
+    /** Minimum pricing tier required to see this item. Omit = visible on all tiers. */
+    minTier?: PricingTier;
     children?: NavItem[];
 }
 
@@ -145,6 +148,8 @@ export function flattenNavItems(sections: NavSection[]): NavItem[] {
 export interface NavigationVisibilityOptions {
     includeContextual?: boolean;
     contextualVisibility?: Partial<Record<NonNullable<NavSection["contextual"]>, boolean>>;
+    /** Current org pricing tier — items with minTier above this are hidden */
+    currentTier?: PricingTier;
 }
 
 function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): boolean {
@@ -158,9 +163,19 @@ function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): bool
     return hasPermission(role, resource, action ?? "read");
 }
 
-function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undefined): NavItem[] {
+function isItemTierAllowed(item: NavItem, currentTier: PricingTier | undefined): boolean {
+    if (!item.minTier) return true;
+    if (!currentTier) return true;
+    return isTierAtLeast(currentTier, item.minTier);
+}
+
+function filterItems(
+    items: NavItem[],
+    role: PermissionLevel | undefined,
+    currentTier: PricingTier | undefined
+): NavItem[] {
     return items
-        .filter((item) => isItemPermitted(item, role))
+        .filter((item) => isItemPermitted(item, role) && isItemTierAllowed(item, currentTier))
         .map((item) => {
             if (!item.children || item.children.length === 0) {
                 return item;
@@ -168,7 +183,7 @@ function filterItemsByPermission(items: NavItem[], role: PermissionLevel | undef
 
             return {
                 ...item,
-                children: filterItemsByPermission(item.children, role),
+                children: filterItems(item.children, role, currentTier),
             };
         });
 }
@@ -191,7 +206,7 @@ export function getNavigationSectionsForRole(
         .filter((section) => isContextualSectionVisible(section, options))
         .map((section) => ({
             ...section,
-            items: filterItemsByPermission(section.items, role),
+            items: filterItems(section.items, role, options?.currentTier),
         }))
         .filter((section) => section.items.length > 0);
 }

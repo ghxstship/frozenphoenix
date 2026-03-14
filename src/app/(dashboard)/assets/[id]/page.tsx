@@ -1,12 +1,11 @@
 "use client";
 
 import { logger } from "@/lib/logger";
-import React, { useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteAsset, useUpdateAsset as useUpdateAssetHook } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { ConditionBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
 import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Barcode,
@@ -37,8 +35,17 @@ import {
     Package,
 } from "lucide-react";
 
-type TabId = "overview" | "history" | "maintenance" | "chatter";
-const TAB_VALUES = ["overview", "history", "maintenance", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "assets",
+    titleKey: "name",
+    statusKey: "condition",
+    icon: Package,
+    backHref: "/assets",
+    backLabel: "Assets",
+    chatterRecordType: "asset",
+    fields: [],
+    tabs: [],
+};
 
 export default function AssetDetailPage() {
     const params = useParams();
@@ -51,28 +58,10 @@ export default function AssetDetailPage() {
         useUpdateHook: useUpdateAssetHook,
         useDeleteHook: useDeleteAsset,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
     const [checkoutOpen, setCheckoutOpen] = useState(false);
     const [maintenanceOpen, setMaintenanceOpen] = useState(false);
     const [checkoutProject, setCheckoutProject] = useState("");
     const [maintenanceNote, setMaintenanceNote] = useState("");
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
     const updateAsset = useUpdateAsset();
     const createAssignment = useCreateAssetAssignment();
     const { data: sbAssets } = useAssets();
@@ -142,28 +131,11 @@ export default function AssetDetailPage() {
         }
     };
 
-    if (!asset) {
-        return (
-            <EmptyState
-                icon={Package}
-                title="Asset not found"
-                description="The asset you're looking for doesn't exist."
-                action={{ label: "Back to Assets", onClick: () => router.push("/assets") }}
-            />
-        );
-    }
+    const isLoading = !sbAssets;
+    const conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
+    const isRental = asset?.ownedOrRental === "rental";
 
-    const conditionConfig = ASSET_CONDITION_MAP[asset.condition];
-    const isRental = asset.ownedOrRental === "rental";
-
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "history" as const, label: "History" },
-        { id: "maintenance" as const, label: "Maintenance" },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = asset ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -176,7 +148,9 @@ export default function AssetDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Condition</span>
-                        <Badge variant={conditionConfig.variant}>{conditionConfig.label}</Badge>
+                        {conditionConfig && (
+                            <Badge variant={conditionConfig.variant}>{conditionConfig.label}</Badge>
+                        )}
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Ownership</span>
@@ -190,7 +164,6 @@ export default function AssetDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Location</CardTitle>
@@ -202,7 +175,6 @@ export default function AssetDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             {isRental && asset.rentalReturnDate && (
                 <Card className="border-warning/50 bg-warning/5">
                     <CardContent className="pt-4">
@@ -216,7 +188,6 @@ export default function AssetDetailPage() {
                     </CardContent>
                 </Card>
             )}
-
             {asset.condition === "needs_repair" && (
                 <Card className="border-destructive/50 bg-destructive/5">
                     <CardContent className="pt-4">
@@ -231,119 +202,83 @@ export default function AssetDetailPage() {
                 </Card>
             )}
         </div>
-    );
+    ) : undefined;
 
-    return (
-        <>
-            <DetailLayout
-                backHref="/assets"
-                backLabel="Assets"
-                entityType="assets"
-                entityId={assetId}
-                title={asset.name}
-                subtitle={asset.category}
-                status={asset.condition}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
-                        {asset.category.charAt(0)}
-                    </div>
-                }
-                actions={
-                    <Button onClick={() => router.push(`/assets/${assetId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                }
-                menuItems={[
-                    { label: "Check Out", onClick: () => setCheckoutOpen(true) },
-                    { label: "Log Maintenance", onClick: () => setMaintenanceOpen(true) },
-                    { label: "Print Label", onClick: () => window.print() },
-                    {
-                        label: updateAsset.isPending ? "Decommissioning..." : "Decommission",
-                        onClick: handleDecommission,
-                        variant: "destructive",
-                    },
-                    ...crudMenuItems,
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                sidebar={sidebar}
-            >
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {asset.purchasePrice && (
-                                <Card>
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                            <DollarSign className="h-4 w-4" />
-                                            <span className="text-xs">Purchase Price</span>
-                                        </div>
-                                        <p className="text-xl font-bold">
-                                            {formatCurrency(asset.purchasePrice)}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            )}
-                            {isRental && asset.dailyRentalCost && (
-                                <Card>
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                            <DollarSign className="h-4 w-4" />
-                                            <span className="text-xs">Daily Rental Cost</span>
-                                        </div>
-                                        <p className="text-xl font-bold">
-                                            {formatCurrency(asset.dailyRentalCost)}/day
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            )}
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <MapPin className="h-4 w-4" />
-                                        <span className="text-xs">Current Location</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{asset.location}</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Notes */}
-                        {asset.notes && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Notes</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground">{asset.notes}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Condition */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Condition Assessment</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-4">
-                                    <ConditionBadge
-                                        condition={asset.condition}
-                                        className="text-sm px-3 py-1"
-                                    />
-                                    <p className="text-sm text-muted-foreground">
-                                        Last inspected: Not recorded
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+    const overviewSlot = asset ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {!!asset.purchasePrice && (
+                    <Card>
+                        <CardContent className="pt-4">
+                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                <DollarSign className="h-4 w-4" />
+                                <span className="text-xs">Purchase Price</span>
+                            </div>
+                            <p className="text-xl font-bold">
+                                {formatCurrency(asset.purchasePrice)}
+                            </p>
+                        </CardContent>
+                    </Card>
                 )}
+                {isRental && !!asset.dailyRentalCost && (
+                    <Card>
+                        <CardContent className="pt-4">
+                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                <DollarSign className="h-4 w-4" />
+                                <span className="text-xs">Daily Rental Cost</span>
+                            </div>
+                            <p className="text-xl font-bold">
+                                {formatCurrency(asset.dailyRentalCost)}/day
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-xs">Current Location</span>
+                        </div>
+                        <p className="text-xl font-bold">{asset.location}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            {!!asset.notes && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{asset.notes}</p>
+                    </CardContent>
+                </Card>
+            )}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Condition Assessment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-4">
+                        <ConditionBadge condition={asset.condition} className="text-sm px-3 py-1" />
+                        <p className="text-sm text-muted-foreground">
+                            Last inspected: Not recorded
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    ) : undefined;
 
-                {activeTab === "history" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => asset?.category ?? "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "history",
+                label: "History",
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Usage History</CardTitle>
@@ -356,9 +291,12 @@ export default function AssetDetailPage() {
                             />
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "maintenance" && (
+                ),
+            },
+            {
+                id: "maintenance",
+                label: "Maintenance",
+                content: (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Maintenance Records</CardTitle>
@@ -378,19 +316,44 @@ export default function AssetDetailPage() {
                             />
                         </CardContent>
                     </Card>
-                )}
-                {activeTab === "chatter" && (
-                    <RecordChatter
-                        recordType="asset"
-                        recordId={assetId}
-                        comments={chatterComments}
-                        currentUserId="u1"
-                        onAddComment={handleAddComment}
-                    />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
 
-            {/* Check Out Dialog */}
+    const record = asset ? ({ ...asset } as Record<string, unknown>) : null;
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={assetId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    { label: "Check Out", onClick: () => setCheckoutOpen(true) },
+                    { label: "Log Maintenance", onClick: () => setMaintenanceOpen(true) },
+                    { label: "Print Label", onClick: () => window.print() },
+                    {
+                        label: updateAsset.isPending ? "Decommissioning..." : "Decommission",
+                        onClick: handleDecommission,
+                        variant: "destructive",
+                    },
+                    ...crudMenuItems,
+                ]}
+                avatar={
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                        {asset?.category.charAt(0) ?? "A"}
+                    </div>
+                }
+                actions={
+                    <Button onClick={() => router.push(`/assets/${assetId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+            />
+
             <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -418,7 +381,6 @@ export default function AssetDetailPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Log Maintenance Dialog */}
             <Dialog open={maintenanceOpen} onOpenChange={setMaintenanceOpen}>
                 <DialogContent>
                     <DialogHeader>

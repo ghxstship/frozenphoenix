@@ -1,28 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     useCreativeAsset,
     useDeleteCreativeAsset,
     useUpdateCreativeAsset,
 } from "@/lib/supabase/hooks-pages";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Download, Eye, MessageSquare, Palette, User } from "lucide-react";
-
-type TabId = "details" | "reviews" | "chatter";
-const TAB_VALUES = ["details", "reviews", "chatter"] as const;
 
 interface ReviewItem {
     id: string;
@@ -57,6 +50,18 @@ function parseSpecs(raw: unknown): { width: number; height: number; format: stri
     };
 }
 
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "creative-assets",
+    titleKey: "name",
+    statusKey: "production_status",
+    icon: Palette,
+    backHref: "/creative-assets",
+    backLabel: "Creative Assets",
+    chatterRecordType: "creative_asset",
+    fields: [],
+    tabs: [],
+};
+
 export default function CreativeAssetDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -70,31 +75,14 @@ export default function CreativeAssetDetailPage() {
         useUpdateHook: useUpdateCreativeAsset,
         useDeleteHook: useDeleteCreativeAsset,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "details",
-        validValues: TAB_VALUES,
-    });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    const assetName = (ca?.name as string) ?? "";
     const assetRole = (ca?.asset_role as string) ?? "";
     const productionStatus = (ca?.production_status as string) ?? "draft";
-    const targetChannels = Array.isArray(ca?.target_channels) ? (ca.target_channels as string[]) : [];
-    const brandComplianceScore = typeof ca?.brand_compliance_score === "number" ? ca.brand_compliance_score : null;
+    const targetChannels = Array.isArray(ca?.target_channels)
+        ? (ca.target_channels as string[])
+        : [];
+    const brandComplianceScore =
+        typeof ca?.brand_compliance_score === "number" ? ca.brand_compliance_score : null;
     const locale = (ca?.locale as string) ?? "";
     const specs = parseSpecs(ca?.specs);
     const dueDate = (ca?.due_date as string) ?? "";
@@ -104,15 +92,7 @@ export default function CreativeAssetDetailPage() {
     const description = (ca?.description as string) ?? "";
     const reviews = parseReviews(ca?.reviews);
 
-    if (isLoading) return <LoadingState />;
-
-    const tabs = [
-        { id: "details" as const, label: "Details" },
-        { id: "reviews" as const, label: "Reviews", count: reviews.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -121,11 +101,7 @@ export default function CreativeAssetDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Status</span>
-                        <Badge
-                            variant={
-                                getStatusVariant(productionStatus) as "default"
-                            }
-                        >
+                        <Badge variant={getStatusVariant(productionStatus) as "default"}>
                             {getStatusLabel(productionStatus)}
                         </Badge>
                     </div>
@@ -138,13 +114,7 @@ export default function CreativeAssetDetailPage() {
                     {brandComplianceScore !== null && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Brand Score</span>
-                            <Badge
-                                variant={
-                                    brandComplianceScore >= 80
-                                        ? "success"
-                                        : "warning"
-                                }
-                            >
+                            <Badge variant={brandComplianceScore >= 80 ? "success" : "warning"}>
                                 {brandComplianceScore}%
                             </Badge>
                         </div>
@@ -158,14 +128,11 @@ export default function CreativeAssetDetailPage() {
                     {dueDate && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Due</span>
-                            <span className="font-medium">
-                                {formatDate(dueDate, "compact")}
-                            </span>
+                            <span className="font-medium">{formatDate(dueDate, "compact")}</span>
                         </div>
                     )}
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Channels</CardTitle>
@@ -180,7 +147,6 @@ export default function CreativeAssetDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Specs</CardTitle>
@@ -211,15 +177,164 @@ export default function CreativeAssetDetailPage() {
         </div>
     );
 
+    const overviewSlot = (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <Palette className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Brand Score</p>
+                                <p className="text-lg font-bold">{brandComplianceScore ?? "—"}%</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <Calendar className="h-5 w-5 text-info" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Approved</p>
+                                <p className="text-sm font-semibold">
+                                    {approvedAt ? formatDate(approvedAt, "compact") : "Pending"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <User className="h-5 w-5 text-warning" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Assigned To</p>
+                                <p className="text-sm font-semibold">
+                                    {assignedTo || "Unassigned"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            {!!description && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            {description}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Preview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-lg border bg-secondary/30 h-48 flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Asset preview placeholder</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => `${campaignName} · ${assetRole}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "reviews",
+                label: "Reviews",
+                count: reviews.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <MessageSquare className="h-4 w-4" />
+                                Reviews ({reviews.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {reviews.map((review) => (
+                                    <div
+                                        key={review.id}
+                                        className="p-3 rounded-lg bg-secondary/20 space-y-2"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-semibold">
+                                                    {review.reviewer}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground capitalize">
+                                                    {review.gate.replace(/_/g, " ")}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {review.score !== null && (
+                                                    <span className="text-xs font-bold">
+                                                        {review.score}%
+                                                    </span>
+                                                )}
+                                                <Badge
+                                                    variant={
+                                                        review.status === "approved"
+                                                            ? "success"
+                                                            : review.status === "rejected"
+                                                              ? "destructive"
+                                                              : "ghost"
+                                                    }
+                                                >
+                                                    {review.status}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        {review.feedback && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {review.feedback}
+                                            </p>
+                                        )}
+                                        {review.reviewed_at && (
+                                            <p className="text-[10px] text-muted-foreground/60">
+                                                {formatDate(review.reviewed_at, "compact")}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+        ],
+    };
+
+    const record = ca ? { ...(ca as Record<string, unknown>) } : null;
+
     return (
-        <DetailLayout
-            backHref="/creative-assets"
-            backLabel="Creative Assets"
-            entityType="creative-assets"
-            entityId={entityId}
-            title={assetName}
-            subtitle={`${campaignName} · ${assetRole}`}
-            status={productionStatus}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={record}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "Edit Asset",
+                    onClick: () => router.push(`/creative-assets/${entityId}/edit`),
+                },
+                {
+                    label: "Submit for Review",
+                    onClick: () => handleUpdate({ status: "in_review" }),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Palette className="h-7 w-7 text-primary-foreground" />
@@ -237,162 +352,6 @@ export default function CreativeAssetDetailPage() {
                     </Button>
                 </div>
             }
-            menuItems={[
-                { label: "Edit Asset", onClick: () => router.push(`/creative-assets/${entityId}/edit`) },
-                { label: "Submit for Review", onClick: () => handleUpdate({ status: "in_review" }) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "details" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <Palette className="h-5 w-5 text-primary" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Brand Score</p>
-                                        <p className="text-lg font-bold">
-                                            {brandComplianceScore ?? "—"}%
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="h-5 w-5 text-info" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Approved</p>
-                                        <p className="text-sm font-semibold">
-                                            {approvedAt
-                                                ? formatDate(
-                                                      approvedAt,
-                                                      "compact"
-                                                  )
-                                                : "Pending"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <User className="h-5 w-5 text-warning" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Assigned To</p>
-                                        <p className="text-sm font-semibold">
-                                            {assignedTo || "Unassigned"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {description && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Description</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {description}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Preview</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="rounded-lg border bg-secondary/30 h-48 flex items-center justify-center">
-                                <p className="text-sm text-muted-foreground">
-                                    Asset preview placeholder
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "reviews" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <MessageSquare className="h-4 w-4" />
-                            Reviews ({reviews.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {reviews.map((review) => (
-                                <div
-                                    key={review.id}
-                                    className="p-3 rounded-lg bg-secondary/20 space-y-2"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-semibold">
-                                                {review.reviewer}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground capitalize">
-                                                {review.gate.replace(/_/g, " ")}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {review.score !== null && (
-                                                <span className="text-xs font-bold">
-                                                    {review.score}%
-                                                </span>
-                                            )}
-                                            <Badge
-                                                variant={
-                                                    review.status === "approved"
-                                                        ? "success"
-                                                        : review.status === "rejected"
-                                                          ? "destructive"
-                                                          : "ghost"
-                                                }
-                                            >
-                                                {review.status}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                    {review.feedback && (
-                                        <p className="text-xs text-muted-foreground">
-                                            {review.feedback}
-                                        </p>
-                                    )}
-                                    {review.reviewed_at && (
-                                        <p className="text-[10px] text-muted-foreground/60">
-                                            {formatDate(review.reviewed_at, "compact")}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="creative_asset"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

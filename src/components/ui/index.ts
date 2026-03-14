@@ -27,6 +27,7 @@ export * from "./tooltip";
 
 // ─── Molecules ───
 export * from "./accordion";
+export * from "./bulk-action-bar";
 export * from "./dialog";
 export * from "./dropdown-menu";
 export * from "./filter-bar";
@@ -37,3 +38,4 @@ export * from "./tab-bar";
 export * from "./tabs";
 export * from "./table";
 export * from "./toast";
+export * from "./view-switcher";

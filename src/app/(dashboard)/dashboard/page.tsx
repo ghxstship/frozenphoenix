@@ -52,7 +52,7 @@ export default function DashboardPage() {
     const projects = (sbProjects ?? []).map((p) => ({
         id: p.id,
         name: p.name,
-        client: p.client,
+        client: p.companies?.name ?? "",
         clientLogo: p.client_logo,
         status: p.status,
         currentPhase: p.current_phase,

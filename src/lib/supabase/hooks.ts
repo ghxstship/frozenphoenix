@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { filterValue, getSupabase } from "./client";
+import { apiCreate, apiDelete, apiGet, apiList, apiUpdate } from "@/lib/api/client";
+import { getSupabase } from "./client";
 import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 // ─── Join-aware return types ───
@@ -31,9 +32,10 @@ export type ShiftWithJoins = WithJoin<
     Tables<"shifts">,
     { crew_members: { name: string; role: string } | null } & ProjectName
 >;
+type CompanyName = { companies: { name: string } | null };
 export type ProjectWithMembers = WithJoin<
     Tables<"projects">,
-    { project_members: { profile_id: string }[] }
+    { project_members: { profile_id: string }[] } & CompanyName
 >;
 export type ProjectDetailWithMembers = WithJoin<
     Tables<"projects">,
@@ -42,7 +44,7 @@ export type ProjectDetailWithMembers = WithJoin<
             profile_id: string;
             profiles: { name: string; email: string; avatar_url: string | null } | null;
         }[];
-    }
+    } & CompanyName
 >;
 export type CrewMemberWithCerts = WithJoin<
     Tables<"crew_members">,
@@ -121,18 +123,21 @@ export type ProductionChecklistWithJoins = WithJoin<
     Tables<"production_checklists">,
     ProfileName & ProjectName & EventName
 >;
+// ═══════════════════════════════════════════════════════════════
+// CORE HOOKS - Migration 001 tables
+// All hooks use API routes for RBAC, validation & audit logging.
+// ═══════════════════════════════════════════════════════════════
 
 // ─── Deals ───
 export function useDeals() {
     return useQuery({
         queryKey: ["deals"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("deals")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as Tables<"deals">[];
+            const res = await apiList<Tables<"deals">>("/api/deals", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -140,15 +145,8 @@ export function useDeals() {
 export function useCreateDeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (deal: TablesInsert<"deals">) => {
-            const { data, error } = await getSupabase()
-                .from("deals")
-                .insert(deal)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"deals">;
-        },
+        mutationFn: async (deal: TablesInsert<"deals">) =>
+            apiCreate<Tables<"deals">>("/api/deals", deal as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["deals"] }),
     });
 }
@@ -156,16 +154,8 @@ export function useCreateDeal() {
 export function useUpdateDeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"deals"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("deals")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"deals">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"deals"> & { id: string }) =>
+            apiUpdate<Tables<"deals">>("/api/deals", id, updates as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["deals"] }),
     });
 }
@@ -175,12 +165,11 @@ export function useProjects() {
     return useQuery({
         queryKey: ["projects"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("projects")
-                .select("*, project_members(profile_id)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as ProjectWithMembers[];
+            const res = await apiList<ProjectWithMembers>("/api/projects", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -188,15 +177,7 @@ export function useProjects() {
 export function useProject(id: string) {
     return useQuery({
         queryKey: ["projects", id],
-        queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("projects")
-                .select("*, project_members(profile_id, profiles(name, email, avatar_url))")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data as unknown as ProjectDetailWithMembers;
-        },
+        queryFn: async () => apiGet<ProjectDetailWithMembers>("/api/projects", id),
         enabled: !!id,
     });
 }
@@ -204,15 +185,8 @@ export function useProject(id: string) {
 export function useCreateProject() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (project: TablesInsert<"projects">) => {
-            const { data, error } = await getSupabase()
-                .from("projects")
-                .insert(project)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"projects">;
-        },
+        mutationFn: async (project: TablesInsert<"projects">) =>
+            apiCreate<Tables<"projects">>("/api/projects", project as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
     });
 }
@@ -220,16 +194,8 @@ export function useCreateProject() {
 export function useUpdateProject() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"projects"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("projects")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"projects">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"projects"> & { id: string }) =>
+            apiUpdate<Tables<"projects">>("/api/projects", id, updates as Record<string, unknown>),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
             queryClient.invalidateQueries({ queryKey: ["projects", variables.id] });
@@ -240,10 +206,7 @@ export function useUpdateProject() {
 export function useDeleteProject() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await getSupabase().from("projects").delete().eq("id", id);
-            if (error) throw error;
-        },
+        mutationFn: async (id: string) => apiDelete("/api/projects", id),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
     });
 }
@@ -253,14 +216,12 @@ export function useTasks(projectId?: string) {
     return useQuery({
         queryKey: ["tasks", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("tasks")
-                .select("*, task_dependencies(depends_on_id)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as TaskWithDeps[];
+            const res = await apiList<TaskWithDeps>("/api/tasks", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -268,15 +229,8 @@ export function useTasks(projectId?: string) {
 export function useCreateTask() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (task: TablesInsert<"tasks">) => {
-            const { data, error } = await getSupabase()
-                .from("tasks")
-                .insert(task)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"tasks">;
-        },
+        mutationFn: async (task: TablesInsert<"tasks">) =>
+            apiCreate<Tables<"tasks">>("/api/tasks", task as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
     });
 }
@@ -284,27 +238,8 @@ export function useCreateTask() {
 export function useUpdateTask() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"tasks"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("tasks")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"tasks">;
-        },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
-    });
-}
-
-export function useDeleteTask() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await getSupabase().from("tasks").delete().eq("id", id);
-            if (error) throw error;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"tasks"> & { id: string }) =>
+            apiUpdate<Tables<"tasks">>("/api/tasks", id, updates as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
     });
 }
@@ -318,13 +253,11 @@ export function useMyTasks() {
                 data: { user },
             } = await getSupabase().auth.getUser();
             if (!user) return [];
-            const { data, error } = await getSupabase()
-                .from("tasks")
-                .select("*, task_dependencies(depends_on_id), projects(name)")
-                .eq("assignee_id", user.id)
-                .order("due_date", { ascending: true, nullsFirst: false });
-            if (error) throw error;
-            return data as unknown as (TaskWithDeps & { projects: { name: string } | null })[];
+            const res = await apiList<TaskWithDeps & { projects: { name: string } | null }>(
+                "/api/tasks",
+                { assignee_id: user.id, sort_by: "due_date", sort_order: "asc" }
+            );
+            return res.data;
         },
     });
 }
@@ -338,12 +271,10 @@ export function useMyTaskCounts() {
             } = await getSupabase().auth.getUser();
             if (!user) return { total: 0, overdue: 0, dueToday: 0, dueThisWeek: 0, inProgress: 0 };
 
-            const { data, error } = await getSupabase()
-                .from("tasks")
-                .select("id, status, due_date")
-                .eq("assignee_id", user.id)
-                .not("status", "in", '("done","completed","cancelled")');
-            if (error) throw error;
+            const res = await apiList<{ id: string; status: string; due_date: string | null }>(
+                "/api/tasks",
+                { assignee_id: user.id, per_page: 500 }
+            );
 
             const now = new Date();
             const todayStr = now.toISOString().slice(0, 10);
@@ -351,7 +282,9 @@ export function useMyTaskCounts() {
             endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
             const endOfWeekStr = endOfWeek.toISOString().slice(0, 10);
 
-            const tasks: { id: string; status: string; due_date: string | null }[] = data ?? [];
+            const tasks = res.data.filter(
+                (t) => !["done", "completed", "cancelled"].includes(t.status)
+            );
             return {
                 total: tasks.length,
                 overdue: tasks.filter((t) => t.due_date && t.due_date < todayStr).length,
@@ -370,12 +303,11 @@ export function useCrewMembers() {
     return useQuery({
         queryKey: ["crew_members"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("crew_members")
-                .select("*, certifications(*)")
-                .order("name");
-            if (error) throw error;
-            return data as unknown as CrewMemberWithCerts[];
+            const res = await apiList<CrewMemberWithCerts>("/api/crew", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -383,15 +315,8 @@ export function useCrewMembers() {
 export function useCreateCrewMember() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (member: TablesInsert<"crew_members">) => {
-            const { data, error } = await getSupabase()
-                .from("crew_members")
-                .insert(member)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"crew_members">;
-        },
+        mutationFn: async (member: TablesInsert<"crew_members">) =>
+            apiCreate<Tables<"crew_members">>("/api/crew", member as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crew_members"] }),
     });
 }
@@ -399,16 +324,8 @@ export function useCreateCrewMember() {
 export function useUpdateCrewMember() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"crew_members"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("crew_members")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"crew_members">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"crew_members"> & { id: string }) =>
+            apiUpdate<Tables<"crew_members">>("/api/crew", id, updates as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crew_members"] }),
     });
 }
@@ -418,9 +335,11 @@ export function useAssets() {
     return useQuery({
         queryKey: ["assets"],
         queryFn: async () => {
-            const { data, error } = await getSupabase().from("assets").select("*").order("name");
-            if (error) throw error;
-            return data as unknown as Tables<"assets">[];
+            const res = await apiList<Tables<"assets">>("/api/assets", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -428,15 +347,8 @@ export function useAssets() {
 export function useCreateAsset() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (asset: TablesInsert<"assets">) => {
-            const { data, error } = await getSupabase()
-                .from("assets")
-                .insert(asset)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"assets">;
-        },
+        mutationFn: async (asset: TablesInsert<"assets">) =>
+            apiCreate<Tables<"assets">>("/api/assets", asset as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assets"] }),
     });
 }
@@ -444,16 +356,8 @@ export function useCreateAsset() {
 export function useUpdateAsset() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"assets"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("assets")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"assets">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"assets"> & { id: string }) =>
+            apiUpdate<Tables<"assets">>("/api/assets", id, updates as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assets"] }),
     });
 }
@@ -463,9 +367,11 @@ export function useVehicles() {
     return useQuery({
         queryKey: ["vehicles"],
         queryFn: async () => {
-            const { data, error } = await getSupabase().from("vehicles").select("*").order("name");
-            if (error) throw error;
-            return data as unknown as Tables<"vehicles">[];
+            const res = await apiList<Tables<"vehicles">>("/api/fleet", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -475,9 +381,11 @@ export function useVendors() {
     return useQuery({
         queryKey: ["vendors"],
         queryFn: async () => {
-            const { data, error } = await getSupabase().from("vendors").select("*").order("name");
-            if (error) throw error;
-            return data as unknown as Tables<"vendors">[];
+            const res = await apiList<Tables<"vendors">>("/api/vendors", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -485,15 +393,8 @@ export function useVendors() {
 export function useCreateVendor() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (vendor: TablesInsert<"vendors">) => {
-            const { data, error } = await getSupabase()
-                .from("vendors")
-                .insert(vendor)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"vendors">;
-        },
+        mutationFn: async (vendor: TablesInsert<"vendors">) =>
+            apiCreate<Tables<"vendors">>("/api/vendors", vendor as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
     });
 }
@@ -501,33 +402,9 @@ export function useCreateVendor() {
 export function useUpdateVendor() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"vendors"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("vendors")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"vendors">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"vendors"> & { id: string }) =>
+            apiUpdate<Tables<"vendors">>("/api/vendors", id, updates as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
-    });
-}
-
-export function useCreatePurchaseOrder() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (po: TablesInsert<"purchase_orders">) => {
-            const { data, error } = await getSupabase()
-                .from("purchase_orders")
-                .insert(po)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"purchase_orders">;
-        },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["purchase_orders"] }),
     });
 }
 
@@ -536,13 +413,24 @@ export function usePurchaseOrders() {
     return useQuery({
         queryKey: ["purchase_orders"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("purchase_orders")
-                .select("*, vendors(name), purchase_order_items(*)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as PurchaseOrderWithJoins[];
+            const res = await apiList<PurchaseOrderWithJoins>("/api/purchase-orders", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
+    });
+}
+
+export function useCreatePurchaseOrder() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (po: TablesInsert<"purchase_orders">) =>
+            apiCreate<Tables<"purchase_orders">>(
+                "/api/purchase-orders",
+                po as Record<string, unknown>
+            ),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["purchase_orders"] }),
     });
 }
 
@@ -551,12 +439,11 @@ export function useInvoices() {
     return useQuery({
         queryKey: ["invoices"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("invoices")
-                .select("*, vendors(name), purchase_orders(total_amount)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as InvoiceWithJoins[];
+            const res = await apiList<InvoiceWithJoins>("/api/invoices", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -566,12 +453,11 @@ export function useApprovals() {
     return useQuery({
         queryKey: ["approvals"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("approvals")
-                .select("*, profiles(name)")
-                .order("deadline");
-            if (error) throw error;
-            return data as unknown as ApprovalWithProfile[];
+            const res = await apiList<ApprovalWithProfile>("/api/approvals", {
+                sort_by: "deadline",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -579,16 +465,12 @@ export function useApprovals() {
 export function useUpdateApproval() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"approvals"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("approvals")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"approvals">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"approvals"> & { id: string }) =>
+            apiUpdate<Tables<"approvals">>(
+                "/api/approvals",
+                id,
+                updates as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["approvals"] }),
     });
 }
@@ -598,12 +480,11 @@ export function useStakeholders() {
     return useQuery({
         queryKey: ["stakeholders"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("stakeholders")
-                .select("*, stakeholder_projects(project_id)")
-                .order("name");
-            if (error) throw error;
-            return data as unknown as StakeholderWithProjects[];
+            const res = await apiList<StakeholderWithProjects>("/api/stakeholders", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -613,12 +494,11 @@ export function useCaseStudies() {
     return useQuery({
         queryKey: ["case_studies"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("case_studies")
-                .select("*, case_study_metrics(*)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as CaseStudyWithMetrics[];
+            const res = await apiList<CaseStudyWithMetrics>("/api/case-studies", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -628,13 +508,12 @@ export function useNotifications() {
     return useQuery({
         queryKey: ["notifications"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("notifications")
-                .select("*")
-                .order("created_at", { ascending: false })
-                .limit(20);
-            if (error) throw error;
-            return data as unknown as Tables<"notifications">[];
+            const res = await apiList<Tables<"notifications">>("/api/notifications", {
+                sort_by: "created_at",
+                sort_order: "desc",
+                per_page: 20,
+            });
+            return res.data;
         },
     });
 }
@@ -642,13 +521,8 @@ export function useNotifications() {
 export function useMarkNotificationRead() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await getSupabase()
-                .from("notifications")
-                .update({ read: true })
-                .eq("id", id);
-            if (error) throw error;
-        },
+        mutationFn: async (id: string) =>
+            apiUpdate<Tables<"notifications">>("/api/notifications", id, { read: true }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
     });
 }
@@ -658,12 +532,13 @@ export function useCalendarEvents(startDate?: string, endDate?: string) {
     return useQuery({
         queryKey: ["calendar_events", startDate, endDate],
         queryFn: async () => {
-            let query = getSupabase().from("calendar_events").select("*, projects(name)");
-            if (startDate) query = query.gte("start_date", startDate);
-            if (endDate) query = query.lte("end_date", endDate);
-            const { data, error } = await query.order("start_date");
-            if (error) throw error;
-            return data as unknown as CalendarEventWithProject[];
+            const res = await apiList<CalendarEventWithProject>("/api/calendar-events", {
+                start_date: startDate,
+                end_date: endDate,
+                sort_by: "start_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -671,15 +546,11 @@ export function useCalendarEvents(startDate?: string, endDate?: string) {
 export function useCreateCalendarEvent() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (event: TablesInsert<"calendar_events">) => {
-            const { data, error } = await getSupabase()
-                .from("calendar_events")
-                .insert(event)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"calendar_events">;
-        },
+        mutationFn: async (event: TablesInsert<"calendar_events">) =>
+            apiCreate<Tables<"calendar_events">>(
+                "/api/calendar-events",
+                event as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["calendar_events"] }),
     });
 }
@@ -689,14 +560,13 @@ export function useShifts(projectId?: string, date?: string) {
     return useQuery({
         queryKey: ["shifts", projectId, date],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("shifts")
-                .select("*, crew_members(name, role), projects(name)");
-            if (projectId) query = query.eq("project_id", projectId);
-            if (date) query = query.eq("date", date);
-            const { data, error } = await query.order("date").order("start_time");
-            if (error) throw error;
-            return data as unknown as ShiftWithJoins[];
+            const res = await apiList<ShiftWithJoins>("/api/shifts", {
+                project_id: projectId,
+                date,
+                sort_by: "date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -704,15 +574,8 @@ export function useShifts(projectId?: string, date?: string) {
 export function useCreateShift() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (shift: TablesInsert<"shifts">) => {
-            const { data, error } = await getSupabase()
-                .from("shifts")
-                .insert(shift)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"shifts">;
-        },
+        mutationFn: async (shift: TablesInsert<"shifts">) =>
+            apiCreate<Tables<"shifts">>("/api/shifts", shift as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shifts"] }),
     });
 }
@@ -722,12 +585,11 @@ export function useBrandKits() {
     return useQuery({
         queryKey: ["brand_kits"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("brand_kits")
-                .select("*")
-                .order("client_name");
-            if (error) throw error;
-            return data as unknown as Tables<"brand_kits">[];
+            const res = await apiList<Tables<"brand_kits">>("/api/brand-kits", {
+                sort_by: "client_name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -737,11 +599,12 @@ export function useDecks(projectId?: string) {
     return useQuery({
         queryKey: ["decks", projectId],
         queryFn: async () => {
-            let query = getSupabase().from("decks").select("*, deck_slides(*), projects(name)");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query.order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as DeckWithSlides[];
+            const res = await apiList<DeckWithSlides>("/api/decks", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -751,12 +614,11 @@ export function useSOPs() {
     return useQuery({
         queryKey: ["sops"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("sops")
-                .select("*, sop_acknowledgments(user_id)")
-                .order("title");
-            if (error) throw error;
-            return data as unknown as SOPWithAcknowledgments[];
+            const res = await apiList<SOPWithAcknowledgments>("/api/sops", {
+                sort_by: "title",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -766,20 +628,17 @@ export function useVaultDocuments() {
     return useQuery({
         queryKey: ["vault_documents"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("vault_documents")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as VaultDocumentWithProfile[];
+            const res = await apiList<VaultDocumentWithProfile>("/api/vault-documents", {
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EXTENDED HOOKS - Migration 002 tables
-// Note: These hooks require the extended schema tables to exist in Supabase.
-// If tables don't exist yet, these hooks will error. Run migrations first.
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Time Entries ───
@@ -787,14 +646,12 @@ export function useTimeEntries(projectId?: string) {
     return useQuery({
         queryKey: ["time_entries", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("time_entries")
-                .select("*, projects(name), tasks(title), crew_members(name)")
-                .order("date", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as TimeEntryWithJoins[];
+            const res = await apiList<TimeEntryWithJoins>("/api/time-entries", {
+                project_id: projectId,
+                sort_by: "date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -802,15 +659,11 @@ export function useTimeEntries(projectId?: string) {
 export function useCreateTimeEntry() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (entry: TablesInsert<"time_entries">) => {
-            const { data, error } = await getSupabase()
-                .from("time_entries")
-                .insert(entry)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"time_entries">;
-        },
+        mutationFn: async (entry: TablesInsert<"time_entries">) =>
+            apiCreate<Tables<"time_entries">>(
+                "/api/time-entries",
+                entry as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["time_entries"] }),
     });
 }
@@ -820,14 +673,12 @@ export function useExpenses(projectId?: string) {
     return useQuery({
         queryKey: ["expenses", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("expenses")
-                .select("*, projects(name), profiles(name)")
-                .order("submitted_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ExpenseWithJoins[];
+            const res = await apiList<ExpenseWithJoins>("/api/expenses", {
+                project_id: projectId,
+                sort_by: "submitted_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -835,15 +686,8 @@ export function useExpenses(projectId?: string) {
 export function useCreateExpense() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (expense: TablesInsert<"expenses">) => {
-            const { data, error } = await getSupabase()
-                .from("expenses")
-                .insert(expense)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"expenses">;
-        },
+        mutationFn: async (expense: TablesInsert<"expenses">) =>
+            apiCreate<Tables<"expenses">>("/api/expenses", expense as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["expenses"] }),
     });
 }
@@ -853,13 +697,12 @@ export function useBudgetLineItems(projectId: string) {
     return useQuery({
         queryKey: ["budget_line_items", projectId],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("budget_line_items")
-                .select("*")
-                .eq("project_id", projectId)
-                .order("category");
-            if (error) throw error;
-            return data as unknown as Tables<"budget_line_items">[];
+            const res = await apiList<Tables<"budget_line_items">>("/api/budget-line-items", {
+                project_id: projectId,
+                sort_by: "category",
+                sort_order: "asc",
+            });
+            return res.data;
         },
         enabled: !!projectId,
     });
@@ -868,15 +711,11 @@ export function useBudgetLineItems(projectId: string) {
 export function useCreateBudgetLineItem() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (item: TablesInsert<"budget_line_items">) => {
-            const { data, error } = await getSupabase()
-                .from("budget_line_items")
-                .insert(item)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"budget_line_items">;
-        },
+        mutationFn: async (item: TablesInsert<"budget_line_items">) =>
+            apiCreate<Tables<"budget_line_items">>(
+                "/api/budget-line-items",
+                item as Record<string, unknown>
+            ),
         onSuccess: (_, variables) =>
             queryClient.invalidateQueries({
                 queryKey: ["budget_line_items", variables.project_id],
@@ -889,13 +728,12 @@ export function useMilestones(projectId: string) {
     return useQuery({
         queryKey: ["milestones", projectId],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("milestones")
-                .select("*, approvals(*)")
-                .eq("project_id", projectId)
-                .order("due_date");
-            if (error) throw error;
-            return data as unknown as MilestoneWithApprovals[];
+            const res = await apiList<MilestoneWithApprovals>("/api/milestones", {
+                project_id: projectId,
+                sort_by: "due_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
         enabled: !!projectId,
     });
@@ -904,15 +742,11 @@ export function useMilestones(projectId: string) {
 export function useCreateMilestone() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (milestone: TablesInsert<"milestones">) => {
-            const { data, error } = await getSupabase()
-                .from("milestones")
-                .insert(milestone)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"milestones">;
-        },
+        mutationFn: async (milestone: TablesInsert<"milestones">) =>
+            apiCreate<Tables<"milestones">>(
+                "/api/milestones",
+                milestone as Record<string, unknown>
+            ),
         onSuccess: (_, variables) =>
             queryClient.invalidateQueries({ queryKey: ["milestones", variables.project_id] }),
     });
@@ -926,14 +760,13 @@ export function useComments(
     return useQuery({
         queryKey: ["comments", entityType, entityId],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("comments")
-                .select("*, profiles(name, avatar_url)")
-                .eq("entity_type", entityType)
-                .eq("entity_id", entityId)
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data as unknown as CommentWithProfile[];
+            const res = await apiList<CommentWithProfile>("/api/comments", {
+                entity_type: entityType,
+                entity_id: entityId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
         enabled: !!entityType && !!entityId,
     });
@@ -942,15 +775,8 @@ export function useComments(
 export function useCreateComment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (comment: TablesInsert<"comments">) => {
-            const { data, error } = await getSupabase()
-                .from("comments")
-                .insert(comment)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"comments">;
-        },
+        mutationFn: async (comment: TablesInsert<"comments">) =>
+            apiCreate<Tables<"comments">>("/api/comments", comment as Record<string, unknown>),
         onSuccess: (_, variables) =>
             queryClient.invalidateQueries({
                 queryKey: ["comments", variables.entity_type, variables.entity_id],
@@ -963,16 +789,14 @@ export function useActivityLog(entityType?: string, entityId?: string, limit = 2
     return useQuery({
         queryKey: ["activity_log", entityType, entityId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("activity_log")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false })
-                .limit(limit);
-            if (entityType) query = query.eq("entity_type", entityType);
-            if (entityId) query = query.eq("entity_id", entityId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ActivityLogWithProfile[];
+            const res = await apiList<ActivityLogWithProfile>("/api/activity-log", {
+                entity_type: entityType,
+                entity_id: entityId,
+                sort_by: "created_at",
+                sort_order: "desc",
+                per_page: limit,
+            });
+            return res.data;
         },
     });
 }
@@ -982,12 +806,11 @@ export function useProjectTemplates() {
     return useQuery({
         queryKey: ["project_templates"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("project_templates")
-                .select("*")
-                .order("name");
-            if (error) throw error;
-            return data as unknown as Tables<"project_templates">[];
+            const res = await apiList<Tables<"project_templates">>("/api/project-templates", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -995,15 +818,11 @@ export function useProjectTemplates() {
 export function useCreateProjectTemplate() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (template: TablesInsert<"project_templates">) => {
-            const { data, error } = await getSupabase()
-                .from("project_templates")
-                .insert(template)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"project_templates">;
-        },
+        mutationFn: async (template: TablesInsert<"project_templates">) =>
+            apiCreate<Tables<"project_templates">>(
+                "/api/project-templates",
+                template as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["project_templates"] }),
     });
 }
@@ -1013,12 +832,11 @@ export function useIntegrations() {
     return useQuery({
         queryKey: ["integrations"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("integrations")
-                .select("*")
-                .order("name");
-            if (error) throw error;
-            return data as unknown as Tables<"integrations">[];
+            const res = await apiList<Tables<"integrations">>("/api/integrations", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1032,11 +850,12 @@ export function useLocations(projectId?: string) {
     return useQuery({
         queryKey: ["locations", projectId],
         queryFn: async () => {
-            let query = getSupabase().from("locations").select("*").order("name");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as Tables<"locations">[];
+            const res = await apiList<Tables<"locations">>("/api/locations", {
+                project_id: projectId,
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1044,15 +863,7 @@ export function useLocations(projectId?: string) {
 export function useLocation(id: string) {
     return useQuery({
         queryKey: ["locations", id],
-        queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("locations")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"locations">;
-        },
+        queryFn: async () => apiGet<Tables<"locations">>("/api/locations", id),
         enabled: !!id,
     });
 }
@@ -1060,15 +871,8 @@ export function useLocation(id: string) {
 export function useCreateLocation() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (location: TablesInsert<"locations">) => {
-            const { data, error } = await getSupabase()
-                .from("locations")
-                .insert(location)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"locations">;
-        },
+        mutationFn: async (location: TablesInsert<"locations">) =>
+            apiCreate<Tables<"locations">>("/api/locations", location as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["locations"] }),
     });
 }
@@ -1076,16 +880,12 @@ export function useCreateLocation() {
 export function useUpdateLocation() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<"locations"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("locations")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"locations">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"locations"> & { id: string }) =>
+            apiUpdate<Tables<"locations">>(
+                "/api/locations",
+                id,
+                updates as Record<string, unknown>
+            ),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["locations"] });
             queryClient.invalidateQueries({ queryKey: ["locations", variables.id] });
@@ -1098,14 +898,12 @@ export function useActivations(projectId?: string) {
     return useQuery({
         queryKey: ["activations", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("activations")
-                .select("*, locations(name)")
-                .order("name");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ActivationWithLocation[];
+            const res = await apiList<ActivationWithLocation>("/api/activations", {
+                project_id: projectId,
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1113,15 +911,11 @@ export function useActivations(projectId?: string) {
 export function useCreateActivation() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (activation: TablesInsert<"activations">) => {
-            const { data, error } = await getSupabase()
-                .from("activations")
-                .insert(activation)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"activations">;
-        },
+        mutationFn: async (activation: TablesInsert<"activations">) =>
+            apiCreate<Tables<"activations">>(
+                "/api/activations",
+                activation as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activations"] }),
     });
 }
@@ -1131,14 +925,12 @@ export function useEvents(projectId?: string) {
     return useQuery({
         queryKey: ["events", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("events")
-                .select("*, locations(name), activations(name)")
-                .order("date");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as EventWithJoins[];
+            const res = await apiList<EventWithJoins>("/api/events", {
+                project_id: projectId,
+                sort_by: "date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1146,15 +938,8 @@ export function useEvents(projectId?: string) {
 export function useCreateEvent() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (event: TablesInsert<"events">) => {
-            const { data, error } = await getSupabase()
-                .from("events")
-                .insert(event)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"events">;
-        },
+        mutationFn: async (event: TablesInsert<"events">) =>
+            apiCreate<Tables<"events">>("/api/events", event as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["events"] }),
     });
 }
@@ -1164,15 +949,13 @@ export function useProductionTasks(projectId?: string, department?: string) {
     return useQuery({
         queryKey: ["production_tasks", projectId, department],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("production_tasks")
-                .select("*, profiles(name), vendors(name), locations(name)")
-                .order("due_date");
-            if (projectId) query = query.eq("project_id", projectId);
-            if (department) query = query.eq("department", filterValue(department));
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ProductionTaskWithJoins[];
+            const res = await apiList<ProductionTaskWithJoins>("/api/production-tasks", {
+                project_id: projectId,
+                department,
+                sort_by: "due_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1180,15 +963,11 @@ export function useProductionTasks(projectId?: string, department?: string) {
 export function useCreateProductionTask() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (task: TablesInsert<"production_tasks">) => {
-            const { data, error } = await getSupabase()
-                .from("production_tasks")
-                .insert(task)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"production_tasks">;
-        },
+        mutationFn: async (task: TablesInsert<"production_tasks">) =>
+            apiCreate<Tables<"production_tasks">>(
+                "/api/production-tasks",
+                task as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["production_tasks"] }),
     });
 }
@@ -1196,19 +975,12 @@ export function useCreateProductionTask() {
 export function useUpdateProductionTask() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({
-            id,
-            ...updates
-        }: TablesUpdate<"production_tasks"> & { id: string }) => {
-            const { data, error } = await getSupabase()
-                .from("production_tasks")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"production_tasks">;
-        },
+        mutationFn: async ({ id, ...updates }: TablesUpdate<"production_tasks"> & { id: string }) =>
+            apiUpdate<Tables<"production_tasks">>(
+                "/api/production-tasks",
+                id,
+                updates as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["production_tasks"] }),
     });
 }
@@ -1218,13 +990,12 @@ export function useProductionMilestones(projectId: string) {
     return useQuery({
         queryKey: ["production_milestones", projectId],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("production_milestones")
-                .select("*, profiles(name), approvals(*)")
-                .eq("project_id", projectId)
-                .order("due_date");
-            if (error) throw error;
-            return data as unknown as ProductionMilestoneWithJoins[];
+            const res = await apiList<ProductionMilestoneWithJoins>("/api/production-milestones", {
+                project_id: projectId,
+                sort_by: "due_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
         enabled: !!projectId,
     });
@@ -1235,14 +1006,12 @@ export function useShipments(projectId?: string) {
     return useQuery({
         queryKey: ["shipments", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("shipments")
-                .select("*, vendors(name), vehicles(name)")
-                .order("pickup_date");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ShipmentWithJoins[];
+            const res = await apiList<ShipmentWithJoins>("/api/shipments", {
+                project_id: projectId,
+                sort_by: "pickup_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1250,15 +1019,8 @@ export function useShipments(projectId?: string) {
 export function useCreateShipment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (shipment: TablesInsert<"shipments">) => {
-            const { data, error } = await getSupabase()
-                .from("shipments")
-                .insert(shipment)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"shipments">;
-        },
+        mutationFn: async (shipment: TablesInsert<"shipments">) =>
+            apiCreate<Tables<"shipments">>("/api/shipments", shipment as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shipments"] }),
     });
 }
@@ -1268,16 +1030,13 @@ export function useCrewShifts(projectId?: string, date?: string) {
     return useQuery({
         queryKey: ["crew_shifts", projectId, date],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("crew_shifts")
-                .select("*, crew_members(name, email, phone), locations(name), events(name)")
-                .order("date")
-                .order("call_time");
-            if (projectId) query = query.eq("project_id", projectId);
-            if (date) query = query.eq("date", date);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as CrewShiftWithJoins[];
+            const res = await apiList<CrewShiftWithJoins>("/api/crew-shifts", {
+                project_id: projectId,
+                date,
+                sort_by: "date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1285,15 +1044,8 @@ export function useCrewShifts(projectId?: string, date?: string) {
 export function useCreateCrewShift() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (shift: TablesInsert<"crew_shifts">) => {
-            const { data, error } = await getSupabase()
-                .from("crew_shifts")
-                .insert(shift)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"crew_shifts">;
-        },
+        mutationFn: async (shift: TablesInsert<"crew_shifts">) =>
+            apiCreate<Tables<"crew_shifts">>("/api/crew-shifts", shift as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crew_shifts"] }),
     });
 }
@@ -1303,14 +1055,12 @@ export function useIncidents(projectId?: string) {
     return useQuery({
         queryKey: ["incidents", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("incidents")
-                .select("*, profiles(name), locations(name)")
-                .order("occurred_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as IncidentWithJoins[];
+            const res = await apiList<IncidentWithJoins>("/api/incidents", {
+                project_id: projectId,
+                sort_by: "occurred_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -1318,15 +1068,8 @@ export function useIncidents(projectId?: string) {
 export function useCreateIncident() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (incident: TablesInsert<"incidents">) => {
-            const { data, error } = await getSupabase()
-                .from("incidents")
-                .insert(incident)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"incidents">;
-        },
+        mutationFn: async (incident: TablesInsert<"incidents">) =>
+            apiCreate<Tables<"incidents">>("/api/incidents", incident as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["incidents"] }),
     });
 }
@@ -1336,13 +1079,12 @@ export function useBudgets(projectId: string) {
     return useQuery({
         queryKey: ["budgets", projectId],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("budgets")
-                .select("*, production_budget_lines(*)")
-                .eq("project_id", projectId)
-                .order("version", { ascending: false });
-            if (error) throw error;
-            return data as unknown as BudgetWithLines[];
+            const res = await apiList<BudgetWithLines>("/api/budgets", {
+                project_id: projectId,
+                sort_by: "version",
+                sort_order: "desc",
+            });
+            return res.data;
         },
         enabled: !!projectId,
     });
@@ -1351,49 +1093,33 @@ export function useBudgets(projectId: string) {
 export function useCreateBudget() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (budget: TablesInsert<"budgets">) => {
-            const { data, error } = await getSupabase()
-                .from("budgets")
-                .insert(budget)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"budgets">;
-        },
+        mutationFn: async (budget: TablesInsert<"budgets">) =>
+            apiCreate<Tables<"budgets">>("/api/budgets", budget as Record<string, unknown>),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["budgets"] }),
     });
 }
 
 // ─── Contracts ───
-export function useCreateContract() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (contract: TablesInsert<"contracts">) => {
-            const { data, error } = await getSupabase()
-                .from("contracts")
-                .insert(contract)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"contracts">;
-        },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contracts"] }),
-    });
-}
-
 export function useContracts(projectId?: string) {
     return useQuery({
         queryKey: ["contracts", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("contracts")
-                .select("*, vendors(name)")
-                .order("effective_date");
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ContractWithVendor[];
+            const res = await apiList<ContractWithVendor>("/api/contracts", {
+                project_id: projectId,
+                sort_by: "effective_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
+    });
+}
+
+export function useCreateContract() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (contract: TablesInsert<"contracts">) =>
+            apiCreate<Tables<"contracts">>("/api/contracts", contract as Record<string, unknown>),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contracts"] }),
     });
 }
 
@@ -1402,14 +1128,12 @@ export function useRFQs(projectId?: string) {
     return useQuery({
         queryKey: ["rfqs", projectId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("rfqs")
-                .select("*, profiles(name)")
-                .order("issue_date", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as RFQWithProfile[];
+            const res = await apiList<RFQWithProfile>("/api/rfqs", {
+                project_id: projectId,
+                sort_by: "issue_date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -1419,12 +1143,11 @@ export function useWarehouses() {
     return useQuery({
         queryKey: ["warehouses"],
         queryFn: async () => {
-            const { data, error } = await getSupabase()
-                .from("warehouses")
-                .select("*, profiles(name)")
-                .order("name");
-            if (error) throw error;
-            return data as unknown as WarehouseWithProfile[];
+            const res = await apiList<WarehouseWithProfile>("/api/warehouses", {
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1434,15 +1157,13 @@ export function useAssetAssignments(projectId?: string, assetId?: string) {
     return useQuery({
         queryKey: ["asset_assignments", projectId, assetId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("asset_assignments")
-                .select("*, assets(name, barcode), projects(name), profiles(name)")
-                .order("check_out_date", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            if (assetId) query = query.eq("asset_id", assetId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as AssetAssignmentWithJoins[];
+            const res = await apiList<AssetAssignmentWithJoins>("/api/asset-assignments", {
+                project_id: projectId,
+                asset_id: assetId,
+                sort_by: "check_out_date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -1450,15 +1171,11 @@ export function useAssetAssignments(projectId?: string, assetId?: string) {
 export function useCreateAssetAssignment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (assignment: TablesInsert<"asset_assignments">) => {
-            const { data, error } = await getSupabase()
-                .from("asset_assignments")
-                .insert(assignment)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"asset_assignments">;
-        },
+        mutationFn: async (assignment: TablesInsert<"asset_assignments">) =>
+            apiCreate<Tables<"asset_assignments">>(
+                "/api/asset-assignments",
+                assignment as Record<string, unknown>
+            ),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["asset_assignments"] });
             queryClient.invalidateQueries({ queryKey: ["assets"] });
@@ -1471,16 +1188,14 @@ export function useCrewAvailability(crewMemberId?: string, startDate?: string, e
     return useQuery({
         queryKey: ["crew_availability", crewMemberId, startDate, endDate],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("crew_availability")
-                .select("*, crew_members(name), projects(name)")
-                .order("date");
-            if (crewMemberId) query = query.eq("crew_member_id", crewMemberId);
-            if (startDate) query = query.gte("date", startDate);
-            if (endDate) query = query.lte("date", endDate);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as CrewAvailabilityWithJoins[];
+            const res = await apiList<CrewAvailabilityWithJoins>("/api/crew-availability", {
+                crew_member_id: crewMemberId,
+                start_date: startDate,
+                end_date: endDate,
+                sort_by: "date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1490,16 +1205,14 @@ export function useKnowledgeBaseArticles(category?: string, department?: string)
     return useQuery({
         queryKey: ["knowledge_base_articles", category, department],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("knowledge_base_articles")
-                .select("*, profiles(name)")
-                .eq("status", "published")
-                .order("title");
-            if (category) query = query.eq("category", filterValue(category));
-            if (department) query = query.eq("department", filterValue(department));
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as KBArticleWithProfile[];
+            const res = await apiList<KBArticleWithProfile>("/api/knowledge-base", {
+                status: "published",
+                category,
+                department,
+                sort_by: "title",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1507,15 +1220,11 @@ export function useKnowledgeBaseArticles(category?: string, department?: string)
 export function useCreateKBArticle() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (article: TablesInsert<"knowledge_base_articles">) => {
-            const { data, error } = await getSupabase()
-                .from("knowledge_base_articles")
-                .insert(article)
-                .select()
-                .single();
-            if (error) throw error;
-            return data as unknown as Tables<"knowledge_base_articles">;
-        },
+        mutationFn: async (article: TablesInsert<"knowledge_base_articles">) =>
+            apiCreate<Tables<"knowledge_base_articles">>(
+                "/api/knowledge-base",
+                article as Record<string, unknown>
+            ),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["knowledge_base_articles"] }),
     });
 }
@@ -1525,15 +1234,13 @@ export function useProductionSOPs(department?: string) {
     return useQuery({
         queryKey: ["production_sops", department],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("production_sops")
-                .select("*, profiles(name)")
-                .eq("status", "active")
-                .order("number");
-            if (department) query = query.eq("department", filterValue(department));
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ProductionSOPWithProfile[];
+            const res = await apiList<ProductionSOPWithProfile>("/api/production-sops", {
+                status: "active",
+                department,
+                sort_by: "number",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
@@ -1543,15 +1250,13 @@ export function useProductionChecklists(projectId?: string, eventId?: string) {
     return useQuery({
         queryKey: ["production_checklists", projectId, eventId],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("production_checklists")
-                .select("*, profiles(name), projects(name), events(name)")
-                .order("due_date");
-            if (projectId) query = query.eq("project_id", projectId);
-            if (eventId) query = query.eq("event_id", eventId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as unknown as ProductionChecklistWithJoins[];
+            const res = await apiList<ProductionChecklistWithJoins>("/api/production-checklists", {
+                project_id: projectId,
+                event_id: eventId,
+                sort_by: "due_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }

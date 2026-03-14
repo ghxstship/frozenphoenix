@@ -1,16 +1,14 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
-import React, { useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     useDeleteVendor,
     useUpdateVendor as useUpdateVendorHook,
 } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +32,7 @@ import {
     useUpdateVendor,
 } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Edit,
@@ -47,8 +46,17 @@ import {
     Store,
 } from "lucide-react";
 
-type TabId = "overview" | "orders" | "invoices" | "compliance" | "chatter";
-const TAB_VALUES = ["overview", "orders", "invoices", "compliance", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "vendors",
+    titleKey: "name",
+    statusKey: "status",
+    icon: Store,
+    backHref: "/vendors",
+    backLabel: "Vendors",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function VendorDetailPage() {
     const params = useParams();
@@ -60,11 +68,6 @@ export default function VendorDetailPage() {
         listPath: "/vendors",
         useUpdateHook: useUpdateVendorHook,
         useDeleteHook: useDeleteVendor,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
     });
     const [poDialogOpen, setPoDialogOpen] = useState(false);
     const [poDescription, setPoDescription] = useState("");
@@ -122,38 +125,16 @@ export default function VendorDetailPage() {
         (inv: Record<string, unknown>) => inv.vendor_id === vendorId
     );
 
-    if (isLoading) {
-        return (
-            <LoadingState />
-        );
-    }
-
-    if (!vendor) {
-        return (
-            <EmptyState
-                icon={Store}
-                title="Vendor not found"
-                description="The vendor you're looking for doesn't exist."
-                action={{ label: "Back to Vendors", onClick: () => router.push("/vendors") }}
-            />
-        );
-    }
-
     const totalPOValue = vendorPOs.reduce(
         (sum: number, po: Record<string, unknown>) => sum + Number(po.total_amount ?? 0),
         0
     );
-    const totalInvoiced = vendorInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    const totalInvoiced = vendorInvoices.reduce(
+        (sum, inv) => sum + Number((inv as Record<string, unknown>).amount ?? 0),
+        0
+    );
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "orders" as const, label: "Purchase Orders", count: vendorPOs.length },
-        { id: "invoices" as const, label: "Invoices", count: vendorInvoices.length },
-        { id: "compliance" as const, label: "Compliance" },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = vendor ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -162,7 +143,7 @@ export default function VendorDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div>
                         <p className="text-muted-foreground text-xs">Contact Person</p>
-                        <p className="font-medium">{vendor.contactName}</p>
+                        <p className="font-medium">{vendor.contact_name}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
@@ -192,7 +173,7 @@ export default function VendorDetailPage() {
                 </CardContent>
             </Card>
 
-            {!vendor.coiValid && (
+            {(!vendor.coi_expiry_date || new Date(vendor.coi_expiry_date) < new Date()) && (
                 <Card className="border-destructive/50 bg-destructive/5">
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-destructive mb-2">
@@ -206,149 +187,118 @@ export default function VendorDetailPage() {
                 </Card>
             )}
         </div>
-    );
+    ) : null;
 
-    return (
-        <>
-            <DetailLayout
-                backHref="/vendors"
-                backLabel="Vendors"
-                entityType="vendors"
-                entityId={vendorId}
-                title={vendor.name}
-                subtitle={vendor.specialty}
-                status={vendor.status}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
-                        {vendor.name.charAt(0)}
-                    </div>
-                }
-                actions={
-                    <Button onClick={() => router.push(`/vendors/${vendorId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                }
-                menuItems={[
-                    { label: "Create Purchase Order", onClick: () => setPoDialogOpen(true) },
-                    { label: "Request Documents", onClick: () => router.push(`/documents/new?entityType=vendor&entityId=${vendorId}`) },
-                    {
-                        label: updateVendor.isPending ? "Suspending..." : "Suspend Vendor",
-                        onClick: handleSuspendVendor,
-                        variant: "destructive",
-                    },
-                    ...crudMenuItems,
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                sidebar={sidebar}
-            >
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <FileText className="h-4 w-4" />
-                                        <span className="text-xs">Total PO Value</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {formatCurrency(totalPOValue)}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Receipt className="h-4 w-4" />
-                                        <span className="text-xs">Total Invoiced</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {formatCurrency(totalInvoiced)}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Star className="h-4 w-4" />
-                                        <span className="text-xs">Rating</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{vendor.rating}/5</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <ShieldCheck className="h-4 w-4" />
-                                        <span className="text-xs">Compliance</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {
-                                            [
-                                                vendor.coiValid,
-                                                vendor.ndaSigned,
-                                                vendor.w9Uploaded,
-                                            ].filter(Boolean).length
-                                        }
-                                        /3
-                                    </p>
-                                </CardContent>
-                            </Card>
+    const overviewSlot = vendor ? (
+        <div className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <FileText className="h-4 w-4" />
+                            <span className="text-xs">Total PO Value</span>
                         </div>
+                        <p className="text-xl font-bold">{formatCurrency(totalPOValue)}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Receipt className="h-4 w-4" />
+                            <span className="text-xs">Total Invoiced</span>
+                        </div>
+                        <p className="text-xl font-bold">{formatCurrency(totalInvoiced)}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Star className="h-4 w-4" />
+                            <span className="text-xs">Rating</span>
+                        </div>
+                        <p className="text-xl font-bold">{vendor.rating}/5</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <ShieldCheck className="h-4 w-4" />
+                            <span className="text-xs">Compliance</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {
+                                [
+                                    vendor.coi_expiry_date &&
+                                        new Date(vendor.coi_expiry_date) > new Date(),
+                                    vendor.nda_signed,
+                                    vendor.w9_uploaded,
+                                ].filter(Boolean).length
+                            }
+                            /3
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
 
-                        {/* Recent Orders */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Recent Purchase Orders</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {vendorPOs.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground text-center py-4">
-                                        No purchase orders
-                                    </p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {vendorPOs.slice(0, 5).map((po) => (
-                                            <div
-                                                key={po.id}
-                                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                            >
-                                                <div>
-                                                    <p className="text-sm font-medium">
-                                                        PO #{po.id}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Issued:{" "}
-                                                        {formatDate(
-                                                            (po as Record<string, unknown>)
-                                                                .issued_date as string
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-medium">
-                                                        {formatCurrency(
-                                                            Number(
-                                                                (po as Record<string, unknown>)
-                                                                    .total_amount ?? 0
-                                                            )
-                                                        )}
-                                                    </span>
-                                                    <StatusBadge status={po.status} />
-                                                </div>
-                                            </div>
-                                        ))}
+            {/* Recent Orders */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Recent Purchase Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {vendorPOs.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            No purchase orders
+                        </p>
+                    ) : (
+                        <div className="space-y-3">
+                            {vendorPOs.slice(0, 5).map((po) => (
+                                <div
+                                    key={po.id}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium">PO #{po.id}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Issued:{" "}
+                                            {formatDate(
+                                                (po as Record<string, unknown>)
+                                                    .issued_date as string
+                                            )}
+                                        </p>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-medium">
+                                            {formatCurrency(
+                                                Number(
+                                                    (po as Record<string, unknown>).total_amount ??
+                                                        0
+                                                )
+                                            )}
+                                        </span>
+                                        <StatusBadge status={po.status} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    ) : null;
 
-                {activeTab === "orders" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: (r) => ((r as Record<string, unknown>).specialty as string) ?? "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "orders",
+                label: "Purchase Orders",
+                count: vendorPOs.length,
+                content: (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Purchase Orders</CardTitle>
@@ -401,9 +351,13 @@ export default function VendorDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "invoices" && (
+                ),
+            },
+            {
+                id: "invoices",
+                label: "Invoices",
+                count: vendorInvoices.length,
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Invoices</CardTitle>
@@ -446,9 +400,12 @@ export default function VendorDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "compliance" && (
+                ),
+            },
+            {
+                id: "compliance",
+                label: "Compliance",
+                content: vendor ? (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Compliance Documents</CardTitle>
@@ -458,62 +415,76 @@ export default function VendorDetailPage() {
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                                     <div className="flex items-center gap-3">
                                         <div
-                                            className={`h-2 w-2 rounded-full ${vendor.coiValid ? "bg-success" : "bg-destructive"}`}
+                                            className={`h-2 w-2 rounded-full ${vendor.coi_expiry_date && new Date(vendor.coi_expiry_date) > new Date() ? "bg-success" : "bg-destructive"}`}
                                         />
                                         <div>
                                             <p className="text-sm font-medium">
                                                 Certificate of Insurance (COI)
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {vendor.coiExpiryDate
-                                                    ? `Expires: ${formatDate(vendor.coiExpiryDate)}`
+                                                {vendor.coi_expiry_date
+                                                    ? `Expires: ${formatDate(vendor.coi_expiry_date)}`
                                                     : "Not uploaded"}
                                             </p>
                                         </div>
                                     </div>
-                                    <Badge variant={vendor.coiValid ? "success" : "destructive"}>
-                                        {vendor.coiValid ? "Valid" : "Expired"}
+                                    <Badge
+                                        variant={
+                                            vendor.coi_expiry_date &&
+                                            new Date(vendor.coi_expiry_date) > new Date()
+                                                ? "success"
+                                                : "destructive"
+                                        }
+                                    >
+                                        {vendor.coi_expiry_date &&
+                                        new Date(vendor.coi_expiry_date) > new Date()
+                                            ? "Valid"
+                                            : "Expired"}
                                     </Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                                     <div className="flex items-center gap-3">
                                         <div
-                                            className={`h-2 w-2 rounded-full ${vendor.ndaSigned ? "bg-success" : "bg-warning"}`}
+                                            className={`h-2 w-2 rounded-full ${vendor.nda_signed ? "bg-success" : "bg-warning"}`}
                                         />
                                         <div>
                                             <p className="text-sm font-medium">
                                                 Non-Disclosure Agreement (NDA)
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {vendor.ndaSigned ? "Signed" : "Pending signature"}
+                                                {vendor.nda_signed ? "Signed" : "Pending signature"}
                                             </p>
                                         </div>
                                     </div>
-                                    <Badge variant={vendor.ndaSigned ? "success" : "warning"}>
-                                        {vendor.ndaSigned ? "Signed" : "Pending"}
+                                    <Badge variant={vendor.nda_signed ? "success" : "warning"}>
+                                        {vendor.nda_signed ? "Signed" : "Pending"}
                                     </Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                                     <div className="flex items-center gap-3">
                                         <div
-                                            className={`h-2 w-2 rounded-full ${vendor.w9Uploaded ? "bg-success" : "bg-warning"}`}
+                                            className={`h-2 w-2 rounded-full ${vendor.w9_uploaded ? "bg-success" : "bg-warning"}`}
                                         />
                                         <div>
                                             <p className="text-sm font-medium">W-9 Form</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {vendor.w9Uploaded ? "Uploaded" : "Not uploaded"}
+                                                {vendor.w9_uploaded ? "Uploaded" : "Not uploaded"}
                                             </p>
                                         </div>
                                     </div>
-                                    <Badge variant={vendor.w9Uploaded ? "success" : "warning"}>
-                                        {vendor.w9Uploaded ? "Uploaded" : "Missing"}
+                                    <Badge variant={vendor.w9_uploaded ? "success" : "warning"}>
+                                        {vendor.w9_uploaded ? "Uploaded" : "Missing"}
                                     </Badge>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                )}
-                {activeTab === "chatter" && (
+                ) : null,
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                content: (
                     <RecordChatter
                         recordType="vendor"
                         recordId={vendorId}
@@ -521,8 +492,46 @@ export default function VendorDetailPage() {
                         currentUserId="u1"
                         onAddComment={handleAddComment}
                     />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={vendorId}
+                record={vendor}
+                isLoading={isLoading}
+                menuItems={[
+                    { label: "Create Purchase Order", onClick: () => setPoDialogOpen(true) },
+                    {
+                        label: "Request Documents",
+                        onClick: () =>
+                            router.push(`/documents/new?entityType=vendor&entityId=${vendorId}`),
+                    },
+                    {
+                        label: updateVendor.isPending ? "Suspending..." : "Suspend Vendor",
+                        onClick: handleSuspendVendor,
+                        variant: "destructive",
+                    },
+                    ...crudMenuItems,
+                ]}
+                avatar={
+                    vendor ? (
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                            {vendor.name.charAt(0)}
+                        </div>
+                    ) : undefined
+                }
+                actions={
+                    <Button onClick={() => router.push(`/vendors/${vendorId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+            />
 
             {/* Create PO Dialog */}
             <Dialog open={poDialogOpen} onOpenChange={setPoDialogOpen}>

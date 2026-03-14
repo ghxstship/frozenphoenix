@@ -46,7 +46,113 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS client_company_id UUID REFERENCES 
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS organizer_company_id UUID REFERENCES companies(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_projects_client_company ON projects(client_company_id);
 CREATE INDEX IF NOT EXISTS idx_projects_organizer_company ON projects(organizer_company_id);
+
+-- Drop dependent views before column removal, then recreate
+DROP VIEW IF EXISTS v_budget_profitability;
+DROP VIEW IF EXISTS v_project_profitability;
 ALTER TABLE projects DROP COLUMN IF EXISTS client;
+
+-- Recreate view (identical to 033_competitive_feature_gaps.sql)
+CREATE OR REPLACE VIEW v_budget_profitability AS
+SELECT
+    b.id AS budget_id,
+    b.project_id,
+    b.version,
+    b.status,
+    b.total_budget,
+    b.total_actual,
+    b.contingency_percent,
+    b.markup_percent,
+    b.effective_date,
+    b.organization_id,
+    b.total_budget * (1 + COALESCE(b.markup_percent, 0) / 100) AS revenue,
+    COALESCE(te.total_labor_cost, 0) AS labor_cost,
+    COALESCE(ex.total_expense_cost, 0) AS expense_cost,
+    COALESCE(bl.total_committed, 0) AS committed_cost,
+    COALESCE(te.total_labor_cost, 0) + COALESCE(ex.total_expense_cost, 0) AS total_cost,
+    (b.total_budget * (1 + COALESCE(b.markup_percent, 0) / 100))
+        - (COALESCE(te.total_labor_cost, 0) + COALESCE(ex.total_expense_cost, 0)) AS profit,
+    CASE
+        WHEN b.total_budget * (1 + COALESCE(b.markup_percent, 0) / 100) > 0
+        THEN (
+            (b.total_budget * (1 + COALESCE(b.markup_percent, 0) / 100))
+            - (COALESCE(te.total_labor_cost, 0) + COALESCE(ex.total_expense_cost, 0))
+        ) / (b.total_budget * (1 + COALESCE(b.markup_percent, 0) / 100)) * 100
+        ELSE 0
+    END AS margin_percent,
+    CASE
+        WHEN (CURRENT_DATE - b.effective_date) > 0
+        THEN (COALESCE(te.total_labor_cost, 0) + COALESCE(ex.total_expense_cost, 0))
+             / (CURRENT_DATE - b.effective_date)
+        ELSE 0
+    END AS daily_burn_rate,
+    CASE
+        WHEN b.total_budget > 0
+        THEN (COALESCE(te.total_labor_cost, 0) + COALESCE(ex.total_expense_cost, 0)) / b.total_budget * 100
+        ELSE 0
+    END AS burn_percent,
+    COALESCE(te.total_hours, 0) AS total_hours_tracked,
+    COALESCE(te.billable_hours, 0) AS billable_hours,
+    GREATEST(0, CURRENT_DATE - b.effective_date) AS days_elapsed,
+    b.created_at,
+    b.updated_at
+FROM budgets b
+LEFT JOIN LATERAL (
+    SELECT
+        SUM(pte.total_pay) AS total_labor_cost,
+        SUM(pte.regular_hours + pte.overtime_hours + pte.double_time_hours) AS total_hours,
+        SUM(CASE WHEN pte.status = 'approved' THEN pte.regular_hours + pte.overtime_hours + pte.double_time_hours ELSE 0 END) AS billable_hours
+    FROM production_time_entries pte
+    WHERE pte.project_id = b.project_id
+) te ON true
+LEFT JOIN LATERAL (
+    SELECT SUM(pe.amount) AS total_expense_cost
+    FROM production_expenses pe
+    WHERE pe.project_id = b.project_id
+      AND pe.status::text IN ('approved', 'reimbursed')
+) ex ON true
+LEFT JOIN LATERAL (
+    SELECT SUM(pbl.committed_amount) AS total_committed
+    FROM production_budget_lines pbl
+    WHERE pbl.budget_id = b.id
+) bl ON true;
+
+-- Recreate v_project_profitability (was in 005, replaced p.client with p.client_company_id)
+CREATE OR REPLACE VIEW v_project_profitability AS
+SELECT
+    p.id AS project_id,
+    p.name,
+    p.client_company_id,
+    p.company_id,
+    p.organization_id,
+    p.budget_planned,
+    p.budget_actual,
+    (p.budget_planned - p.budget_actual) AS budget_variance,
+    CASE
+        WHEN p.budget_planned > 0
+        THEN ROUND(((p.budget_planned - p.budget_actual) / p.budget_planned) * 100, 2)
+        ELSE 0
+    END AS margin_percent,
+    COALESCE(te.total_hours, 0) AS total_hours_logged,
+    COALESCE(te.total_cost, 0) AS total_labor_cost,
+    COALESCE(ex.total_expenses, 0) AS total_expenses
+FROM projects p
+LEFT JOIN (
+    SELECT
+        project_id,
+        SUM(hours_worked) AS total_hours,
+        SUM(total_cost) AS total_cost
+    FROM time_entries
+    GROUP BY project_id
+) te ON te.project_id = p.id
+LEFT JOIN (
+    SELECT
+        project_id,
+        SUM(amount) AS total_expenses
+    FROM expenses
+    WHERE status = 'approved'
+    GROUP BY project_id
+) ex ON ex.project_id = p.id;
 
 -- ─── Link companies to teams (nullable = org-wide) ──────────
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS team_id UUID REFERENCES teams(id) ON DELETE SET NULL;
@@ -118,7 +224,7 @@ CREATE POLICY team_members_delete ON team_members FOR DELETE
 CREATE TRIGGER set_teams_updated_at
     BEFORE UPDATE ON teams
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- ─── Seed default "General" team on org creation ─────────────
 CREATE OR REPLACE FUNCTION seed_default_team()

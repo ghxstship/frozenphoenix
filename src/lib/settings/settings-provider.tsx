@@ -136,7 +136,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const userRole = activeOrg?.role ?? null;
 
     const fetchSettings = useCallback(async () => {
-
         try {
             // Fetch setting definitions
             const { data: defs } = await fromTable("setting_definitions")
@@ -240,7 +239,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     definition_id: resolved.definition.id,
                     scope_type: scopeType,
                     scope_id: scopeId,
-                    value: JSON.stringify(value),
+                    value,
                     changed_by: userId,
                 },
                 { onConflict: "definition_id,scope_type,scope_id" }

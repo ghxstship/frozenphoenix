@@ -4,6 +4,30 @@ import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { organizationCreateSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logger";
 
+export async function GET() {
+    const supabase = await createClient();
+    if (!supabase) return ApiErrors.serviceUnavailable();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return ApiErrors.unauthorized();
+
+    const { data, error } = await serverFromTable(supabase, "organizations")
+        .select("*")
+        .order("name");
+
+    if (error) {
+        logger.error("[GET /api/organizations] failed", { error: error.message });
+        return ApiErrors.internalError("Failed to fetch organizations");
+    }
+
+    return NextResponse.json({
+        data,
+        pagination: { page: 1, per_page: data.length, total: data.length, total_pages: 1 },
+    });
+}
+
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) {

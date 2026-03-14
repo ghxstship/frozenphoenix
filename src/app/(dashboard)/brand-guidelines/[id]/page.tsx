@@ -1,7 +1,5 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
     useBrandGuideline,
@@ -9,17 +7,43 @@ import {
     useUpdateBrandGuideline,
 } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { formatDate } from "@/lib/locale";
 import { FileText, Palette } from "lucide-react";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 
-type TabId = "overview" | "rules" | "chatter";
-const TAB_VALUES = ["overview", "rules", "chatter"] as const;
+const CONFIG: DetailPageConfig = {
+    entityKey: "brand_guidelines",
+    titleKey: "name",
+    statusKey: "status",
+    icon: Palette,
+    backHref: "/brand-guidelines",
+    backLabel: "Brand Guidelines",
+    chatterRecordType: "brand_guideline",
+    sidebarFields: [
+        { id: "category", label: "Category", accessorKey: "category" },
+        { id: "status", label: "Status", accessorKey: "status" },
+        { id: "created_at", label: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+    fields: [
+        { id: "description", label: "Description", accessorKey: "description", fullWidth: true },
+        { id: "content", label: "Content", accessorKey: "content", fullWidth: true },
+    ],
+    tabs: [
+        {
+            id: "rules",
+            label: "Rules",
+            content: (
+                <EmptyState
+                    icon={FileText}
+                    title="No brand rules defined"
+                    description="Detailed brand rules and guidelines will appear here."
+                    compact
+                />
+            ),
+        },
+    ],
+};
 
 export default function BrandGuidelineDetailPage() {
     const params = useParams();
@@ -33,113 +57,13 @@ export default function BrandGuidelineDetailPage() {
         useDeleteHook: useDeleteBrandGuideline,
     });
 
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const g = guideline as Record<string, unknown> | undefined;
-    if (!g) {
-        return (
-            <EmptyState
-                icon={Palette}
-                title="Brand guideline not found"
-                description="This guideline may have been removed."
-            />
-        );
-    }
-
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "You",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "rules" as const, label: "Rules" },
-        { id: "chatter" as const, label: "Activity" },
-    ];
-
-    const sidebar = (
-        <div className="space-y-4 text-sm">
-            <div>
-                <span className="text-muted-foreground">Category</span>
-                <p className="font-medium capitalize">{String(g.category ?? "—")}</p>
-            </div>
-            <div>
-                <span className="text-muted-foreground">Status</span>
-                <p className="font-medium capitalize">{String(g.status ?? "—")}</p>
-            </div>
-            <div>
-                <span className="text-muted-foreground">Created</span>
-                <p className="font-medium">
-                    {g.created_at ? formatDate(String(g.created_at)) : "—"}
-                </p>
-            </div>
-        </div>
-    );
-
     return (
-        <DetailLayout
-            backHref="/brand-guidelines"
-            backLabel="Brand Guidelines"
-            entityType="brand-guidelines"
-            entityId={entityId}
-            title={String(g.name ?? g.title ?? "Untitled Guideline")}
-            subtitle="Brand Guideline"
-            status={String(g.status ?? "active")}
-            menuItems={[...crudMenuItems]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Palette className="h-4 w-4" /> Guideline Overview
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm">
-                            <p>
-                                {String(g.description ?? g.content ?? "No description provided.")}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-            {activeTab === "rules" && (
-                <EmptyState
-                    icon={FileText}
-                    title="No brand rules defined"
-                    description="Detailed brand rules and guidelines will appear here."
-                    compact
-                />
-            )}
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="brand_guideline"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        <DetailPageShell
+            config={CONFIG}
+            id={entityId}
+            record={guideline as Record<string, unknown> | null}
+            isLoading={isLoading}
+            menuItems={crudMenuItems}
+        />
     );
 }

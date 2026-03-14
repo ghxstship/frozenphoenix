@@ -1,189 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { PermissionGate } from "@/components/permission-guard";
-import { useConfirm } from "@/components/ui/confirm-dialog";
-import { useFeatureFlags, useUpdateFeatureFlag } from "@/lib/settings/hooks";
-import { Flag, Globe, Loader2, Percent, Search, ToggleLeft, Users } from "lucide-react";
-import { EmptyState } from "@/components/layouts/empty-state";
+import { ListPageShell } from "@/components/shells";
+import { useFeatureFlags } from "@/lib/settings/hooks";
+import { Flag } from "lucide-react";
+import type { ListPageConfig } from "@/types/list-page-config";
+
+const config: ListPageConfig = {
+    entityKey: "feature_flags",
+    title: "Feature Flags",
+    description: "Control feature rollout across organizations, roles, and users",
+    icon: Flag,
+    searchKeys: ["name"],
+    columns: [
+        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+};
 
 export default function FeatureFlagsPage() {
-    const { data: flags, isLoading } = useFeatureFlags();
-    const updateFlag = useUpdateFeatureFlag();
-    const { confirm } = useConfirm();
-    const [search, setSearch] = useState("");
+    const { data: rawData, isLoading } = useFeatureFlags();
+    const data = (rawData ?? []) as unknown as Record<string, unknown>[];
 
-    const filtered = (flags ?? []).filter(
-        (f) =>
-            f.key.toLowerCase().includes(search.toLowerCase()) ||
-            f.label.toLowerCase().includes(search.toLowerCase())
-    );
-
-    const activeCount = (flags ?? []).filter((f) => f.is_active).length;
-
-    return (
-        <PermissionGate resource="settings" action="manage">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Feature Flags"
-                    description="Control feature rollout across organizations, roles, and users"
-                >
-                    <Badge variant="ghost">{flags?.length ?? 0} flags</Badge>
-                </PageHeader>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Card>
-                        <CardContent className="py-4 flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Flag className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{flags?.length ?? 0}</p>
-                                <p className="text-xs text-muted-foreground">Total Flags</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="py-4 flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
-                                <ToggleLeft className="h-5 w-5 text-success" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{activeCount}</p>
-                                <p className="text-xs text-muted-foreground">Active</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="py-4 flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                                <Percent className="h-5 w-5 text-warning" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">
-                                    {
-                                        (flags ?? []).filter((f) => f.flag_type === "percentage")
-                                            .length
-                                    }
-                                </p>
-                                <p className="text-xs text-muted-foreground">Percentage Rollouts</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">All Feature Flags</CardTitle>
-                            <div className="relative w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search flags…"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9"
-                                />
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : filtered.length === 0 ? (
-                            <EmptyState
-                                icon={Flag}
-                                title="No feature flags found"
-                                description={
-                                    search
-                                        ? "No flags match your search"
-                                        : "No feature flags defined yet"
-                                }
-                                compact
-                            />
-                        ) : (
-                            <div className="space-y-1">
-                                {filtered.map((flag) => (
-                                    <div
-                                        key={flag.id}
-                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors gap-4"
-                                    >
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-medium">{flag.label}</p>
-                                                <Badge variant="ghost" className="text-[10px]">
-                                                    {flag.flag_type}
-                                                </Badge>
-                                                {flag.target_orgs.length > 0 && (
-                                                    <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Globe className="h-3 w-3" />
-                                                        {flag.target_orgs.length}
-                                                    </span>
-                                                )}
-                                                {flag.target_roles.length > 0 && (
-                                                    <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Users className="h-3 w-3" />
-                                                        {flag.target_roles.length}
-                                                    </span>
-                                                )}
-                                                {flag.flag_type === "percentage" && (
-                                                    <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                                        <Percent className="h-3 w-3" />
-                                                        {flag.rollout_percentage}%
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                                                {flag.description ?? flag.key}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={async () => {
-                                                const nextState = !flag.is_active;
-                                                const confirmed = await confirm({
-                                                    title: `${nextState ? "Enable" : "Disable"} ${flag.label}?`,
-                                                    description: nextState
-                                                        ? `This will enable the "${flag.label}" feature flag for ${flag.target_orgs.length > 0 ? `${flag.target_orgs.length} org(s)` : "all organizations"}.`
-                                                        : `This will disable the "${flag.label}" feature flag. Users will lose access to the feature immediately.`,
-                                                    confirmLabel: nextState ? "Enable" : "Disable",
-                                                    variant: nextState ? "default" : "destructive",
-                                                });
-                                                if (confirmed) {
-                                                    updateFlag.mutate({
-                                                        id: flag.id,
-                                                        is_active: nextState,
-                                                    });
-                                                }
-                                            }}
-                                            disabled={updateFlag.isPending}
-                                            className={`h-6 w-11 rounded-full transition-colors shrink-0 ${
-                                                flag.is_active ? "bg-primary" : "bg-muted"
-                                            }`}
-                                            role="switch"
-                                            aria-checked={flag.is_active}
-                                            aria-label={`Toggle ${flag.label}`}
-                                        >
-                                            <div
-                                                className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${
-                                                    flag.is_active
-                                                        ? "translate-x-5"
-                                                        : "translate-x-0.5"
-                                                }`}
-                                            />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </PermissionGate>
-    );
+    return <ListPageShell config={config} data={data} isLoading={isLoading} />;
 }

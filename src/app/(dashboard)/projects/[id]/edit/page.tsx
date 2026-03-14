@@ -1,16 +1,16 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import { logger } from "@/lib/logger";
-import React, { useState } from "react";
+import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { FormLayout, FormSection } from "@/components/layouts/form-layout";
-import { Input } from "@/components/ui/input";
-import { CurrencyInput, DatePicker, FormField, Select } from "@/components/ui/form";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
 import { useProject, useUpdateProject } from "@/lib/supabase/hooks";
+import { FormPageShell } from "@/components/shells/form-page-shell";
+import type { FormPageConfig } from "@/types/form-page-config";
 import { FolderKanban } from "lucide-react";
+
+const STATUS_OPTIONS = PROJECT_STATUSES.map((s) => ({ value: s.value, label: s.label }));
+const PHASE_OPTIONS = PROJECT_PHASES.map((p) => ({ value: p.value, label: p.label }));
 
 export default function EditProjectPage() {
     const params = useParams();
@@ -19,21 +19,108 @@ export default function EditProjectPage() {
     const updateProject = useUpdateProject();
     const { data: project, isLoading } = useProject(projectId);
 
-    const [formData, setFormData] = useState({
-        name: project?.name || "",
-        client: project?.client || "",
-        status: project?.status || "draft",
-        currentPhase: (project?.current_phase as string) || "pre_production",
-        startDate: (project?.start_date as string) || "",
-        endDate: (project?.end_date as string) || "",
-        budgetPlanned: (project?.budget_planned as number) || 0,
-    });
+    const config = useMemo<FormPageConfig>(
+        () => ({
+            entityKey: "projects",
+            title: `Edit ${(project as Record<string, unknown>)?.name ?? "Project"}`,
+            description: "Update project details and settings",
+            backHref: `/projects/${projectId}`,
+            backLabel: "Back to Project",
+            mode: "edit",
+            recordId: projectId,
+            sections: [
+                {
+                    id: "basic",
+                    title: "Basic Information",
+                    description: "Core project details",
+                    fields: [
+                        {
+                            id: "name",
+                            label: "Project Name",
+                            type: "text",
+                            required: true,
+                            placeholder: "Enter project name",
+                        },
+                        {
+                            id: "clientCompanyId",
+                            label: "Client Company ID",
+                            type: "text",
+                            placeholder: "Client company UUID",
+                        },
+                        {
+                            id: "status",
+                            label: "Status",
+                            type: "select",
+                            options: STATUS_OPTIONS,
+                            defaultValue: "draft",
+                        },
+                        {
+                            id: "currentPhase",
+                            label: "Current Phase",
+                            type: "select",
+                            options: PHASE_OPTIONS,
+                            defaultValue: "pre_production",
+                        },
+                    ],
+                },
+                {
+                    id: "timeline",
+                    title: "Timeline",
+                    description: "Project start and end dates",
+                    fields: [
+                        { id: "startDate", label: "Start Date", type: "date", required: true },
+                        { id: "endDate", label: "End Date", type: "date", required: true },
+                    ],
+                },
+                {
+                    id: "budget",
+                    title: "Budget",
+                    description: "Planned budget for this project",
+                    fields: [
+                        {
+                            id: "budgetPlanned",
+                            label: "Planned Budget",
+                            type: "currency",
+                            description: "Total budget allocated for this project",
+                            placeholder: "0.00",
+                            fullWidth: true,
+                        },
+                    ],
+                },
+            ],
+            transformRecord: (rec) => ({
+                name: rec.name ?? "",
+                clientCompanyId: rec.client_company_id ?? "",
+                status: rec.status ?? "draft",
+                currentPhase: (rec.current_phase as string) ?? "pre_production",
+                startDate: (rec.start_date as string) ?? "",
+                endDate: (rec.end_date as string) ?? "",
+                budgetPlanned: (rec.budget_planned as number) ?? 0,
+            }),
+            transformSubmit: (data) => ({
+                id: projectId,
+                name: data.name,
+                client_company_id: (data.clientCompanyId as string) || null,
+                status: data.status,
+                current_phase: data.currentPhase,
+                start_date: (data.startDate as string) || null,
+                end_date: (data.endDate as string) || null,
+                budget_planned: (data.budgetPlanned as number) || null,
+            }),
+        }),
+        [projectId, project]
+    );
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
+    const handleSubmit = useMemo(
+        () => async (data: Record<string, unknown>) => {
+            await updateProject.mutateAsync(
+                data as unknown as Parameters<typeof updateProject.mutateAsync>[0]
+            );
+        },
+        [updateProject]
+    );
 
-    if (!project) {
+    if (!isLoading && !project) {
         return (
             <EmptyState
                 icon={FolderKanban}
@@ -44,129 +131,13 @@ export default function EditProjectPage() {
         );
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            const updateData = {
-                id: projectId,
-                name: formData.name,
-                client: formData.client,
-                status: formData.status,
-                current_phase: formData.currentPhase,
-                start_date: formData.startDate || null,
-                end_date: formData.endDate || null,
-                budget_planned: formData.budgetPlanned || null,
-            };
-            await updateProject.mutateAsync(
-                updateData as unknown as Parameters<typeof updateProject.mutateAsync>[0]
-            );
-            router.push(`/projects/${projectId}`);
-        } catch (error) {
-            logger.error("Failed to update project", { error });
-        }
-    };
-
-    const statusOptions = PROJECT_STATUSES.map((s) => ({ value: s.value, label: s.label }));
-    const phaseOptions = PROJECT_PHASES.map((p) => ({ value: p.value, label: p.label }));
-
     return (
-        <FormLayout
-            backHref={`/projects/${projectId}`}
-            backLabel="Back to Project"
-            title={`Edit ${project.name}`}
-            description="Update project details and settings"
+        <FormPageShell
+            config={config}
+            record={project as Record<string, unknown> | null}
+            isLoading={isLoading}
             onSubmit={handleSubmit}
             isSubmitting={updateProject.isPending}
-            submitLabel="Save Changes"
-        >
-            <FormSection title="Basic Information" description="Core project details">
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Project Name" htmlFor="name" required>
-                        <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="Enter project name"
-                        />
-                    </FormField>
-                    <FormField label="Client" htmlFor="client" required>
-                        <Input
-                            id="client"
-                            value={formData.client}
-                            onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                            placeholder="Client name"
-                        />
-                    </FormField>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Status" htmlFor="status">
-                        <Select
-                            id="status"
-                            value={formData.status}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    status: e.target.value as typeof formData.status,
-                                })
-                            }
-                            options={statusOptions}
-                        />
-                    </FormField>
-                    <FormField label="Current Phase" htmlFor="phase">
-                        <Select
-                            id="phase"
-                            value={formData.currentPhase}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    currentPhase: e.target.value as typeof formData.currentPhase,
-                                })
-                            }
-                            options={phaseOptions}
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Timeline" description="Project start and end dates">
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Start Date" htmlFor="startDate" required>
-                        <DatePicker
-                            id="startDate"
-                            value={formData.startDate}
-                            onChange={(e) =>
-                                setFormData({ ...formData, startDate: e.target.value })
-                            }
-                        />
-                    </FormField>
-                    <FormField label="End Date" htmlFor="endDate" required>
-                        <DatePicker
-                            id="endDate"
-                            value={formData.endDate}
-                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        />
-                    </FormField>
-                </div>
-            </FormSection>
-
-            <FormSection title="Budget" description="Planned budget for this project">
-                <FormField
-                    label="Planned Budget"
-                    htmlFor="budget"
-                    description="Total budget allocated for this project"
-                >
-                    <CurrencyInput
-                        id="budget"
-                        value={formData.budgetPlanned}
-                        onChange={(value) =>
-                            setFormData({ ...formData, budgetPlanned: value || 0 })
-                        }
-                        placeholder="0.00"
-                    />
-                </FormField>
-            </FormSection>
-        </FormLayout>
+        />
     );
 }

@@ -1,18 +1,12 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
-import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { LayoutGrid, List, Plus, Table2, Upload } from "lucide-react";
-import { CsvExportButton } from "@/components/csv/csv-export-button";
-import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CheckSquare } from "lucide-react";
 import { CREATE_TASK_CONFIG } from "@/config/create-entity-configs";
 import {
     FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
@@ -31,7 +25,8 @@ import type {
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { type BoardColumn, type CardField, DataBoard } from "@/components/data-view/data-board";
 import { CurrencyField, DateField, PriorityField } from "@/components/data-view/field-renderers";
-import { PermissionGate } from "@/components/permission-guard";
+import { ListPageShell } from "@/components/shells/list-page-shell";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type ViewMode = "list" | "table" | "board";
 
@@ -172,8 +167,8 @@ const boardCardFields: CardField<Task>[] = [
     },
 ];
 
-export default function TasksPage() {
-    const [createOpen, openCreate, closeCreate] = useCreateAction();
+// ─── Content Component ──────────────────────────────────────
+function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] }) {
     const VIEW_MODES = ["list", "table", "board"] as const;
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -182,271 +177,279 @@ export default function TasksPage() {
     });
     const [filterProject, setFilterProject] = useState<string>("all");
 
-    const { data: sbTasks, isLoading: loadingTasks, refetch: refetchTasks } = useTasks();
-    const [importOpen, setImportOpen] = useState(false);
+    const filteredTasks =
+        filterProject === "all" ? tasks : tasks.filter((t) => t.projectId === filterProject);
 
-    const handleImportComplete = useCallback(() => {
-        void refetchTasks();
-    }, [refetchTasks]);
+    return (
+        <>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+                <select
+                    value={filterProject}
+                    onChange={(e) => setFilterProject(e.target.value)}
+                    className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
+                >
+                    <option value="all">All Projects</option>
+                    {projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                            {p.name}
+                        </option>
+                    ))}
+                </select>
+                <SegmentedControl<ViewMode>
+                    ariaLabel="View mode"
+                    value={view}
+                    onValueChange={setView}
+                    options={[
+                        { value: "list", label: "List" },
+                        { value: "table", label: "Table" },
+                        { value: "board", label: "Board" },
+                    ]}
+                />
+            </div>
+
+            {view === "table" && (
+                <DataTable
+                    data={filteredTasks}
+                    columns={createTableColumns(projects)}
+                    keyField="id"
+                    sortable
+                    searchable
+                    searchPlaceholder="Search tasks..."
+                    pagination
+                    pageSize={15}
+                    hoverable
+                    stickyHeader
+                />
+            )}
+
+            {view === "board" && (
+                <DataBoard
+                    data={filteredTasks}
+                    columns={boardColumns}
+                    keyField="id"
+                    cardFields={boardCardFields}
+                    cardTitle="title"
+                    columnWidth={280}
+                />
+            )}
+
+            {view === "list" && (
+                <div className="spatial-card overflow-hidden">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-border text-left">
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                    Task
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                    Status
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                    Priority
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                                    Fab Status
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                                    Material Cost
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                                    Due Date
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden xl:table-cell">
+                                    Dependencies
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredTasks.map((task) => {
+                                const project = projects.find((p) => p.id === task.projectId);
+                                return (
+                                    <tr
+                                        key={task.id}
+                                        className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                                    >
+                                        <td className="px-4 py-3">
+                                            <div>
+                                                <p className="text-sm font-medium">{task.title}</p>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    {project?.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <Badge
+                                                variant={TASK_STATUS_CONFIG[task.status].variant}
+                                                className="text-[10px]"
+                                            >
+                                                {TASK_STATUS_CONFIG[task.status].label}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <Badge
+                                                variant={
+                                                    TASK_PRIORITY_CONFIG[task.priority].variant
+                                                }
+                                                className="text-[10px]"
+                                            >
+                                                {TASK_PRIORITY_CONFIG[task.priority].label}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-4 py-3 hidden md:table-cell">
+                                            {task.fabricationStatus ? (
+                                                <span className="text-xs font-medium">
+                                                    {
+                                                        FABRICATION_STATUS_CONFIG[
+                                                            task.fabricationStatus
+                                                        ].label
+                                                    }
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">
+                                                    —
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 hidden lg:table-cell">
+                                            <span className="text-xs font-medium">
+                                                {task.materialCost
+                                                    ? formatCurrency(task.materialCost)
+                                                    : "—"}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 hidden lg:table-cell">
+                                            <span className="text-xs text-muted-foreground">
+                                                {task.dueDate ? formatDate(task.dueDate) : "—"}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 hidden xl:table-cell">
+                                            <span className="text-[10px] text-muted-foreground">
+                                                {task.dependencies.length > 0
+                                                    ? `${task.dependencies.length} deps`
+                                                    : "none"}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </>
+    );
+}
+
+// ─── Page ────────────────────────────────────────────────────
+export default function TasksPage() {
+    const { data: sbTasks, isLoading: loadingTasks } = useTasks();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
 
-    const allTasks = (sbTasks ?? []).map((t) => ({
-        id: t.id,
-        projectId: t.project_id,
-        parentId: t.parent_id ?? undefined,
-        title: t.title,
-        description: t.description ?? undefined,
-        status: t.status as TaskStatus,
-        priority: t.priority as TaskPriority,
-        assigneeId: t.assignee_id ?? undefined,
-        phase: t.phase as ProjectPhase,
-        fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
-        materialCost: t.material_cost ?? undefined,
-        startDate: t.start_date ?? undefined,
-        dueDate: t.due_date ?? undefined,
-        completedAt: t.completed_at ?? undefined,
-        dependencies:
-            (t as { task_dependencies?: { depends_on_id: string }[] }).task_dependencies?.map(
-                (d: { depends_on_id: string }) => d.depends_on_id
-            ) || [],
-        createdAt: t.created_at ?? new Date().toISOString(),
-    }));
+    const allTasks: Task[] = useMemo(
+        () =>
+            (sbTasks ?? []).map((t) => ({
+                id: t.id,
+                projectId: t.project_id,
+                parentId: t.parent_id ?? undefined,
+                title: t.title,
+                description: t.description ?? undefined,
+                status: t.status as TaskStatus,
+                priority: t.priority as TaskPriority,
+                assigneeId: t.assignee_id ?? undefined,
+                phase: t.phase as ProjectPhase,
+                fabricationStatus: t.fabrication_status as FabricationStatus | undefined,
+                materialCost: t.material_cost ?? undefined,
+                startDate: t.start_date ?? undefined,
+                dueDate: t.due_date ?? undefined,
+                completedAt: t.completed_at ?? undefined,
+                dependencies:
+                    (
+                        t as { task_dependencies?: { depends_on_id: string }[] }
+                    ).task_dependencies?.map((d: { depends_on_id: string }) => d.depends_on_id) ||
+                    [],
+                createdAt: t.created_at ?? new Date().toISOString(),
+            })),
+        [sbTasks]
+    );
 
-    const projects: Project[] = (sbProjects ?? []).map((p) => ({
-        id: p.id,
-        name: p.name,
-        client: p.client,
-        clientLogo: p.client_logo ?? undefined,
-        status: p.status as ProjectStatus,
-        currentPhase: p.current_phase as ProjectPhase,
-        startDate: p.start_date,
-        endDate: p.end_date,
-        budgetPlanned: p.budget_planned,
-        budgetActual: p.budget_actual,
-        progress: p.progress,
-        managerId: p.manager_id ?? "",
-        teamIds: [],
-        createdAt: p.created_at ?? new Date().toISOString(),
-    }));
+    const projects: Project[] = useMemo(
+        () =>
+            (sbProjects ?? []).map((p) => ({
+                id: p.id,
+                name: p.name,
+                client: p.companies?.name ?? "",
+                clientLogo: p.client_logo ?? undefined,
+                status: p.status as ProjectStatus,
+                currentPhase: p.current_phase as ProjectPhase,
+                startDate: p.start_date,
+                endDate: p.end_date,
+                budgetPlanned: p.budget_planned,
+                budgetActual: p.budget_actual,
+                progress: p.progress,
+                managerId: p.manager_id ?? "",
+                teamIds: [],
+                createdAt: p.created_at ?? new Date().toISOString(),
+            })),
+        [sbProjects]
+    );
 
     const isLoading = loadingTasks || loadingProjects;
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const tasks =
-        filterProject === "all" ? allTasks : allTasks.filter((t) => t.projectId === filterProject);
+    const config: ListPageConfig = useMemo(
+        () => ({
+            entityKey: "tasks",
+            title: "Tasks",
+            description: "Granular task management with fabrication tracking",
+            icon: CheckSquare,
+            createConfig: CREATE_TASK_CONFIG,
+            createLabel: "New Task",
+            exportable: true,
+            importable: true,
+            searchKeys: ["title", "status", "priority"],
+            stats: [
+                {
+                    label: "In Progress",
+                    icon: CheckSquare,
+                    filter: (r) => r.status === "in_progress",
+                },
+                { label: "To Do", icon: CheckSquare, filter: (r) => r.status === "todo" },
+                { label: "Done", icon: CheckSquare, filter: (r) => r.status === "done" },
+                {
+                    label: "High Priority",
+                    icon: CheckSquare,
+                    filter: (r) => r.priority === "high" || r.priority === "urgent",
+                },
+            ],
+            filters: [
+                {
+                    id: "status",
+                    label: "Status",
+                    column: "status",
+                    options: Object.entries(TASK_STATUS_CONFIG).map(([value, cfg]) => ({
+                        value,
+                        label: cfg.label,
+                    })),
+                },
+                {
+                    id: "priority",
+                    label: "Priority",
+                    column: "priority",
+                    options: Object.entries(TASK_PRIORITY_CONFIG).map(([value, cfg]) => ({
+                        value,
+                        label: cfg.label,
+                    })),
+                },
+            ],
+            contentSlot: <TasksContent tasks={allTasks} projects={projects} />,
+        }),
+        [allTasks, projects]
+    );
 
     return (
-        <PermissionGate resource="tasks" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Tasks"
-                    description="Granular task management with fabrication tracking"
-                >
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={filterProject}
-                            onChange={(e) => setFilterProject(e.target.value)}
-                            className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
-                        >
-                            <option value="all">All Projects</option>
-                            {projects.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name}
-                                </option>
-                            ))}
-                        </select>
-                        <SegmentedControl
-                            value={view}
-                            onValueChange={(v) => setView(v as ViewMode)}
-                            options={[
-                                {
-                                    value: "list",
-                                    label: "List",
-                                    icon: <List className="h-3.5 w-3.5" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "table",
-                                    label: "Table",
-                                    icon: <Table2 className="h-3.5 w-3.5" />,
-                                    labelHidden: true,
-                                },
-                                {
-                                    value: "board",
-                                    label: "Board",
-                                    icon: <LayoutGrid className="h-3.5 w-3.5" />,
-                                    labelHidden: true,
-                                },
-                            ]}
-                            ariaLabel="View mode"
-                        />
-                        <CsvExportButton entity="tasks" />
-                        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                            <Upload className="h-4 w-4" />
-                            Import CSV
-                        </Button>
-                        <Button size="sm" onClick={openCreate}>
-                            <Plus className="h-4 w-4" />
-                            New Task
-                        </Button>
-                    </div>
-                </PageHeader>
-                <CsvImportDialog
-                    entity="tasks"
-                    open={importOpen}
-                    onOpenChange={setImportOpen}
-                    onImportComplete={handleImportComplete}
-                />
-
-                {/* Table View - using DataTable component */}
-                {view === "table" && (
-                    <DataTable
-                        data={tasks}
-                        columns={createTableColumns(projects)}
-                        keyField="id"
-                        sortable
-                        searchable
-                        searchPlaceholder="Search tasks..."
-                        pagination
-                        pageSize={15}
-                        hoverable
-                        stickyHeader
-                    />
-                )}
-
-                {/* Board View - using DataBoard component */}
-                {view === "board" && (
-                    <DataBoard
-                        data={tasks}
-                        columns={boardColumns}
-                        keyField="id"
-                        cardFields={boardCardFields}
-                        cardTitle="title"
-                        columnWidth={280}
-                    />
-                )}
-
-                {/* List View - original compact list */}
-                {view === "list" && (
-                    <div className="spatial-card overflow-hidden">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-border text-left">
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                        Task
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                        Status
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                        Priority
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                                        Fab Status
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                                        Material Cost
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                                        Due Date
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden xl:table-cell">
-                                        Dependencies
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tasks.map((task) => {
-                                    const project = projects.find((p) => p.id === task.projectId);
-                                    return (
-                                        <tr
-                                            key={task.id}
-                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div>
-                                                    <p className="text-sm font-medium">
-                                                        {task.title}
-                                                    </p>
-                                                    <p className="text-[11px] text-muted-foreground">
-                                                        {project?.name}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Badge
-                                                    variant={
-                                                        TASK_STATUS_CONFIG[task.status].variant
-                                                    }
-                                                    className="text-[10px]"
-                                                >
-                                                    {TASK_STATUS_CONFIG[task.status].label}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Badge
-                                                    variant={
-                                                        TASK_PRIORITY_CONFIG[task.priority].variant
-                                                    }
-                                                    className="text-[10px]"
-                                                >
-                                                    {TASK_PRIORITY_CONFIG[task.priority].label}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-3 hidden md:table-cell">
-                                                {task.fabricationStatus ? (
-                                                    <span className="text-xs font-medium">
-                                                        {
-                                                            FABRICATION_STATUS_CONFIG[
-                                                                task.fabricationStatus
-                                                            ].label
-                                                        }
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 hidden lg:table-cell">
-                                                <span className="text-xs font-medium">
-                                                    {task.materialCost
-                                                        ? formatCurrency(task.materialCost)
-                                                        : "—"}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 hidden lg:table-cell">
-                                                <span className="text-xs text-muted-foreground">
-                                                    {task.dueDate ? formatDate(task.dueDate) : "—"}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 hidden xl:table-cell">
-                                                {task.dependencies.length > 0 ? (
-                                                    <span className="text-[10px] text-muted-foreground">
-                                                        {task.dependencies.length} deps
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[10px] text-muted-foreground">
-                                                        none
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
-            <CreateEntityDialog
-                config={CREATE_TASK_CONFIG}
-                open={createOpen}
-                onClose={closeCreate}
-            />
-        </PermissionGate>
+        <ListPageShell
+            config={config}
+            data={allTasks as unknown as Record<string, unknown>[]}
+            isLoading={isLoading}
+        />
     );
 }

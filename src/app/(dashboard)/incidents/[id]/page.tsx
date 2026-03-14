@@ -1,8 +1,6 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteIncident, useUpdateIncident } from "@/lib/supabase/hooks-pages";
 import {
@@ -11,7 +9,7 @@ import {
     useRecordComments,
 } from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +20,7 @@ import { EntityLink } from "@/components/linked-records/entity-link";
 import { useIncident } from "@/lib/supabase/hooks-pages";
 import { useLocations, useProjects } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Clock,
@@ -33,14 +32,23 @@ import {
     Users,
 } from "lucide-react";
 
-type TabId = "overview" | "investigation" | "resolution" | "chatter";
-const TAB_VALUES = ["overview", "investigation", "resolution", "chatter"] as const;
-
 const SEVERITY_CONFIG: Record<string, { label: string; variant: string; color: string }> = {
     minor: { label: "Minor", variant: "secondary", color: "text-muted-foreground" },
     moderate: { label: "Moderate", variant: "warning", color: "text-warning" },
     major: { label: "Major", variant: "destructive", color: "text-destructive" },
     critical: { label: "Critical", variant: "destructive", color: "text-destructive" },
+};
+
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "incidents",
+    titleKey: "title",
+    statusKey: "status",
+    icon: AlertTriangle,
+    backHref: "/incidents",
+    backLabel: "Incidents",
+    chatter: false,
+    fields: [],
+    tabs: [],
 };
 
 export default function IncidentDetailPage() {
@@ -53,11 +61,6 @@ export default function IncidentDetailPage() {
         listPath: "/incidents",
         useUpdateHook: useUpdateIncident,
         useDeleteHook: useDeleteIncident,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
     });
     const { data: incident, isLoading } = useIncident(incidentId);
     const { data: sbActivity } = useRecordActivityLog("incident", incidentId);
@@ -91,6 +94,7 @@ export default function IncidentDetailPage() {
     );
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
+    const inc = incident as Record<string, unknown> | null;
     const location = incident
         ? (sbLocations ?? []).find(
               (l: Record<string, unknown>) =>
@@ -104,30 +108,17 @@ export default function IncidentDetailPage() {
           )
         : null;
     const [now] = useState(() => Date.now());
-    const daysSince = incident?.occurredAt
-        ? Math.ceil((now - new Date(incident.occurredAt).getTime()) / 86400000)
+    const daysSince = incident?.occurred_at
+        ? Math.ceil((now - new Date(incident.occurred_at).getTime()) / 86400000)
         : 0;
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (!incident) {
-        return (
-            <EmptyState
-                icon={AlertTriangle}
-                title="Incident not found"
-                description="The incident you're looking for doesn't exist or has been deleted."
-                action={{ label: "Back to Incidents", onClick: () => router.push("/incidents") }}
-            />
-        );
-    }
-
-    const severityCfg = SEVERITY_CONFIG[incident.severity] ?? {
-        label: "Minor",
-        variant: "secondary",
-        color: "text-muted-foreground",
-    };
+    const severityCfg = incident
+        ? (SEVERITY_CONFIG[incident.severity] ?? {
+              label: "Minor",
+              variant: "secondary",
+              color: "text-muted-foreground",
+          })
+        : { label: "Minor", variant: "secondary", color: "text-muted-foreground" };
 
     const handleAddComment = async (content: string) => {
         await createComment.mutateAsync({
@@ -138,14 +129,7 @@ export default function IncidentDetailPage() {
         });
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "investigation" as const, label: "Investigation" },
-        { id: "resolution" as const, label: "Resolution" },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = incident ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -170,23 +154,23 @@ export default function IncidentDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Occurred</span>
-                        <span>{formatDate(incident.occurredAt)}</span>
+                        <span>{incident.occurred_at ? formatDate(incident.occurred_at) : "—"}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Reported</span>
-                        <span>{formatDate(incident.reportedAt)}</span>
+                        <span>{incident.reported_at ? formatDate(incident.reported_at) : "—"}</span>
                     </div>
-                    {incident.estimatedCost > 0 && (
+                    {(incident.estimated_cost ?? 0) > 0 && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Est. Cost</span>
                             <span className="font-medium">
-                                {formatCurrency(incident.estimatedCost)}
+                                {formatCurrency(incident.estimated_cost ?? 0)}
                             </span>
                         </div>
                     )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Insurance</span>
-                        <span>{incident.insuranceClaim ? "Claim Filed" : "No Claim"}</span>
+                        <span>{incident.insurance_claim ? "Claim Filed" : "No Claim"}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -213,17 +197,203 @@ export default function IncidentDetailPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
+
+    const overviewSlot = incident ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Shield className="h-4 w-4" />
+                            <span className="text-xs">Severity</span>
+                        </div>
+                        <p className={`text-xl font-bold ${severityCfg.color}`}>
+                            {severityCfg.label}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-xs">Time Since</span>
+                        </div>
+                        <p className="text-xl font-bold">{daysSince}d</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Est. Cost</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {formatCurrency(incident.estimated_cost ?? 0)}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Users className="h-4 w-4" />
+                            <span className="text-xs">Witnesses</span>
+                        </div>
+                        <p className="text-xl font-bold">{(incident.witness_ids ?? []).length}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {incident.description}
+                    </p>
+                </CardContent>
+            </Card>
+            {incident.immediate_actions && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Immediate Actions Taken</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {incident.immediate_actions}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+            {incident.specific_location && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Location</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>{incident.specific_location}</span>
+                        </div>
+                        {location && (
+                            <p className="text-sm text-muted-foreground mt-1 ml-6">
+                                {location.name}
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    ) : undefined;
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => (incident ? `${incident.number} · ${incident.specific_location}` : ""),
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "investigation",
+                label: "Investigation",
+                content: incident ? (
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Root Cause Analysis</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {incident.root_cause ? (
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {incident.root_cause}
+                                    </p>
+                                ) : (
+                                    <EmptyState
+                                        icon={FileText}
+                                        title="Not yet determined"
+                                        description="Root cause analysis is pending"
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                ) : null,
+            },
+            {
+                id: "resolution",
+                label: "Resolution",
+                content: incident ? (
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Resolution</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {incident.resolution ? (
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {incident.resolution}
+                                    </p>
+                                ) : (
+                                    <EmptyState
+                                        icon={Shield}
+                                        title="Not yet resolved"
+                                        description="This incident is still open"
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Preventive Measures</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {incident.preventive_measures ? (
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {incident.preventive_measures}
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No preventive measures documented yet
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                ) : null,
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
+                    <RecordChatter
+                        recordType="incident"
+                        recordId={incidentId}
+                        activityItems={activityItems}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
+
+    const record = inc ? { ...(inc as Record<string, unknown>) } : null;
 
     return (
-        <DetailLayout
-            backHref="/incidents"
-            backLabel="Incidents"
-            entityType="incidents"
-            entityId={incidentId}
-            title={incident.title}
-            subtitle={`${incident.number} · ${incident.specificLocation}`}
-            status={incident.status}
+        <DetailPageShell
+            config={config}
+            id={incidentId}
+            record={record}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "File Insurance Claim",
+                    onClick: () => router.push(`/insurance-policies/new?incidentId=${incidentId}`),
+                },
+                { label: "Close Incident", onClick: () => handleUpdate({ status: "closed" }) },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
                     <AlertTriangle className={`h-6 w-6 ${severityCfg.color}`} />
@@ -235,178 +405,6 @@ export default function IncidentDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[
-                {
-                    label: "File Insurance Claim",
-                    onClick: () => router.push(`/insurance-policies/new?incidentId=${incidentId}`),
-                },
-                { label: "Close Incident", onClick: () => handleUpdate({ status: "closed" }) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Shield className="h-4 w-4" />
-                                    <span className="text-xs">Severity</span>
-                                </div>
-                                <p className={`text-xl font-bold ${severityCfg.color}`}>
-                                    {severityCfg.label}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Clock className="h-4 w-4" />
-                                    <span className="text-xs">Time Since</span>
-                                </div>
-                                <p className="text-xl font-bold">{daysSince}d</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    <span className="text-xs">Est. Cost</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {formatCurrency(incident.estimatedCost)}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Users className="h-4 w-4" />
-                                    <span className="text-xs">Witnesses</span>
-                                </div>
-                                <p className="text-xl font-bold">{incident.witnessIds.length}</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Description</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                {incident.description}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    {incident.immediateActions && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Immediate Actions Taken</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {incident.immediateActions}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                    {incident.specificLocation && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Location</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                                    <span>{incident.specificLocation}</span>
-                                </div>
-                                {location && (
-                                    <p className="text-sm text-muted-foreground mt-1 ml-6">
-                                        {location.name}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "investigation" && (
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Root Cause Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {incident.rootCause ? (
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {incident.rootCause}
-                                </p>
-                            ) : (
-                                <EmptyState
-                                    icon={FileText}
-                                    title="Not yet determined"
-                                    description="Root cause analysis is pending"
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "resolution" && (
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Resolution</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {incident.resolution ? (
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {incident.resolution}
-                                </p>
-                            ) : (
-                                <EmptyState
-                                    icon={Shield}
-                                    title="Not yet resolved"
-                                    description="This incident is still open"
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Preventive Measures</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {incident.preventiveMeasures ? (
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {incident.preventiveMeasures}
-                                </p>
-                            ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    No preventive measures documented yet
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="incident"
-                    recordId={incidentId}
-                    activityItems={activityItems}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

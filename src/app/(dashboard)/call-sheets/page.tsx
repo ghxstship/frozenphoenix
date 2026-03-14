@@ -1,242 +1,28 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import { useState } from "react";
-import Link from "next/link";
-import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/ui/search-input";
-import { Card, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
-import { CALL_SHEET_STATUS_MAP, type CallSheetStatusType } from "@/config/domain-config";
-import { formatDate } from "@/lib/utils";
-import { StaggerItem } from "@/components/ui/stagger-container";
-import {
-    Calendar,
-    CheckCircle2,
-    ClipboardList,
-    Clock,
-    MapPin,
-    Plus,
-    Send,
-    Sun,
-    Users,
-} from "lucide-react";
-import { EmptyState } from "@/components/layouts/empty-state";
+import { ListPageShell } from "@/components/shells";
 import { useCallSheets } from "@/lib/supabase/hooks-pages";
-import { PermissionGate } from "@/components/permission-guard";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CALL_SHEET_CONFIG } from "@/config/create-entity-configs";
+import { Calendar } from "lucide-react";
+import type { ListPageConfig } from "@/types/list-page-config";
 
-interface CallSheetListItem {
-    id: string;
-    title: string;
-    callSheetNumber: string;
-    projectName: string;
-    date: string;
-    venueName: string;
-    generalCallTime: string;
-    wrapTime: string;
-    crewCount: number;
-    status: CallSheetStatusType;
-    weatherForecast: string;
-    weatherTemp: string;
-}
+const config: ListPageConfig = {
+    entityKey: "call_sheets",
+    title: "Call Sheets",
+    description: "Generate and distribute daily call sheets for crew and production teams",
+    icon: Calendar,
+    createConfig: CREATE_CALL_SHEET_CONFIG,
+    searchKeys: ["name"],
+    columns: [
+        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+};
 
 export default function CallSheetsPage() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
-    const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const { data: rawData, isLoading } = useCallSheets();
+    const data = (rawData ?? []) as Record<string, unknown>[];
 
-    const { data: sbCallSheets, isLoading } = useCallSheets();
-
-    const callSheets: CallSheetListItem[] = (sbCallSheets ?? []).map(
-        (cs: Record<string, unknown>) => ({
-            id: (cs.id as string) ?? "",
-            title: (cs.title as string) ?? "",
-            callSheetNumber: (cs.call_sheet_number as string) ?? "",
-            projectName: (cs.project_name as string) ?? "",
-            date: (cs.date as string) ?? "",
-            venueName: (cs.venue_name as string) ?? "",
-            generalCallTime: (cs.general_call_time as string) ?? "",
-            wrapTime: (cs.wrap_time as string) ?? "",
-            crewCount: (cs.crew_count as number) ?? 0,
-            status: ((cs.status as string) ?? "draft") as CallSheetStatusType,
-            weatherForecast: (cs.weather_forecast as string) ?? "",
-            weatherTemp: (cs.weather_temp as string) ?? "",
-        })
-    );
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    const filtered = callSheets.filter((cs) => {
-        const matchesSearch =
-            cs.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cs.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cs.venueName.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === "all" || cs.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
-
-    const totalCrew = callSheets.reduce((sum, cs) => sum + cs.crewCount, 0);
-
-    return (
-        <>
-            <PermissionGate resource="call_sheets" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Call Sheets"
-                        description="Generate and distribute daily call sheets for crew and production teams"
-                    >
-                        <Button onClick={openCreate}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Call Sheet
-                        </Button>
-                    </PageHeader>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard
-                            title="Total Call Sheets"
-                            value={callSheets.length}
-                            icon={ClipboardList}
-                        />
-                        <StatCard
-                            title="Distributed"
-                            value={callSheets.filter((cs) => cs.status === "distributed").length}
-                            icon={Send}
-                        />
-                        <StatCard
-                            title="Acknowledged"
-                            value={callSheets.filter((cs) => cs.status === "acknowledged").length}
-                            icon={CheckCircle2}
-                        />
-                        <StatCard
-                            title="Total Crew"
-                            value={totalCrew}
-                            description="across all sheets"
-                            icon={Users}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <SearchInput
-                            value={searchQuery}
-                            onValueChange={setSearchQuery}
-                            placeholder="Search call sheets..."
-                            className="flex-1 max-w-sm"
-                        />
-                        <div className="flex gap-2 flex-wrap">
-                            {[
-                                "all",
-                                "draft",
-                                "published",
-                                "distributed",
-                                "acknowledged",
-                                "archived",
-                            ].map((s) => (
-                                <Button
-                                    key={s}
-                                    variant={statusFilter === s ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setStatusFilter(s)}
-                                >
-                                    {s === "all"
-                                        ? "All"
-                                        : (CALL_SHEET_STATUS_MAP[s as CallSheetStatusType]?.label ??
-                                          s)}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {filtered.length === 0 ? (
-                        <EmptyState
-                            icon={ClipboardList}
-                            title="No call sheets found"
-                            description={
-                                searchQuery || statusFilter !== "all"
-                                    ? "Try adjusting your search or filters"
-                                    : "Create your first call sheet to get started"
-                            }
-                        />
-                    ) : (
-                        <div className="space-y-3">
-                            {filtered.map((cs, i) => {
-                                const statusCfg = CALL_SHEET_STATUS_MAP[cs.status];
-                                return (
-                                    <StaggerItem key={cs.id} index={i} stagger="relaxed">
-                                        <Link href={`/call-sheets/${cs.id}`}>
-                                            <Card className="cursor-pointer hover:shadow-md transition-all">
-                                                <CardContent className="py-4">
-                                                    <div className="flex items-start justify-between gap-4">
-                                                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                                                <ClipboardList className="h-5 w-5 text-primary" />
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <span className="text-xs font-mono text-muted-foreground">
-                                                                        {cs.callSheetNumber}
-                                                                    </span>
-                                                                    <Badge
-                                                                        variant={statusCfg?.variant}
-                                                                    >
-                                                                        {statusCfg?.label}
-                                                                    </Badge>
-                                                                </div>
-                                                                <h3 className="text-sm font-semibold mt-1">
-                                                                    {cs.title}
-                                                                </h3>
-                                                                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
-                                                                    <span className="flex items-center gap-1">
-                                                                        <Calendar className="h-3 w-3" />
-                                                                        {formatDate(cs.date)}
-                                                                    </span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <MapPin className="h-3 w-3" />
-                                                                        {cs.venueName}
-                                                                    </span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <Clock className="h-3 w-3" />
-                                                                        Call: {cs.generalCallTime} —
-                                                                        Wrap: {cs.wrapTime}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right shrink-0 space-y-1">
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
-                                                                <Users className="h-3 w-3" />
-                                                                <span className="font-semibold text-foreground">
-                                                                    {cs.crewCount}
-                                                                </span>{" "}
-                                                                crew
-                                                            </div>
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
-                                                                <Sun className="h-3 w-3" />
-                                                                {cs.weatherTemp} ·{" "}
-                                                                {cs.weatherForecast}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </Link>
-                                    </StaggerItem>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </PermissionGate>
-            <CreateEntityDialog
-                config={CREATE_CALL_SHEET_CONFIG}
-                open={createOpen}
-                onClose={closeCreate}
-            />
-        </>
-    );
+    return <ListPageShell config={config} data={data} isLoading={isLoading} />;
 }

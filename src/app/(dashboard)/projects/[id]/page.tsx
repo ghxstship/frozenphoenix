@@ -1,11 +1,9 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
 import { logger } from "@/lib/logger";
 import React, { useMemo, useState } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +37,7 @@ import {
 } from "@/lib/supabase/hooks-feature-gaps";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     CheckSquare,
@@ -51,18 +50,22 @@ import {
     Users,
 } from "lucide-react";
 
-type TabId = "overview" | "tasks" | "team" | "budget" | "approvals" | "chatter";
-const TAB_VALUES = ["overview", "tasks", "team", "budget", "approvals", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "projects",
+    titleKey: "name",
+    statusKey: "status",
+    icon: FolderKanban,
+    backHref: "/projects",
+    backLabel: "Projects",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function ProjectDetailPage() {
     const params = useParams();
     const router = useRouter();
     const projectId = params.id as string;
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
-    });
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [taskTitle, setTaskTitle] = useState("");
     const updateProject = useUpdateProject();
@@ -148,24 +151,11 @@ export default function ProjectDetailPage() {
         return Array.isArray(pIds) ? pIds.includes(projectId) : false;
     });
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (!project) {
-        return (
-            <EmptyState
-                icon={FolderKanban}
-                title="Project not found"
-                description="The project you're looking for doesn't exist or has been deleted."
-                action={{ label: "Back to Projects", onClick: () => router.push("/projects") }}
-            />
-        );
-    }
-
-    const phaseConfig = PROJECT_PHASE_MAP[project.current_phase as keyof typeof PROJECT_PHASE_MAP];
+    const phaseConfig = project
+        ? PROJECT_PHASE_MAP[project.current_phase as keyof typeof PROJECT_PHASE_MAP]
+        : undefined;
     const budgetUtilization =
-        project.budget_planned > 0
+        project && project.budget_planned > 0
             ? Math.round((project.budget_actual / project.budget_planned) * 100)
             : 0;
     const pendingApprovals = projectApprovals.filter(
@@ -182,203 +172,154 @@ export default function ProjectDetailPage() {
         });
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "tasks" as const, label: "Tasks", count: projectTasks.length },
-        { id: "team" as const, label: "Team", count: projectStakeholders.length },
-        { id: "budget" as const, label: "Budget" },
-        { id: "approvals" as const, label: "Approvals", count: pendingApprovals.length },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
-
-    const sidebar = (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Project Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Client</span>
-                        <span className="font-medium">{project.client}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Phase</span>
-                        <Badge variant={phaseConfig.variant}>{phaseConfig.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Start Date</span>
-                        <span>{formatDate(project.start_date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">End Date</span>
-                        <span>{formatDate(project.end_date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{project.progress}%</span>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {pendingApprovals.length > 0 && (
-                <Card className="border-warning/50 bg-warning/5">
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-warning mb-2">
-                            <AlertTriangle className="h-4 w-4" />
-                            <span className="text-sm font-medium">Pending Approvals</span>
+    const sidebarSlot =
+        project && phaseConfig ? (
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">Project Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Client</span>
+                            <span className="font-medium">{project.companies?.name ?? "—"}</span>
                         </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Phase</span>
+                            <Badge variant={phaseConfig.variant}>{phaseConfig.label}</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Start Date</span>
+                            <span>{formatDate(project.start_date)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">End Date</span>
+                            <span>{formatDate(project.end_date)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-medium">{project.progress}%</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {pendingApprovals.length > 0 && (
+                    <Card className="border-warning/50 bg-warning/5">
+                        <CardContent className="pt-4">
+                            <div className="flex items-center gap-2 text-warning mb-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                <span className="text-sm font-medium">Pending Approvals</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {pendingApprovals.length} approval
+                                {pendingApprovals.length > 1 ? "s" : ""} waiting
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        ) : undefined;
+
+    const overviewSlot = project ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Budget</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {formatCurrency(project.budget_planned)}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                            {pendingApprovals.length} approval
-                            {pendingApprovals.length > 1 ? "s" : ""} waiting
+                            {budgetUtilization}% utilized
                         </p>
                     </CardContent>
                 </Card>
-            )}
-        </div>
-    );
-
-    return (
-        <>
-            <DetailLayout
-                backHref="/projects"
-                backLabel="Projects"
-                entityType="projects"
-                entityId={projectId}
-                title={project.name}
-                subtitle={project.client}
-                status={project.status}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
-                        {project.name.charAt(0)}
-                    </div>
-                }
-                actions={
-                    <Button onClick={() => router.push(`/projects/${projectId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                }
-                menuItems={[
-                    {
-                        label: "Duplicate Project",
-                        onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`),
-                    },
-                    {
-                        label: updateProject.isPending ? "Archiving..." : "Archive Project",
-                        onClick: handleArchive,
-                    },
-                    {
-                        label: deleteProject.isPending ? "Deleting..." : "Delete Project",
-                        onClick: handleDelete,
-                        variant: "destructive",
-                    },
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                sidebar={sidebar}
-            >
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <DollarSign className="h-4 w-4" />
-                                        <span className="text-xs">Budget</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {formatCurrency(project.budget_planned)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {budgetUtilization}% utilized
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <CheckSquare className="h-4 w-4" />
-                                        <span className="text-xs">Tasks</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {completedTasks}/{projectTasks.length}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">completed</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Users className="h-4 w-4" />
-                                        <span className="text-xs">Team</span>
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                        {projectStakeholders.length}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">members</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <TrendingUp className="h-4 w-4" />
-                                        <span className="text-xs">Progress</span>
-                                    </div>
-                                    <p className="text-xl font-bold">{project.progress}%</p>
-                                    <ProgressBar value={project.progress} size="sm" />
-                                </CardContent>
-                            </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <CheckSquare className="h-4 w-4" />
+                            <span className="text-xs">Tasks</span>
                         </div>
+                        <p className="text-xl font-bold">
+                            {completedTasks}/{projectTasks.length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">completed</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Users className="h-4 w-4" />
+                            <span className="text-xs">Team</span>
+                        </div>
+                        <p className="text-xl font-bold">{projectStakeholders.length}</p>
+                        <p className="text-xs text-muted-foreground">members</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <TrendingUp className="h-4 w-4" />
+                            <span className="text-xs">Progress</span>
+                        </div>
+                        <p className="text-xl font-bold">{project.progress}%</p>
+                        <ProgressBar value={project.progress} size="sm" />
+                    </CardContent>
+                </Card>
+            </div>
 
-                        {/* Recent Tasks */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Recent Tasks</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {projectTasks.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground text-center py-4">
-                                        No tasks yet
-                                    </p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {projectTasks.slice(0, 5).map((task) => (
-                                            <div
-                                                key={task.id}
-                                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                            >
-                                                <div>
-                                                    <p className="text-sm font-medium">
-                                                        {task.title}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {task.due_date &&
-                                                            `Due ${formatDate(task.due_date)}`}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <PriorityBadge
-                                                        priority={task.priority}
-                                                        className="text-[10px]"
-                                                    />
-                                                    <StatusBadge
-                                                        status={task.status}
-                                                        className="text-[10px]"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Recent Tasks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {projectTasks.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            No tasks yet
+                        </p>
+                    ) : (
+                        <div className="space-y-3">
+                            {projectTasks.slice(0, 5).map((task) => (
+                                <div
+                                    key={task.id}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium">{task.title}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {task.due_date && `Due ${formatDate(task.due_date)}`}
+                                        </p>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
+                                    <div className="flex items-center gap-2">
+                                        <PriorityBadge
+                                            priority={task.priority}
+                                            className="text-[10px]"
+                                        />
+                                        <StatusBadge status={task.status} className="text-[10px]" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    ) : undefined;
 
-                {activeTab === "tasks" && (
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => project?.companies?.name ?? "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "tasks",
+                label: "Tasks",
+                count: projectTasks.length,
+                content: (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">All Tasks</CardTitle>
@@ -439,9 +380,13 @@ export default function ProjectDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "team" && (
+                ),
+            },
+            {
+                id: "team",
+                label: "Team",
+                count: projectStakeholders.length,
+                content: (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Team Members</CardTitle>
@@ -504,9 +449,12 @@ export default function ProjectDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-
-                {activeTab === "budget" && (
+                ),
+            },
+            {
+                id: "budget",
+                label: "Budget",
+                content: project ? (
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <StatCard
@@ -537,9 +485,13 @@ export default function ProjectDetailPage() {
                             </CardContent>
                         </Card>
                     </div>
-                )}
-
-                {activeTab === "approvals" && (
+                ) : undefined,
+            },
+            {
+                id: "approvals",
+                label: "Approvals",
+                count: pendingApprovals.length,
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Approvals</CardTitle>
@@ -581,9 +533,13 @@ export default function ProjectDetailPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
-                {/* Chatter Tab */}
-                {activeTab === "chatter" && (
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
                     <RecordChatter
                         recordType="project"
                         recordId={projectId}
@@ -592,10 +548,49 @@ export default function ProjectDetailPage() {
                         currentUserId="u1"
                         onAddComment={handleAddComment}
                     />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
 
-            {/* Add Task Dialog */}
+    const rec = project as unknown as Record<string, unknown> | null;
+    const record = rec ? { ...rec } : null;
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={projectId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    {
+                        label: "Duplicate Project",
+                        onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`),
+                    },
+                    {
+                        label: updateProject.isPending ? "Archiving..." : "Archive Project",
+                        onClick: handleArchive,
+                    },
+                    {
+                        label: deleteProject.isPending ? "Deleting..." : "Delete Project",
+                        onClick: handleDelete,
+                        variant: "destructive",
+                    },
+                ]}
+                avatar={
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
+                        {project?.name.charAt(0) ?? "P"}
+                    </div>
+                }
+                actions={
+                    <Button onClick={() => router.push(`/projects/${projectId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                }
+            />
+
             <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
                 <DialogContent>
                     <DialogHeader>

@@ -32,6 +32,13 @@ export { APPROVAL_INSTANCE_MACHINE } from "./approval-instance";
 export { ESTIMATE_MACHINE } from "./estimate";
 export { RENTAL_AGREEMENT_MACHINE } from "./rental-agreement";
 export { RIGHTS_MACHINE } from "./rights";
+export { LEAD_MACHINE } from "./lead";
+export { CAMPAIGN_MACHINE } from "./campaign";
+export { PROPOSAL_MACHINE } from "./proposal";
+export { CLIENT_INVOICE_MACHINE } from "./client-invoice";
+export { PAYMENT_MACHINE } from "./payment";
+export { ACTIVATION_MACHINE } from "./activation";
+export { PERMIT_MACHINE } from "./permit";
 
 /** Lookup machine by entity name */
 export { getMachineForEntity } from "./registry";

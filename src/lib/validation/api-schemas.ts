@@ -58,7 +58,7 @@ export const orgSecurityPatchSchema = z
 
 // ─── POST /api/billing/subscribe ─────────────────────────────
 export const billingSubscribeSchema = z.object({
-    pricing_tier: z.enum(["core", "pro", "enterprise"]),
+    pricing_tier: z.enum(["starter", "core", "team", "pro", "enterprise"]),
     billing_cycle: z.enum(["monthly", "annual"]),
 });
 

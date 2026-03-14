@@ -3,9 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteProposal, useProposal, useUpdateProposal } from "@/lib/supabase/hooks-pages";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +18,9 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getActiveBrand } from "@/config/brands";
 import { OverlineText } from "@/components/ui/overline-text";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     CheckCircle,
@@ -41,7 +40,17 @@ import {
 
 const brandConfig = getActiveBrand();
 
-type ProposalTab = "editor" | "preview" | "activity" | "chatter";
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "proposals",
+    titleKey: "title",
+    statusKey: "status",
+    icon: FileText,
+    backHref: "/proposals",
+    backLabel: "Proposals",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 interface LineItem {
     id: string;
@@ -69,7 +78,9 @@ function parseSections(raw: unknown): ProposalSection[] {
             quantity: (li.quantity as number) ?? 0,
             unit: String(li.unit ?? "ea"),
             unitPrice: (li.unit_price as number) ?? (li.unitPrice as number) ?? 0,
-            total: ((li.quantity as number) ?? 0) * ((li.unit_price as number) ?? (li.unitPrice as number) ?? 0),
+            total:
+                ((li.quantity as number) ?? 0) *
+                ((li.unit_price as number) ?? (li.unitPrice as number) ?? 0),
         })),
     }));
 }
@@ -82,8 +93,6 @@ function parseActivity(raw: unknown): { date: string; action: string; user: stri
         user: String(a.user ?? ""),
     }));
 }
-
-const PROPOSAL_TAB_VALUES = ["editor", "preview", "activity", "chatter"] as const;
 
 export default function ProposalDetailPage() {
     const params = useParams();
@@ -98,17 +107,12 @@ export default function ProposalDetailPage() {
         useUpdateHook: useUpdateProposal,
         useDeleteHook: useDeleteProposal,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<ProposalTab>({
-        key: "tab",
-        defaultValue: "editor",
-        validValues: PROPOSAL_TAB_VALUES,
-    });
+    // Tab state managed by DetailPageShell
 
     const proposalNumber = (prop?.number as string) ?? "";
     const companyName = (prop?.company_name as string) ?? "";
     const contactName = (prop?.contact_name as string) ?? "";
     const contactEmail = (prop?.contact_email as string) ?? "";
-    const proposalStatus = (prop?.status as string) ?? "draft";
     const validUntil = (prop?.valid_until as string) ?? "";
     const createdAt = (prop?.created_at as string) ?? "";
     const version = (prop?.version as number) ?? 1;
@@ -258,14 +262,7 @@ export default function ProposalDetailPage() {
         }
     }, [shareLink]);
 
-    const tabs = [
-        { id: "editor" as const, label: "Editor" },
-        { id: "preview" as const, label: "Preview" },
-        { id: "activity" as const, label: "Activity", count: activity.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -331,286 +328,220 @@ export default function ProposalDetailPage() {
         </div>
     );
 
-    if (isLoading) return <LoadingState />;
-
-    return (
-        <>
-            <DetailLayout
-                backHref="/proposals"
-                backLabel="Proposals"
-                entityType="proposals"
-                entityId={proposalId}
-                title={title}
-                subtitle={`${companyName} — ${formatCurrency(grandTotal)}`}
-                status={proposalStatus}
-                avatar={
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                        <FileText className="h-7 w-7 text-primary-foreground" />
-                    </div>
-                }
-                actions={
-                    <>
-                        <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            PDF
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={generateShareLink}>
-                            <Link2 className="h-4 w-4 mr-1" />
-                            Share
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setESignDialogOpen(true)}
-                        >
-                            <PenLine className="h-4 w-4 mr-1" />
-                            E-Sign
-                        </Button>
-                        <Button size="sm">
-                            <Send className="h-4 w-4 mr-1" />
-                            Send
-                        </Button>
-                    </>
-                }
-                menuItems={[
-                    { label: "Duplicate", onClick: () => router.push(`/proposals/new?duplicateFrom=${proposalId}`) },
-                    { label: "Save Draft", onClick: () => handleUpdate({ status: "draft" }) },
-                    ...crudMenuItems,
-                ]}
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as ProposalTab)}
-                sidebar={sidebar}
-            >
-                {/* Editor Tab */}
-                {activeTab === "editor" && (
-                    <div className="space-y-6">
-                        {/* Proposal Details */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Proposal Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Title</label>
-                                        <Input
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Client Contact
-                                        </label>
-                                        <Input value={contactName} disabled />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">
-                                        Notes / Executive Summary
-                                    </label>
-                                    <textarea
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        rows={3}
-                                        className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Line Item Sections */}
-                        {sections.map((section) => {
-                            const sectionTotal = section.items.reduce((sum, i) => sum + i.total, 0);
-                            return (
-                                <Card key={section.id}>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                                        <div className="flex items-center gap-2">
-                                            <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                                            <Input
-                                                value={section.title}
-                                                onChange={(e) =>
-                                                    updateSectionTitle(section.id, e.target.value)
-                                                }
-                                                className="text-base font-semibold border-none shadow-none p-0 h-auto focus-visible:ring-0"
-                                            />
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium">
-                                                {formatCurrency(sectionTotal)}
-                                            </span>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => removeSection(section.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-2">
-                                            {/* Header Row */}
-                                            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2">
-                                                <div className="col-span-5">Description</div>
-                                                <div className="col-span-1 text-right">Qty</div>
-                                                <div className="col-span-1 text-center">Unit</div>
-                                                <div className="col-span-2 text-right">
-                                                    Unit Price
-                                                </div>
-                                                <div className="col-span-2 text-right">Total</div>
-                                                <div className="col-span-1" />
-                                            </div>
-
-                                            {section.items.map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="grid grid-cols-12 gap-2 items-center"
-                                                >
-                                                    <div className="col-span-5">
-                                                        <Input
-                                                            value={item.description}
-                                                            onChange={(e) =>
-                                                                updateLineItem(
-                                                                    section.id,
-                                                                    item.id,
-                                                                    "description",
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                            placeholder="Line item description..."
-                                                            className="text-sm"
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            value={item.quantity}
-                                                            onChange={(e) =>
-                                                                updateLineItem(
-                                                                    section.id,
-                                                                    item.id,
-                                                                    "quantity",
-                                                                    parseFloat(e.target.value) || 0
-                                                                )
-                                                            }
-                                                            className="text-sm text-right"
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            value={item.unit}
-                                                            onChange={(e) =>
-                                                                updateLineItem(
-                                                                    section.id,
-                                                                    item.id,
-                                                                    "unit",
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                            className="text-sm text-center"
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-2">
-                                                        <Input
-                                                            type="number"
-                                                            value={item.unitPrice}
-                                                            onChange={(e) =>
-                                                                updateLineItem(
-                                                                    section.id,
-                                                                    item.id,
-                                                                    "unitPrice",
-                                                                    parseFloat(e.target.value) || 0
-                                                                )
-                                                            }
-                                                            className="text-sm text-right"
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-2 text-right text-sm font-medium px-2">
-                                                        {formatCurrency(item.total)}
-                                                    </div>
-                                                    <div className="col-span-1 flex justify-end">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                removeLineItem(section.id, item.id)
-                                                            }
-                                                        >
-                                                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="w-full mt-2"
-                                                onClick={() => addLineItem(section.id)}
-                                            >
-                                                <Plus className="h-4 w-4 mr-1" />
-                                                Add Line Item
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-
-                        <Button variant="outline" className="w-full" onClick={addSection}>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Section
-                        </Button>
-
-                        {/* Totals & Terms */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Terms & Conditions</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <textarea
-                                        value={terms}
-                                        onChange={(e) => setTerms(e.target.value)}
-                                        rows={4}
-                                        className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Summary</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    {sections.map((s) => (
-                                        <div key={s.id} className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">{s.title}</span>
-                                            <span className="font-medium">
-                                                {formatCurrency(
-                                                    s.items.reduce((sum, i) => sum + i.total, 0)
-                                                )}
-                                            </span>
-                                        </div>
-                                    ))}
-                                    <div className="border-t border-border pt-3 flex justify-between">
-                                        <span className="text-base font-semibold">Grand Total</span>
-                                        <span className="text-xl font-bold text-primary">
-                                            {formatCurrency(grandTotal)}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
+    const overviewSlot = (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Proposal Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Title</label>
+                            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Client Contact</label>
+                            <Input value={contactName} disabled />
                         </div>
                     </div>
-                )}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Notes / Executive Summary</label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            rows={3}
+                            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
 
-                {/* Preview Tab */}
-                {activeTab === "preview" && (
+            {sections.map((section) => {
+                const sectionTotal = section.items.reduce((sum, i) => sum + i.total, 0);
+                return (
+                    <Card key={section.id}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                            <div className="flex items-center gap-2">
+                                <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+                                <Input
+                                    value={section.title}
+                                    onChange={(e) => updateSectionTitle(section.id, e.target.value)}
+                                    className="text-base font-semibold border-none shadow-none p-0 h-auto focus-visible:ring-0"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">
+                                    {formatCurrency(sectionTotal)}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeSection(section.id)}
+                                >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2">
+                                    <div className="col-span-5">Description</div>
+                                    <div className="col-span-1 text-right">Qty</div>
+                                    <div className="col-span-1 text-center">Unit</div>
+                                    <div className="col-span-2 text-right">Unit Price</div>
+                                    <div className="col-span-2 text-right">Total</div>
+                                    <div className="col-span-1" />
+                                </div>
+                                {section.items.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="grid grid-cols-12 gap-2 items-center"
+                                    >
+                                        <div className="col-span-5">
+                                            <Input
+                                                value={item.description}
+                                                onChange={(e) =>
+                                                    updateLineItem(
+                                                        section.id,
+                                                        item.id,
+                                                        "description",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                placeholder="Line item description..."
+                                                className="text-sm"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Input
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) =>
+                                                    updateLineItem(
+                                                        section.id,
+                                                        item.id,
+                                                        "quantity",
+                                                        parseFloat(e.target.value) || 0
+                                                    )
+                                                }
+                                                className="text-sm text-right"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Input
+                                                value={item.unit}
+                                                onChange={(e) =>
+                                                    updateLineItem(
+                                                        section.id,
+                                                        item.id,
+                                                        "unit",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="text-sm text-center"
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <Input
+                                                type="number"
+                                                value={item.unitPrice}
+                                                onChange={(e) =>
+                                                    updateLineItem(
+                                                        section.id,
+                                                        item.id,
+                                                        "unitPrice",
+                                                        parseFloat(e.target.value) || 0
+                                                    )
+                                                }
+                                                className="text-sm text-right"
+                                            />
+                                        </div>
+                                        <div className="col-span-2 text-right text-sm font-medium px-2">
+                                            {formatCurrency(item.total)}
+                                        </div>
+                                        <div className="col-span-1 flex justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => removeLineItem(section.id, item.id)}
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full mt-2"
+                                    onClick={() => addLineItem(section.id)}
+                                >
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Add Line Item
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                );
+            })}
+
+            <Button variant="outline" className="w-full" onClick={addSection}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Section
+            </Button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Terms & Conditions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <textarea
+                            value={terms}
+                            onChange={(e) => setTerms(e.target.value)}
+                            rows={4}
+                            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {sections.map((s) => (
+                            <div key={s.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{s.title}</span>
+                                <span className="font-medium">
+                                    {formatCurrency(s.items.reduce((sum, i) => sum + i.total, 0))}
+                                </span>
+                            </div>
+                        ))}
+                        <div className="border-t border-border pt-3 flex justify-between">
+                            <span className="text-base font-semibold">Grand Total</span>
+                            <span className="text-xl font-bold text-primary">
+                                {formatCurrency(grandTotal)}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => `${companyName} — ${formatCurrency(grandTotal)}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "preview",
+                label: "Preview",
+                content: (
                     <Card className="max-w-4xl mx-auto">
                         <CardContent className="p-8 space-y-8">
-                            {/* Preview Header */}
                             <div className="border-b border-border pb-6">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -621,22 +552,18 @@ export default function ProposalDetailPage() {
                                     </div>
                                     <div className="text-right text-sm text-muted-foreground">
                                         <p>Date: {createdAt ? formatDate(createdAt) : "—"}</p>
-                                        <p>Valid Until: {validUntil ? formatDate(validUntil) : "—"}</p>
+                                        <p>
+                                            Valid Until: {validUntil ? formatDate(validUntil) : "—"}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Client Info */}
                             <div className="grid grid-cols-2 gap-8 text-sm">
                                 <div>
                                     <p className="font-semibold mb-1">Prepared For</p>
                                     <p>{contactName}</p>
-                                    <p className="text-muted-foreground">
-                                        {companyName}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        {contactEmail}
-                                    </p>
+                                    <p className="text-muted-foreground">{companyName}</p>
+                                    <p className="text-muted-foreground">{contactEmail}</p>
                                 </div>
                                 <div>
                                     <p className="font-semibold mb-1">Prepared By</p>
@@ -644,8 +571,6 @@ export default function ProposalDetailPage() {
                                     <p className="text-muted-foreground">Los Angeles, CA</p>
                                 </div>
                             </div>
-
-                            {/* Executive Summary */}
                             {notes && (
                                 <div>
                                     <OverlineText as="h3" className="text-sm mb-2">
@@ -654,13 +579,8 @@ export default function ProposalDetailPage() {
                                     <p className="text-sm leading-relaxed">{notes}</p>
                                 </div>
                             )}
-
-                            {/* Line Item Sections */}
                             {sections.map((section) => {
-                                const sectionTotal = section.items.reduce(
-                                    (sum, i) => sum + i.total,
-                                    0
-                                );
+                                const st = section.items.reduce((sum, i) => sum + i.total, 0);
                                 return (
                                     <div key={section.id}>
                                         <OverlineText as="h3" className="text-sm mb-3">
@@ -701,23 +621,19 @@ export default function ProposalDetailPage() {
                                                     Section Total
                                                 </div>
                                                 <div className="col-span-2 text-right font-bold">
-                                                    {formatCurrency(sectionTotal)}
+                                                    {formatCurrency(st)}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 );
                             })}
-
-                            {/* Grand Total */}
                             <div className="border-t-2 border-primary pt-4 flex justify-between items-center">
                                 <span className="text-lg font-bold">Total Investment</span>
                                 <span className="text-2xl font-bold text-primary">
                                     {formatCurrency(grandTotal)}
                                 </span>
                             </div>
-
-                            {/* Terms */}
                             {terms && (
                                 <div>
                                     <OverlineText as="h3" className="text-sm mb-2">
@@ -728,8 +644,6 @@ export default function ProposalDetailPage() {
                                     </p>
                                 </div>
                             )}
-
-                            {/* Signature Block */}
                             <div className="grid grid-cols-2 gap-8 pt-8 border-t border-border">
                                 <div className="space-y-8">
                                     <p className="text-sm font-semibold">Client Acceptance</p>
@@ -748,10 +662,13 @@ export default function ProposalDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-                )}
-
-                {/* Activity Tab */}
-                {activeTab === "activity" && (
+                ),
+            },
+            {
+                id: "activity",
+                label: "Activity",
+                count: activity.length,
+                content: (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Proposal Activity</CardTitle>
@@ -782,10 +699,12 @@ export default function ProposalDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-                )}
-
-                {/* Chatter Tab */}
-                {activeTab === "chatter" && (
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                content: (
                     <RecordChatter
                         recordType="proposal"
                         recordId={proposalId}
@@ -793,10 +712,59 @@ export default function ProposalDetailPage() {
                         currentUserId="u1"
                         onAddComment={handleAddChatterComment}
                     />
-                )}
-            </DetailLayout>
+                ),
+            },
+        ],
+    };
 
-            {/* Share Link Dialog */}
+    const record = prop ? { ...prop, title } : null;
+
+    return (
+        <>
+            <DetailPageShell
+                config={config}
+                id={proposalId}
+                record={record}
+                isLoading={isLoading}
+                menuItems={[
+                    {
+                        label: "Duplicate",
+                        onClick: () => router.push(`/proposals/new?duplicateFrom=${proposalId}`),
+                    },
+                    { label: "Save Draft", onClick: () => handleUpdate({ status: "draft" }) },
+                    ...crudMenuItems,
+                ]}
+                avatar={
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <FileText className="h-7 w-7 text-primary-foreground" />
+                    </div>
+                }
+                actions={
+                    <>
+                        <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            PDF
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={generateShareLink}>
+                            <Link2 className="h-4 w-4 mr-1" />
+                            Share
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setESignDialogOpen(true)}
+                        >
+                            <PenLine className="h-4 w-4 mr-1" />
+                            E-Sign
+                        </Button>
+                        <Button size="sm">
+                            <Send className="h-4 w-4 mr-1" />
+                            Send
+                        </Button>
+                    </>
+                }
+            />
+
             <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -866,7 +834,6 @@ export default function ProposalDetailPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* E-Sign Dialog */}
             <Dialog open={eSignDialogOpen} onOpenChange={setESignDialogOpen}>
                 <DialogContent>
                     <DialogHeader>

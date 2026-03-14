@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteLead, useUpdateLead } from "@/lib/supabase/hooks-pages";
 import { useLead } from "@/lib/supabase/hooks-crm";
@@ -11,30 +10,37 @@ import {
     useRecordComments,
 } from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
-import { LoadingState } from "@/components/layouts/loading-state";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { LEAD_BUDGET_LABELS } from "@/config/ui-variants";
 import { formatRelativeTime } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     Calendar,
     DollarSign,
     Edit,
     Mail,
-    MessageSquare,
     Phone,
     TrendingUp,
     Users,
 } from "lucide-react";
 
-type TabId = "overview" | "activity" | "chatter";
-const TAB_VALUES = ["overview", "activity", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "leads",
+    titleKey: "first_name",
+    statusKey: "status",
+    icon: Users,
+    backHref: "/leads",
+    backLabel: "Leads",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function LeadDetailPage() {
     const params = useParams();
@@ -46,11 +52,6 @@ export default function LeadDetailPage() {
         listPath: "/leads",
         useUpdateHook: useUpdateLead,
         useDeleteHook: useDeleteLead,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
     });
     const { data: lead, isLoading } = useLead(leadId);
     const { data: sbActivity } = useRecordActivityLog("lead", leadId);
@@ -83,22 +84,6 @@ export default function LeadDetailPage() {
         [sbComments]
     );
 
-    if (isLoading) return <LoadingState />;
-
-    if (!lead) {
-        return (
-            <EmptyState
-                icon={Users}
-                title="Lead not found"
-                description="The lead you're looking for doesn't exist or has been deleted."
-                action={{ label: "Back to Leads", onClick: () => router.push("/leads") }}
-            />
-        );
-    }
-
-    const fullName = `${lead.first_name} ${lead.last_name ?? ""}`;
-    const initials = `${lead.first_name[0]}${(lead.last_name ?? " ")[0]}`.trim();
-
     const handleAddComment = async (content: string) => {
         await createComment.mutateAsync({
             entity_type: "lead",
@@ -108,13 +93,10 @@ export default function LeadDetailPage() {
         });
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "activity" as const, label: "Activity" },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
+    const fullName = lead ? `${lead.first_name} ${lead.last_name ?? ""}` : "";
+    const initials = lead ? `${lead.first_name[0]}${(lead.last_name ?? " ")[0]}`.trim() : "";
 
-    const sidebar = (
+    const sidebarSlot = lead ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -207,34 +189,155 @@ export default function LeadDetailPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
+
+    const overviewSlot = lead ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <TrendingUp className="h-4 w-4" />
+                            <span className="text-xs">Lead Score</span>
+                        </div>
+                        <p className="text-xl font-bold">{lead.score ?? 0}/100</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Budget Range</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ?? "—"}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Building2 className="h-4 w-4" />
+                            <span className="text-xs">Company</span>
+                        </div>
+                        <p className="text-xl font-bold truncate">{lead.company}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-xs">Created</span>
+                        </div>
+                        <p className="text-xl font-bold">{formatRelativeTime(lead.created_at)}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${lead.email}`} className="text-primary hover:underline">
+                            {lead.email}
+                        </a>
+                    </div>
+                    {lead.phone && (
+                        <div className="flex items-center gap-3">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{lead.phone}</span>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                            {lead.company} · {lead.job_title}
+                        </span>
+                    </div>
+                </CardContent>
+            </Card>
+            {lead.notes && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {lead.notes}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    ) : undefined;
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        titleFn: () => fullName,
+        subtitleFn: () => `${lead?.job_title ?? ""} at ${lead?.company ?? ""}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "activity",
+                label: "Activity",
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Activity Timeline</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {activityItems.map((item) => (
+                                    <div key={item.id} className="flex items-start gap-4">
+                                        <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
+                                        <div>
+                                            <p className="text-sm">
+                                                <span className="font-medium">
+                                                    {item.actorName}
+                                                </span>{" "}
+                                                {item.description ?? item.action}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatRelativeTime(item.createdAt)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
+                    <RecordChatter
+                        recordType="lead"
+                        recordId={leadId}
+                        activityItems={activityItems}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
+
+    const rec = lead as unknown as Record<string, unknown> | null;
+    const record = rec ? { ...rec } : null;
 
     return (
-        <DetailLayout
-            backHref="/leads"
-            backLabel="Leads"
-            entityType="leads"
-            entityId={leadId}
-            title={fullName}
-            subtitle={`${lead.job_title ?? ""} at ${lead.company ?? ""}`}
-            status={lead.status ?? undefined}
-            avatar={
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-lg font-bold text-primary-foreground">
-                    {initials}
-                </div>
-            }
-            actions={
-                <>
-                    <Button variant="outline" onClick={() => setActiveTab("activity" as TabId)}>
-                        <MessageSquare className="h-4 w-4" />
-                        Log Activity
-                    </Button>
-                    <Button onClick={() => router.push(`/leads/${leadId}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                    </Button>
-                </>
-            }
+        <DetailPageShell
+            config={config}
+            id={leadId}
+            record={record}
+            isLoading={isLoading}
             menuItems={[
                 {
                     label: "Convert to Deal",
@@ -242,135 +345,19 @@ export default function LeadDetailPage() {
                 },
                 ...crudMenuItems,
             ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <TrendingUp className="h-4 w-4" />
-                                    <span className="text-xs">Lead Score</span>
-                                </div>
-                                <p className="text-xl font-bold">{lead.score ?? 0}/100</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    <span className="text-xs">Budget Range</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ??
-                                        "—"}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Building2 className="h-4 w-4" />
-                                    <span className="text-xs">Company</span>
-                                </div>
-                                <p className="text-xl font-bold truncate">{lead.company}</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Calendar className="h-4 w-4" />
-                                    <span className="text-xs">Created</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {formatRelativeTime(lead.created_at)}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Contact Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm">
-                            <div className="flex items-center gap-3">
-                                <Mail className="h-4 w-4 text-muted-foreground" />
-                                <a
-                                    href={`mailto:${lead.email}`}
-                                    className="text-primary hover:underline"
-                                >
-                                    {lead.email}
-                                </a>
-                            </div>
-                            {lead.phone && (
-                                <div className="flex items-center gap-3">
-                                    <Phone className="h-4 w-4 text-muted-foreground" />
-                                    <span>{lead.phone}</span>
-                                </div>
-                            )}
-                            <div className="flex items-center gap-3">
-                                <Building2 className="h-4 w-4 text-muted-foreground" />
-                                <span>
-                                    {lead.company} · {lead.job_title}
-                                </span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    {lead.notes && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Notes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {lead.notes}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
+            avatar={
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-lg font-bold text-primary-foreground">
+                    {initials}
                 </div>
-            )}
-
-            {activeTab === "activity" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Activity Timeline</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {activityItems.map((item) => (
-                                <div key={item.id} className="flex items-start gap-4">
-                                    <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                                    <div>
-                                        <p className="text-sm">
-                                            <span className="font-medium">{item.actorName}</span>{" "}
-                                            {item.description ?? item.action}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {formatRelativeTime(item.createdAt)}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="lead"
-                    recordId={leadId}
-                    activityItems={activityItems}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+            }
+            actions={
+                <>
+                    <Button onClick={() => router.push(`/leads/${leadId}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </Button>
+                </>
+            }
+        />
     );
 }

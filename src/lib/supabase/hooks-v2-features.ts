@@ -169,7 +169,7 @@ export function useNotifications(unreadOnly?: boolean) {
                 .select("*")
                 .order("created_at", { ascending: false })
                 .limit(50);
-            if (unreadOnly) q = q.eq("is_read", false);
+            if (unreadOnly) q = q.eq("read", false);
             const { data, error } = await q;
             if (error) throw error;
             return data;
@@ -183,7 +183,7 @@ export function useUnreadNotificationCount() {
         queryFn: async () => {
             const { count, error } = await fromTable("notifications")
                 .select("*", { count: "exact", head: true })
-                .eq("is_read", false);
+                .eq("read", false);
             if (error) throw error;
             return count ?? 0;
         },
@@ -212,7 +212,7 @@ export function useMarkNotificationRead() {
     return useMutation({
         mutationFn: async (id: string) => {
             const { data, error } = await fromTable("notifications")
-                .update({ is_read: true, read_at: new Date().toISOString() })
+                .update({ read: true, read_at: new Date().toISOString() })
                 .eq("id", id)
                 .select()
                 .single();
@@ -228,8 +228,8 @@ export function useMarkAllNotificationsRead() {
     return useMutation({
         mutationFn: async () => {
             const { error } = await fromTable("notifications")
-                .update({ is_read: true, read_at: new Date().toISOString() })
-                .eq("is_read", false);
+                .update({ read: true, read_at: new Date().toISOString() })
+                .eq("read", false);
             if (error) throw error;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
@@ -246,7 +246,7 @@ export function useNotificationPreferences() {
         queryFn: async () => {
             const { data, error } = await fromTable("notification_preferences")
                 .select("*")
-                .order("notification_type");
+                .maybeSingle();
             if (error) throw error;
             return data;
         },
@@ -258,7 +258,7 @@ export function useUpsertNotificationPreference() {
     return useMutation({
         mutationFn: async (pref: Record<string, unknown>) => {
             const { data, error } = await fromTable("notification_preferences")
-                .upsert(pref)
+                .upsert(pref, { onConflict: "user_id" })
                 .select()
                 .single();
             if (error) throw error;
@@ -618,7 +618,7 @@ export function useGenerateInvoiceFromTime() {
                 .select("*")
                 .in("id", timeEntryIds)
                 .eq("billable", true)
-                .is("invoice_id", null);
+                .is("invoice_line_item_id", null);
             if (fetchError) throw fetchError;
             if (!entries || (entries as unknown[]).length === 0)
                 throw new Error("No billable uninvoiced entries found");
@@ -630,6 +630,7 @@ export function useGenerateInvoiceFromTime() {
                 double_time_hours: number;
                 total_pay: number;
                 project_id: string;
+                organization_id: string;
             }>;
 
             // Compute totals
@@ -638,15 +639,37 @@ export function useGenerateInvoiceFromTime() {
                 0
             );
             const totalAmount = typedEntries.reduce((s, e) => s + (e.total_pay || 0), 0);
+            const organizationId = typedEntries[0]?.organization_id;
+            if (!organizationId) {
+                throw new Error("Missing organization context for selected time entries");
+            }
 
-            // Create invoice
-            const { data: invoice, error: invoiceError } = await fromTable("invoices")
+            // Fetch project to resolve optional client company linkage
+            const { data: project } = await fromTable("projects")
+                .select("client_company_id")
+                .eq("id", projectId)
+                .maybeSingle();
+
+            const invoiceDate = new Date();
+            const dueDate = new Date(invoiceDate);
+            dueDate.setDate(dueDate.getDate() + 30);
+            const invoiceNumber = `TME-${invoiceDate.toISOString().slice(0, 10).replace(/-/g, "")}-${Date.now().toString().slice(-6)}`;
+
+            // Create client invoice (AR) for approved time entries
+            const { data: invoice, error: invoiceError } = await fromTable("client_invoices")
                 .insert({
                     project_id: projectId,
-                    amount: totalAmount,
+                    organization_id: organizationId,
+                    company_id:
+                        project && typeof project === "object" && "client_company_id" in project
+                            ? (project as { client_company_id: string | null }).client_company_id
+                            : null,
+                    invoice_number: invoiceNumber,
+                    invoice_date: invoiceDate.toISOString().slice(0, 10),
+                    due_date: dueDate.toISOString().slice(0, 10),
+                    subtotal: totalAmount,
+                    total: totalAmount,
                     status: "draft",
-                    source: "timesheet",
-                    generated_from_time_entries: true,
                     notes: `Auto-generated from ${typedEntries.length} time entries (${totalHours.toFixed(1)}h)`,
                 })
                 .select()
@@ -655,17 +678,38 @@ export function useGenerateInvoiceFromTime() {
 
             const invoiceId = (invoice as unknown as { id: string }).id;
 
+            // Create one consolidated line item for this batch of time
+            const quantity = totalHours > 0 ? totalHours : 1;
+            const unitPrice = totalHours > 0 ? totalAmount / totalHours : totalAmount;
+            const { data: lineItem, error: lineItemError } = await fromTable("invoice_line_items")
+                .insert({
+                    client_invoice_id: invoiceId,
+                    line_number: 1,
+                    line_type: "time_and_materials",
+                    name: "Labor",
+                    description: `Generated from ${typedEntries.length} production time entries`,
+                    quantity,
+                    unit: "hour",
+                    unit_price: unitPrice,
+                    billing_period_start: invoiceDate.toISOString().slice(0, 10),
+                    billing_period_end: invoiceDate.toISOString().slice(0, 10),
+                })
+                .select("id")
+                .single();
+            if (lineItemError) throw lineItemError;
+
+            const lineItemId = (lineItem as unknown as { id: string }).id;
+
             // Link time entries to invoice
             const { error: linkError } = await fromTable("production_time_entries")
-                .update({ invoice_id: invoiceId })
+                .update({ invoice_line_item_id: lineItemId })
                 .in("id", timeEntryIds);
             if (linkError) throw linkError;
 
             return invoice;
         },
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["time_entries"] });
-            qc.invalidateQueries({ queryKey: ["invoices"] });
+            qc.invalidateQueries({ queryKey: ["production_time_entries"] });
             qc.invalidateQueries({ queryKey: ["client_invoices"] });
         },
     });

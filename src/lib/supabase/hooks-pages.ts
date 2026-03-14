@@ -1,12 +1,80 @@
 "use client";
 
 /**
- * Supabase hooks for tables required by dashboard pages that were previously
- * mock-data-only. These complement hooks.ts and hooks-extended.ts.
+ * Supabase hooks for tables required by dashboard pages.
+ * All hooks use API routes for RBAC, validation & audit logging.
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, getSupabase } from "./client";
+import { apiCreate, apiDelete, apiGet, apiList, apiUpdate } from "@/lib/api/client";
+import type { Tables } from "./database.types";
+import { apiFetch } from "@/lib/api/client";
+
+// ═══════════════════════════════════════════════════════════════
+// GENERIC FACTORIES
+// ═══════════════════════════════════════════════════════════════
+
+type FilterParams = Record<string, string | number | boolean | undefined>;
+
+function makeListHook<T>(
+    queryKey: string,
+    apiPath: string,
+    defaultSort?: { sort_by: string; sort_order: "asc" | "desc" }
+) {
+    return function useEntityList(filterParams?: FilterParams) {
+        return useQuery({
+            queryKey: [queryKey, filterParams],
+            queryFn: async () => {
+                const res = await apiList<T>(apiPath, { ...defaultSort, ...filterParams });
+                return res.data;
+            },
+        });
+    };
+}
+
+function makeDetailHook<T>(queryKey: string, apiPath: string) {
+    return function useEntityDetail(id: string) {
+        return useQuery({
+            queryKey: [queryKey, id],
+            queryFn: () => apiGet<T>(apiPath, id),
+            enabled: !!id,
+        });
+    };
+}
+
+function makeCreateHook<T>(queryKey: string, apiPath: string) {
+    return function useCreateEntity() {
+        const qc = useQueryClient();
+        return useMutation({
+            mutationFn: (payload: Record<string, unknown>) => apiCreate<T>(apiPath, payload),
+            onSuccess: () => qc.invalidateQueries({ queryKey: [queryKey] }),
+        });
+    };
+}
+
+function makeUpdateHook<T>(queryKey: string, apiPath: string) {
+    return function useUpdateEntity() {
+        const qc = useQueryClient();
+        return useMutation({
+            mutationFn: ({ id, ...updates }: { id: string } & Record<string, unknown>) =>
+                apiUpdate<T>(apiPath, id, updates),
+            onSuccess: (_d, vars) => {
+                qc.invalidateQueries({ queryKey: [queryKey] });
+                qc.invalidateQueries({ queryKey: [queryKey, vars.id] });
+            },
+        });
+    };
+}
+
+function makeDeleteHook(queryKey: string, apiPath: string) {
+    return function useDeleteEntity() {
+        const qc = useQueryClient();
+        return useMutation({
+            mutationFn: (id: string) => apiDelete(apiPath, id),
+            onSuccess: () => qc.invalidateQueries({ queryKey: [queryKey] }),
+        });
+    };
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CAMPAIGNS
@@ -14,30 +82,20 @@ import { fromTable, getSupabase } from "./client";
 
 export function useCampaigns(projectId?: string) {
     return useQuery({
-        queryKey: ["campaigns", projectId],
+        queryKey: ["campaign", projectId],
         queryFn: async () => {
-            let query = fromTable("campaigns")
-                .select("*, projects(name), profiles(name)")
-                .order("start_date", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"campaigns">>("/api/campaigns", {
+                project_id: projectId,
+                sort_by: "start_date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateCampaign() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (c: Record<string, unknown>) => {
-            const { data, error } = await fromTable("campaigns").insert(c).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["campaigns"] }),
-    });
-}
+export const useCampaign = makeDetailHook<Tables<"campaigns">>("campaign", "/api/campaigns");
+export const useCreateCampaign = makeCreateHook<Tables<"campaigns">>("campaign", "/api/campaigns");
 
 // ═══════════════════════════════════════════════════════════════
 // PROPOSALS
@@ -45,77 +103,46 @@ export function useCreateCampaign() {
 
 export function useProposals(status?: string) {
     return useQuery({
-        queryKey: ["proposals", status],
+        queryKey: ["proposal", status],
         queryFn: async () => {
-            let query = fromTable("proposals")
-                .select("*, deals(title, company_name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (status && status !== "all") query = query.eq("status", status);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"proposals">>("/api/proposals", {
+                ...(status && status !== "all" ? { status } : {}),
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateProposal() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (p: Record<string, unknown>) => {
-            const { data, error } = await fromTable("proposals").insert(p).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["proposals"] }),
-    });
-}
-
-export function useUpdateProposal() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: Record<string, unknown>) => {
-            const { data, error } = await fromTable("proposals")
-                .update(updates)
-                .eq("id", id as string)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["proposals"] }),
-    });
-}
+export const useProposal = makeDetailHook<Tables<"proposals">>("proposal", "/api/proposals");
+export const useCreateProposal = makeCreateHook<Tables<"proposals">>("proposal", "/api/proposals");
+export const useUpdateProposal = makeUpdateHook<Tables<"proposals">>("proposal", "/api/proposals");
+export const useDeleteProposal = makeDeleteHook("proposal", "/api/proposals");
 
 // ═══════════════════════════════════════════════════════════════
-// BRIEFS
+// BRIEFS (creative_briefs)
 // ═══════════════════════════════════════════════════════════════
 
 export function useBriefs(projectId?: string) {
     return useQuery({
-        queryKey: ["briefs", projectId],
+        queryKey: ["creative_brief", projectId],
         queryFn: async () => {
-            let query = fromTable("briefs")
-                .select("*, projects(name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"creative_briefs">>("/api/briefs", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateBrief() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("briefs").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["briefs"] }),
-    });
-}
+export const useBrief = makeDetailHook<Tables<"creative_briefs">>("creative_brief", "/api/briefs");
+export const useCreateBrief = makeCreateHook<Tables<"creative_briefs">>(
+    "creative_brief",
+    "/api/briefs"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CLIENT INVOICES
@@ -123,92 +150,56 @@ export function useCreateBrief() {
 
 export function useClientInvoices(status?: string) {
     return useQuery({
-        queryKey: ["client_invoices", status],
+        queryKey: ["client_invoice", status],
         queryFn: async () => {
-            let query = fromTable("client_invoices")
-                .select("*, projects(name), profiles(name)")
-                .order("due_date", { ascending: false });
-            if (status && status !== "all") query = query.eq("status", status);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"client_invoices">>("/api/client-invoices", {
+                ...(status && status !== "all" ? { status } : {}),
+                sort_by: "due_date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useClientInvoice(id: string) {
-    return useQuery({
-        queryKey: ["client_invoice", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("client_invoices")
-                .select("*, projects(name), profiles(name)")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCreateClientInvoice() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (inv: Record<string, unknown>) => {
-            const { data, error } = await fromTable("client_invoices")
-                .insert(inv)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["client_invoices"] }),
-    });
-}
+export const useClientInvoice = makeDetailHook<Tables<"client_invoices">>(
+    "client_invoice",
+    "/api/client-invoices"
+);
+export const useCreateClientInvoice = makeCreateHook<Tables<"client_invoices">>(
+    "client_invoice",
+    "/api/client-invoices"
+);
+export const useUpdateClientInvoice = makeUpdateHook<Tables<"client_invoices">>(
+    "client_invoice",
+    "/api/client-invoices"
+);
+export const useDeleteClientInvoice = makeDeleteHook("client_invoice", "/api/client-invoices");
 
 // ═══════════════════════════════════════════════════════════════
-// COMPANIES (stakeholders)
+// COMPANIES
 // ═══════════════════════════════════════════════════════════════
 
-export function useCompanies() {
-    return useQuery({
-        queryKey: ["companies"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("stakeholders").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useCompanies = makeListHook<Tables<"companies">>("company", "/api/companies", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCompany = makeDetailHook<Tables<"companies">>("company", "/api/companies");
+export const useUpdateCompany = makeUpdateHook<Tables<"companies">>("company", "/api/companies");
+export const useDeleteCompany = makeDeleteHook("company", "/api/companies");
 
 // ═══════════════════════════════════════════════════════════════
 // ESTIMATES
 // ═══════════════════════════════════════════════════════════════
 
-export function useEstimates() {
-    return useQuery({
-        queryKey: ["estimates"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("estimates")
-                .select("*, deals(title, company_name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useCreateEstimate() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (e: Record<string, unknown>) => {
-            const { data, error } = await fromTable("estimates").insert(e).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["estimates"] }),
-    });
-}
+export const useEstimates = makeListHook<Tables<"estimates">>("estimate", "/api/estimates", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useEstimate = makeDetailHook<Tables<"estimates">>("estimate", "/api/estimates");
+export const useCreateEstimate = makeCreateHook<Tables<"estimates">>("estimate", "/api/estimates");
+export const useUpdateEstimate = makeUpdateHook<Tables<"estimates">>("estimate", "/api/estimates");
+export const useDeleteEstimate = makeDeleteHook("estimate", "/api/estimates");
 
 // ═══════════════════════════════════════════════════════════════
 // DIGITAL ASSETS
@@ -216,30 +207,31 @@ export function useCreateEstimate() {
 
 export function useDigitalAssets(projectId?: string) {
     return useQuery({
-        queryKey: ["digital_assets", projectId],
+        queryKey: ["digital_asset", projectId],
         queryFn: async () => {
-            let query = fromTable("digital_assets")
-                .select("*, profiles(name), projects(name)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"digital_assets">>("/api/digital-assets", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateDigitalAsset() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (a: Record<string, unknown>) => {
-            const { data, error } = await fromTable("digital_assets").insert(a).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["digital_assets"] }),
-    });
-}
+export const useDigitalAsset = makeDetailHook<Tables<"digital_assets">>(
+    "digital_asset",
+    "/api/digital-assets"
+);
+export const useCreateDigitalAsset = makeCreateHook<Tables<"digital_assets">>(
+    "digital_asset",
+    "/api/digital-assets"
+);
+export const useUpdateDigitalAsset = makeUpdateHook<Tables<"digital_assets">>(
+    "digital_asset",
+    "/api/digital-assets"
+);
+export const useDeleteDigitalAsset = makeDeleteHook("digital_asset", "/api/digital-assets");
 
 // ═══════════════════════════════════════════════════════════════
 // CERTIFICATIONS
@@ -247,18 +239,31 @@ export function useCreateDigitalAsset() {
 
 export function useCertifications(crewMemberId?: string) {
     return useQuery({
-        queryKey: ["certifications", crewMemberId],
+        queryKey: ["certification", crewMemberId],
         queryFn: async () => {
-            let query = fromTable("certifications")
-                .select("*, crew_members(name)")
-                .order("expiry_date");
-            if (crewMemberId) query = query.eq("crew_member_id", crewMemberId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"asset_certifications">>("/api/certifications", {
+                asset_id: crewMemberId,
+                sort_by: "expiry_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
+
+export const useCertification = makeDetailHook<Tables<"asset_certifications">>(
+    "certification",
+    "/api/certifications"
+);
+export const useCreateCertification = makeCreateHook<Tables<"asset_certifications">>(
+    "certification",
+    "/api/certifications"
+);
+export const useUpdateCertification = makeUpdateHook<Tables<"asset_certifications">>(
+    "certification",
+    "/api/certifications"
+);
+export const useDeleteCertification = makeDeleteHook("certification", "/api/certifications");
 
 // ═══════════════════════════════════════════════════════════════
 // CHANGE ORDERS
@@ -266,62 +271,57 @@ export function useCertifications(crewMemberId?: string) {
 
 export function useChangeOrders(projectId?: string) {
     return useQuery({
-        queryKey: ["change_orders", projectId],
+        queryKey: ["change_order", projectId],
         queryFn: async () => {
-            let query = fromTable("change_orders")
-                .select("*, projects(name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"change_orders">>("/api/change-orders", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateChangeOrder() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (co: Record<string, unknown>) => {
-            const { data, error } = await fromTable("change_orders").insert(co).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["change_orders"] }),
-    });
-}
+export const useChangeOrder = makeDetailHook<Tables<"change_orders">>(
+    "change_order",
+    "/api/change-orders"
+);
+export const useCreateChangeOrder = makeCreateHook<Tables<"change_orders">>(
+    "change_order",
+    "/api/change-orders"
+);
+export const useUpdateChangeOrder = makeUpdateHook<Tables<"change_orders">>(
+    "change_order",
+    "/api/change-orders"
+);
+export const useDeleteChangeOrder = makeDeleteHook("change_order", "/api/change-orders");
 
 // ═══════════════════════════════════════════════════════════════
 // COMPLIANCE CHECKLISTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useComplianceChecklists() {
-    return useQuery({
-        queryKey: ["compliance_checklists"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("compliance_checklists")
-                .select("*, profiles(name)")
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useComplianceChecklist(id: string) {
-    return useQuery({
-        queryKey: ["compliance_checklist", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("compliance_checklists")
-                .select("*, profiles(name)")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useComplianceChecklists = makeListHook<Tables<"compliance_checklists">>(
+    "compliance_checklist",
+    "/api/compliance-checklists",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useComplianceChecklist = makeDetailHook<Tables<"compliance_checklists">>(
+    "compliance_checklist",
+    "/api/compliance-checklists"
+);
+export const useCreateComplianceChecklist = makeCreateHook<Tables<"compliance_checklists">>(
+    "compliance_checklist",
+    "/api/compliance-checklists"
+);
+export const useUpdateComplianceChecklist = makeUpdateHook<Tables<"compliance_checklists">>(
+    "compliance_checklist",
+    "/api/compliance-checklists"
+);
+export const useDeleteComplianceChecklist = makeDeleteHook(
+    "compliance_checklist",
+    "/api/compliance-checklists"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CALL SHEETS
@@ -329,59 +329,42 @@ export function useComplianceChecklist(id: string) {
 
 export function useCallSheets(projectId?: string) {
     return useQuery({
-        queryKey: ["call_sheets", projectId],
+        queryKey: ["call_sheet", projectId],
         queryFn: async () => {
-            let query = fromTable("call_sheets")
-                .select("*, projects(name), profiles(name), events(name), locations(name)")
-                .order("date", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"call_sheets">>("/api/call-sheets", {
+                project_id: projectId,
+                sort_by: "date",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateCallSheet() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (cs: Record<string, unknown>) => {
-            const { data, error } = await fromTable("call_sheets").insert(cs).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["call_sheets"] }),
-    });
-}
+export const useCallSheet = makeDetailHook<Tables<"call_sheets">>("call_sheet", "/api/call-sheets");
+export const useCreateCallSheet = makeCreateHook<Tables<"call_sheets">>(
+    "call_sheet",
+    "/api/call-sheets"
+);
+export const useUpdateCallSheet = makeUpdateHook<Tables<"call_sheets">>(
+    "call_sheet",
+    "/api/call-sheets"
+);
+export const useDeleteCallSheet = makeDeleteHook("call_sheet", "/api/call-sheets");
 
 // ═══════════════════════════════════════════════════════════════
 // AUTOMATIONS
 // ═══════════════════════════════════════════════════════════════
 
-export function useAutomations() {
-    return useQuery({
-        queryKey: ["automations"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("automations")
-                .select("*, profiles(name)")
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useCreateAutomation() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (a: Record<string, unknown>) => {
-            const { data, error } = await fromTable("automations").insert(a).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["automations"] }),
-    });
-}
+export const useAutomations = makeListHook<Tables<"automations">>(
+    "automation",
+    "/api/automations",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useCreateAutomation = makeCreateHook<Tables<"automations">>(
+    "automation",
+    "/api/automations"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // SCOPES OF WORK
@@ -389,30 +372,31 @@ export function useCreateAutomation() {
 
 export function useScopesOfWork(projectId?: string) {
     return useQuery({
-        queryKey: ["scopes_of_work", projectId],
+        queryKey: ["sow", projectId],
         queryFn: async () => {
-            let query = fromTable("scopes_of_work")
-                .select("*, projects(name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"scopes_of_work">>("/api/scopes-of-work", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateScopeOfWork() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (s: Record<string, unknown>) => {
-            const { data, error } = await fromTable("scopes_of_work").insert(s).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["scopes_of_work"] }),
-    });
-}
+export const useScopeOfWork = makeDetailHook<Tables<"scopes_of_work">>(
+    "sow",
+    "/api/scopes-of-work"
+);
+export const useCreateScopeOfWork = makeCreateHook<Tables<"scopes_of_work">>(
+    "sow",
+    "/api/scopes-of-work"
+);
+export const useUpdateScopeOfWork = makeUpdateHook<Tables<"scopes_of_work">>(
+    "sow",
+    "/api/scopes-of-work"
+);
+export const useDeleteScopeOfWork = makeDeleteHook("sow", "/api/scopes-of-work");
 
 // ═══════════════════════════════════════════════════════════════
 // LEADS
@@ -420,30 +404,21 @@ export function useCreateScopeOfWork() {
 
 export function useLeads(status?: string) {
     return useQuery({
-        queryKey: ["leads", status],
+        queryKey: ["lead", status],
         queryFn: async () => {
-            let query = fromTable("leads")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (status && status !== "all") query = query.eq("status", status);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"leads">>("/api/leads", {
+                ...(status && status !== "all" ? { status } : {}),
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useCreateLead() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (l: Record<string, unknown>) => {
-            const { data, error } = await fromTable("leads").insert(l).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
-    });
-}
+export const useCreateLead = makeCreateHook<Tables<"leads">>("lead", "/api/leads");
+export const useUpdateLead = makeUpdateHook<Tables<"leads">>("lead", "/api/leads");
+export const useDeleteLead = makeDeleteHook("lead", "/api/leads");
 
 // ═══════════════════════════════════════════════════════════════
 // VENDOR REVIEWS
@@ -451,33 +426,31 @@ export function useCreateLead() {
 
 export function useVendorReviews(vendorId?: string) {
     return useQuery({
-        queryKey: ["vendor_reviews", vendorId],
+        queryKey: ["vendor_review", vendorId],
         queryFn: async () => {
-            let query = fromTable("vendor_reviews")
-                .select("*, vendors(name), profiles(name), projects(name)")
-                .order("created_at", { ascending: false });
-            if (vendorId) query = query.eq("vendor_id", vendorId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"vendor_reviews">>("/api/vendor-reviews", {
+                vendor_id: vendorId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useVendorReview(id: string) {
-    return useQuery({
-        queryKey: ["vendor_review", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vendor_reviews")
-                .select("*, vendors(name), profiles(name), projects(name)")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useVendorReview = makeDetailHook<Tables<"vendor_reviews">>(
+    "vendor_review",
+    "/api/vendor-reviews"
+);
+export const useCreateVendorReview = makeCreateHook<Tables<"vendor_reviews">>(
+    "vendor_review",
+    "/api/vendor-reviews"
+);
+export const useUpdateVendorReview = makeUpdateHook<Tables<"vendor_reviews">>(
+    "vendor_review",
+    "/api/vendor-reviews"
+);
+export const useDeleteVendorReview = makeDeleteHook("vendor_review", "/api/vendor-reviews");
 
 // ═══════════════════════════════════════════════════════════════
 // E-SIGNATURES
@@ -485,597 +458,502 @@ export function useVendorReview(id: string) {
 
 export function useESignatures(contractId?: string) {
     return useQuery({
-        queryKey: ["e_signatures", contractId],
+        queryKey: ["e_signature", contractId],
         queryFn: async () => {
-            let query = fromTable("e_signatures")
-                .select("*, contracts(title), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (contractId) query = query.eq("contract_id", contractId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"e_signatures">>("/api/e-signatures", {
+                contract_id: contractId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
+export const useCreateESignature = makeCreateHook<Tables<"e_signatures">>(
+    "e_signature",
+    "/api/e-signatures"
+);
+
 // ═══════════════════════════════════════════════════════════════
-// DOCUMENTS (generic)
+// DOCUMENTS (vault_documents)
 // ═══════════════════════════════════════════════════════════════
 
 export function useDocuments(projectId?: string) {
     return useQuery({
-        queryKey: ["documents", projectId],
+        queryKey: ["document", projectId],
         queryFn: async () => {
-            let query = fromTable("vault_documents")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (projectId) query = query.eq("project_id", projectId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"vault_documents">>("/api/vault-documents", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// USER-SCOPED DOCUMENTS (Home module)
-// ═══════════════════════════════════════════════════════════════
-
-export function useMyDocuments() {
-    return useQuery({
-        queryKey: ["my-documents"],
-        queryFn: async () => {
-            const {
-                data: { user },
-            } = await getSupabase().auth.getUser();
-            if (!user) return [];
-            const { data, error } = await fromTable("vault_documents")
-                .select("*, profiles(name)")
-                .or(`owner_id.eq.${user.id},shared_with_user_ids.cs.{${user.id}}`)
-                .order("updated_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useDocument = makeDetailHook<Tables<"vault_documents">>(
+    "document",
+    "/api/vault-documents"
+);
+export const useCreateDocument = makeCreateHook<Tables<"vault_documents">>(
+    "document",
+    "/api/vault-documents"
+);
+export const useUpdateDocument = makeUpdateHook<Tables<"vault_documents">>(
+    "document",
+    "/api/vault-documents"
+);
+export const useDeleteDocument = makeDeleteHook("document", "/api/vault-documents");
 
 // ═══════════════════════════════════════════════════════════════
-// DISPATCH / FLEET
+// FLEET VEHICLES
 // ═══════════════════════════════════════════════════════════════
 
-export function useFleetVehicles() {
-    return useQuery({
-        queryKey: ["fleet_vehicles"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vehicles").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useFleetVehicles = makeListHook<Tables<"vehicles">>("vehicle", "/api/fleet", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCreateFleetVehicle = makeCreateHook<Tables<"vehicles">>("vehicle", "/api/fleet");
 
 // ═══════════════════════════════════════════════════════════════
-// ACCOUNTS (CRM contacts/accounts)
+// ACCOUNTS (account health scores)
 // ═══════════════════════════════════════════════════════════════
 
-export function useAccounts() {
-    return useQuery({
-        queryKey: ["accounts"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("stakeholders")
-                .select("*")
-                .eq("type", "company")
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useAccount(id: string) {
-    return useQuery({
-        queryKey: ["account", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("stakeholders")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function usePeople() {
-    return useQuery({
-        queryKey: ["people"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("profiles").select("*").order("full_name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function usePerson(id: string) {
-    return useQuery({
-        queryKey: ["person", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("profiles").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useAccounts = makeListHook<Tables<"account_health_scores">>(
+    "account_health_score",
+    "/api/stakeholders",
+    { sort_by: "score_date", sort_order: "desc" }
+);
+export const useAccount = makeDetailHook<Tables<"stakeholders">>(
+    "stakeholder",
+    "/api/stakeholders"
+);
+export const useCreateAccount = makeCreateHook<Tables<"stakeholders">>(
+    "stakeholder",
+    "/api/stakeholders"
+);
+export const useUpdateAccount = makeUpdateHook<Tables<"stakeholders">>(
+    "stakeholder",
+    "/api/stakeholders"
+);
+export const useDeleteAccount = makeDeleteHook("stakeholder", "/api/stakeholders");
 
 // ═══════════════════════════════════════════════════════════════
-// CREATIVE ASSETS (campaign_assets)
+// PEOPLE (profiles)
 // ═══════════════════════════════════════════════════════════════
 
-export function useCreativeAssets(campaignId?: string) {
-    return useQuery({
-        queryKey: ["campaign_assets", campaignId],
-        queryFn: async () => {
-            let q = fromTable("campaign_assets")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (campaignId) q = q.eq("campaign_id", campaignId);
-            const { data, error } = await q;
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const usePeople = makeListHook<Tables<"profiles">>("people", "/api/profiles", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCreatePerson = makeCreateHook<Tables<"profiles">>("people", "/api/profiles");
+export const useUpdatePerson = makeUpdateHook<Tables<"profiles">>("people", "/api/profiles");
+export const useDeletePerson = makeDeleteHook("people", "/api/profiles");
+
+// ═══════════════════════════════════════════════════════════════
+// CREATIVE ASSETS (digital_assets alias)
+// ═══════════════════════════════════════════════════════════════
+
+export const useCreativeAssets = makeListHook<Tables<"digital_assets">>(
+    "creative_asset",
+    "/api/digital-assets",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreativeAsset = makeDetailHook<Tables<"digital_assets">>(
+    "creative_asset",
+    "/api/digital-assets"
+);
+export const useCreateCreativeAsset = makeCreateHook<Tables<"digital_assets">>(
+    "creative_asset",
+    "/api/digital-assets"
+);
+export const useUpdateCreativeAsset = makeUpdateHook<Tables<"digital_assets">>(
+    "creative_asset",
+    "/api/digital-assets"
+);
+export const useDeleteCreativeAsset = makeDeleteHook("creative_asset", "/api/digital-assets");
 
 // ═══════════════════════════════════════════════════════════════
 // OPPORTUNITIES
 // ═══════════════════════════════════════════════════════════════
 
-export function useOpportunities(stage?: string) {
-    return useQuery({
-        queryKey: ["opportunities", stage],
-        queryFn: async () => {
-            let q = fromTable("opportunities")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (stage) q = q.eq("stage", stage);
-            const { data, error } = await q;
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useOpportunities = makeListHook<Tables<"opportunities">>(
+    "opportunity",
+    "/api/opportunities",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useOpportunity = makeDetailHook<Tables<"opportunities">>(
+    "opportunity",
+    "/api/opportunities"
+);
+export const useCreateOpportunity = makeCreateHook<Tables<"opportunities">>(
+    "opportunity",
+    "/api/opportunities"
+);
+export const useUpdateOpportunity = makeUpdateHook<Tables<"opportunities">>(
+    "opportunity",
+    "/api/opportunities"
+);
+export const useDeleteOpportunity = makeDeleteHook("opportunity", "/api/opportunities");
 
 // ═══════════════════════════════════════════════════════════════
 // INCIDENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useIncidents() {
-    return useQuery({
-        queryKey: ["incidents"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("incidents")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useIncidents = makeListHook<Tables<"incidents">>("incident", "/api/incidents", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useIncident = makeDetailHook<Tables<"incidents">>("incident", "/api/incidents");
+export const useUpdateIncident = makeUpdateHook<Tables<"incidents">>("incident", "/api/incidents");
+export const useDeleteIncident = makeDeleteHook("incident", "/api/incidents");
 
 // ═══════════════════════════════════════════════════════════════
 // BRAND GUIDELINES
 // ═══════════════════════════════════════════════════════════════
 
-export function useBrandGuidelines() {
-    return useQuery({
-        queryKey: ["brand_guidelines"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("brand_guidelines")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useBrandGuideline(id: string) {
-    return useQuery({
-        queryKey: ["brand_guideline", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("brand_guidelines")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useBrandGuidelines = makeListHook<Tables<"brand_guidelines">>(
+    "brand_guideline",
+    "/api/brand-guidelines",
+    { sort_by: "title", sort_order: "asc" }
+);
+export const useBrandGuideline = makeDetailHook<Tables<"brand_guidelines">>(
+    "brand_guideline",
+    "/api/brand-guidelines"
+);
+export const useCreateBrandGuideline = makeCreateHook<Tables<"brand_guidelines">>(
+    "brand_guideline",
+    "/api/brand-guidelines"
+);
+export const useUpdateBrandGuideline = makeUpdateHook<Tables<"brand_guidelines">>(
+    "brand_guideline",
+    "/api/brand-guidelines"
+);
+export const useDeleteBrandGuideline = makeDeleteHook("brand_guideline", "/api/brand-guidelines");
 
 // ═══════════════════════════════════════════════════════════════
 // PURCHASE ORDERS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePurchaseOrders(status?: string) {
+export const usePurchaseOrders = makeListHook<Tables<"purchase_orders">>(
+    "purchase_order",
+    "/api/purchase-orders",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const usePurchaseOrder = makeDetailHook<Tables<"purchase_orders">>(
+    "purchase_order",
+    "/api/purchase-orders"
+);
+export const useCreatePurchaseOrder = makeCreateHook<Tables<"purchase_orders">>(
+    "purchase_order",
+    "/api/purchase-orders"
+);
+export const useUpdatePurchaseOrder = makeUpdateHook<Tables<"purchase_orders">>(
+    "purchase_order",
+    "/api/purchase-orders"
+);
+export const useDeletePurchaseOrder = makeDeleteHook("purchase_order", "/api/purchase-orders");
+
+// ═══════════════════════════════════════════════════════════════
+// EXPENSES
+// ═══════════════════════════════════════════════════════════════
+
+export function useExpenses(projectId?: string) {
     return useQuery({
-        queryKey: ["purchase_orders", status],
+        queryKey: ["expense", projectId],
         queryFn: async () => {
-            let q = fromTable("purchase_orders")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (status) q = q.eq("status", status);
-            const { data, error } = await q;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"expenses">>("/api/expenses", {
+                project_id: projectId,
+                sort_by: "created_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// EXPENSES (production_expenses)
-// ═══════════════════════════════════════════════════════════════
-
-export function useExpenses() {
-    return useQuery({
-        queryKey: ["expenses"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("production_expenses")
-                .select("*")
-                .order("expense_date", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useExpense = makeDetailHook<Tables<"expenses">>("expense", "/api/expenses");
+export const useCreateExpense = makeCreateHook<Tables<"expenses">>("expense", "/api/expenses");
+export const useUpdateExpense = makeUpdateHook<Tables<"expenses">>("expense", "/api/expenses");
+export const useDeleteExpense = makeDeleteHook("expense", "/api/expenses");
 
 // ═══════════════════════════════════════════════════════════════
 // EXPENSE REPORTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useExpenseReports() {
-    return useQuery({
-        queryKey: ["expense_reports"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("expense_reports")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useExpenseReports = makeListHook<Tables<"expenses">>(
+    "expense_report",
+    "/api/expense-reports",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateExpenseReport = makeCreateHook<Tables<"expenses">>(
+    "expense_report",
+    "/api/expense-reports"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // TIMESHEETS
 // ═══════════════════════════════════════════════════════════════
 
-export function useTimesheets() {
-    return useQuery({
-        queryKey: ["timesheets"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("timesheets")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useTimesheets = makeListHook<Tables<"time_entries">>("timesheet", "/api/timesheets", {
+    sort_by: "period_start",
+    sort_order: "desc",
+});
+export const useCreateTimesheet = makeCreateHook<Tables<"time_entries">>(
+    "timesheet",
+    "/api/timesheets"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // WORKFLOWS
 // ═══════════════════════════════════════════════════════════════
 
-export function useWorkflows() {
-    return useQuery({
-        queryKey: ["workflows"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("workflows")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useWorkflows = makeListHook<Tables<"workflow_instances">>(
+    "workflow",
+    "/api/workflows",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useCreateWorkflow = makeCreateHook<Tables<"workflow_instances">>(
+    "workflow",
+    "/api/workflows"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // INSURANCE POLICIES
 // ═══════════════════════════════════════════════════════════════
 
-export function useInsurancePolicies() {
-    return useQuery({
-        queryKey: ["insurance_policies"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("insurance_policies")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useInsurancePolicies = makeListHook<Tables<"insurance_policies">>(
+    "insurance_policy",
+    "/api/insurance-policies",
+    { sort_by: "expiry_date", sort_order: "asc" }
+);
+export const useInsurancePolicy = makeDetailHook<Tables<"insurance_policies">>(
+    "insurance_policy",
+    "/api/insurance-policies"
+);
+export const useCreateInsurancePolicy = makeCreateHook<Tables<"insurance_policies">>(
+    "insurance_policy",
+    "/api/insurance-policies"
+);
+export const useUpdateInsurancePolicy = makeUpdateHook<Tables<"insurance_policies">>(
+    "insurance_policy",
+    "/api/insurance-policies"
+);
+export const useDeleteInsurancePolicy = makeDeleteHook(
+    "insurance_policy",
+    "/api/insurance-policies"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // PERMITS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePermits() {
-    return useQuery({
-        queryKey: ["permits"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("permits")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const usePermits = makeListHook<Tables<"permits">>("permit", "/api/permits", {
+    sort_by: "expiry_date",
+    sort_order: "asc",
+});
+export const usePermit = makeDetailHook<Tables<"permits">>("permit", "/api/permits");
+export const useCreatePermit = makeCreateHook<Tables<"permits">>("permit", "/api/permits");
+export const useUpdatePermit = makeUpdateHook<Tables<"permits">>("permit", "/api/permits");
+export const useDeletePermit = makeDeleteHook("permit", "/api/permits");
 
 // ═══════════════════════════════════════════════════════════════
 // RISK ASSESSMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useRiskAssessments() {
-    return useQuery({
-        queryKey: ["risk_assessments"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("risk_assessments")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useRiskAssessments = makeListHook<Tables<"vendor_risk_scores">>(
+    "risk_assessment",
+    "/api/risk-assessments",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateRiskAssessment = makeCreateHook<Tables<"vendor_risk_scores">>(
+    "risk_assessment",
+    "/api/risk-assessments"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // SHIPMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useShipments() {
-    return useQuery({
-        queryKey: ["shipments"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("shipments")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useShipments = makeListHook<Tables<"shipments">>("shipment", "/api/shipments", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useShipment = makeDetailHook<Tables<"shipments">>("shipment", "/api/shipments");
+export const useUpdateShipment = makeUpdateHook<Tables<"shipments">>("shipment", "/api/shipments");
+export const useDeleteShipment = makeDeleteHook("shipment", "/api/shipments");
 
 // ═══════════════════════════════════════════════════════════════
 // WAREHOUSES
 // ═══════════════════════════════════════════════════════════════
 
-export function useWarehouses() {
-    return useQuery({
-        queryKey: ["warehouses"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("warehouses").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useWarehouses = makeListHook<Tables<"warehouses">>("warehouse", "/api/warehouses", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCreateWarehouse = makeCreateHook<Tables<"warehouses">>(
+    "warehouse",
+    "/api/warehouses"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// DISPATCH
+// DISPATCH (dispatch_entries)
 // ═══════════════════════════════════════════════════════════════
 
-export function useDispatch() {
-    return useQuery({
-        queryKey: ["dispatch"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("shipments")
-                .select("*")
-                .in("status", ["pending", "in_transit", "dispatched"])
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useDispatchRecord(id: string) {
-    return useQuery({
-        queryKey: ["dispatch_record", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("shipments").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useDispatchRecords = makeListHook<Tables<"dispatch_entries">>(
+    "dispatch",
+    "/api/dispatch",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateDispatchRecord = makeCreateHook<Tables<"dispatch_entries">>(
+    "dispatch",
+    "/api/dispatch"
+);
+export const useUpdateDispatchRecord = makeUpdateHook<Tables<"dispatch_entries">>(
+    "dispatch",
+    "/api/dispatch"
+);
+export const useDeleteDispatchRecord = makeDeleteHook("dispatch", "/api/dispatch");
 
 // ═══════════════════════════════════════════════════════════════
 // PAYROLL
 // ═══════════════════════════════════════════════════════════════
 
-export function usePayroll() {
-    return useQuery({
-        queryKey: ["payroll_batches"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("payroll_batches")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const usePayrollBatches = makeListHook<Tables<"payroll_batches">>(
+    "payroll_batch",
+    "/api/payroll-batches",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreatePayrollBatch = makeCreateHook<Tables<"payroll_batches">>(
+    "payroll_batch",
+    "/api/payroll-batches"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CREDIT NOTES
 // ═══════════════════════════════════════════════════════════════
 
-export function useCreditNotes() {
-    return useQuery({
-        queryKey: ["credit_notes"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("credit_notes")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useCreditNotes = makeListHook<Tables<"credit_notes">>(
+    "credit_note",
+    "/api/credit-notes",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateCreditNote = makeCreateHook<Tables<"credit_notes">>(
+    "credit_note",
+    "/api/credit-notes"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // WORK ORDERS
 // ═══════════════════════════════════════════════════════════════
 
-export function useWorkOrders() {
-    return useQuery({
-        queryKey: ["work_orders"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("work_orders")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useWorkOrders = makeListHook<Tables<"work_orders">>("work_order", "/api/work-orders", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useWorkOrder = makeDetailHook<Tables<"work_orders">>("work_order", "/api/work-orders");
+export const useCreateWorkOrder = makeCreateHook<Tables<"work_orders">>(
+    "work_order",
+    "/api/work-orders"
+);
+export const useUpdateWorkOrder = makeUpdateHook<Tables<"work_orders">>(
+    "work_order",
+    "/api/work-orders"
+);
+export const useDeleteWorkOrder = makeDeleteHook("work_order", "/api/work-orders");
 
 // ═══════════════════════════════════════════════════════════════
-// WORKER PROFILES (workforce)
+// WORKER PROFILES
 // ═══════════════════════════════════════════════════════════════
 
-export function useWorkerProfiles() {
-    return useQuery({
-        queryKey: ["worker_profiles"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("worker_profiles")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useWorkerProfile(id: string) {
-    return useQuery({
-        queryKey: ["worker_profile", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("worker_profiles")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
+export const useWorkerProfiles = makeListHook<Tables<"worker_profiles">>(
+    "worker_profile",
+    "/api/worker-profiles",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateWorkerProfile = makeCreateHook<Tables<"worker_profiles">>(
+    "worker_profile",
+    "/api/worker-profiles"
+);
+export const useUpdateWorkerProfile = makeUpdateHook<Tables<"worker_profiles">>(
+    "worker_profile",
+    "/api/worker-profiles"
+);
+export const useDeleteWorkerProfile = makeDeleteHook("worker_profile", "/api/worker-profiles");
 
 // ═══════════════════════════════════════════════════════════════
 // BUDGET APPROVALS
 // ═══════════════════════════════════════════════════════════════
 
-export function useBudgetApprovals() {
-    return useQuery({
-        queryKey: ["budget_approvals"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("budget_approvals")
-                .select("*")
-                .order("requested_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useUpdateBudgetApproval() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({
-            id,
-            status,
-            approved_by,
-        }: {
-            id: string;
-            status: "approved" | "rejected";
-            approved_by?: string;
-        }) => {
-            const updates: Record<string, unknown> = { status };
-            if (status === "approved") {
-                updates.approved_at = new Date().toISOString();
-                if (approved_by) updates.approved_by = approved_by;
-            }
-            const { data, error } = await fromTable("budget_approvals")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["budget_approvals"] });
-        },
-    });
-}
+export const useBudgetApprovals = makeListHook<Tables<"budget_approvals">>(
+    "budget_approval",
+    "/api/budget-approvals",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateBudgetApproval = makeCreateHook<Tables<"budget_approvals">>(
+    "budget_approval",
+    "/api/budget-approvals"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CHECKLISTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useChecklists() {
-    return useQuery({
-        queryKey: ["checklists"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("checklists")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useChecklists = makeListHook<Tables<"job_checklists">>(
+    "checklist",
+    "/api/checklists",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useCreateChecklist = makeCreateHook<Tables<"job_checklists">>(
+    "checklist",
+    "/api/checklists"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE REQUESTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useServiceRequests() {
-    return useQuery({
-        queryKey: ["service_requests"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("service_requests")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useServiceRequests = makeListHook<Tables<"service_requests">>(
+    "service_request",
+    "/api/service-requests",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useServiceRequest = makeDetailHook<Tables<"service_requests">>(
+    "service_request",
+    "/api/service-requests"
+);
+export const useCreateServiceRequest = makeCreateHook<Tables<"service_requests">>(
+    "service_request",
+    "/api/service-requests"
+);
+export const useUpdateServiceRequest = makeUpdateHook<Tables<"service_requests">>(
+    "service_request",
+    "/api/service-requests"
+);
+export const useDeleteServiceRequest = makeDeleteHook("service_request", "/api/service-requests");
 
 // ═══════════════════════════════════════════════════════════════
-// ACTIVITY LOG (audit log)
+// ACTIVITY LOG
 // ═══════════════════════════════════════════════════════════════
 
-export function useActivityLog() {
+export const useActivityLog = makeListHook<Tables<"activity_log">>(
+    "activity_log",
+    "/api/activity-log",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+
+export function useActivityLogRecent(limit = 10) {
     return useQuery({
-        queryKey: ["activity_log"],
+        queryKey: ["activity_log_recent", limit],
         queryFn: async () => {
-            const { data, error } = await fromTable("activity_log")
-                .select("*")
-                .order("created_at", { ascending: false })
-                .limit(200);
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"activity_log">>("/api/activity-log", {
+                sort_by: "created_at",
+                sort_order: "desc",
+                limit,
+            });
+            return res.data;
         },
     });
 }
@@ -1084,136 +962,78 @@ export function useActivityLog() {
 // VENDOR COMPLIANCE DOCUMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useVendorComplianceDocs() {
-    return useQuery({
-        queryKey: ["vendor_compliance_documents"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vendor_compliance_documents")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useVendorComplianceDocuments = makeListHook<Tables<"vendor_compliance_docs">>(
+    "vendor_compliance_document",
+    "/api/vendor-compliance-documents",
+    { sort_by: "expiry_date", sort_order: "asc" }
+);
+export const useCreateVendorComplianceDocument = makeCreateHook<Tables<"vendor_compliance_docs">>(
+    "vendor_compliance_document",
+    "/api/vendor-compliance-documents"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// TIME ENTRIES (production_time_entries)
+// TIME ENTRIES
 // ═══════════════════════════════════════════════════════════════
 
-export function useTimeEntries(weekStart?: string) {
-    return useQuery({
-        queryKey: ["time_entries", weekStart],
-        queryFn: async () => {
-            let query = fromTable("production_time_entries")
-                .select("*")
-                .order("entry_date", { ascending: false });
-            if (weekStart) {
-                const end = new Date(weekStart);
-                end.setDate(end.getDate() + 6);
-                query = query
-                    .gte("entry_date", weekStart)
-                    .lte("entry_date", end.toISOString().split("T")[0]!);
-            }
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useCreateTimeEntry() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (entry: Record<string, unknown>) => {
-            const { data, error } = await fromTable("production_time_entries")
-                .insert(entry)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
-    });
-}
-
-export function useUpdateTimeEntry() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: Record<string, unknown> & { id: string }) => {
-            const { data, error } = await fromTable("production_time_entries")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
-    });
-}
-
-export function useSubmitTimeEntries() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (ids: string[]) => {
-            const { data, error } = await fromTable("production_time_entries")
-                .update({ status: "submitted" })
-                .in("id", ids)
-                .select();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
-    });
-}
-
-export function useApproveTimeEntry() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { data, error } = await fromTable("production_time_entries")
-                .update({ status: "approved" })
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entries"] }),
-    });
-}
+export const useTimeEntries = makeListHook<Tables<"time_entries">>(
+    "time_entry",
+    "/api/time-entries",
+    { sort_by: "date", sort_order: "desc" }
+);
+export const useCreateTimeEntry = makeCreateHook<Tables<"time_entries">>(
+    "time_entry",
+    "/api/time-entries"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // PAYMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePayments() {
-    return useQuery({
-        queryKey: ["payments"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("payments")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const usePayments = makeListHook<Tables<"payments">>("payment", "/api/payments", {
+    sort_by: "payment_date",
+    sort_order: "desc",
+});
+export const useCreatePayment = makeCreateHook<Tables<"payments">>("payment", "/api/payments");
 
 // ═══════════════════════════════════════════════════════════════
 // PURCHASE REQUISITIONS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePurchaseRequisitions() {
+export const usePurchaseRequisitions = makeListHook<Tables<"purchase_requisitions">>(
+    "purchase_requisition",
+    "/api/purchase-requisitions",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const usePurchaseRequisition = makeDetailHook<Tables<"purchase_requisitions">>(
+    "purchase_requisition",
+    "/api/purchase-requisitions"
+);
+export const useCreatePurchaseRequisition = makeCreateHook<Tables<"purchase_requisitions">>(
+    "purchase_requisition",
+    "/api/purchase-requisitions"
+);
+export const useUpdatePurchaseRequisition = makeUpdateHook<Tables<"purchase_requisitions">>(
+    "purchase_requisition",
+    "/api/purchase-requisitions"
+);
+export const useDeletePurchaseRequisition = makeDeleteHook(
+    "purchase_requisition",
+    "/api/purchase-requisitions"
+);
+
+export function usePurchaseRequisitionsList() {
     return useQuery({
-        queryKey: ["purchase_requisitions"],
+        queryKey: ["purchase_requisitions_list"],
         queryFn: async () => {
-            const { data, error } = await fromTable("purchase_requisitions")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"purchase_requisitions">>(
+                "/api/purchase-requisitions",
+                {
+                    sort_by: "created_at",
+                    sort_order: "desc",
+                }
+            );
+            return res.data;
         },
     });
 }
@@ -1222,149 +1042,148 @@ export function usePurchaseRequisitions() {
 // RECURRING INVOICES
 // ═══════════════════════════════════════════════════════════════
 
-export function useRecurringInvoices() {
-    return useQuery({
-        queryKey: ["recurring_invoices"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("recurring_invoices")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useRecurringInvoices = makeListHook<Tables<"recurring_invoices">>(
+    "recurring_invoice",
+    "/api/recurring-invoices",
+    { sort_by: "next_date", sort_order: "asc" }
+);
+export const useRecurringInvoice = makeDetailHook<Tables<"recurring_invoices">>(
+    "recurring_invoice",
+    "/api/recurring-invoices"
+);
+export const useUpdateRecurringInvoice = makeUpdateHook<Tables<"recurring_invoices">>(
+    "recurring_invoice",
+    "/api/recurring-invoices"
+);
+export const useDeleteRecurringInvoice = makeDeleteHook(
+    "recurring_invoice",
+    "/api/recurring-invoices"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // KNOWLEDGE BASE ARTICLES
 // ═══════════════════════════════════════════════════════════════
 
-export function useKnowledgeBaseArticles() {
-    return useQuery({
-        queryKey: ["knowledge_base_articles"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("knowledge_base_articles")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useKnowledgeBaseArticles = makeListHook<Tables<"knowledge_base_articles">>(
+    "knowledge_base_article",
+    "/api/knowledge-base-articles",
+    { sort_by: "updated_at", sort_order: "desc" }
+);
+export const useCreateKBArticle = makeCreateHook<Tables<"knowledge_base_articles">>(
+    "knowledge_base_article",
+    "/api/knowledge-base-articles"
+);
+export const useUpdateKBArticle = makeUpdateHook<Tables<"knowledge_base_articles">>(
+    "knowledge_base_article",
+    "/api/knowledge-base-articles"
+);
+export const useDeleteKBArticle = makeDeleteHook(
+    "knowledge_base_article",
+    "/api/knowledge-base-articles"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// INVENTORY ITEMS
+// INVENTORY ITEMS (catalog)
 // ═══════════════════════════════════════════════════════════════
 
-export function useInventoryItems() {
-    return useQuery({
-        queryKey: ["inventory_items"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("consumables").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useInventoryItems = makeListHook<Tables<"catalog_items">>("catalog", "/api/catalog", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCreateInventoryItem = makeCreateHook<Tables<"catalog_items">>(
+    "catalog",
+    "/api/catalog"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // IP RIGHTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useIpRights() {
-    return useQuery({
-        queryKey: ["ip_rights"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("ip_rights")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useIpRights = makeListHook<Tables<"ip_rights">>("ip_right", "/api/ip-rights", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useCreateIpRight = makeCreateHook<Tables<"ip_rights">>("ip_right", "/api/ip-rights");
 
 // ═══════════════════════════════════════════════════════════════
 // CONTRACT OBLIGATIONS
 // ═══════════════════════════════════════════════════════════════
 
-export function useContractObligations() {
-    return useQuery({
-        queryKey: ["contract_obligations"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("contract_obligations")
-                .select("*")
-                .order("due_date", { ascending: true });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useContractObligations = makeListHook<Tables<"contract_obligations">>(
+    "contract_obligation",
+    "/api/contract-obligations",
+    { sort_by: "due_date", sort_order: "asc" }
+);
+export const useCreateContractObligation = makeCreateHook<Tables<"contract_obligations">>(
+    "contract_obligation",
+    "/api/contract-obligations"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // GOODS RECEIPTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useGoodsReceipts() {
-    return useQuery({
-        queryKey: ["goods_receipts"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("goods_receipts")
-                .select("*")
-                .order("received_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useGoodsReceipts = makeListHook<Tables<"goods_receipts">>(
+    "goods_receipt",
+    "/api/goods-receipts",
+    { sort_by: "received_at", sort_order: "desc" }
+);
+export const useCreateGoodsReceipt = makeCreateHook<Tables<"goods_receipts">>(
+    "goods_receipt",
+    "/api/goods-receipts"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // TECH SHEETS
 // ═══════════════════════════════════════════════════════════════
 
-export function useTechSheets() {
-    return useQuery({
-        queryKey: ["tech_sheets"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("tech_sheets")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useTechSheets = makeListHook<Tables<"tech_sheets">>("tech_sheet", "/api/tech-sheets", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
+export const useTechSheet = makeDetailHook<Tables<"tech_sheets">>("tech_sheet", "/api/tech-sheets");
+export const useCreateTechSheet = makeCreateHook<Tables<"tech_sheets">>(
+    "tech_sheet",
+    "/api/tech-sheets"
+);
+export const useUpdateTechSheet = makeUpdateHook<Tables<"tech_sheets">>(
+    "tech_sheet",
+    "/api/tech-sheets"
+);
+export const useDeleteTechSheet = makeDeleteHook("tech_sheet", "/api/tech-sheets");
 
 // ═══════════════════════════════════════════════════════════════
 // RATE CARDS
 // ═══════════════════════════════════════════════════════════════
 
-export function useRateCards() {
-    return useQuery({
-        queryKey: ["rate_cards"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("rate_cards")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useRateCards = makeListHook<Tables<"rate_cards">>("rate_card", "/api/rate-cards", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useCreateRateCard = makeCreateHook<Tables<"rate_cards">>(
+    "rate_card",
+    "/api/rate-cards"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // REVENUE SCHEDULES
 // ═══════════════════════════════════════════════════════════════
 
-export function useRevenueSchedules() {
+export const useRevenueSchedules = makeListHook<Tables<"revenue_schedules">>(
+    "revenue_schedule",
+    "/api/revenue-schedules",
+    { sort_by: "period_start", sort_order: "desc" }
+);
+
+export function useRevenueSchedulesList() {
     return useQuery({
-        queryKey: ["revenue_schedules"],
+        queryKey: ["revenue_schedules_list"],
         queryFn: async () => {
-            const { data, error } = await fromTable("revenue_schedules")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"revenue_schedules">>("/api/revenue-schedules", {
+                sort_by: "period_start",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -1373,366 +1192,130 @@ export function useRevenueSchedules() {
 // GL ACCOUNTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useGlAccounts() {
-    return useQuery({
-        queryKey: ["gl_accounts"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("gl_accounts")
-                .select("*")
-                .order("account_code");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useGlAccounts = makeListHook<Tables<"gl_accounts">>("gl_account", "/api/gl-accounts", {
+    sort_by: "account_code",
+    sort_order: "asc",
+});
+export const useCreateGlAccount = makeCreateHook<Tables<"gl_accounts">>(
+    "gl_account",
+    "/api/gl-accounts"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// DOCUMENT TEMPLATES
+// DOCUMENT TEMPLATES (project_templates)
 // ═══════════════════════════════════════════════════════════════
 
-export function useTemplates() {
-    return useQuery({
-        queryKey: ["document_templates"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("document_templates")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useDocumentTemplates = makeListHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useDocumentTemplate = makeDetailHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates"
+);
+export const useCreateDocumentTemplate = makeCreateHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates"
+);
+export const useUpdateTemplate = makeUpdateHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates"
+);
+export const useDeleteTemplate = makeDeleteHook("template", "/api/project-templates");
 
 // ═══════════════════════════════════════════════════════════════
-// USER DIRECTORY (profiles)
+// VENDOR ONBOARDING (STUB — uses vendor_compliance_documents)
 // ═══════════════════════════════════════════════════════════════
 
-export function useUserDirectory() {
-    return useQuery({
-        queryKey: ["user_directory"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("profiles").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// VENDOR ONBOARDING
-// ═══════════════════════════════════════════════════════════════
-
-export function useVendorOnboarding() {
-    return useQuery({
-        queryKey: ["vendor_onboarding"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vendors")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useVendorOnboarding = makeListHook<Tables<"vendor_compliance_docs">>(
+    "vendor_onboarding",
+    "/api/vendor-compliance-documents",
+    { sort_by: "created_at", sort_order: "desc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // ENGINEERING APPROVALS
 // ═══════════════════════════════════════════════════════════════
 
-export function useEngineeringApprovals() {
-    return useQuery({
-        queryKey: ["engineering_approvals"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("engineering_approvals")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useEngineeringApprovals = makeListHook<Tables<"engineering_approvals">>(
+    "engineering_approval",
+    "/api/engineering-approvals",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateEngineeringApproval = makeCreateHook<Tables<"engineering_approvals">>(
+    "engineering_approval",
+    "/api/engineering-approvals"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // JOB COST ENTRIES
 // ═══════════════════════════════════════════════════════════════
 
-export function useJobCostEntries() {
-    return useQuery({
-        queryKey: ["job_cost_entries"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("job_cost_entries")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useJobCostEntries = makeListHook<Tables<"job_cost_entries">>(
+    "job_cost_entry",
+    "/api/job-cost-entries",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useCreateJobCostEntry = makeCreateHook<Tables<"job_cost_entries">>(
+    "job_cost_entry",
+    "/api/job-cost-entries"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CLAUSE LIBRARY
 // ═══════════════════════════════════════════════════════════════
 
-export function useClauseLibrary() {
-    return useQuery({
-        queryKey: ["clause_library"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("clause_library")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useClauseLibrary = makeListHook<Tables<"contract_clauses">>(
+    "clause_library",
+    "/api/clause-library",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useCreateClauseLibraryItem = makeCreateHook<Tables<"contract_clauses">>(
+    "clause_library",
+    "/api/clause-library"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// SINGLE-RECORD HOOKS (detail [id] pages)
+// SINGLE-RECORD DETAIL HOOKS (additional entities)
 // ═══════════════════════════════════════════════════════════════
 
-export function useActivation(id: string) {
-    return useQuery({
-        queryKey: ["activation", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("activations")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useShipment(id: string) {
-    return useQuery({
-        queryKey: ["shipment", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("shipments").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useVendor(id: string) {
-    return useQuery({
-        queryKey: ["vendor", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vendors").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useWorkOrder(id: string) {
-    return useQuery({
-        queryKey: ["work_order", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("work_orders")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useTask(id: string) {
-    return useQuery({
-        queryKey: ["task", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("tasks").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useOpportunity(id: string) {
-    return useQuery({
-        queryKey: ["opportunity", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("opportunities")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useInsurancePolicy(id: string) {
-    return useQuery({
-        queryKey: ["insurance_policy", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("insurance_policies")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useEstimate(id: string) {
-    return useQuery({
-        queryKey: ["estimate", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("estimates").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function usePermit(id: string) {
-    return useQuery({
-        queryKey: ["permit", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("permits").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useChangeOrder(id: string) {
-    return useQuery({
-        queryKey: ["change_order", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("change_orders")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useBrief(id: string) {
-    return useQuery({
-        queryKey: ["brief", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("briefs").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useServiceRequest(id: string) {
-    return useQuery({
-        queryKey: ["service_request", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("service_requests")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useBudget(id: string) {
-    return useQuery({
-        queryKey: ["budget", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("budgets").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCampaign(id: string) {
-    return useQuery({
-        queryKey: ["campaign", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("campaigns").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useIncident(id: string) {
-    return useQuery({
-        queryKey: ["incident", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("incidents").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCertification(id: string) {
-    return useQuery({
-        queryKey: ["certification", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("certifications")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// BUDGET LINE ITEMS
-// ═══════════════════════════════════════════════════════════════
-
-export function useBudgetLines(budgetId?: string) {
-    return useQuery({
-        queryKey: ["production_budget_lines", budgetId],
-        queryFn: async () => {
-            let query = fromTable("production_budget_lines").select("*").order("created_at");
-            if (budgetId) query = query.eq("budget_id", budgetId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useActivation = makeDetailHook<Tables<"activations">>(
+    "activation",
+    "/api/activations"
+);
+export const useVendor = makeDetailHook<Tables<"vendors">>("vendor", "/api/vendors");
+export const useTask = makeDetailHook<Tables<"tasks">>("task", "/api/tasks");
+export const useDeleteTask = makeDeleteHook("task", "/api/tasks");
+export const useEvent = makeDetailHook<Tables<"events">>("event", "/api/events");
 
 // ═══════════════════════════════════════════════════════════════
 // CAMPAIGN SUB-ENTITIES
 // ═══════════════════════════════════════════════════════════════
 
+export function useBudgetLines(budgetId?: string) {
+    return useQuery({
+        queryKey: ["budget_line_item", budgetId],
+        queryFn: async () => {
+            const res = await apiList<Tables<"budget_line_items">>("/api/budget-line-items", {
+                budget_id: budgetId,
+                sort_by: "sort_order",
+                sort_order: "asc",
+            });
+            return res.data;
+        },
+        enabled: !!budgetId,
+    });
+}
+
 export function useCampaignChannels(campaignId?: string) {
     return useQuery({
-        queryKey: ["campaign_channels", campaignId],
+        queryKey: ["campaign_channel", campaignId],
         queryFn: async () => {
-            let query = fromTable("campaign_channels").select("*").order("created_at");
-            if (campaignId) query = query.eq("campaign_id", campaignId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"campaign_channels">>("/api/campaign-channels", {
+                campaign_id: campaignId,
+            });
+            return res.data;
         },
         enabled: !!campaignId,
     });
@@ -1740,792 +1323,136 @@ export function useCampaignChannels(campaignId?: string) {
 
 export function useCampaignAssets(campaignId?: string) {
     return useQuery({
-        queryKey: ["campaign_assets", campaignId],
+        queryKey: ["campaign_asset", campaignId],
         queryFn: async () => {
-            let query = fromTable("campaign_assets").select("*").order("created_at");
-            if (campaignId) query = query.eq("campaign_id", campaignId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"campaign_assets">>("/api/campaign-assets", {
+                campaign_id: campaignId,
+            });
+            return res.data;
         },
         enabled: !!campaignId,
     });
 }
 
-export function useCampaignKpis(campaignId?: string) {
+export function useCampaignKPIs(campaignId?: string) {
     return useQuery({
-        queryKey: ["campaign_kpis", campaignId],
+        queryKey: ["campaign_kpi", campaignId],
         queryFn: async () => {
-            let query = fromTable("campaign_kpis").select("*").order("created_at");
-            if (campaignId) query = query.eq("campaign_id", campaignId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"campaign_kpis">>("/api/campaign-kpis", {
+                campaign_id: campaignId,
+            });
+            return res.data;
         },
         enabled: !!campaignId,
     });
 }
 
-export function useEvent(id: string) {
-    return useQuery({
-        queryKey: ["event", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("events").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
 // ═══════════════════════════════════════════════════════════════
-// SINGLE-RECORD HOOKS (Phase 1 — wire mock detail pages to Supabase)
+// UPDATE MUTATION HOOKS (generic via factory)
 // ═══════════════════════════════════════════════════════════════
 
-export function useBrandKit(id: string) {
-    return useQuery({
-        queryKey: ["brand_kit", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("brand_kits").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCallSheet(id: string) {
-    return useQuery({
-        queryKey: ["call_sheet", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("call_sheets")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCompany(id: string) {
-    return useQuery({
-        queryKey: ["company", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("companies").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useContract(id: string) {
-    return useQuery({
-        queryKey: ["contract", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("contracts").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCreativeAsset(id: string) {
-    return useQuery({
-        queryKey: ["creative_asset", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("digital_assets")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useDeck(id: string) {
-    return useQuery({
-        queryKey: ["deck", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("decks").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useDigitalAsset(id: string) {
-    return useQuery({
-        queryKey: ["digital_asset", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("digital_assets")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useExpense(id: string) {
-    return useQuery({
-        queryKey: ["expense", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("expenses").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useInvoice(id: string) {
-    return useQuery({
-        queryKey: ["invoice", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("invoices").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useProposal(id: string) {
-    return useQuery({
-        queryKey: ["proposal", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("proposals").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useRecurringInvoice(id: string) {
-    return useQuery({
-        queryKey: ["recurring_invoice", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("recurring_invoices")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useScopeOfWork(id: string) {
-    return useQuery({
-        queryKey: ["scope_of_work", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("scopes_of_work")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useTechSheet(id: string) {
-    return useQuery({
-        queryKey: ["tech_sheet", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("tech_sheets")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useTemplate(id: string) {
-    return useQuery({
-        queryKey: ["template", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("project_templates")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// UPDATE MUTATION HOOKS (Phase 2)
-// ═══════════════════════════════════════════════════════════════
-
-function makeUpdateHook(table: string, keyPrefix: string) {
-    return function useUpdateEntity() {
-        const qc = useQueryClient();
-        return useMutation({
-            mutationFn: async ({ id, ...updates }: Record<string, unknown>) => {
-                const { data, error } = await fromTable(table)
-                    .update(updates)
-                    .eq("id", id as string)
-                    .select()
-                    .single();
-                if (error) throw error;
-                return data;
-            },
-            onSuccess: (_d, vars) => {
-                qc.invalidateQueries({ queryKey: [keyPrefix] });
-                qc.invalidateQueries({ queryKey: [keyPrefix, vars.id] });
-            },
-        });
-    };
-}
-
-function makeDeleteHook(table: string, keyPrefix: string) {
-    return function useDeleteEntity() {
-        const qc = useQueryClient();
-        return useMutation({
-            mutationFn: async (id: string) => {
-                const { error } = await fromTable(table).delete().eq("id", id);
-                if (error) throw error;
-            },
-            onSuccess: () => {
-                qc.invalidateQueries({ queryKey: [keyPrefix] });
-            },
-        });
-    };
-}
-
-export const useUpdateBrandKit = makeUpdateHook("brand_kits", "brand_kits");
-export const useUpdateActivation = makeUpdateHook("activations", "activations");
-export const useUpdateAsset = makeUpdateHook("assets", "assets");
-export const useUpdateBrief = makeUpdateHook("briefs", "briefs");
-export const useUpdateBudget = makeUpdateHook("budgets", "budgets");
-export const useUpdateCallSheet = makeUpdateHook("call_sheets", "call_sheets");
-export const useUpdateCampaign = makeUpdateHook("campaigns", "campaigns");
-export const useUpdateCertification = makeUpdateHook("certifications", "certifications");
-export const useUpdateCrewMember = makeUpdateHook("crew_members", "crew_members");
-export const useUpdateChangeOrder = makeUpdateHook("change_orders", "change_orders");
-export const useUpdateCompany = makeUpdateHook("companies", "companies");
-export const useUpdateContract = makeUpdateHook("contracts", "contracts");
-export const useUpdateCreativeAsset = makeUpdateHook("digital_assets", "creative_assets");
-export const useUpdateDeal = makeUpdateHook("deals", "deals");
-export const useUpdateDeck = makeUpdateHook("decks", "decks");
-export const useUpdateDigitalAsset = makeUpdateHook("digital_assets", "digital_assets");
-export const useUpdateEstimate = makeUpdateHook("estimates", "estimates");
-export const useUpdateEvent = makeUpdateHook("events", "events");
-export const useUpdateExpense = makeUpdateHook("expenses", "expenses");
-export const useUpdateIncident = makeUpdateHook("incidents", "incidents");
-export const useUpdateInsurancePolicy = makeUpdateHook("insurance_policies", "insurance_policies");
-export const useUpdateInvoice = makeUpdateHook("invoices", "invoices");
-export const useUpdateKBArticle = makeUpdateHook(
-    "knowledge_base_articles",
-    "knowledge_base_articles"
+export const useUpdateBrandKit = makeUpdateHook<Tables<"brand_kits">>(
+    "brand_kit",
+    "/api/brand-kits"
 );
-export const useUpdateLead = makeUpdateHook("leads", "leads");
-export const useUpdateLocation = makeUpdateHook("locations", "locations");
-export const useUpdateOpportunity = makeUpdateHook("opportunities", "opportunities");
-export const useUpdatePermit = makeUpdateHook("permits", "permits");
-export const useUpdateRecurringInvoice = makeUpdateHook("recurring_invoices", "recurring_invoices");
-export const useUpdateScopeOfWork = makeUpdateHook("scopes_of_work", "scopes_of_work");
-export const useUpdateServiceRequest = makeUpdateHook("service_requests", "service_requests");
-export const useUpdateShipment = makeUpdateHook("shipments", "shipments");
-export const useUpdateTechSheet = makeUpdateHook("tech_sheets", "tech_sheets");
-export const useUpdateTemplate = makeUpdateHook("project_templates", "templates");
-export const useUpdateVendor = makeUpdateHook("vendors", "vendors");
-export const useUpdateWorkerProfile = makeUpdateHook("worker_profiles", "worker_profiles");
-export const useUpdateWorkOrder = makeUpdateHook("work_orders", "work_orders");
-export const useUpdateAccount = makeUpdateHook("stakeholders", "accounts");
-export const useUpdateBrandGuideline = makeUpdateHook("brand_guidelines", "brand_guidelines");
-export const useUpdateClientInvoice = makeUpdateHook("client_invoices", "client_invoices");
-export const useUpdateComplianceChecklist = makeUpdateHook(
-    "compliance_checklists",
-    "compliance_checklists"
+export const useUpdateActivation = makeUpdateHook<Tables<"activations">>(
+    "activation",
+    "/api/activations"
 );
-export const useUpdateDispatchRecord = makeUpdateHook("shipments", "dispatch");
-export const useUpdatePerson = makeUpdateHook("profiles", "people");
-export const useUpdateVendorReview = makeUpdateHook("vendor_reviews", "vendor_reviews");
-
-// ═══════════════════════════════════════════════════════════════
-// DELETE MUTATION HOOKS (Phase 3)
-// ═══════════════════════════════════════════════════════════════
-
-export const useDeleteBrandKit = makeDeleteHook("brand_kits", "brand_kits");
-export const useDeleteActivation = makeDeleteHook("activations", "activations");
-export const useDeleteAsset = makeDeleteHook("assets", "assets");
-export const useDeleteBrief = makeDeleteHook("briefs", "briefs");
-export const useDeleteBudget = makeDeleteHook("budgets", "budgets");
-export const useDeleteCallSheet = makeDeleteHook("call_sheets", "call_sheets");
-export const useDeleteCampaign = makeDeleteHook("campaigns", "campaigns");
-export const useDeleteCertification = makeDeleteHook("certifications", "certifications");
-export const useDeleteCrewMember = makeDeleteHook("crew_members", "crew_members");
-export const useDeleteChangeOrder = makeDeleteHook("change_orders", "change_orders");
-export const useDeleteCompany = makeDeleteHook("companies", "companies");
-export const useDeleteContract = makeDeleteHook("contracts", "contracts");
-export const useDeleteCreativeAsset = makeDeleteHook("digital_assets", "creative_assets");
-export const useDeleteDeal = makeDeleteHook("deals", "deals");
-export const useDeleteVendor = makeDeleteHook("vendors", "vendors");
-export const useDeleteDeck = makeDeleteHook("decks", "decks");
-export const useDeleteDigitalAsset = makeDeleteHook("digital_assets", "digital_assets");
-export const useDeleteEstimate = makeDeleteHook("estimates", "estimates");
-export const useDeleteEvent = makeDeleteHook("events", "events");
-export const useDeleteExpense = makeDeleteHook("expenses", "expenses");
-export const useDeleteIncident = makeDeleteHook("incidents", "incidents");
-export const useDeleteInsurancePolicy = makeDeleteHook("insurance_policies", "insurance_policies");
-export const useDeleteInvoice = makeDeleteHook("invoices", "invoices");
-export const useDeleteKBArticle = makeDeleteHook(
-    "knowledge_base_articles",
-    "knowledge_base_articles"
+export const useUpdateAsset = makeUpdateHook<Tables<"assets">>("asset", "/api/assets");
+export const useUpdateBrief = makeUpdateHook<Tables<"creative_briefs">>(
+    "creative_brief",
+    "/api/briefs"
 );
-export const useDeleteLead = makeDeleteHook("leads", "leads");
-export const useDeleteLocation = makeDeleteHook("locations", "locations");
-export const useDeleteOpportunity = makeDeleteHook("opportunities", "opportunities");
-export const useDeletePermit = makeDeleteHook("permits", "permits");
-export const useDeleteProposal = makeDeleteHook("proposals", "proposals");
-export const useDeleteRecurringInvoice = makeDeleteHook("recurring_invoices", "recurring_invoices");
-export const useDeleteScopeOfWork = makeDeleteHook("scopes_of_work", "scopes_of_work");
-export const useDeleteServiceRequest = makeDeleteHook("service_requests", "service_requests");
-export const useDeleteShipment = makeDeleteHook("shipments", "shipments");
-export const useDeleteTechSheet = makeDeleteHook("tech_sheets", "tech_sheets");
-export const useDeleteTemplate = makeDeleteHook("project_templates", "templates");
-export const useDeleteWorkerProfile = makeDeleteHook("worker_profiles", "worker_profiles");
-export const useDeleteWorkOrder = makeDeleteHook("work_orders", "work_orders");
-export const useDeleteAccount = makeDeleteHook("stakeholders", "accounts");
-export const useDeleteBrandGuideline = makeDeleteHook("brand_guidelines", "brand_guidelines");
-export const useDeleteClientInvoice = makeDeleteHook("client_invoices", "client_invoices");
-export const useDeleteComplianceChecklist = makeDeleteHook(
-    "compliance_checklists",
-    "compliance_checklists"
+export const useUpdateBudget = makeUpdateHook<Tables<"budgets">>("budget", "/api/budgets");
+export const useUpdateCampaign = makeUpdateHook<Tables<"campaigns">>("campaign", "/api/campaigns");
+export const useUpdateCrewMember = makeUpdateHook<Tables<"crew_members">>(
+    "crew_member",
+    "/api/crew"
 );
-export const useDeleteDispatchRecord = makeDeleteHook("shipments", "dispatch");
-export const useDeletePerson = makeDeleteHook("profiles", "people");
-export const useDeleteVendorReview = makeDeleteHook("vendor_reviews", "vendor_reviews");
+export const useUpdateContract = makeUpdateHook<Tables<"contracts">>("contract", "/api/contracts");
+export const useUpdateDeal = makeUpdateHook<Tables<"deals">>("deal", "/api/deals");
+export const useUpdateDeck = makeUpdateHook<Tables<"decks">>("deck", "/api/decks");
+export const useUpdateEvent = makeUpdateHook<Tables<"events">>("event", "/api/events");
+export const useUpdateInvoice = makeUpdateHook<Tables<"invoices">>("invoice", "/api/invoices");
+export const useUpdateLocation = makeUpdateHook<Tables<"locations">>("location", "/api/locations");
+export const useUpdateVendor = makeUpdateHook<Tables<"vendors">>("vendor", "/api/vendors");
 
 // ═══════════════════════════════════════════════════════════════
-// MISSING CREATE HOOKS (Phase 5)
+// DELETE MUTATION HOOKS (generic via factory)
 // ═══════════════════════════════════════════════════════════════
 
-export function useCreateCertification() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("certifications").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["certifications"] }),
-    });
-}
-
-export function useCreateInsurancePolicy() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("insurance_policies")
-                .insert(b)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["insurance_policies"] }),
-    });
-}
-
-export function useCreateOpportunity() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("opportunities").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
-    });
-}
-
-export function useCreatePermit() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("permits").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["permits"] }),
-    });
-}
-
-export function useCreateServiceRequest() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("service_requests").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["service_requests"] }),
-    });
-}
-
-export function useCreateWorkOrder() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("work_orders").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["work_orders"] }),
-    });
-}
-
-export function useCreateAccount() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("stakeholders").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["stakeholders"] }),
-    });
-}
-
-export function useCreateBrandGuideline() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("brand_guidelines").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["brand_guidelines"] }),
-    });
-}
-
-export function useCreateBrandKit() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("brand_kits").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["brand_kits"] }),
-    });
-}
-
-export function useCreateComplianceChecklist() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("compliance_checklists")
-                .insert(b)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["compliance_checklists"] }),
-    });
-}
-
-export function useCreateDeck() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("decks").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["decks"] }),
-    });
-}
-
-export function useCreateDispatchRecord() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("shipments").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["shipments"] }),
-    });
-}
-
-export function useCreatePerson() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("profiles").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["profiles"] }),
-    });
-}
-
-export function useCreateVendorReview() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("vendor_reviews").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["vendor_reviews"] }),
-    });
-}
-
-export function useCreateWorkerProfile() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("worker_profiles").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["worker_profiles"] }),
-    });
-}
+export const useDeleteBrandKit = makeDeleteHook("brand_kit", "/api/brand-kits");
+export const useDeleteActivation = makeDeleteHook("activation", "/api/activations");
+export const useDeleteAsset = makeDeleteHook("asset", "/api/assets");
+export const useDeleteBrief = makeDeleteHook("creative_brief", "/api/briefs");
+export const useDeleteBudget = makeDeleteHook("budget", "/api/budgets");
+export const useDeleteCampaign = makeDeleteHook("campaign", "/api/campaigns");
+export const useDeleteCrewMember = makeDeleteHook("crew_member", "/api/crew");
+export const useDeleteContract = makeDeleteHook("contract", "/api/contracts");
+export const useDeleteDeal = makeDeleteHook("deal", "/api/deals");
+export const useDeleteDeck = makeDeleteHook("deck", "/api/decks");
+export const useDeleteEvent = makeDeleteHook("event", "/api/events");
+export const useDeleteInvoice = makeDeleteHook("invoice", "/api/invoices");
+export const useDeleteLocation = makeDeleteHook("location", "/api/locations");
+export const useDeleteVendor = makeDeleteHook("vendor", "/api/vendors");
 
 // ═══════════════════════════════════════════════════════════════
-// PURCHASE REQUISITIONS — single-record + mutations
+// ADDITIONAL CREATE HOOKS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePurchaseRequisition(id: string) {
-    return useQuery({
-        queryKey: ["purchase_requisition", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("purchase_requisitions")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCreatePurchaseRequisition() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("purchase_requisitions")
-                .insert(b)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
-    });
-}
-
-export function useUpdatePurchaseRequisition() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-            const { data, error } = await fromTable("purchase_requisitions")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
-    });
-}
-
-export function useDeletePurchaseRequisition() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await fromTable("purchase_requisitions").delete().eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_requisitions"] }),
-    });
-}
+export const useCreateDeck = makeCreateHook<Tables<"decks">>("deck", "/api/decks");
+export const useCreateBrandKit = makeCreateHook<Tables<"brand_kits">>(
+    "brand_kit",
+    "/api/brand-kits"
+);
 
 // ═══════════════════════════════════════════════════════════════
-// PURCHASE ORDERS — single-record + mutations
+// APPROVALS
 // ═══════════════════════════════════════════════════════════════
 
-export function usePurchaseOrder(id: string) {
-    return useQuery({
-        queryKey: ["purchase_order", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("purchase_orders")
-                .select("*")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useUpdatePurchaseOrder() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-            const { data, error } = await fromTable("purchase_orders")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_orders"] }),
-    });
-}
-
-export function useDeletePurchaseOrder() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await fromTable("purchase_orders").delete().eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase_orders"] }),
-    });
-}
+export const useApproval = makeDetailHook<Tables<"approvals">>("approval", "/api/approvals");
+export const useCreateApproval = makeCreateHook<Tables<"approvals">>("approval", "/api/approvals");
+export const useDeleteApproval = makeDeleteHook("approval", "/api/approvals");
 
 // ═══════════════════════════════════════════════════════════════
-// APPROVALS — single-record + mutations
+// BUDGETS
 // ═══════════════════════════════════════════════════════════════
 
-export function useApproval(id: string) {
-    return useQuery({
-        queryKey: ["approval", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("approvals").select("*").eq("id", id).single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCreateApproval() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("approvals").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["approvals"] }),
-    });
-}
-
-export function useDeleteApproval() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await fromTable("approvals").delete().eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["approvals"] }),
-    });
-}
+export const useBudget = makeDetailHook<Tables<"budgets">>("budget", "/api/budgets");
 
 // ═══════════════════════════════════════════════════════════════
-// DOCUMENTS (vault_documents) — single-record + mutations
+// CONTRACTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useDocument(id: string) {
-    return useQuery({
-        queryKey: ["document", id],
-        queryFn: async () => {
-            const { data, error } = await fromTable("vault_documents")
-                .select("*, profiles(name)")
-                .eq("id", id)
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        enabled: !!id,
-    });
-}
-
-export function useCreateDocument() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (b: Record<string, unknown>) => {
-            const { data, error } = await fromTable("vault_documents").insert(b).select().single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
-    });
-}
-
-export function useUpdateDocument() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-            const { data, error } = await fromTable("vault_documents")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
-    });
-}
-
-export function useDeleteDocument() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await fromTable("vault_documents").delete().eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["documents"] }),
-    });
-}
+export const useContractDetail = makeDetailHook<Tables<"contracts">>("contract", "/api/contracts");
 
 // ═══════════════════════════════════════════════════════════════
-// TEAMS (page-level CRUD — complements hooks-switcher.ts)
+// DECKS
+// ═══════════════════════════════════════════════════════════════
+
+export const useDeck = makeDetailHook<Tables<"decks">>("deck", "/api/decks");
+
+// ═══════════════════════════════════════════════════════════════
+// INVOICES
+// ═══════════════════════════════════════════════════════════════
+
+export const useInvoiceDetail = makeDetailHook<Tables<"invoices">>("invoice", "/api/invoices");
+
+// ═══════════════════════════════════════════════════════════════
+// TEAMS (page-level CRUD)
 // ═══════════════════════════════════════════════════════════════
 
 export function useTeams(orgId?: string | null) {
     return useQuery({
-        queryKey: ["teams", orgId],
+        queryKey: ["team", orgId],
         queryFn: async () => {
-            let query = fromTable("teams")
-                .select("*, user_profiles:created_by(display_name)")
-                .order("is_default", { ascending: false })
-                .order("name");
-            if (orgId) query = query.eq("organization_id", orgId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            const res = await apiList<Record<string, unknown>>("/api/teams", {
+                organization_id: orgId ?? undefined,
+                sort_by: "name",
+                sort_order: "asc",
+            });
+            return res.data;
         },
         enabled: !!orgId,
     });
@@ -2533,17 +1460,8 @@ export function useTeams(orgId?: string | null) {
 
 export function useTeamDetail(teamId?: string | null) {
     return useQuery({
-        queryKey: ["teams", "detail", teamId],
-        queryFn: async () => {
-            const { data, error } = await fromTable("teams")
-                .select(
-                    "*, team_members(id, user_id, role, joined_at, user_profiles(display_name, avatar_url, email))"
-                )
-                .eq("id", teamId!)
-                .single();
-            if (error) throw error;
-            return data;
-        },
+        queryKey: ["team", "detail", teamId],
+        queryFn: () => apiGet<Record<string, unknown>>("/api/teams", teamId!),
         enabled: !!teamId,
     });
 }
@@ -2551,56 +1469,35 @@ export function useTeamDetail(teamId?: string | null) {
 export function useCreateTeam() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async (payload: Record<string, unknown>) => {
-            const res = await fetch("/api/teams", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            if (!res.ok)
-                throw new Error((await res.json()).error?.message ?? "Failed to create team");
-            return (await res.json()).data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+        mutationFn: (payload: Record<string, unknown>) =>
+            apiCreate<Record<string, unknown>>("/api/teams", payload),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team"] }),
     });
 }
 
 export function useUpdateTeam() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-            const res = await fetch(`/api/teams/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updates),
-            });
-            if (!res.ok)
-                throw new Error((await res.json()).error?.message ?? "Failed to update team");
-            return (await res.json()).data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+        mutationFn: ({ id, ...updates }: { id: string } & Record<string, unknown>) =>
+            apiUpdate<Record<string, unknown>>("/api/teams", id, updates),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team"] }),
     });
 }
 
 export function useDeleteTeam() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async (id: string) => {
-            const res = await fetch(`/api/teams/${id}`, { method: "DELETE" });
-            if (!res.ok)
-                throw new Error((await res.json()).error?.message ?? "Failed to delete team");
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+        mutationFn: (id: string) => apiDelete("/api/teams", id),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team"] }),
     });
 }
 
 export function useTeamMembersPage(teamId?: string | null) {
     return useQuery({
-        queryKey: ["team_members", teamId],
+        queryKey: ["team_member", teamId],
         queryFn: async () => {
-            const res = await fetch(`/api/teams/${teamId}/members`);
-            if (!res.ok) throw new Error("Failed to fetch team members");
-            return (await res.json()).data;
+            const res = await apiFetch<{ data: unknown[] }>(`/api/teams/${teamId}/members`);
+            return res.data;
         },
         enabled: !!teamId,
     });
@@ -2617,16 +1514,13 @@ export function useAddTeamMember() {
             user_id: string;
             role?: string;
         }) => {
-            const res = await fetch(`/api/teams/${teamId}/members`, {
+            const res = await apiFetch<{ data: unknown }>(`/api/teams/${teamId}/members`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-            if (!res.ok)
-                throw new Error((await res.json()).error?.message ?? "Failed to add member");
-            return (await res.json()).data;
+            return res.data;
         },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_member"] }),
     });
 }
 
@@ -2634,13 +1528,11 @@ export function useRemoveTeamMember() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async ({ teamId, memberId }: { teamId: string; memberId: string }) => {
-            const res = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
+            await apiFetch<void>(`/api/teams/${teamId}/members/${memberId}`, {
                 method: "DELETE",
             });
-            if (!res.ok)
-                throw new Error((await res.json()).error?.message ?? "Failed to remove member");
         },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["team_member"] }),
     });
 }
 
@@ -2648,56 +1540,37 @@ export function useRemoveTeamMember() {
 // SYSTEM HEALTH — SLA, RESILIENCE, DOMAIN EVENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useSlaDefinitions() {
-    return useQuery({
-        queryKey: ["sla_definitions"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("sla_definitions")
-                .select("*")
-                .eq("is_active", true)
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useSlaTracking() {
-    return useQuery({
-        queryKey: ["sla_tracking"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("sla_tracking")
-                .select("*, sla_definitions(name, target_hours)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useResilienceTargets() {
-    return useQuery({
-        queryKey: ["resilience_targets"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("resilience_targets")
-                .select("*")
-                .order("service_name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useSlaDefinitions = makeListHook<Tables<"sla_definitions">>(
+    "sla_definition",
+    "/api/sla-definitions",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useSlaTracking = makeListHook<Tables<"sla_tracking">>(
+    "sla_tracking",
+    "/api/sla-tracking",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useResilienceTargets = makeListHook<Tables<"resilience_targets">>(
+    "resilience_target",
+    "/api/resilience-targets",
+    { sort_by: "service_name", sort_order: "asc" }
+);
+export const useServiceHealthChecks = makeListHook<Tables<"sla_tracking">>(
+    "service_health_check",
+    "/api/service-health-checks",
+    { sort_by: "service_name", sort_order: "asc" }
+);
 
 export function useDomainEvents(limit = 20) {
     return useQuery({
-        queryKey: ["domain_events", limit],
+        queryKey: ["domain_event", limit],
         queryFn: async () => {
-            const { data, error } = await fromTable("domain_events")
-                .select("*")
-                .order("created_at", { ascending: false })
-                .limit(limit);
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"domain_events">>("/api/domain-events", {
+                sort_by: "created_at",
+                sort_order: "desc",
+                limit,
+            });
+            return res.data;
         },
     });
 }
@@ -2706,33 +1579,21 @@ export function useDomainEvents(limit = 20) {
 // DATA EXPORT REQUESTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useDataExportRequests() {
-    return useQuery({
-        queryKey: ["data_export_requests"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("data_export_requests")
-                .select("*")
-                .order("requested_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useDataExportRequests = makeListHook<Tables<"data_export_requests">>(
+    "data_export_request",
+    "/api/data-export-requests",
+    { sort_by: "requested_at", sort_order: "desc" }
+);
 
 export function useCreateDataExportRequest() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async (payload: { export_format: string }) => {
-            const { data: userData } = await getSupabase().auth.getUser();
-            if (!userData?.user) throw new Error("Not authenticated");
-            const { data, error } = await fromTable("data_export_requests")
-                .insert({ ...payload, user_id: userData.user.id })
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["data_export_requests"] }),
+        mutationFn: (payload: { export_format: string }) =>
+            apiCreate<Tables<"data_export_requests">>(
+                "/api/data-export-requests",
+                payload as Record<string, unknown>
+            ),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["data_export_request"] }),
     });
 }
 
@@ -2740,148 +1601,86 @@ export function useCreateDataExportRequest() {
 // CHECKLIST TEMPLATES
 // ═══════════════════════════════════════════════════════════════
 
-export function useChecklistTemplates() {
-    return useQuery({
-        queryKey: ["checklist_templates"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("checklist_templates")
-                .select("*")
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useChecklistTemplates = makeListHook<Tables<"checklist_templates">>(
+    "checklist_template",
+    "/api/checklist-templates",
+    { sort_by: "name", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // BRAND GUIDELINE SECTIONS
 // ═══════════════════════════════════════════════════════════════
 
-export function useBrandGuidelineSections() {
-    return useQuery({
-        queryKey: ["brand_guideline_sections"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("brand_guideline_sections")
-                .select("*")
-                .order("sort_order");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useBrandGuidelineSections = makeListHook<Tables<"brand_guideline_sections">>(
+    "brand_guideline_section",
+    "/api/brand-guideline-sections",
+    { sort_by: "sort_order", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // BRIEF TEMPLATES
 // ═══════════════════════════════════════════════════════════════
 
-export function useBriefTemplates() {
-    return useQuery({
-        queryKey: ["brief_templates"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("brief_templates").select("*").order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useBriefTemplates = makeListHook<Tables<"brief_templates">>(
+    "brief_template",
+    "/api/brief-templates",
+    { sort_by: "name", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // INSURANCE REQUIREMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useInsuranceRequirements() {
-    return useQuery({
-        queryKey: ["insurance_requirements"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("insurance_requirements")
-                .select("*")
-                .order("requirement_name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useInsuranceRequirements = makeListHook<Tables<"insurance_requirements">>(
+    "insurance_requirement",
+    "/api/insurance-requirements",
+    { sort_by: "requirement_name", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // COMPLIANCE REQUIREMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useComplianceRequirements() {
-    return useQuery({
-        queryKey: ["compliance_requirements"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("compliance_requirements")
-                .select("*")
-                .order("name");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useComplianceRequirements = makeListHook<Tables<"compliance_requirements">>(
+    "compliance_requirement",
+    "/api/compliance-requirements",
+    { sort_by: "name", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // CREATIVE REVIEWS
 // ═══════════════════════════════════════════════════════════════
 
-export function useCreativeReviews() {
-    return useQuery({
-        queryKey: ["creative_reviews"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("creative_reviews")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useCreativeReviews = makeListHook<Tables<"creative_reviews">>(
+    "creative_review",
+    "/api/creative-reviews",
+    { sort_by: "created_at", sort_order: "desc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // WORKER ONBOARDING / OFFBOARDING RUNS
 // ═══════════════════════════════════════════════════════════════
 
-export function useWorkerOnboardingRuns() {
-    return useQuery({
-        queryKey: ["worker_onboarding_runs"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("worker_onboarding_runs")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useWorkerOffboardingRuns() {
-    return useQuery({
-        queryKey: ["worker_offboarding_runs"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("worker_offboarding_runs")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useWorkerOnboardingRuns = makeListHook<Tables<"worker_onboarding_runs">>(
+    "worker_onboarding_run",
+    "/api/worker-onboarding-runs",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useWorkerOffboardingRuns = makeListHook<Tables<"worker_offboarding_runs">>(
+    "worker_offboarding_run",
+    "/api/worker-offboarding-runs",
+    { sort_by: "created_at", sort_order: "desc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // WORKER REVIEWS
 // ═══════════════════════════════════════════════════════════════
 
-export function useWorkerReviewsList() {
-    return useQuery({
-        queryKey: ["worker_reviews"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("worker_reviews")
-                .select("*, profiles(name)")
-                .order("review_date", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useWorkerReviewsList = makeListHook<Tables<"worker_reviews">>(
+    "worker_review",
+    "/api/worker-reviews",
+    { sort_by: "review_date", sort_order: "desc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // LOGIN AUDIT LOG
@@ -2891,12 +1690,12 @@ export function useLoginAuditLog(limit = 100) {
     return useQuery({
         queryKey: ["login_audit_log", limit],
         queryFn: async () => {
-            const { data, error } = await fromTable("login_audit_log")
-                .select("*")
-                .order("attempted_at", { ascending: false })
-                .limit(limit);
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"login_audit_log">>("/api/login-audit-log", {
+                sort_by: "attempted_at",
+                sort_order: "desc",
+                limit,
+            });
+            return res.data;
         },
     });
 }
@@ -2909,12 +1708,12 @@ export function useRoleChangeLog(limit = 100) {
     return useQuery({
         queryKey: ["role_change_log", limit],
         queryFn: async () => {
-            const { data, error } = await fromTable("role_change_log")
-                .select("*, profiles(name)")
-                .order("changed_at", { ascending: false })
-                .limit(limit);
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"role_change_log">>("/api/role-change-log", {
+                sort_by: "changed_at",
+                sort_order: "desc",
+                limit,
+            });
+            return res.data;
         },
     });
 }
@@ -2927,26 +1726,31 @@ export function useAccessAuditLog(limit = 100) {
     return useQuery({
         queryKey: ["access_audit_log", limit],
         queryFn: async () => {
-            const { data, error } = await fromTable("access_audit_log")
-                .select("*, profiles(name)")
-                .order("performed_at", { ascending: false })
-                .limit(limit);
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"access_audit_log">>("/api/access-audit-log", {
+                sort_by: "performed_at",
+                sort_order: "desc",
+                limit,
+            });
+            return res.data;
         },
     });
 }
 
-export function useTemporaryAccessGrants() {
-    return useQuery({
-        queryKey: ["temporary_access_grants"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("temporary_access_grants")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
+export const useTemporaryAccessGrants = makeListHook<Tables<"temporary_access_grants">>(
+    "temporary_access_grant",
+    "/api/temporary-access-grants",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+
+export function useRevokeTemporaryGrant() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) =>
+            apiUpdate<Tables<"temporary_access_grants">>("/api/temporary-access-grants", id, {
+                status: "revoked",
+                revoked_at: new Date().toISOString(),
+            }),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["temporary_access_grant"] }),
     });
 }
 
@@ -2954,48 +1758,18 @@ export function useTemporaryAccessGrants() {
 // INVITATIONS
 // ═══════════════════════════════════════════════════════════════
 
-export function useInvitationsList() {
-    return useQuery({
-        queryKey: ["invitations"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("invitations")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useInvitationsList = makeListHook<Tables<"invitations">>(
+    "invitation",
+    "/api/invitations",
+    { sort_by: "created_at", sort_order: "desc" }
+);
 
 export function useUpdateInvitation() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-            const { data, error } = await fromTable("invitations")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["invitations"] }),
-    });
-}
-
-export function useRevokeTemporaryGrant() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { data, error } = await fromTable("temporary_access_grants")
-                .update({ status: "revoked", revoked_at: new Date().toISOString() })
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["temporary_access_grants"] }),
+        mutationFn: ({ id, ...updates }: { id: string } & Record<string, unknown>) =>
+            apiUpdate<Tables<"invitations">>("/api/invitations", id, updates),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["invitation"] }),
     });
 }
 
@@ -3005,31 +1779,14 @@ export function useRevokeTemporaryGrant() {
 
 export function usePublicCaseStudies() {
     return useQuery({
-        queryKey: ["case_studies_public"],
+        queryKey: ["case_study_public"],
         queryFn: async () => {
-            const { data, error } = await fromTable("case_studies")
-                .select("*")
-                .eq("is_published", true)
-                .order("published_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// PURCHASE REQUISITIONS (procurement page)
-// ═══════════════════════════════════════════════════════════════
-
-export function usePurchaseRequisitionsList() {
-    return useQuery({
-        queryKey: ["purchase_requisitions_list"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("purchase_requisitions")
-                .select("*, projects(name), profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"case_studies">>("/api/case-studies", {
+                is_published: true,
+                sort_by: "published_at",
+                sort_order: "desc",
+            });
+            return res.data;
         },
     });
 }
@@ -3038,113 +1795,109 @@ export function usePurchaseRequisitionsList() {
 // DASHBOARD AGGREGATION HOOKS
 // ═══════════════════════════════════════════════════════════════
 
-export function useDashboardWidgets() {
-    return useQuery({
-        queryKey: ["dashboard_widgets"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("dashboard_widgets")
-                .select("*, dashboards(name)")
-                .order("sort_order");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-export function useActivityLogRecent(limit = 10) {
-    return useQuery({
-        queryKey: ["activity_log_recent", limit],
-        queryFn: async () => {
-            const { data, error } = await fromTable("activity_log")
-                .select("*, projects(name)")
-                .order("created_at", { ascending: false })
-                .limit(limit);
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useDashboardWidgets = makeListHook<Tables<"dashboard_widgets">>(
+    "dashboard_widget",
+    "/api/dashboard-widgets",
+    { sort_by: "sort_order", sort_order: "asc" }
+);
 
 // ═══════════════════════════════════════════════════════════════
 // FORECASTING
 // ═══════════════════════════════════════════════════════════════
 
-export function useRevenueSchedulesList() {
-    return useQuery({
-        queryKey: ["revenue_schedules_list"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("revenue_schedules")
-                .select("*, projects(name)")
-                .order("period_start", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
 export function useResourceBookings() {
     return useQuery({
-        queryKey: ["resource_bookings"],
+        queryKey: ["resource_booking"],
         queryFn: async () => {
-            const { data, error } = await fromTable("resource_bookings")
-                .select("*, profiles(name), projects(name)")
-                .order("start_date");
-            if (error) throw error;
-            return data;
+            const res = await apiList<Tables<"resource_bookings">>("/api/resource-bookings", {
+                sort_by: "start_date",
+                sort_order: "asc",
+            });
+            return res.data;
         },
     });
 }
 
-export function useGoals() {
-    return useQuery({
-        queryKey: ["goals"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("goals")
-                .select("*, profiles(name)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
-    });
-}
+export const useGoals = makeListHook<Tables<"goals">>("goal", "/api/goals", {
+    sort_by: "created_at",
+    sort_order: "desc",
+});
 
 // ═══════════════════════════════════════════════════════════════
 // ORG CHART — CREW ASSIGNMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export function useLiveCrewAssignments() {
-    return useQuery({
-        queryKey: ["live_crew_assignments"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("live_crew_assignments")
-                .select("*, profiles(name)")
-                .order("role");
-            if (error) throw error;
-            return data;
-        },
+export const useLiveCrewAssignments = makeListHook<Tables<"live_crew_assignments">>(
+    "live_crew_assignment",
+    "/api/live-crew-assignments",
+    { sort_by: "role", sort_order: "asc" }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// APPROVAL STEPS
+// ═══════════════════════════════════════════════════════════════
+
+export const useApprovalSteps = makeListHook<Tables<"approval_steps">>(
+    "approval_step",
+    "/api/approval-steps",
+    { sort_by: "step_order", sort_order: "asc" }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// MISSING EXPORT ALIASES (consumed by pages)
+// ═══════════════════════════════════════════════════════════════
+
+export const useBrandKit = makeDetailHook<Tables<"brand_kits">>("brand_kit", "/api/brand-kits");
+export const useContract = makeDetailHook<Tables<"contracts">>("contract", "/api/contracts");
+export const useInvoice = makeDetailHook<Tables<"invoices">>("invoice", "/api/invoices");
+export const usePerson = makeDetailHook<Tables<"profiles">>("people", "/api/profiles");
+export const useTemplate = makeDetailHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates"
+);
+export const useTemplates = makeListHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates",
+    { sort_by: "name", sort_order: "asc" }
+);
+export const useUpdateDocumentTemplate = makeUpdateHook<Tables<"project_templates">>(
+    "template",
+    "/api/project-templates"
+);
+export const useUpdateBudgetApproval = makeUpdateHook<Tables<"budget_approvals">>(
+    "budget_approval",
+    "/api/budget-approvals"
+);
+export const useWorkerProfile = makeDetailHook<Tables<"worker_profiles">>(
+    "worker_profile",
+    "/api/worker-profiles"
+);
+export const useDispatchRecord = makeDetailHook<Tables<"dispatch_entries">>(
+    "dispatch",
+    "/api/dispatch"
+);
+export const useDispatch = useDispatchRecords;
+export const useVendorComplianceDocs = useVendorComplianceDocuments;
+export { useDocuments as useMyDocuments };
+export { useCampaignKPIs as useCampaignKpis };
+
+export const useUserDirectory = makeListHook<Tables<"profiles">>(
+    "user_directory",
+    "/api/user-directory",
+    { sort_by: "display_name", sort_order: "asc" }
+);
+
+export function useSubmitTimeEntries() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (entryIds: string[]) =>
+            apiFetch<{ data: unknown }>("/api/time-entries/submit", {
+                method: "POST",
+                body: JSON.stringify({ entry_ids: entryIds, status: "submitted" }),
+            }),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["time_entry"] }),
     });
 }
-
-// ═══════════════════════════════════════════════════════════════
-// APPROVAL STEPS (lifecycle stages)
-// ═══════════════════════════════════════════════════════════════
-
-export function useApprovalSteps() {
-    return useQuery({
-        queryKey: ["approval_steps"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("approval_steps")
-                .select("*, profiles(name)")
-                .order("step_order");
-            if (error) throw error;
-            return data;
-        },
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SERVICE HEALTH CHECKS
-// ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
 // BILLING / SUBSCRIPTIONS
@@ -3154,10 +1907,10 @@ export function useBillingPlan() {
     return useQuery({
         queryKey: ["billing_plan"],
         queryFn: async () => {
-            const res = await fetch("/api/billing/subscribe");
-            if (!res.ok) throw new Error("Failed to fetch billing plan");
-            const json = await res.json();
-            return json.subscription as Record<string, unknown> | null;
+            const res = await apiFetch<{ subscription: Record<string, unknown> | null }>(
+                "/api/billing/subscribe"
+            );
+            return res.subscription;
         },
     });
 }
@@ -3166,37 +1919,15 @@ export function useSelectPlan() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
-            pricing_tier: "core" | "pro" | "enterprise";
+            pricing_tier: "starter" | "core" | "team" | "pro" | "enterprise";
             billing_cycle: "monthly" | "annual";
         }) => {
-            const res = await fetch("/api/billing/subscribe", {
+            const res = await apiFetch<{ subscription: unknown }>("/api/billing/subscribe", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(params),
             });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(
-                    (err as Record<string, Record<string, string>>)?.error?.message ??
-                        "Failed to select plan"
-                );
-            }
-            const json = await res.json();
-            return json.subscription;
+            return res.subscription;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["billing_plan"] }),
-    });
-}
-
-export function useServiceHealthChecks() {
-    return useQuery({
-        queryKey: ["service_health_checks"],
-        queryFn: async () => {
-            const { data, error } = await fromTable("service_health_checks")
-                .select("*")
-                .order("service_name");
-            if (error) throw error;
-            return data;
-        },
     });
 }

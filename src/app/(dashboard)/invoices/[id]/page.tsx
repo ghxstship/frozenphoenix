@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase/hooks-pages";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +14,7 @@ import {
 } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Building2,
     Calendar,
@@ -46,8 +43,18 @@ interface PaymentRecord {
     reference: string;
 }
 
-type TabId = "details" | "payments" | "chatter";
-const TAB_VALUES = ["details", "payments", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "invoices",
+    titleFn: (r) => `Invoice ${String(r.number ?? "")}`,
+    subtitleFn: (r) => `${String(r.company_name ?? "")} · ${String(r.project_name ?? "")}`,
+    statusKey: "delivery_status",
+    icon: DollarSign,
+    backHref: "/invoices",
+    backLabel: "Invoices",
+    chatterRecordType: "invoice",
+    fields: [],
+    tabs: [],
+};
 
 export default function InvoiceDetailPage() {
     const params = useParams();
@@ -55,17 +62,12 @@ export default function InvoiceDetailPage() {
     const entityId = params.id as string;
     const { data: sbRecord, isLoading } = useInvoice(entityId);
     const inv = sbRecord as Record<string, unknown> | null;
-    const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
+    const { menuItems: crudMenuItems } = useDetailCrud({
         entityId,
         entityLabel: "Invoice",
         listPath: "/invoices",
         useUpdateHook: useUpdateInvoice,
         useDeleteHook: useDeleteInvoice,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "details",
-        validValues: TAB_VALUES,
     });
 
     const lineItems = ((inv?.line_items ?? []) as Record<string, unknown>[]).map(
@@ -86,7 +88,7 @@ export default function InvoiceDetailPage() {
             reference: (p.reference as string) ?? "",
         })
     );
-    const invoiceNumber = (inv?.number as string) ?? "";
+
     const companyName = (inv?.company_name as string) ?? "";
     const companyAddress = (inv?.company_address as string) ?? "";
     const projectName = (inv?.project_name as string) ?? "";
@@ -107,29 +109,10 @@ export default function InvoiceDetailPage() {
     const taxAmount = useMemo(() => subtotal * (taxRate / 100), [subtotal, taxRate]);
     const total = subtotal + taxAmount;
     const balance = total - paidAmount;
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
 
     const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoiceStatus];
 
-    const tabs = [
-        { id: "details" as const, label: "Details", count: lineItems.length },
-        { id: "payments" as const, label: "Payments", count: payments.length },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardContent className="py-4 space-y-4">
@@ -191,54 +174,182 @@ export default function InvoiceDetailPage() {
                     )}
                 </CardContent>
             </Card>
+        </div>
+    );
+
+    const overviewSlot = (
+        <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Billing Details
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => handleUpdate({ status: "reminder_sent" })}
-                    >
-                        <Send className="mr-2 h-3.5 w-3.5" />
-                        Send Reminder
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => setActiveTab("payments" as TabId)}
-                    >
-                        <CreditCard className="mr-2 h-3.5 w-3.5" />
-                        Record Payment
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => window.print()}
-                    >
-                        <Download className="mr-2 h-3.5 w-3.5" />
-                        Export PDF
-                    </Button>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <p className="text-xs text-muted-foreground font-medium mb-1">
+                                Bill To
+                            </p>
+                            <p className="text-sm font-semibold">{companyName}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{companyAddress}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground font-medium mb-1">
+                                Project
+                            </p>
+                            <p className="text-sm font-semibold">{projectName}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {createdBy ? `Created by ${createdBy}` : ""}
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Line Items
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b text-muted-foreground">
+                                <th className="text-left py-2 font-medium">Description</th>
+                                <th className="text-right py-2 font-medium">Qty</th>
+                                <th className="text-right py-2 font-medium">Unit Price</th>
+                                <th className="text-right py-2 font-medium">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {lineItems.map((item) => (
+                                <tr key={item.id} className="border-b border-border/50">
+                                    <td className="py-2.5">{item.description}</td>
+                                    <td className="py-2.5 text-right">{item.quantity}</td>
+                                    <td className="py-2.5 text-right">
+                                        {formatCurrency(item.unitPrice)}
+                                    </td>
+                                    <td className="py-2.5 text-right font-medium">
+                                        {formatCurrency(item.total)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot>
+                            <tr className="border-b border-border/50">
+                                <td colSpan={3} className="py-2 text-right text-muted-foreground">
+                                    Subtotal
+                                </td>
+                                <td className="py-2 text-right font-medium">
+                                    {formatCurrency(subtotal)}
+                                </td>
+                            </tr>
+                            <tr className="border-b border-border/50">
+                                <td colSpan={3} className="py-2 text-right text-muted-foreground">
+                                    Tax ({taxRate}%)
+                                </td>
+                                <td className="py-2 text-right font-medium">
+                                    {formatCurrency(taxAmount)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan={3} className="py-2 text-right font-bold">
+                                    Total
+                                </td>
+                                <td className="py-2 text-right font-bold text-lg">
+                                    {formatCurrency(total)}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    {invoiceNotes && (
+                        <div className="mt-4 p-3 rounded-lg bg-secondary/30">
+                            <p className="text-xs text-muted-foreground font-medium mb-1">Notes</p>
+                            <p className="text-xs">{invoiceNotes}</p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
     );
 
-    if (isLoading) return <LoadingState />;
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "payments",
+                label: "Payments",
+                content: (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <CreditCard className="h-4 w-4" />
+                                Payment History
+                            </CardTitle>
+                            <Button size="sm" onClick={() => void 0}>
+                                <CreditCard className="h-4 w-4 mr-1" />
+                                Record Payment
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {payments.length > 0 ? (
+                                <div className="space-y-3">
+                                    {payments.map((payment) => (
+                                        <div
+                                            key={payment.id}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <CheckCircle2 className="h-4 w-4 text-success" />
+                                                <div>
+                                                    <p className="text-sm font-semibold">
+                                                        {formatCurrency(payment.amount)}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {payment.method} · {payment.reference}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground">
+                                                {formatDate(payment.date)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                    No payments recorded yet
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                ),
+            },
+        ],
+    };
 
     return (
-        <DetailLayout
-            backHref="/invoices"
-            backLabel="Invoices"
-            entityType="invoices"
-            entityId={entityId}
-            title={`Invoice ${invoiceNumber}`}
-            subtitle={`${companyName} · ${projectName}`}
-            status={invoiceStatus}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={inv}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "Record Payment",
+                    onClick: () => router.push(`/invoices/${entityId}/edit?section=payments`),
+                },
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/invoices/new?duplicateFrom=${entityId}`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     <DollarSign className="h-6 w-6" />
@@ -256,186 +367,6 @@ export default function InvoiceDetailPage() {
                     </Button>
                 </>
             }
-            menuItems={[
-                {
-                    label: "Record Payment",
-                    onClick: () => router.push(`/invoices/${entityId}/edit?section=payments`),
-                },
-                {
-                    label: "Duplicate",
-                    onClick: () => router.push(`/invoices/new?duplicateFrom=${entityId}`),
-                },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "details" && (
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Building2 className="h-4 w-4" />
-                                Billing Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <p className="text-xs text-muted-foreground font-medium mb-1">
-                                        Bill To
-                                    </p>
-                                    <p className="text-sm font-semibold">{companyName}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {companyAddress}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground font-medium mb-1">
-                                        Project
-                                    </p>
-                                    <p className="text-sm font-semibold">{projectName}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {createdBy ? `Created by ${createdBy}` : ""}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                Line Items
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b text-muted-foreground">
-                                        <th className="text-left py-2 font-medium">Description</th>
-                                        <th className="text-right py-2 font-medium">Qty</th>
-                                        <th className="text-right py-2 font-medium">Unit Price</th>
-                                        <th className="text-right py-2 font-medium">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {lineItems.map((item) => (
-                                        <tr key={item.id} className="border-b border-border/50">
-                                            <td className="py-2.5">{item.description}</td>
-                                            <td className="py-2.5 text-right">{item.quantity}</td>
-                                            <td className="py-2.5 text-right">
-                                                {formatCurrency(item.unitPrice)}
-                                            </td>
-                                            <td className="py-2.5 text-right font-medium">
-                                                {formatCurrency(item.total)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr className="border-b border-border/50">
-                                        <td
-                                            colSpan={3}
-                                            className="py-2 text-right text-muted-foreground"
-                                        >
-                                            Subtotal
-                                        </td>
-                                        <td className="py-2 text-right font-medium">
-                                            {formatCurrency(subtotal)}
-                                        </td>
-                                    </tr>
-                                    <tr className="border-b border-border/50">
-                                        <td
-                                            colSpan={3}
-                                            className="py-2 text-right text-muted-foreground"
-                                        >
-                                            Tax ({taxRate}%)
-                                        </td>
-                                        <td className="py-2 text-right font-medium">
-                                            {formatCurrency(taxAmount)}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colSpan={3} className="py-2 text-right font-bold">
-                                            Total
-                                        </td>
-                                        <td className="py-2 text-right font-bold text-lg">
-                                            {formatCurrency(total)}
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            {invoiceNotes && (
-                                <div className="mt-4 p-3 rounded-lg bg-secondary/30">
-                                    <p className="text-xs text-muted-foreground font-medium mb-1">
-                                        Notes
-                                    </p>
-                                    <p className="text-xs">{invoiceNotes}</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "payments" && (
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <CreditCard className="h-4 w-4" />
-                            Payment History
-                        </CardTitle>
-                        <Button size="sm" onClick={() => void 0}>
-                            <CreditCard className="h-4 w-4 mr-1" />
-                            Record Payment
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        {payments.length > 0 ? (
-                            <div className="space-y-3">
-                                {payments.map((payment) => (
-                                    <div
-                                        key={payment.id}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <CheckCircle2 className="h-4 w-4 text-success" />
-                                            <div>
-                                                <p className="text-sm font-semibold">
-                                                    {formatCurrency(payment.amount)}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {payment.method} · {payment.reference}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <span className="text-xs text-muted-foreground">
-                                            {formatDate(payment.date)}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                                No payments recorded yet
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="invoice"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

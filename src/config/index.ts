@@ -35,3 +35,6 @@ export * from "./production-config";
 
 // RBAC Permissions
 export * from "./rbac";
+
+// Tier Entitlements (Billing)
+export * from "./tier-entitlements";

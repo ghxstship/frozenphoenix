@@ -1492,6 +1492,717 @@ export const RENTAL_AGREEMENT_STATUS_MAP = Object.fromEntries(
     RENTAL_AGREEMENT_STATUSES.map((s) => [s.value, s])
 ) as Record<RentalAgreementStatus, EnumConfig<RentalAgreementStatus>>;
 
+// ─── Activation Types ───
+export type ActivationType = "experiential" | "digital" | "sampling" | "sponsorship" | "retail";
+
+export const ACTIVATION_TYPES: EnumConfig<ActivationType>[] = [
+    { value: "experiential", label: "Experiential", variant: "success" },
+    { value: "digital", label: "Digital", variant: "info" },
+    { value: "sampling", label: "Sampling", variant: "secondary" },
+    { value: "sponsorship", label: "Sponsorship", variant: "warning" },
+    { value: "retail", label: "Retail", variant: "default" },
+];
+
+export const ACTIVATION_TYPE_MAP = Object.fromEntries(
+    ACTIVATION_TYPES.map((t) => [t.value, t])
+) as Record<ActivationType, EnumConfig<ActivationType>>;
+
+// ─── Advance Types ───
+export type AdvanceType = "purchase" | "rental" | "service" | "labor" | "other";
+
+export const ADVANCE_TYPES: EnumConfig<AdvanceType>[] = [
+    { value: "purchase", label: "Purchase", variant: "default" },
+    { value: "rental", label: "Rental", variant: "info" },
+    { value: "service", label: "Service", variant: "secondary" },
+    { value: "labor", label: "Labor", variant: "warning" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const ADVANCE_TYPE_MAP = Object.fromEntries(
+    ADVANCE_TYPES.map((t) => [t.value, t])
+) as Record<AdvanceType, EnumConfig<AdvanceType>>;
+
+// ─── Asset Categories ───
+export type AssetCategory =
+    | "av"
+    | "staging"
+    | "lighting"
+    | "signage"
+    | "furniture"
+    | "power"
+    | "rigging"
+    | "other";
+
+export const ASSET_CATEGORIES: EnumConfig<AssetCategory>[] = [
+    { value: "av", label: "AV Equipment", variant: "info" },
+    { value: "staging", label: "Staging", variant: "default" },
+    { value: "lighting", label: "Lighting", variant: "warning" },
+    { value: "signage", label: "Signage", variant: "secondary" },
+    { value: "furniture", label: "Furniture", variant: "ghost" },
+    { value: "power", label: "Power / Electrical", variant: "destructive" },
+    { value: "rigging", label: "Rigging", variant: "warning" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const ASSET_CATEGORY_MAP = Object.fromEntries(
+    ASSET_CATEGORIES.map((c) => [c.value, c])
+) as Record<AssetCategory, EnumConfig<AssetCategory>>;
+
+// ─── Brand Guideline Categories ───
+export type BrandGuidelineCategory =
+    | "visual_identity"
+    | "typography"
+    | "color"
+    | "tone_of_voice"
+    | "photography"
+    | "other";
+
+export const BRAND_GUIDELINE_CATEGORIES: EnumConfig<BrandGuidelineCategory>[] = [
+    { value: "visual_identity", label: "Visual Identity", variant: "default" },
+    { value: "typography", label: "Typography", variant: "info" },
+    { value: "color", label: "Color", variant: "secondary" },
+    { value: "tone_of_voice", label: "Tone of Voice", variant: "warning" },
+    { value: "photography", label: "Photography", variant: "info" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const BRAND_GUIDELINE_CATEGORY_MAP = Object.fromEntries(
+    BRAND_GUIDELINE_CATEGORIES.map((c) => [c.value, c])
+) as Record<BrandGuidelineCategory, EnumConfig<BrandGuidelineCategory>>;
+
+// ─── Budget Line Item Categories ───
+export type BudgetLineCategory =
+    | "labor"
+    | "materials"
+    | "equipment"
+    | "rentals"
+    | "travel"
+    | "shipping"
+    | "permits"
+    | "contingency"
+    | "overhead";
+
+export const BUDGET_LINE_CATEGORIES: EnumConfig<BudgetLineCategory>[] = [
+    { value: "labor", label: "Labor", variant: "default" },
+    { value: "materials", label: "Materials", variant: "info" },
+    { value: "equipment", label: "Equipment", variant: "secondary" },
+    { value: "rentals", label: "Rentals", variant: "warning" },
+    { value: "travel", label: "Travel", variant: "info" },
+    { value: "shipping", label: "Shipping", variant: "secondary" },
+    { value: "permits", label: "Permits", variant: "warning" },
+    { value: "contingency", label: "Contingency", variant: "ghost" },
+    { value: "overhead", label: "Overhead", variant: "ghost" },
+];
+
+export const BUDGET_LINE_CATEGORY_MAP = Object.fromEntries(
+    BUDGET_LINE_CATEGORIES.map((c) => [c.value, c])
+) as Record<BudgetLineCategory, EnumConfig<BudgetLineCategory>>;
+
+// ─── Budget Status ───
+export type BudgetStatus = "draft" | "pending_approval" | "approved" | "active" | "closed";
+
+export const BUDGET_STATUSES: EnumConfig<BudgetStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "pending_approval", label: "Pending Approval", variant: "warning" },
+    { value: "approved", label: "Approved", variant: "success" },
+    { value: "active", label: "Active", variant: "success" },
+    { value: "closed", label: "Closed", variant: "ghost" },
+];
+
+export const BUDGET_STATUS_MAP = Object.fromEntries(
+    BUDGET_STATUSES.map((s) => [s.value, s])
+) as Record<BudgetStatus, EnumConfig<BudgetStatus>>;
+
+// ─── Checklist Types ───
+export type ChecklistType = "custom" | "safety" | "quality" | "setup" | "teardown";
+
+export const CHECKLIST_TYPES: EnumConfig<ChecklistType>[] = [
+    { value: "custom", label: "Custom", variant: "ghost" },
+    { value: "safety", label: "Safety", variant: "destructive" },
+    { value: "quality", label: "Quality", variant: "info" },
+    { value: "setup", label: "Setup", variant: "warning" },
+    { value: "teardown", label: "Teardown", variant: "secondary" },
+];
+
+export const CHECKLIST_TYPE_MAP = Object.fromEntries(
+    CHECKLIST_TYPES.map((t) => [t.value, t])
+) as Record<ChecklistType, EnumConfig<ChecklistType>>;
+
+// ─── Clause Party ───
+export type ClauseParty = "client" | "vendor" | "company" | "both";
+
+export const CLAUSE_PARTIES: EnumConfig<ClauseParty>[] = [
+    { value: "client", label: "Client", variant: "default" },
+    { value: "vendor", label: "Vendor", variant: "info" },
+    { value: "company", label: "Company", variant: "secondary" },
+    { value: "both", label: "Both Parties", variant: "warning" },
+];
+
+export const CLAUSE_PARTY_MAP = Object.fromEntries(
+    CLAUSE_PARTIES.map((p) => [p.value, p])
+) as Record<ClauseParty, EnumConfig<ClauseParty>>;
+
+// ─── Company Types ───
+export type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
+
+export const COMPANY_TYPES: EnumConfig<CompanyType>[] = [
+    { value: "client", label: "Client", variant: "default" },
+    { value: "brand", label: "Brand", variant: "info" },
+    { value: "agency", label: "Agency", variant: "secondary" },
+    { value: "vendor", label: "Vendor", variant: "warning" },
+    { value: "partner", label: "Partner", variant: "success" },
+];
+
+export const COMPANY_TYPE_MAP = Object.fromEntries(
+    COMPANY_TYPES.map((t) => [t.value, t])
+) as Record<CompanyType, EnumConfig<CompanyType>>;
+
+// ─── Creative Brief Types (Form) ───
+export type CreativeBriefFormType = "creative" | "production" | "marketing" | "event" | "social";
+
+export const CREATIVE_BRIEF_FORM_TYPES: EnumConfig<CreativeBriefFormType>[] = [
+    { value: "creative", label: "Creative", variant: "default" },
+    { value: "production", label: "Production", variant: "info" },
+    { value: "marketing", label: "Marketing", variant: "secondary" },
+    { value: "event", label: "Event", variant: "warning" },
+    { value: "social", label: "Social", variant: "info" },
+];
+
+export const CREATIVE_BRIEF_FORM_TYPE_MAP = Object.fromEntries(
+    CREATIVE_BRIEF_FORM_TYPES.map((t) => [t.value, t])
+) as Record<CreativeBriefFormType, EnumConfig<CreativeBriefFormType>>;
+
+// ─── Digital Asset Classes ───
+export type DigitalAssetClass = "image" | "video" | "audio" | "document";
+
+export const DIGITAL_ASSET_CLASSES: EnumConfig<DigitalAssetClass>[] = [
+    { value: "image", label: "Image", variant: "info" },
+    { value: "video", label: "Video", variant: "warning" },
+    { value: "audio", label: "Audio", variant: "secondary" },
+    { value: "document", label: "Document", variant: "default" },
+];
+
+export const DIGITAL_ASSET_CLASS_MAP = Object.fromEntries(
+    DIGITAL_ASSET_CLASSES.map((c) => [c.value, c])
+) as Record<DigitalAssetClass, EnumConfig<DigitalAssetClass>>;
+
+// ─── Email Provider ───
+export type EmailProvider = "google" | "microsoft" | "imap";
+
+export const EMAIL_PROVIDERS: EnumConfig<EmailProvider>[] = [
+    { value: "google", label: "Google Workspace", variant: "default" },
+    { value: "microsoft", label: "Microsoft 365", variant: "info" },
+    { value: "imap", label: "IMAP / Other", variant: "ghost" },
+];
+
+export const EMAIL_PROVIDER_MAP = Object.fromEntries(
+    EMAIL_PROVIDERS.map((p) => [p.value, p])
+) as Record<EmailProvider, EnumConfig<EmailProvider>>;
+
+// ─── Engineering Approval Entity Types ───
+export type EngineeringEntityType = "activation" | "location" | "asset" | "event";
+
+export const ENGINEERING_ENTITY_TYPES: EnumConfig<EngineeringEntityType>[] = [
+    { value: "activation", label: "Activation", variant: "success" },
+    { value: "location", label: "Location", variant: "info" },
+    { value: "asset", label: "Asset", variant: "secondary" },
+    { value: "event", label: "Event", variant: "warning" },
+];
+
+export const ENGINEERING_ENTITY_TYPE_MAP = Object.fromEntries(
+    ENGINEERING_ENTITY_TYPES.map((t) => [t.value, t])
+) as Record<EngineeringEntityType, EnumConfig<EngineeringEntityType>>;
+
+// ─── Estimate Status ───
+export type EstimateStatus = "draft" | "sent" | "accepted" | "rejected" | "expired";
+
+export const ESTIMATE_STATUSES: EnumConfig<EstimateStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "sent", label: "Sent", variant: "info" },
+    { value: "accepted", label: "Accepted", variant: "success" },
+    { value: "rejected", label: "Rejected", variant: "destructive" },
+    { value: "expired", label: "Expired", variant: "ghost" },
+];
+
+export const ESTIMATE_STATUS_MAP = Object.fromEntries(
+    ESTIMATE_STATUSES.map((s) => [s.value, s])
+) as Record<EstimateStatus, EnumConfig<EstimateStatus>>;
+
+// ─── Expense Categories ───
+export type ExpenseCategory =
+    | "travel"
+    | "materials"
+    | "equipment"
+    | "meals"
+    | "transportation"
+    | "lodging"
+    | "other";
+
+export const EXPENSE_CATEGORIES: EnumConfig<ExpenseCategory>[] = [
+    { value: "travel", label: "Travel", variant: "info" },
+    { value: "materials", label: "Materials", variant: "default" },
+    { value: "equipment", label: "Equipment", variant: "secondary" },
+    { value: "meals", label: "Meals", variant: "ghost" },
+    { value: "transportation", label: "Transportation", variant: "info" },
+    { value: "lodging", label: "Lodging", variant: "warning" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const EXPENSE_CATEGORY_MAP = Object.fromEntries(
+    EXPENSE_CATEGORIES.map((c) => [c.value, c])
+) as Record<ExpenseCategory, EnumConfig<ExpenseCategory>>;
+
+// ─── Goal Types ───
+export type GoalType = "individual" | "team" | "company" | "project";
+
+export const GOAL_TYPES: EnumConfig<GoalType>[] = [
+    { value: "individual", label: "Individual", variant: "default" },
+    { value: "team", label: "Team", variant: "info" },
+    { value: "company", label: "Company", variant: "warning" },
+    { value: "project", label: "Project", variant: "secondary" },
+];
+
+export const GOAL_TYPE_MAP = Object.fromEntries(GOAL_TYPES.map((t) => [t.value, t])) as Record<
+    GoalType,
+    EnumConfig<GoalType>
+>;
+
+// ─── Incident Severity ───
+export type IncidentSeverity = "low" | "medium" | "high" | "critical";
+
+export const INCIDENT_SEVERITIES: EnumConfig<IncidentSeverity>[] = [
+    { value: "low", label: "Low", variant: "ghost" },
+    { value: "medium", label: "Medium", variant: "warning" },
+    { value: "high", label: "High", variant: "destructive" },
+    { value: "critical", label: "Critical", variant: "destructive" },
+];
+
+export const INCIDENT_SEVERITY_MAP = Object.fromEntries(
+    INCIDENT_SEVERITIES.map((s) => [s.value, s])
+) as Record<IncidentSeverity, EnumConfig<IncidentSeverity>>;
+
+// ─── Integration Types ───
+export type IntegrationType =
+    | "quickbooks"
+    | "xero"
+    | "slack"
+    | "google_calendar"
+    | "dropbox"
+    | "google_drive"
+    | "zapier";
+
+export const INTEGRATION_TYPES: EnumConfig<IntegrationType>[] = [
+    { value: "quickbooks", label: "QuickBooks", variant: "default" },
+    { value: "xero", label: "Xero", variant: "info" },
+    { value: "slack", label: "Slack", variant: "secondary" },
+    { value: "google_calendar", label: "Google Calendar", variant: "info" },
+    { value: "dropbox", label: "Dropbox", variant: "info" },
+    { value: "google_drive", label: "Google Drive", variant: "info" },
+    { value: "zapier", label: "Zapier", variant: "warning" },
+];
+
+export const INTEGRATION_TYPE_MAP = Object.fromEntries(
+    INTEGRATION_TYPES.map((t) => [t.value, t])
+) as Record<IntegrationType, EnumConfig<IntegrationType>>;
+
+// ─── Invoice Status ───
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "void";
+
+export const INVOICE_STATUSES: EnumConfig<InvoiceStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "sent", label: "Sent", variant: "info" },
+    { value: "paid", label: "Paid", variant: "success" },
+    { value: "overdue", label: "Overdue", variant: "destructive" },
+    { value: "void", label: "Void", variant: "ghost" },
+];
+
+export const INVOICE_STATUS_MAP = Object.fromEntries(
+    INVOICE_STATUSES.map((s) => [s.value, s])
+) as Record<InvoiceStatus, EnumConfig<InvoiceStatus>>;
+
+// ─── KB Article Categories ───
+export type KbArticleCategory = "sop" | "checklist" | "template" | "guide" | "policy" | "training";
+
+export const KB_ARTICLE_CATEGORIES: EnumConfig<KbArticleCategory>[] = [
+    { value: "sop", label: "SOP", variant: "secondary" },
+    { value: "checklist", label: "Checklist", variant: "info" },
+    { value: "template", label: "Template", variant: "ghost" },
+    { value: "guide", label: "Guide", variant: "default" },
+    { value: "policy", label: "Policy", variant: "warning" },
+    { value: "training", label: "Training", variant: "success" },
+];
+
+export const KB_ARTICLE_CATEGORY_MAP = Object.fromEntries(
+    KB_ARTICLE_CATEGORIES.map((c) => [c.value, c])
+) as Record<KbArticleCategory, EnumConfig<KbArticleCategory>>;
+
+// ─── Lead Sources ───
+export type LeadSource = "website" | "referral" | "cold_outreach" | "event" | "social" | "other";
+
+export const LEAD_SOURCES: EnumConfig<LeadSource>[] = [
+    { value: "website", label: "Website", variant: "info" },
+    { value: "referral", label: "Referral", variant: "success" },
+    { value: "cold_outreach", label: "Cold Outreach", variant: "ghost" },
+    { value: "event", label: "Event", variant: "warning" },
+    { value: "social", label: "Social Media", variant: "info" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const LEAD_SOURCE_MAP = Object.fromEntries(LEAD_SOURCES.map((s) => [s.value, s])) as Record<
+    LeadSource,
+    EnumConfig<LeadSource>
+>;
+
+// ─── Opportunity Stages (Form) ───
+export type OpportunityFormStage =
+    | "qualification"
+    | "discovery"
+    | "proposal"
+    | "negotiation"
+    | "closed_won"
+    | "closed_lost";
+
+export const OPPORTUNITY_FORM_STAGES: EnumConfig<OpportunityFormStage>[] = [
+    { value: "qualification", label: "Qualification", variant: "info" },
+    { value: "discovery", label: "Discovery", variant: "ghost" },
+    { value: "proposal", label: "Proposal", variant: "default" },
+    { value: "negotiation", label: "Negotiation", variant: "warning" },
+    { value: "closed_won", label: "Closed Won", variant: "success" },
+    { value: "closed_lost", label: "Closed Lost", variant: "destructive" },
+];
+
+export const OPPORTUNITY_FORM_STAGE_MAP = Object.fromEntries(
+    OPPORTUNITY_FORM_STAGES.map((s) => [s.value, s])
+) as Record<OpportunityFormStage, EnumConfig<OpportunityFormStage>>;
+
+// ─── Project Member Roles ───
+export type ProjectMemberRole = "member" | "lead" | "reviewer" | "contributor";
+
+export const PROJECT_MEMBER_ROLES: EnumConfig<ProjectMemberRole>[] = [
+    { value: "member", label: "Member", variant: "default" },
+    { value: "lead", label: "Lead", variant: "success" },
+    { value: "reviewer", label: "Reviewer", variant: "info" },
+    { value: "contributor", label: "Contributor", variant: "secondary" },
+];
+
+export const PROJECT_MEMBER_ROLE_MAP = Object.fromEntries(
+    PROJECT_MEMBER_ROLES.map((r) => [r.value, r])
+) as Record<ProjectMemberRole, EnumConfig<ProjectMemberRole>>;
+
+// ─── Project Template Categories ───
+export type ProjectTemplateCategory =
+    | "festival"
+    | "corporate"
+    | "brand_activation"
+    | "touring"
+    | "broadcast"
+    | "other";
+
+export const PROJECT_TEMPLATE_CATEGORIES: EnumConfig<ProjectTemplateCategory>[] = [
+    { value: "festival", label: "Festival", variant: "success" },
+    { value: "corporate", label: "Corporate", variant: "default" },
+    { value: "brand_activation", label: "Brand Activation", variant: "info" },
+    { value: "touring", label: "Touring", variant: "warning" },
+    { value: "broadcast", label: "Broadcast", variant: "secondary" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const PROJECT_TEMPLATE_CATEGORY_MAP = Object.fromEntries(
+    PROJECT_TEMPLATE_CATEGORIES.map((c) => [c.value, c])
+) as Record<ProjectTemplateCategory, EnumConfig<ProjectTemplateCategory>>;
+
+// ─── Purchase Order Status ───
+export type PurchaseOrderStatus = "draft" | "issued" | "received" | "closed";
+
+export const PURCHASE_ORDER_STATUSES: EnumConfig<PurchaseOrderStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "issued", label: "Issued", variant: "info" },
+    { value: "received", label: "Received", variant: "success" },
+    { value: "closed", label: "Closed", variant: "ghost" },
+];
+
+export const PURCHASE_ORDER_STATUS_MAP = Object.fromEntries(
+    PURCHASE_ORDER_STATUSES.map((s) => [s.value, s])
+) as Record<PurchaseOrderStatus, EnumConfig<PurchaseOrderStatus>>;
+
+// ─── Purchase Requisition Status ───
+export type PurchaseRequisitionStatus = "draft" | "submitted" | "approved" | "ordered" | "received";
+
+export const PURCHASE_REQUISITION_STATUSES: EnumConfig<PurchaseRequisitionStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "submitted", label: "Submitted", variant: "info" },
+    { value: "approved", label: "Approved", variant: "success" },
+    { value: "ordered", label: "Ordered", variant: "info" },
+    { value: "received", label: "Received", variant: "success" },
+];
+
+export const PURCHASE_REQUISITION_STATUS_MAP = Object.fromEntries(
+    PURCHASE_REQUISITION_STATUSES.map((s) => [s.value, s])
+) as Record<PurchaseRequisitionStatus, EnumConfig<PurchaseRequisitionStatus>>;
+
+// ─── Quality Check Entity Types ───
+export type QualityCheckEntityType = "asset" | "shipment" | "activation" | "warehouse";
+
+export const QUALITY_CHECK_ENTITY_TYPES: EnumConfig<QualityCheckEntityType>[] = [
+    { value: "asset", label: "Asset", variant: "secondary" },
+    { value: "shipment", label: "Shipment", variant: "info" },
+    { value: "activation", label: "Activation", variant: "success" },
+    { value: "warehouse", label: "Warehouse", variant: "default" },
+];
+
+export const QUALITY_CHECK_ENTITY_TYPE_MAP = Object.fromEntries(
+    QUALITY_CHECK_ENTITY_TYPES.map((t) => [t.value, t])
+) as Record<QualityCheckEntityType, EnumConfig<QualityCheckEntityType>>;
+
+// ─── Saved View Types ───
+export type SavedViewType = "table" | "board" | "list" | "calendar" | "timeline" | "gantt";
+
+export const SAVED_VIEW_TYPES: EnumConfig<SavedViewType>[] = [
+    { value: "table", label: "Table", variant: "default" },
+    { value: "board", label: "Board", variant: "info" },
+    { value: "list", label: "List", variant: "ghost" },
+    { value: "calendar", label: "Calendar", variant: "secondary" },
+    { value: "timeline", label: "Timeline", variant: "warning" },
+    { value: "gantt", label: "Gantt", variant: "info" },
+];
+
+export const SAVED_VIEW_TYPE_MAP = Object.fromEntries(
+    SAVED_VIEW_TYPES.map((t) => [t.value, t])
+) as Record<SavedViewType, EnumConfig<SavedViewType>>;
+
+// ─── Scenario Types ───
+export type ScenarioType = "combined" | "budget" | "resource" | "timeline";
+
+export const SCENARIO_TYPES: EnumConfig<ScenarioType>[] = [
+    { value: "combined", label: "Combined", variant: "default" },
+    { value: "budget", label: "Budget", variant: "warning" },
+    { value: "resource", label: "Resource", variant: "info" },
+    { value: "timeline", label: "Timeline", variant: "secondary" },
+];
+
+export const SCENARIO_TYPE_MAP = Object.fromEntries(
+    SCENARIO_TYPES.map((t) => [t.value, t])
+) as Record<ScenarioType, EnumConfig<ScenarioType>>;
+
+// ─── Service Request Categories ───
+export type ServiceRequestCategory =
+    | "technical"
+    | "logistics"
+    | "billing"
+    | "design"
+    | "staffing"
+    | "other";
+
+export const SERVICE_REQUEST_CATEGORIES: EnumConfig<ServiceRequestCategory>[] = [
+    { value: "technical", label: "Technical", variant: "info" },
+    { value: "logistics", label: "Logistics", variant: "secondary" },
+    { value: "billing", label: "Billing", variant: "warning" },
+    { value: "design", label: "Design", variant: "default" },
+    { value: "staffing", label: "Staffing", variant: "info" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const SERVICE_REQUEST_CATEGORY_MAP = Object.fromEntries(
+    SERVICE_REQUEST_CATEGORIES.map((c) => [c.value, c])
+) as Record<ServiceRequestCategory, EnumConfig<ServiceRequestCategory>>;
+
+// ─── Service Request Priority ───
+export type ServiceRequestPriority = "low" | "medium" | "high" | "urgent";
+
+export const SERVICE_REQUEST_PRIORITIES: EnumConfig<ServiceRequestPriority>[] = [
+    { value: "low", label: "Low", variant: "success" },
+    { value: "medium", label: "Medium", variant: "info" },
+    { value: "high", label: "High", variant: "warning" },
+    { value: "urgent", label: "Urgent", variant: "destructive" },
+];
+
+export const SERVICE_REQUEST_PRIORITY_MAP = Object.fromEntries(
+    SERVICE_REQUEST_PRIORITIES.map((p) => [p.value, p])
+) as Record<ServiceRequestPriority, EnumConfig<ServiceRequestPriority>>;
+
+// ─── Shipment Status ───
+export type ShipmentStatus = "pending" | "in_transit" | "delivered" | "returned";
+
+export const SHIPMENT_STATUSES: EnumConfig<ShipmentStatus>[] = [
+    { value: "pending", label: "Pending", variant: "ghost" },
+    { value: "in_transit", label: "In Transit", variant: "info" },
+    { value: "delivered", label: "Delivered", variant: "success" },
+    { value: "returned", label: "Returned", variant: "warning" },
+];
+
+export const SHIPMENT_STATUS_MAP = Object.fromEntries(
+    SHIPMENT_STATUSES.map((s) => [s.value, s])
+) as Record<ShipmentStatus, EnumConfig<ShipmentStatus>>;
+
+// ─── SOW Status ───
+export type SowStatus = "draft" | "in_review" | "approved" | "active";
+
+export const SOW_STATUSES: EnumConfig<SowStatus>[] = [
+    { value: "draft", label: "Draft", variant: "ghost" },
+    { value: "in_review", label: "In Review", variant: "warning" },
+    { value: "approved", label: "Approved", variant: "success" },
+    { value: "active", label: "Active", variant: "success" },
+];
+
+export const SOW_STATUS_MAP = Object.fromEntries(SOW_STATUSES.map((s) => [s.value, s])) as Record<
+    SowStatus,
+    EnumConfig<SowStatus>
+>;
+
+// ─── Survey Types ───
+export type SurveyType = "csat" | "nps" | "post_event" | "post_project" | "custom";
+
+export const SURVEY_TYPES: EnumConfig<SurveyType>[] = [
+    { value: "csat", label: "CSAT", variant: "default" },
+    { value: "nps", label: "NPS", variant: "info" },
+    { value: "post_event", label: "Post-Event", variant: "secondary" },
+    { value: "post_project", label: "Post-Project", variant: "secondary" },
+    { value: "custom", label: "Custom", variant: "ghost" },
+];
+
+export const SURVEY_TYPE_MAP = Object.fromEntries(SURVEY_TYPES.map((t) => [t.value, t])) as Record<
+    SurveyType,
+    EnumConfig<SurveyType>
+>;
+
+// ─── Template Categories ───
+export type TemplateCategory =
+    | "proposal"
+    | "contract"
+    | "invoice"
+    | "call_sheet"
+    | "tech_sheet"
+    | "sow"
+    | "report"
+    | "email";
+
+export const TEMPLATE_CATEGORIES: EnumConfig<TemplateCategory>[] = [
+    { value: "proposal", label: "Proposal", variant: "default" },
+    { value: "contract", label: "Contract", variant: "info" },
+    { value: "invoice", label: "Invoice", variant: "warning" },
+    { value: "call_sheet", label: "Call Sheet", variant: "secondary" },
+    { value: "tech_sheet", label: "Tech Sheet", variant: "secondary" },
+    { value: "sow", label: "SOW", variant: "info" },
+    { value: "report", label: "Report", variant: "ghost" },
+    { value: "email", label: "Email", variant: "ghost" },
+];
+
+export const TEMPLATE_CATEGORY_MAP = Object.fromEntries(
+    TEMPLATE_CATEGORIES.map((c) => [c.value, c])
+) as Record<TemplateCategory, EnumConfig<TemplateCategory>>;
+
+// ─── Vendor Categories ───
+export type VendorCategory =
+    | "production"
+    | "av"
+    | "catering"
+    | "transportation"
+    | "staffing"
+    | "security"
+    | "decor"
+    | "other";
+
+export const VENDOR_CATEGORIES: EnumConfig<VendorCategory>[] = [
+    { value: "production", label: "Production", variant: "default" },
+    { value: "av", label: "AV & Technical", variant: "info" },
+    { value: "catering", label: "Catering", variant: "secondary" },
+    { value: "transportation", label: "Transportation", variant: "info" },
+    { value: "staffing", label: "Staffing", variant: "warning" },
+    { value: "security", label: "Security", variant: "destructive" },
+    { value: "decor", label: "Décor", variant: "ghost" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const VENDOR_CATEGORY_MAP = Object.fromEntries(
+    VENDOR_CATEGORIES.map((c) => [c.value, c])
+) as Record<VendorCategory, EnumConfig<VendorCategory>>;
+
+// ─── Vehicle Types ───
+export type VehicleType = "box_truck" | "sprinter_van" | "flatbed" | "pickup" | "trailer" | "other";
+
+export const VEHICLE_TYPES: EnumConfig<VehicleType>[] = [
+    { value: "box_truck", label: "Box Truck", variant: "default" },
+    { value: "sprinter_van", label: "Sprinter Van", variant: "info" },
+    { value: "flatbed", label: "Flatbed", variant: "secondary" },
+    { value: "pickup", label: "Pickup", variant: "ghost" },
+    { value: "trailer", label: "Trailer", variant: "warning" },
+    { value: "other", label: "Other", variant: "ghost" },
+];
+
+export const VEHICLE_TYPE_MAP = Object.fromEntries(
+    VEHICLE_TYPES.map((t) => [t.value, t])
+) as Record<VehicleType, EnumConfig<VehicleType>>;
+
+// ─── Warehouse Types ───
+export type WarehouseType = "primary" | "satellite" | "staging" | "vendor";
+
+export const WAREHOUSE_TYPES: EnumConfig<WarehouseType>[] = [
+    { value: "primary", label: "Primary", variant: "success" },
+    { value: "satellite", label: "Satellite", variant: "info" },
+    { value: "staging", label: "Staging", variant: "warning" },
+    { value: "vendor", label: "Vendor", variant: "secondary" },
+];
+
+export const WAREHOUSE_TYPE_MAP = Object.fromEntries(
+    WAREHOUSE_TYPES.map((t) => [t.value, t])
+) as Record<WarehouseType, EnumConfig<WarehouseType>>;
+
+// ─── Work Order Priority ───
+export type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
+
+export const WORK_ORDER_PRIORITIES: EnumConfig<WorkOrderPriority>[] = [
+    { value: "low", label: "Low", variant: "success" },
+    { value: "medium", label: "Medium", variant: "info" },
+    { value: "high", label: "High", variant: "warning" },
+    { value: "urgent", label: "Urgent", variant: "destructive" },
+];
+
+export const WORK_ORDER_PRIORITY_MAP = Object.fromEntries(
+    WORK_ORDER_PRIORITIES.map((p) => [p.value, p])
+) as Record<WorkOrderPriority, EnumConfig<WorkOrderPriority>>;
+
+// ─── Worker Review Types ───
+export type WorkerReviewType = "periodic" | "project_end" | "mid_project";
+
+export const WORKER_REVIEW_TYPES: EnumConfig<WorkerReviewType>[] = [
+    { value: "periodic", label: "Periodic", variant: "default" },
+    { value: "project_end", label: "End of Project", variant: "info" },
+    { value: "mid_project", label: "Mid-Project", variant: "secondary" },
+];
+
+export const WORKER_REVIEW_TYPE_MAP = Object.fromEntries(
+    WORKER_REVIEW_TYPES.map((t) => [t.value, t])
+) as Record<WorkerReviewType, EnumConfig<WorkerReviewType>>;
+
+// ─── Worker Target Types ───
+export type WorkerTargetType = "employee" | "contractor" | "vendor" | "freelancer" | "intern";
+
+export const WORKER_TARGET_TYPES: EnumConfig<WorkerTargetType>[] = [
+    { value: "employee", label: "Employee", variant: "default" },
+    { value: "contractor", label: "Contractor", variant: "info" },
+    { value: "vendor", label: "Vendor", variant: "secondary" },
+    { value: "freelancer", label: "Freelancer", variant: "warning" },
+    { value: "intern", label: "Intern", variant: "ghost" },
+];
+
+export const WORKER_TARGET_TYPE_MAP = Object.fromEntries(
+    WORKER_TARGET_TYPES.map((t) => [t.value, t])
+) as Record<WorkerTargetType, EnumConfig<WorkerTargetType>>;
+
+// ─── Workforce Status ───
+export type WorkforceStatus = "active" | "on_leave" | "inactive" | "terminated";
+
+export const WORKFORCE_STATUSES: EnumConfig<WorkforceStatus>[] = [
+    { value: "active", label: "Active", variant: "success" },
+    { value: "on_leave", label: "On Leave", variant: "warning" },
+    { value: "inactive", label: "Inactive", variant: "ghost" },
+    { value: "terminated", label: "Terminated", variant: "destructive" },
+];
+
+export const WORKFORCE_STATUS_MAP = Object.fromEntries(
+    WORKFORCE_STATUSES.map((s) => [s.value, s])
+) as Record<WorkforceStatus, EnumConfig<WorkforceStatus>>;
+
 // ─── Messaging: Channel Categories ───
 export const CHANNEL_CATEGORIES = [
     { value: "general", label: "General", icon: "Hash", description: "Open discussion channels" },

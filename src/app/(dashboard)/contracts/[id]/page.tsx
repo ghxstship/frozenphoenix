@@ -1,19 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase/hooks-pages";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import {
     CONTRACT_STATUS_MAP,
     CONTRACT_TYPE_MAP,
@@ -23,6 +19,7 @@ import {
     type SignatureStatusType,
 } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Building2,
@@ -68,7 +65,6 @@ function parseClauses(raw: unknown): ClauseItem[] {
         summary: (c.summary as string) ?? "",
     }));
 }
-
 function parseSignatures(raw: unknown): SignatureItem[] {
     if (!Array.isArray(raw)) return [];
     return (raw as Record<string, unknown>[]).map((s) => ({
@@ -79,7 +75,6 @@ function parseSignatures(raw: unknown): SignatureItem[] {
         signedAt: (s.signed_at as string) ?? (s.signedAt as string) ?? undefined,
     }));
 }
-
 function parseAmendments(raw: unknown): AmendmentItem[] {
     if (!Array.isArray(raw)) return [];
     return (raw as Record<string, unknown>[]).map((a, i) => ({
@@ -89,7 +84,6 @@ function parseAmendments(raw: unknown): AmendmentItem[] {
         value: (a.value as number) ?? 0,
     }));
 }
-
 function parseDocs(raw: unknown): DocItem[] {
     if (!Array.isArray(raw)) return [];
     return (raw as Record<string, unknown>[]).map((d) => ({
@@ -99,8 +93,22 @@ function parseDocs(raw: unknown): DocItem[] {
     }));
 }
 
-type TabId = "details" | "signatures" | "documents" | "chatter";
-const TAB_VALUES = ["details", "signatures", "documents", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "contracts",
+    titleKey: "title",
+    subtitleFn: (r) => {
+        const num = (r.contract_number as string) ?? (r.contractNumber as string) ?? "";
+        const t = ((r.type as string) ?? (r.contract_type as string) ?? "msa") as ContractType;
+        return `${num} · ${CONTRACT_TYPE_MAP[t]?.label ?? t}`;
+    },
+    statusKey: "status",
+    icon: FileSignature,
+    backHref: "/contracts",
+    backLabel: "Contracts",
+    chatterRecordType: "contract",
+    fields: [],
+    tabs: [],
+};
 
 export default function ContractDetailPage() {
     const params = useParams();
@@ -115,12 +123,7 @@ export default function ContractDetailPage() {
         useUpdateHook: useUpdateContract,
         useDeleteHook: useDeleteContract,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "details",
-        validValues: TAB_VALUES,
-    });
-    const contractTitle = (ct?.title as string) ?? "";
+
     const contractNumber = (ct?.contract_number as string) ?? (ct?.contractNumber as string) ?? "";
     const contractType = ((ct?.type as string) ??
         (ct?.contract_type as string) ??
@@ -149,7 +152,6 @@ export default function ContractDetailPage() {
             variant: "info",
         });
     };
-
     const handleSendForSignature = () => {
         addToast({
             title: "Signature Request Sent",
@@ -160,36 +162,10 @@ export default function ContractDetailPage() {
 
     const daysUntilExpiry = useMemo(() => {
         if (!expirationDate) return Infinity;
-        const now = new Date();
-        return Math.ceil(
-            (new Date(expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-        );
+        return Math.ceil((new Date(expirationDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     }, [expirationDate]);
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    if (isLoading) return <LoadingState />;
-
-    const tabs = [
-        { id: "details" as const, label: "Details" },
-        { id: "signatures" as const, label: "Signatures", count: signatures.length },
-        { id: "documents" as const, label: "Documents", count: relatedDocuments.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -220,7 +196,6 @@ export default function ContractDetailPage() {
                     )}
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Timeline</CardTitle>
@@ -252,44 +227,230 @@ export default function ContractDetailPage() {
                     )}
                 </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={handleExportPDF}
-                    >
-                        <Download className="mr-2 h-4 w-4" />
-                        Export PDF
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={handleSendForSignature}
-                    >
-                        <Send className="mr-2 h-4 w-4" />
-                        Send for Signature
-                    </Button>
-                </CardContent>
-            </Card>
         </div>
     );
 
+    const overviewSlot = (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <DollarSign className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Contract Value</p>
+                                <p className="text-lg font-bold">{formatCurrency(contractValue)}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
+                                <Calendar className="h-5 w-5 text-info" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Effective Period</p>
+                                <p className="text-sm font-semibold">
+                                    {effectiveDate ? formatDate(effectiveDate) : "TBD"} —{" "}
+                                    {expirationDate ? formatDate(expirationDate) : "TBD"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-secondary/50 flex items-center justify-center">
+                                <Building2 className="h-5 w-5 text-secondary-foreground" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Counterparty</p>
+                                <p className="text-sm font-semibold">
+                                    {clientName || vendorName || "—"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        {contractDescription || "No description provided."}
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Key Clauses
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {clauses.map((clause, i) => (
+                            <div key={i} className="p-3 rounded-lg bg-secondary/30">
+                                <h4 className="text-sm font-semibold">{clause.title}</h4>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {clause.summary}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+            {amendments.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <FileSignature className="h-4 w-4" />
+                            Amendments
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            {amendments.map((amend) => (
+                                <Link key={amend.id} href={`/contracts/${amend.id}`}>
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer">
+                                        <div>
+                                            <p className="text-sm font-semibold">{amend.title}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatDate(amend.date)}
+                                            </p>
+                                        </div>
+                                        <p className="text-sm font-bold">
+                                            {formatCurrency(amend.value)}
+                                        </p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "signatures",
+                label: "Signatures",
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <PenTool className="h-4 w-4" />
+                                Signatures
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {signatures.map((sig, i) => {
+                                    const sigStatus = SIGNATURE_STATUSES.find(
+                                        (s) => s.value === sig.status
+                                    );
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                        >
+                                            <div>
+                                                <p className="text-sm font-semibold">{sig.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {sig.role} · {sig.email}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {sig.status === "signed" && sig.signedAt && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        Signed {formatDate(sig.signedAt)}
+                                                    </span>
+                                                )}
+                                                <Badge variant={sigStatus?.variant}>
+                                                    {sig.status === "signed" ? (
+                                                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                                                    ) : (
+                                                        <Clock className="mr-1 h-3 w-3" />
+                                                    )}
+                                                    {sigStatus?.label}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "documents",
+                label: "Documents",
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Related Documents
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {relatedDocuments.map((doc, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-sm font-medium">{doc.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {doc.type} · Uploaded{" "}
+                                                    {formatDate(doc.uploadedAt)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button variant="ghost" size="sm" disabled>
+                                            <Download className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+        ],
+    };
+
     return (
-        <DetailLayout
-            backHref="/contracts"
-            backLabel="Contracts"
-            entityType="contracts"
-            entityId={entityId}
-            title={contractTitle}
-            subtitle={`${contractNumber} · ${typeCfg?.label}`}
-            status={contractStatus}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={ct}
+            isLoading={isLoading}
+            menuItems={[
+                { label: "Export PDF", onClick: handleExportPDF },
+                {
+                    label: "Duplicate Contract",
+                    onClick: () => router.push(`/contracts/new?duplicateFrom=${entityId}`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileSignature className="h-7 w-7 text-primary-foreground" />
@@ -301,233 +462,6 @@ export default function ContractDetailPage() {
                     Send for Signature
                 </Button>
             }
-            menuItems={[
-                { label: "Export PDF", onClick: handleExportPDF },
-                {
-                    label: "Duplicate Contract",
-                    onClick: () => router.push(`/contracts/new?duplicateFrom=${entityId}`),
-                },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "details" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                        <DollarSign className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Contract Value
-                                        </p>
-                                        <p className="text-lg font-bold">
-                                            {formatCurrency(contractValue)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
-                                        <Calendar className="h-5 w-5 text-info" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Effective Period
-                                        </p>
-                                        <p className="text-sm font-semibold">
-                                            {effectiveDate ? formatDate(effectiveDate) : "TBD"} —{" "}
-                                            {expirationDate ? formatDate(expirationDate) : "TBD"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-secondary/50 flex items-center justify-center">
-                                        <Building2 className="h-5 w-5 text-secondary-foreground" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Counterparty
-                                        </p>
-                                        <p className="text-sm font-semibold">
-                                            {clientName || vendorName || "—"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Description</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                {contractDescription || "No description provided."}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Shield className="h-4 w-4" />
-                                Key Clauses
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {clauses.map((clause, i) => (
-                                    <div key={i} className="p-3 rounded-lg bg-secondary/30">
-                                        <h4 className="text-sm font-semibold">{clause.title}</h4>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {clause.summary}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {amendments.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <FileSignature className="h-4 w-4" />
-                                    Amendments
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    {amendments.map((amend) => (
-                                        <Link key={amend.id} href={`/contracts/${amend.id}`}>
-                                            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer">
-                                                <div>
-                                                    <p className="text-sm font-semibold">
-                                                        {amend.title}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {formatDate(amend.date)}
-                                                    </p>
-                                                </div>
-                                                <p className="text-sm font-bold">
-                                                    {formatCurrency(amend.value)}
-                                                </p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "signatures" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <PenTool className="h-4 w-4" />
-                            Signatures
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {signatures.map((sig, i) => {
-                                const sigStatus = SIGNATURE_STATUSES.find(
-                                    (s) => s.value === sig.status
-                                );
-                                return (
-                                    <div
-                                        key={i}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                    >
-                                        <div>
-                                            <p className="text-sm font-semibold">{sig.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {sig.role} · {sig.email}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {sig.status === "signed" && sig.signedAt && (
-                                                <span className="text-xs text-muted-foreground">
-                                                    Signed {formatDate(sig.signedAt)}
-                                                </span>
-                                            )}
-                                            <Badge variant={sigStatus?.variant}>
-                                                {sig.status === "signed" ? (
-                                                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                                                ) : (
-                                                    <Clock className="mr-1 h-3 w-3" />
-                                                )}
-                                                {sigStatus?.label}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "documents" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            Related Documents
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            {relatedDocuments.map((doc, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <div>
-                                            <p className="text-sm font-medium">{doc.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {doc.type} · Uploaded {formatDate(doc.uploadedAt)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="sm" disabled>
-                                        <Download className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="contract"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

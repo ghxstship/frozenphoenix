@@ -1,27 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { LoadingState } from "@/components/layouts/loading-state";
 import {
     useDeleteDigitalAsset,
     useDigitalAsset,
     useUpdateDigitalAsset,
 } from "@/lib/supabase/hooks-pages";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { RecordChatter } from "@/components/activity";
-import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Download, Eye, FileBox, History, Link2, Shield, User } from "lucide-react";
-type TabId = "details" | "versions" | "links" | "chatter";
-const TAB_VALUES = ["details", "versions", "links", "chatter"] as const;
 
 interface VersionEntry {
     id: string;
@@ -61,6 +55,18 @@ function parseLinks(raw: unknown): LinkEntry[] {
     }));
 }
 
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "digital_assets",
+    titleKey: "name",
+    statusKey: "status",
+    icon: FileBox,
+    backHref: "/digital-assets",
+    backLabel: "Digital Assets",
+    chatterRecordType: "digital_asset",
+    fields: [],
+    tabs: [],
+};
+
 export default function DigitalAssetDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -68,7 +74,7 @@ export default function DigitalAssetDetailPage() {
     const { data: sbRecord, isLoading } = useDigitalAsset(entityId);
     const da = sbRecord as Record<string, unknown> | null;
 
-    const assetName = (da?.name as string) ?? "";
+    const _assetName = (da?.name as string) ?? "";
     const filename = (da?.filename as string) ?? "";
     const description = (da?.description as string) ?? "";
     const assetStatus = (da?.status as string) ?? "draft";
@@ -93,34 +99,8 @@ export default function DigitalAssetDetailPage() {
         useUpdateHook: useUpdateDigitalAsset,
         useDeleteHook: useDeleteDigitalAsset,
     });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "details",
-        validValues: TAB_VALUES,
-    });
 
-    const [chatterComments, setChatterComments] = useState<CommentItem[]>([]);
-    const handleAddComment = async (content: string) => {
-        setChatterComments((prev) => [
-            ...prev,
-            {
-                id: `c-${Date.now()}`,
-                authorId: "u1",
-                authorName: "Sarah Chen",
-                content,
-                createdAt: new Date().toISOString(),
-            },
-        ]);
-    };
-
-    const tabs = [
-        { id: "details" as const, label: "Details" },
-        { id: "versions" as const, label: "Versions", count: versions.length },
-        { id: "links" as const, label: "Links", count: links.length },
-        { id: "chatter" as const, label: "Chatter" },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -182,9 +162,7 @@ export default function DigitalAssetDetailPage() {
                     {expiresAt && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Expires</span>
-                            <span className="font-medium">
-                                {formatDate(expiresAt, "compact")}
-                            </span>
+                            <span className="font-medium">{formatDate(expiresAt, "compact")}</span>
                         </div>
                     )}
                     {nextReviewDate && (
@@ -215,17 +193,204 @@ export default function DigitalAssetDetailPage() {
         </div>
     );
 
-    if (isLoading) return <LoadingState />;
+    const overviewSlot = (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <Shield className="h-5 w-5 text-warning" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Sensitivity</p>
+                                <p className="text-sm font-bold capitalize">{sensitivity}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <History className="h-5 w-5 text-info" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Version</p>
+                                <p className="text-sm font-bold">
+                                    {versions[0]?.version_label ?? "v1"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-3">
+                            <Calendar className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="text-xs text-muted-foreground">Last Reviewed</p>
+                                <p className="text-sm font-semibold">
+                                    {lastReviewedAt
+                                        ? formatDate(lastReviewedAt, "compact")
+                                        : "Never"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {description && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            {description}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Compliance</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Requires Acknowledgment</span>
+                        <Badge variant={requiresAcknowledgment ? "info" : "ghost"}>
+                            {requiresAcknowledgment ? "Yes" : "No"}
+                        </Badge>
+                    </div>
+                    {dataPurpose && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Data Purpose</span>
+                            <span className="font-medium">{dataPurpose}</span>
+                        </div>
+                    )}
+                    {retentionPolicyId && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Retention Policy</span>
+                            <span className="font-mono text-xs">{retentionPolicyId}</span>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () => `${filename} · ${documentNumber || entityId}`,
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "versions",
+                label: "Versions",
+                count: versions.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                                Version History ({versions.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {versions.map((v, i) => (
+                                    <div
+                                        key={v.id}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`h-8 w-8 rounded-full flex items-center justify-center ${i === 0 ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}
+                                            >
+                                                <span className="text-xs font-bold">
+                                                    v{v.version_number}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold">
+                                                    {v.version_label ??
+                                                        `Version ${v.version_number}`}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {v.created_by} ·{" "}
+                                                    {formatDate(v.created_at, "compact")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge variant={i === 0 ? "success" : "ghost"}>
+                                            {v.change_type}
+                                        </Badge>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "links",
+                label: "Links",
+                count: links.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Link2 className="h-4 w-4" />
+                                Entity Links ({links.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {links.map((link) => (
+                                    <div
+                                        key={link.id}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <User className="h-4 w-4 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-sm font-semibold">
+                                                    {link.entity_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground capitalize">
+                                                    {link.entity_type}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="outline">{link.link_type}</Badge>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ),
+            },
+        ],
+    };
+
+    const record = da ? { ...(da as Record<string, unknown>) } : null;
 
     return (
-        <DetailLayout
-            backHref="/digital-assets"
-            backLabel="Digital Assets"
-            entityType="digital-assets"
-            entityId={entityId}
-            title={assetName}
-            subtitle={`${filename} · ${documentNumber || entityId}`}
-            status={assetStatus}
+        <DetailPageShell
+            config={config}
+            id={entityId}
+            record={record}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "Edit Metadata",
+                    onClick: () => router.push(`/digital-assets/${entityId}/edit`),
+                },
+                {
+                    label: "Upload New Version",
+                    onClick: () => router.push(`/digital-assets/${entityId}/edit?action=upload`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <FileBox className="h-7 w-7 text-primary-foreground" />
@@ -243,196 +408,6 @@ export default function DigitalAssetDetailPage() {
                     </Button>
                 </div>
             }
-            menuItems={[
-                { label: "Edit Metadata", onClick: () => router.push(`/digital-assets/${entityId}/edit`) },
-                { label: "Upload New Version", onClick: () => router.push(`/digital-assets/${entityId}/edit?action=upload`) },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "details" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <Shield className="h-5 w-5 text-warning" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Sensitivity</p>
-                                        <p className="text-sm font-bold capitalize">
-                                            {sensitivity}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <History className="h-5 w-5 text-info" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Version</p>
-                                        <p className="text-sm font-bold">
-                                            {versions[0]?.version_label ?? "v1"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="h-5 w-5 text-primary" />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Last Reviewed
-                                        </p>
-                                        <p className="text-sm font-semibold">
-                                            {lastReviewedAt
-                                                ? formatDate(lastReviewedAt, "compact")
-                                                : "Never"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {description && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Description</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {description}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Compliance</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                    Requires Acknowledgment
-                                </span>
-                                <Badge
-                                    variant={requiresAcknowledgment ? "info" : "ghost"}
-                                >
-                                    {requiresAcknowledgment ? "Yes" : "No"}
-                                </Badge>
-                            </div>
-                            {dataPurpose && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Data Purpose</span>
-                                    <span className="font-medium">{dataPurpose}</span>
-                                </div>
-                            )}
-                            {retentionPolicyId && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Retention Policy</span>
-                                    <span className="font-mono text-xs">
-                                        {retentionPolicyId}
-                                    </span>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "versions" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">
-                            Version History ({versions.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {versions.map((v, i) => (
-                                <div
-                                    key={v.id}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`h-8 w-8 rounded-full flex items-center justify-center ${i === 0 ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}
-                                        >
-                                            <span className="text-xs font-bold">
-                                                v{v.version_number}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold">
-                                                {v.version_label ?? `Version ${v.version_number}`}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {v.created_by} ·{" "}
-                                                {formatDate(v.created_at, "compact")}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Badge variant={i === 0 ? "success" : "ghost"}>
-                                        {v.change_type}
-                                    </Badge>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "links" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Link2 className="h-4 w-4" />
-                            Entity Links ({links.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {links.map((link) => (
-                                <div
-                                    key={link.id}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <User className="h-4 w-4 text-muted-foreground" />
-                                        <div>
-                                            <p className="text-sm font-semibold">
-                                                {link.entity_name}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground capitalize">
-                                                {link.entity_type}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Badge variant="outline">{link.link_type}</Badge>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="digital_asset"
-                    recordId={entityId}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

@@ -1,8 +1,6 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo } from "react";
-import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteEvent, useUpdateEvent } from "@/lib/supabase/hooks-pages";
 import {
@@ -11,7 +9,7 @@ import {
     useRecordComments,
 } from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
-import { DetailLayout } from "@/components/layouts/detail-layout";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,10 +22,20 @@ import { useEvent } from "@/lib/supabase/hooks-pages";
 import { useActivations, useCrewShifts, useLocations, useProjects } from "@/lib/supabase/hooks";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Clock, DollarSign, Edit, MapPin, Play, Users } from "lucide-react";
 
-type TabId = "overview" | "run-of-show" | "crew" | "logistics" | "chatter";
-const TAB_VALUES = ["overview", "run-of-show", "crew", "logistics", "chatter"] as const;
+const BASE_CONFIG: DetailPageConfig = {
+    entityKey: "events",
+    titleKey: "name",
+    statusKey: "status",
+    icon: Calendar,
+    backHref: "/events",
+    backLabel: "Events",
+    chatter: false,
+    fields: [],
+    tabs: [],
+};
 
 export default function EventDetailPage() {
     const params = useParams();
@@ -39,11 +47,6 @@ export default function EventDetailPage() {
         listPath: "/events",
         useUpdateHook: useUpdateEvent,
         useDeleteHook: useDeleteEvent,
-    });
-    const [activeTab, setActiveTab] = useQueryTabState<TabId>({
-        key: "tab",
-        defaultValue: "overview",
-        validValues: TAB_VALUES,
     });
     const { data: event, isLoading } = useEvent(eventId);
     const { data: sbActivity } = useRecordActivityLog("event", eventId);
@@ -93,22 +96,9 @@ export default function EventDetailPage() {
         ? (sbShifts ?? []).filter((s: Record<string, unknown>) => s.event_id === eventId)
         : [];
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (!event) {
-        return (
-            <EmptyState
-                icon={Calendar}
-                title="Event not found"
-                description="The event you're looking for doesn't exist or has been deleted."
-                action={{ label: "Back to Events", onClick: () => router.push("/events") }}
-            />
-        );
-    }
-
-    const typeConfig = EVENT_TYPE_CONFIG[event.type as keyof typeof EVENT_TYPE_CONFIG];
+    const typeConfig = event
+        ? EVENT_TYPE_CONFIG[event.type as keyof typeof EVENT_TYPE_CONFIG]
+        : undefined;
     const TypeIcon = typeConfig?.icon ?? Calendar;
 
     const handleAddComment = async (content: string) => {
@@ -120,15 +110,7 @@ export default function EventDetailPage() {
         });
     };
 
-    const tabs = [
-        { id: "overview" as const, label: "Overview" },
-        { id: "run-of-show" as const, label: "Run of Show", count: event.runOfShow?.length ?? 0 },
-        { id: "crew" as const, label: "Crew", count: eventShifts.length },
-        { id: "logistics" as const, label: "Logistics" },
-        { id: "chatter" as const, label: "Chatter", count: chatterComments.length },
-    ];
-
-    const sidebar = (
+    const sidebarSlot = event ? (
         <div className="space-y-4">
             <Card>
                 <CardHeader>
@@ -148,31 +130,31 @@ export default function EventDetailPage() {
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Time</span>
                         <span>
-                            {event.startTime}–{event.endTime}
+                            {event.start_time}–{event.end_time}
                         </span>
                     </div>
-                    {event.doorsTime && (
+                    {event.doors_time && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Doors</span>
-                            <span>{event.doorsTime}</span>
+                            <span>{event.doors_time}</span>
                         </div>
                     )}
-                    {event.attendeeCount && (
+                    {event.attendee_count && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Attendees</span>
-                            <span className="font-medium">{event.attendeeCount}</span>
+                            <span className="font-medium">{event.attendee_count}</span>
                         </div>
                     )}
-                    {event.vipCount && (
+                    {event.vip_count && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">VIPs</span>
-                            <span className="font-medium">{event.vipCount}</span>
+                            <span className="font-medium">{event.vip_count}</span>
                         </div>
                     )}
-                    {event.specificLocation && (
+                    {event.specific_location && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Specific Location</span>
-                            <span>{event.specificLocation}</span>
+                            <span>{event.specific_location}</span>
                         </div>
                     )}
                     {event.budget && (
@@ -214,17 +196,287 @@ export default function EventDetailPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) : undefined;
+
+    const overviewSlot = event ? (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Users className="h-4 w-4" />
+                            <span className="text-xs">Attendees</span>
+                        </div>
+                        <p className="text-xl font-bold">{event.attendee_count ?? 0}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-xs">Duration</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {event.start_time}–{event.end_time}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Play className="h-4 w-4" />
+                            <span className="text-xs">Cues</span>
+                        </div>
+                        <p className="text-xl font-bold">
+                            {Array.isArray(event.run_of_show) ? event.run_of_show.length : 0}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-xs">Budget</span>
+                        </div>
+                        <p className="text-xl font-bold">{formatCurrency(event.budget ?? 0)}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            {event.description && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                    </CardContent>
+                </Card>
+            )}
+            {event.purpose && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Purpose</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{event.purpose}</p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    ) : undefined;
+
+    const config: DetailPageConfig = {
+        ...BASE_CONFIG,
+        subtitleFn: () =>
+            event ? `${formatDate(event.date)} · ${event.start_time}–${event.end_time}` : "",
+        sidebarSlot,
+        overviewSlot,
+        tabs: [
+            {
+                id: "run-of-show",
+                label: "Run of Show",
+                count: event && Array.isArray(event.run_of_show) ? event.run_of_show.length : 0,
+                content: event ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Run of Show</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {!Array.isArray(event.run_of_show) || event.run_of_show.length === 0 ? (
+                                <EmptyState
+                                    icon={Play}
+                                    title="No cues"
+                                    description="Run of show hasn't been defined yet"
+                                />
+                            ) : (
+                                <div className="space-y-1">
+                                    {event.run_of_show.map((rawCue: unknown, i: number) => {
+                                        const cue = rawCue as Record<string, unknown>;
+                                        return (
+                                            <div
+                                                key={String(cue.id ?? i)}
+                                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors"
+                                            >
+                                                <Badge
+                                                    variant="outline"
+                                                    className="font-mono text-xs shrink-0"
+                                                >
+                                                    {String(cue.cue_number ?? cue.cueNumber ?? "")}
+                                                </Badge>
+                                                <span className="text-sm font-mono font-medium shrink-0 w-12">
+                                                    {String(cue.time ?? "")}
+                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium">
+                                                        {String(cue.description ?? "")}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {String(
+                                                            cue.responsible_party ??
+                                                                cue.responsibleParty ??
+                                                                ""
+                                                        )}{" "}
+                                                        · {String(cue.duration ?? 0)} min
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                ) : null,
+            },
+            {
+                id: "crew",
+                label: "Crew",
+                count: eventShifts.length,
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Crew Assignments</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {eventShifts.length === 0 ? (
+                                <EmptyState
+                                    icon={Users}
+                                    title="No crew assigned"
+                                    description="Assign crew members to this event"
+                                />
+                            ) : (
+                                <div className="space-y-2">
+                                    {eventShifts.map((shift) => (
+                                        <div
+                                            key={shift.id}
+                                            className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
+                                                    {String(
+                                                        (shift as Record<string, unknown>)
+                                                            .crew_member_name ?? ""
+                                                    )
+                                                        .split(" ")
+                                                        .map((n: string) => n[0])
+                                                        .join("")}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        {String(
+                                                            (shift as Record<string, unknown>)
+                                                                .crew_member_name ?? ""
+                                                        )}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {shift.role} ·{" "}
+                                                        {String(
+                                                            (shift as Record<string, unknown>)
+                                                                .call_time ?? ""
+                                                        )}
+                                                        –
+                                                        {String(
+                                                            (shift as Record<string, unknown>)
+                                                                .end_time ?? ""
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <StatusBadge status={shift.status} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
+                id: "logistics",
+                label: "Logistics",
+                content: event ? (
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Venue Information</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3 text-sm">
+                                {location && (
+                                    <>
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                                            <span className="font-medium">{location.name}</span>
+                                        </div>
+                                        {(location as Record<string, unknown>).address_street && (
+                                            <p className="text-muted-foreground ml-6">
+                                                {String(
+                                                    (location as Record<string, unknown>)
+                                                        .address_street ?? ""
+                                                )}
+                                                ,{" "}
+                                                {String(
+                                                    (location as Record<string, unknown>)
+                                                        .address_city ?? ""
+                                                )}
+                                                ,{" "}
+                                                {String(
+                                                    (location as Record<string, unknown>)
+                                                        .address_state ?? ""
+                                                )}{" "}
+                                                {String(
+                                                    (location as Record<string, unknown>)
+                                                        .address_postal_code ?? ""
+                                                )}
+                                            </p>
+                                        )}
+                                    </>
+                                )}
+                                {event.cancellation_policy && (
+                                    <div>
+                                        <span className="text-muted-foreground">
+                                            Cancellation Policy:
+                                        </span>{" "}
+                                        <span>{event.cancellation_policy}</span>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                ) : null,
+            },
+            {
+                id: "chatter",
+                label: "Chatter",
+                count: chatterComments.length,
+                content: (
+                    <RecordChatter
+                        recordType="event"
+                        recordId={eventId}
+                        activityItems={activityItems}
+                        comments={chatterComments}
+                        currentUserId="u1"
+                        onAddComment={handleAddComment}
+                    />
+                ),
+            },
+        ],
+    };
+
+    const record = ev ? { ...(ev as Record<string, unknown>) } : null;
 
     return (
-        <DetailLayout
-            backHref="/events"
-            backLabel="Events"
-            entityType="events"
-            entityId={eventId}
-            title={event.name}
-            subtitle={`${formatDate(event.date)} · ${event.startTime}–${event.endTime}`}
-            status={event.status}
+        <DetailPageShell
+            config={config}
+            id={eventId}
+            record={record}
+            isLoading={isLoading}
+            menuItems={[
+                {
+                    label: "Duplicate",
+                    onClick: () => router.push(`/events/new?duplicateFrom=${eventId}`),
+                },
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold text-primary-foreground">
                     <TypeIcon className="h-6 w-6" />
@@ -236,257 +488,6 @@ export default function EventDetailPage() {
                     Edit
                 </Button>
             }
-            menuItems={[
-                {
-                    label: "Duplicate",
-                    onClick: () => router.push(`/events/new?duplicateFrom=${eventId}`),
-                },
-                ...crudMenuItems,
-            ]}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as TabId)}
-            sidebar={sidebar}
-        >
-            {activeTab === "overview" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Users className="h-4 w-4" />
-                                    <span className="text-xs">Attendees</span>
-                                </div>
-                                <p className="text-xl font-bold">{event.attendeeCount ?? 0}</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Clock className="h-4 w-4" />
-                                    <span className="text-xs">Duration</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {event.startTime}–{event.endTime}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <Play className="h-4 w-4" />
-                                    <span className="text-xs">Cues</span>
-                                </div>
-                                <p className="text-xl font-bold">{event.runOfShow?.length ?? 0}</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    <span className="text-xs">Budget</span>
-                                </div>
-                                <p className="text-xl font-bold">
-                                    {formatCurrency(event.budget ?? 0)}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    {event.description && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Description</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{event.description}</p>
-                            </CardContent>
-                        </Card>
-                    )}
-                    {event.purpose && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Purpose</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{event.purpose}</p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "run-of-show" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Run of Show</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {!event.runOfShow || event.runOfShow.length === 0 ? (
-                            <EmptyState
-                                icon={Play}
-                                title="No cues"
-                                description="Run of show hasn't been defined yet"
-                            />
-                        ) : (
-                            <div className="space-y-1">
-                                {event.runOfShow.map(
-                                    (cue: {
-                                        id: string;
-                                        time: string;
-                                        duration: number;
-                                        description: string;
-                                        responsibleParty: string;
-                                        cueNumber: string;
-                                    }) => (
-                                        <div
-                                            key={cue.id}
-                                            className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors"
-                                        >
-                                            <Badge
-                                                variant="outline"
-                                                className="font-mono text-xs shrink-0"
-                                            >
-                                                {cue.cueNumber}
-                                            </Badge>
-                                            <span className="text-sm font-mono font-medium shrink-0 w-12">
-                                                {cue.time}
-                                            </span>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium">
-                                                    {cue.description}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {cue.responsibleParty} · {cue.duration} min
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "crew" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Crew Assignments</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {eventShifts.length === 0 ? (
-                            <EmptyState
-                                icon={Users}
-                                title="No crew assigned"
-                                description="Assign crew members to this event"
-                            />
-                        ) : (
-                            <div className="space-y-2">
-                                {eventShifts.map((shift) => (
-                                    <div
-                                        key={shift.id}
-                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
-                                                {String(
-                                                    (shift as Record<string, unknown>)
-                                                        .crew_member_name ?? ""
-                                                )
-                                                    .split(" ")
-                                                    .map((n: string) => n[0])
-                                                    .join("")}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium">
-                                                    {String(
-                                                        (shift as Record<string, unknown>)
-                                                            .crew_member_name ?? ""
-                                                    )}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {shift.role} ·{" "}
-                                                    {String(
-                                                        (shift as Record<string, unknown>)
-                                                            .call_time ?? ""
-                                                    )}
-                                                    –
-                                                    {String(
-                                                        (shift as Record<string, unknown>)
-                                                            .end_time ?? ""
-                                                    )}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <StatusBadge status={shift.status} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {activeTab === "logistics" && (
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Venue Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm">
-                            {location && (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium">{location.name}</span>
-                                    </div>
-                                    {(location as Record<string, unknown>).address_street && (
-                                        <p className="text-muted-foreground ml-6">
-                                            {String(
-                                                (location as Record<string, unknown>)
-                                                    .address_street ?? ""
-                                            )}
-                                            ,{" "}
-                                            {String(
-                                                (location as Record<string, unknown>)
-                                                    .address_city ?? ""
-                                            )}
-                                            ,{" "}
-                                            {String(
-                                                (location as Record<string, unknown>)
-                                                    .address_state ?? ""
-                                            )}{" "}
-                                            {String(
-                                                (location as Record<string, unknown>)
-                                                    .address_postal_code ?? ""
-                                            )}
-                                        </p>
-                                    )}
-                                </>
-                            )}
-                            {event.cancellationPolicy && (
-                                <div>
-                                    <span className="text-muted-foreground">
-                                        Cancellation Policy:
-                                    </span>{" "}
-                                    <span>{event.cancellationPolicy}</span>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {activeTab === "chatter" && (
-                <RecordChatter
-                    recordType="event"
-                    recordId={eventId}
-                    activityItems={activityItems}
-                    comments={chatterComments}
-                    currentUserId="u1"
-                    onAddComment={handleAddComment}
-                />
-            )}
-        </DetailLayout>
+        />
     );
 }

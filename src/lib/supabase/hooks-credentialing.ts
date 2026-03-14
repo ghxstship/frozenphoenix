@@ -353,19 +353,27 @@ export interface GateScanResult {
     assignment: Record<string, unknown> | null;
     credential_type: Record<string, unknown> | null;
     message: string;
+    matched_by?: string;
+    scan_method?: string;
     timestamp: string;
+}
+
+export interface GateScanPayload {
+    /** Scanned value — barcode, RFID tag, or NFC serial. */
+    identifier: string;
+    /** How to interpret the identifier. Default "auto". */
+    identifier_type?: "barcode" | "rfid" | "nfc" | "auto";
+    scan_type: string;
+    scan_method?: "keyboard" | "camera" | "rfid" | "nfc" | "file" | "api";
+    zone_id?: string;
+    device_id?: string;
+    notes?: string;
 }
 
 export function useGateScan() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: async (payload: {
-            barcode_value: string;
-            scan_type: string;
-            zone_id?: string;
-            device_id?: string;
-            notes?: string;
-        }): Promise<GateScanResult> => {
+        mutationFn: async (payload: GateScanPayload): Promise<GateScanResult> => {
             const res = await fetch("/api/credentials/scan", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

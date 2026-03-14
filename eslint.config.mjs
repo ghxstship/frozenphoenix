@@ -120,6 +120,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // L-005: Generated Supabase types
     "src/lib/supabase/database.types.ts",
+    // L-006: Generated OpenAPI types (93K+ lines, deoptimizes ESLint)
+    "src/types/api.generated.ts",
   ]),
 ]);
 

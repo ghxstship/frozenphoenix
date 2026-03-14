@@ -5,22 +5,66 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { BadgeCheck, LogIn, LogOut, QrCode, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
+import { BadgeCheck, LogIn, LogOut, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
+import { ScanFeedback, ScanInput } from "@/components/scanning";
+import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type GateScanResult,
     useGateScan,
     useGateScanHistory,
 } from "@/lib/supabase/hooks-credentialing";
+import { GateScanSheet } from "./scan-sheet";
+import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
+import { useWedgeScanner } from "@/hooks/use-wedge-scanner";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { OfflineIndicator } from "@/components/scanning/offline-indicator";
+
+const S = SCANNING_STRINGS.gateScanner;
+const FEEDBACK_S = SCANNING_STRINGS.feedback;
+
+/** Map ScanInput method → API scan_method value */
+type ApiScanMethod = "keyboard" | "camera" | "rfid" | "nfc" | "file" | "api";
+const METHOD_MAP: Record<ScanMethod, ApiScanMethod> = {
+    keyboard: "keyboard",
+    camera: "camera",
+    nfc: "nfc",
+};
+
+/** Map API result → ScanFeedback result type */
+function toFeedbackResult(result: string): ScanFeedbackResult {
+    if (result === "valid") return "success";
+    if (result === "zone_denied" || result === "flagged") return "warning";
+    if (result === "expired") return "info";
+    return "error";
+}
+
+/** Map API result → human-readable feedback message */
+function toFeedbackMessage(result: string): string {
+    const map: Record<string, string> = {
+        valid: FEEDBACK_S.success,
+        denied: FEEDBACK_S.denied,
+        revoked: FEEDBACK_S.revoked,
+        expired: FEEDBACK_S.expired,
+        zone_denied: FEEDBACK_S.zoneDenied,
+        flagged: FEEDBACK_S.flagged,
+    };
+    return map[result] ?? FEEDBACK_S.error;
+}
 
 export default function GateScannerPage() {
-    const [barcodeInput, setBarcodeInput] = useState("");
     const [scanType, setScanType] = useState<"check_in" | "check_out">("check_in");
     const [lastResult, setLastResult] = useState<GateScanResult | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [feedback, setFeedback] = useState({
+        visible: false,
+        result: "info" as ScanFeedbackResult,
+        message: "",
+    });
 
     const gateScan = useGateScan();
     const { data: sbHistory } = useGateScanHistory(50);
+    const { isOnline, pendingCount, isSyncing, syncNow, clearPending } = useOfflineSync();
 
     const scanHistory: { result: string; assignee_name: string | null; timestamp: string }[] = (
         sbHistory ?? []
@@ -32,32 +76,43 @@ export default function GateScannerPage() {
         timestamp: (h.scanned_at as string) ?? "",
     }));
 
-    const handleScan = useCallback(async () => {
-        if (!barcodeInput.trim()) return;
-        try {
-            const result = await gateScan.mutateAsync({
-                barcode_value: barcodeInput.trim(),
-                scan_type: scanType,
-            });
-            setLastResult(result);
-            setBarcodeInput("");
-        } catch {
-            setLastResult({
-                result: "error",
-                assignment: null,
-                credential_type: null,
-                message: "Network error — please retry",
-                timestamp: new Date().toISOString(),
-            });
-        }
-    }, [barcodeInput, scanType, gateScan]);
+    const handleScan = useCallback(
+        async (value: string, method: ScanMethod) => {
+            try {
+                const result = await gateScan.mutateAsync({
+                    identifier: value,
+                    scan_type: scanType,
+                    scan_method: METHOD_MAP[method],
+                });
+                setLastResult(result);
+                setFeedback({
+                    visible: true,
+                    result: toFeedbackResult(result.result),
+                    message: toFeedbackMessage(result.result),
+                });
+            } catch {
+                setLastResult({
+                    result: "error",
+                    assignment: null,
+                    credential_type: null,
+                    message: "Network error — please retry",
+                    timestamp: new Date().toISOString(),
+                });
+                setFeedback({
+                    visible: true,
+                    result: "error",
+                    message: FEEDBACK_S.error,
+                });
+            }
+        },
+        [scanType, gateScan]
+    );
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleScan();
-        }
-    };
+    useWedgeScanner({
+        onScan: (value) => handleScan(value, "keyboard"),
+        enabled: true,
+        minLength: 4,
+    });
 
     const resultIcon =
         lastResult?.result === "valid" ? (
@@ -83,8 +138,24 @@ export default function GateScannerPage() {
         <PermissionGate resource="gate_operations" action="read">
             <div className="space-y-6 animate-fade-in">
                 <PageHeader
-                    title="Gate Scanner"
+                    title={S.title}
                     description="Scan credentials for check-in / check-out at entry points"
+                />
+
+                <OfflineIndicator
+                    isOnline={isOnline}
+                    pendingCount={pendingCount}
+                    isSyncing={isSyncing}
+                    onSyncNow={syncNow}
+                    onClearPending={clearPending}
+                />
+
+                {/* Audio/haptic/visual feedback toast */}
+                <ScanFeedback
+                    result={feedback.result}
+                    message={feedback.message}
+                    visible={feedback.visible}
+                    onDismiss={() => setFeedback((f) => ({ ...f, visible: false }))}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -115,32 +186,29 @@ export default function GateScannerPage() {
                                         </Button>
                                     </div>
 
-                                    <div className="flex items-center gap-2 w-full max-w-md">
-                                        <div className="relative flex-1">
-                                            <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                className="pl-10 text-lg h-12 font-mono"
-                                                placeholder="Scan or enter barcode..."
-                                                value={barcodeInput}
-                                                onChange={(e) => setBarcodeInput(e.target.value)}
-                                                onKeyDown={handleKeyDown}
-                                                autoFocus
-                                            />
-                                        </div>
-                                        <Button
-                                            size="lg"
-                                            onClick={handleScan}
-                                            disabled={gateScan.isPending || !barcodeInput.trim()}
-                                        >
-                                            {gateScan.isPending ? "Scanning..." : "Scan"}
-                                        </Button>
+                                    {/* Multi-method scan input (keyboard + camera + NFC) */}
+                                    <div className="w-full max-w-md">
+                                        <ScanInput
+                                            onScan={handleScan}
+                                            placeholder={
+                                                SCANNING_STRINGS.input.credentialPlaceholder
+                                            }
+                                            disabled={gateScan.isPending}
+                                        />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         {lastResult && (
-                            <Card className={`border-2 ${resultColor} transition-colors`}>
+                            <Card
+                                className={`border-2 ${resultColor} transition-colors cursor-pointer`}
+                                onClick={() => setSheetOpen(true)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => e.key === "Enter" && setSheetOpen(true)}
+                                aria-label="View scan details"
+                            >
                                 <CardContent className="pt-6">
                                     <div className="flex flex-col items-center text-center space-y-3">
                                         {resultIcon}
@@ -154,16 +222,18 @@ export default function GateScannerPage() {
                                         {lastResult.assignment && (
                                             <div className="mt-4 p-4 rounded-lg bg-card border w-full max-w-sm">
                                                 <p className="text-sm font-bold">
-                                                    {lastResult.assignment.assignee_name as string}
+                                                    {String(
+                                                        lastResult.assignment.assignee_name ?? ""
+                                                    )}
                                                 </p>
                                                 {lastResult.credential_type && (
                                                     <div className="flex items-center gap-1.5 mt-1">
-                                                        {!!(
+                                                        {typeof (
                                                             lastResult.credential_type as Record<
                                                                 string,
                                                                 unknown
                                                             >
-                                                        ).color_hex && (
+                                                        ).color_hex === "string" && (
                                                             <span
                                                                 className="inline-block h-2.5 w-2.5 rounded-full"
                                                                 style={{
@@ -177,22 +247,28 @@ export default function GateScannerPage() {
                                                             />
                                                         )}
                                                         <span className="text-xs text-muted-foreground">
-                                                            {
+                                                            {String(
                                                                 (
                                                                     lastResult.credential_type as Record<
                                                                         string,
                                                                         unknown
                                                                     >
-                                                                ).name as string
-                                                            }
+                                                                ).name ?? ""
+                                                            )}
                                                         </span>
                                                     </div>
                                                 )}
                                                 <p className="text-[10px] font-mono text-muted-foreground mt-1">
-                                                    {lastResult.assignment.barcode_value as string}
+                                                    {String(
+                                                        lastResult.assignment.barcode_value ?? ""
+                                                    )}
                                                 </p>
                                             </div>
                                         )}
+
+                                        <p className="text-[10px] text-muted-foreground mt-2">
+                                            Tap for details
+                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -249,6 +325,9 @@ export default function GateScannerPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Scan detail sheet (slide-over) */}
+                <GateScanSheet result={lastResult} open={sheetOpen} onOpenChange={setSheetOpen} />
             </div>
         </PermissionGate>
     );

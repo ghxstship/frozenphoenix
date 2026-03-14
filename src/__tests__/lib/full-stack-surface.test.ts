@@ -240,7 +240,7 @@ describe("Core Library Surface Area", () => {
         "src/config/navigation.ts",
         "src/config/domain-config.ts",
         "quality-gate.config.ts",
-        "middleware.ts",
+        "src/middleware.ts",
     ];
 
     it.each(CORE_LIBS)("Core lib exists: %s", (lib) => {

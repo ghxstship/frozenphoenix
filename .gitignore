@@ -43,3 +43,6 @@ next-env.d.ts
 
 # quality gate (generated report — waivers/attestations are tracked)
 .quality-gate/report.json
+
+# OpenAPI generated spec (rebuild via: npm run gen:api)
+src/types/openapi.json

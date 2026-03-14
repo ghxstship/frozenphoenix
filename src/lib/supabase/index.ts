@@ -434,5 +434,16 @@ export {
 } from "./hooks-extended";
 export type { UserCertification } from "./hooks-extended";
 
+// ─── Scanning Hooks ───
+export { useAssetLookup, useAssetScan, useAssetScanHistory } from "./hooks-scanning";
+export type {
+    AssetScanAction,
+    AssetScanPayload,
+    AssetScanResult,
+    AssetLookupResult,
+    ScanIdentifierType,
+    ApiScanMethod,
+} from "./hooks-scanning";
+
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

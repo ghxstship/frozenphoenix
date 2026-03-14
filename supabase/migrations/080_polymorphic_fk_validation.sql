@@ -157,9 +157,9 @@ CREATE OR REPLACE TRIGGER trg_budget_approvals_poly_fk
     FOR EACH ROW
     EXECUTE FUNCTION validate_polymorphic_fk();
 
--- 2f. governance_audit_logs (016)
-CREATE OR REPLACE TRIGGER trg_governance_audit_logs_poly_fk
-    BEFORE INSERT OR UPDATE OF entity_type, entity_id ON governance_audit_logs
+-- 2f. governance_audit_log (016)
+CREATE OR REPLACE TRIGGER trg_governance_audit_log_poly_fk
+    BEFORE INSERT OR UPDATE OF entity_type, entity_id ON governance_audit_log
     FOR EACH ROW
     EXECUTE FUNCTION validate_polymorphic_fk();
 

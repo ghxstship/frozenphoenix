@@ -42,6 +42,8 @@ import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { QuickViewPanel } from "@/components/shells/quick-view-panel";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ColumnVisibilityPopover } from "@/components/ui/column-visibility-popover";
+import { useColumnPreferences } from "@/hooks/use-column-preferences";
 import {
     AlertCircle,
     CheckCircle2,
@@ -463,6 +465,10 @@ export function ListPageShell({
     const Icon = config.icon ?? LayoutList;
     const views = config.views ?? ["table"];
 
+    // Smart defaults: auto-enable export/import when entity has a config
+    const exportable = config.exportable ?? entityConfig != null;
+    const importable = config.importable ?? entityConfig != null;
+
     // Fetch data via API (skipped when external data is provided)
     const { data: rawData, isLoading: apiLoading } = useQuery({
         queryKey: [config.entityKey, "list"],
@@ -479,13 +485,38 @@ export function ListPageShell({
         [externalData, rawData]
     );
 
+    // Auto-generate status filter when none configured
+    const resolvedFilters = useMemo(() => {
+        if (config.filters && config.filters.length > 0) return config.filters;
+        // Derive a status filter from the data if records have a 'status' field
+        if (records.length > 0 && records[0]?.status != null) {
+            const uniqueStatuses = Array.from(
+                new Set(records.map((r) => String(r.status ?? "")).filter(Boolean))
+            ).sort();
+            if (uniqueStatuses.length > 1 && uniqueStatuses.length <= 20) {
+                return [
+                    {
+                        id: "status",
+                        label: "Status",
+                        column: "status",
+                        options: uniqueStatuses.map((s) => ({
+                            value: s,
+                            label: s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                        })),
+                    },
+                ];
+            }
+        }
+        return undefined;
+    }, [config.filters, records]);
+
     // Apply search + filters
     const filtered = useMemo(() => {
         return records.filter((r) => {
             if (!matchesSearch(r, search, searchKeys)) return false;
             for (const [filterId, filterValue] of Object.entries(filterValues)) {
                 if (filterValue === "all") continue;
-                const filterDef = config.filters?.find((f) => f.id === filterId);
+                const filterDef = resolvedFilters?.find((f) => f.id === filterId);
                 if (filterDef) {
                     const recordVal = String(r[filterDef.column] ?? "");
                     if (recordVal !== filterValue) return false;
@@ -493,7 +524,7 @@ export function ListPageShell({
             }
             return true;
         });
-    }, [records, search, searchKeys, filterValues, config.filters]);
+    }, [records, search, searchKeys, filterValues, resolvedFilters]);
 
     // Compute stats
     const computedStats = useMemo(() => {
@@ -565,17 +596,65 @@ export function ListPageShell({
         return cols;
     }, [config.columns, searchKeys, title]);
 
+    // Column visibility + reorder preferences (persisted to localStorage)
+    const columnPrefs = useColumnPreferences({
+        entityKey: config.entityKey,
+        defaultColumns: dtColumns.map((c) => ({ id: c.id, hidden: c.hidden, sticky: c.sticky })),
+    });
+
+    // Apply visibility + order to columns
+    const orderedVisibleColumns = useMemo((): ColumnDef<EntityRecord>[] => {
+        const colMap = new Map(dtColumns.map((c) => [c.id, c]));
+        const ordered: ColumnDef<EntityRecord>[] = [];
+        for (const id of columnPrefs.order) {
+            const col = colMap.get(id);
+            if (col && columnPrefs.visibility[id] !== false) {
+                ordered.push(col);
+            }
+        }
+        // Append any columns not in the order (new columns added after prefs were saved)
+        for (const col of dtColumns) {
+            if (!columnPrefs.order.includes(col.id) && columnPrefs.visibility[col.id] !== false) {
+                ordered.push(col);
+            }
+        }
+        return ordered;
+    }, [dtColumns, columnPrefs.visibility, columnPrefs.order]);
+
+    // Column visibility popover items
+    const colVisibilityItems = useMemo(
+        () =>
+            columnPrefs.order
+                .map((id) => {
+                    const col = dtColumns.find((c) => c.id === id);
+                    if (!col) return null;
+                    return {
+                        id: col.id,
+                        header: col.header,
+                        visible: columnPrefs.visibility[col.id] !== false,
+                        sticky: col.sticky,
+                    };
+                })
+                .filter(Boolean) as {
+                id: string;
+                header: string;
+                visible: boolean;
+                sticky?: boolean;
+            }[],
+        [dtColumns, columnPrefs.order, columnPrefs.visibility]
+    );
+
     // Build FilterBar props
     const filterBarFilters = useMemo(() => {
-        if (!config.filters) return undefined;
-        return config.filters.map((f) => ({
+        if (!resolvedFilters) return undefined;
+        return resolvedFilters.map((f) => ({
             id: f.id,
             label: f.label,
             value: filterValues[f.id] ?? "all",
             options: f.options.map((o) => ({ value: o.value, label: o.label })),
             onValueChange: (val: string) => setFilterValues((prev) => ({ ...prev, [f.id]: val })),
         }));
-    }, [config.filters, filterValues]);
+    }, [resolvedFilters, filterValues]);
 
     const activeFilterCount = useMemo(() => {
         return Object.values(filterValues).filter((v) => v !== "all").length;
@@ -701,7 +780,44 @@ export function ListPageShell({
     );
 
     const hasCreate = !!config.createConfig;
-    const hasBulkActions = (config.bulkActions?.length ?? 0) > 0;
+
+    // Default bulk actions: Bulk Delete (auto-provided when no custom bulk actions configured)
+    const resolvedBulkActions = useMemo(() => {
+        if (config.bulkActions && config.bulkActions.length > 0) return config.bulkActions;
+        return [
+            {
+                id: "bulk-delete",
+                label: "Delete Selected",
+                icon: Trash2,
+                variant: "destructive" as const,
+                onExecute: async (selectedIds: string[]) => {
+                    const count = selectedIds.length;
+                    const name = entityConfig?.displayName ?? config.entityKey;
+                    if (
+                        !window.confirm(
+                            `Delete ${count} ${count === 1 ? name : (entityConfig?.displayNamePlural ?? name)}?`
+                        )
+                    )
+                        return;
+                    try {
+                        await Promise.all(selectedIds.map((id) => apiDelete(basePath, id)));
+                        setSelectedKeys(new Set());
+                        window.location.reload();
+                    } catch {
+                        // API errors surface via toast in production
+                    }
+                },
+            },
+        ];
+    }, [
+        config.bulkActions,
+        config.entityKey,
+        entityConfig?.displayName,
+        entityConfig?.displayNamePlural,
+        basePath,
+    ]);
+
+    const hasBulkActions = resolvedBulkActions.length > 0;
     const hasMultiView = views.length > 1;
 
     return (
@@ -718,7 +834,7 @@ export function ListPageShell({
                     {/* Header */}
                     {config.headerSlot ?? (
                         <PageHeader title={title} description={description}>
-                            {config.importable && (
+                            {importable && (
                                 <Button
                                     size="sm"
                                     variant="outline"
@@ -727,7 +843,7 @@ export function ListPageShell({
                                     <Upload className="h-4 w-4" /> Import
                                 </Button>
                             )}
-                            {config.exportable && (
+                            {exportable && (
                                 <CsvExportButton
                                     entity={config.entityKey}
                                     size="sm"
@@ -776,13 +892,24 @@ export function ListPageShell({
                             activeCount={activeFilterCount}
                             onClearAll={() => setFilterValues({})}
                             actions={
-                                hasMultiView ? (
-                                    <ViewSwitcher
-                                        views={views}
-                                        value={viewMode}
-                                        onValueChange={setViewMode}
-                                    />
-                                ) : undefined
+                                <>
+                                    {viewMode === "table" && colVisibilityItems.length > 1 && (
+                                        <ColumnVisibilityPopover
+                                            columns={colVisibilityItems}
+                                            onToggle={columnPrefs.toggleVisibility}
+                                            onReset={columnPrefs.reset}
+                                            onShowAll={columnPrefs.showAll}
+                                            onHideAll={columnPrefs.hideAll}
+                                        />
+                                    )}
+                                    {hasMultiView && (
+                                        <ViewSwitcher
+                                            views={views}
+                                            value={viewMode}
+                                            onValueChange={setViewMode}
+                                        />
+                                    )}
+                                </>
                             }
                         />
                     )}
@@ -814,7 +941,7 @@ export function ListPageShell({
                             <ViewContent
                                 viewMode={viewMode}
                                 filtered={filtered}
-                                dtColumns={dtColumns}
+                                dtColumns={orderedVisibleColumns}
                                 config={config}
                                 title={title}
                                 hasBulkActions={hasBulkActions}
@@ -833,7 +960,7 @@ export function ListPageShell({
                     {hasBulkActions && (
                         <BulkActionBar
                             selectedCount={selectedKeys.size}
-                            actions={config.bulkActions!}
+                            actions={resolvedBulkActions}
                             selectedIds={Array.from(selectedKeys)}
                             onClearSelection={handleClearSelection}
                         />
@@ -851,7 +978,7 @@ export function ListPageShell({
             )}
 
             {/* Import dialog */}
-            {config.importable && (
+            {importable && (
                 <CsvImportDialog
                     open={importOpen}
                     onOpenChange={setImportOpen}

@@ -1,0 +1,32 @@
+extends:
+  - spectral:oas
+
+rules:
+  # ─── Severity Overrides ─────────────────────────────────────
+  # Allow generic object schemas for response bodies (entities are typed via Supabase)
+  oas3-valid-media-example: off
+
+  # All operations must have operationId
+  operation-operationId: error
+
+  # All operations must have at least one tag
+  operation-tag-defined: error
+
+  # Paths should use kebab-case
+  paths-kebab-case:
+    given: "$.paths"
+    severity: warn
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^/api/[a-z0-9{}/\\-]+$"
+
+  # Operations must have descriptions or summaries
+  operation-description: warn
+
+  # Info section must have description
+  info-description: error
+
+  # Server URL must be present
+  oas3-api-servers: error

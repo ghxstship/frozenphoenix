@@ -35,12 +35,12 @@ ALTER TABLE lead_sources ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "lead_sources_org_read" ON lead_sources
     FOR SELECT USING (
-        organization_id IN (SELECT get_user_org_ids())
+        organization_id = ANY(get_user_org_ids())
     );
 
 CREATE POLICY "lead_sources_org_write" ON lead_sources
     FOR ALL USING (
-        organization_id IN (SELECT get_user_org_ids())
+        organization_id = ANY(get_user_org_ids())
     );
 
 -- ─────────────────────────────────────────────────────────────────────────────

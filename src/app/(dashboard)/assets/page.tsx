@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAssets, useVehicles } from "@/lib/supabase/hooks";
 import { formatCurrency } from "@/lib/utils";
-import { AlertTriangle, Clock, MapPin, Package, QrCode, Truck } from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Package, QrCode, ScanBarcode, Truck } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ASSET_CONDITION_MAP as ASSET_CONDITION_CONFIG } from "@/config/domain-config";
 import type { Asset, AssetCondition, Vehicle } from "@/types";
@@ -424,6 +426,16 @@ export default function AssetsPage() {
             ],
             contentSlot: <AssetsContent assets={assets} />,
             footerSlot: <VehicleFleetSection vehicles={vehicles} />,
+            toolbarSlot: (
+                <div className="flex items-center gap-2">
+                    <Button asChild size="sm" variant="outline">
+                        <Link href="/assets/scan">
+                            <ScanBarcode className="h-4 w-4 mr-1" />
+                            Scan Assets
+                        </Link>
+                    </Button>
+                </div>
+            ),
         }),
         [assets, vehicles]
     );

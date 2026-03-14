@@ -596,7 +596,26 @@ export const navigationConfig: NavSection[] = [
         title: "Resources",
         defaultExpanded: false,
         items: [
-            { title: "Assets", path: "/assets", icon: Package, permission: "assets.read" },
+            {
+                title: "Assets",
+                path: "/assets",
+                icon: Package,
+                permission: "assets.read",
+                children: [
+                    {
+                        title: "Asset Scanner",
+                        path: "/assets/scan",
+                        icon: ScanBarcode,
+                        permission: "assets.read",
+                    },
+                    {
+                        title: "Batch Scanner",
+                        path: "/assets/scan/batch",
+                        icon: Layers,
+                        permission: "assets.read",
+                    },
+                ],
+            },
             { title: "Inventory", path: "/inventory", icon: Boxes, permission: "inventory.read" },
             {
                 title: "Warehouses",

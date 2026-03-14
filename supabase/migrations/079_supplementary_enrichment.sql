@@ -152,12 +152,12 @@ ALTER TABLE deck_shares ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "deck_shares_org_read" ON deck_shares
     FOR SELECT USING (
-        organization_id IN (SELECT get_user_org_ids())
+        organization_id = ANY(get_user_org_ids())
     );
 
 CREATE POLICY "deck_shares_org_write" ON deck_shares
     FOR ALL USING (
-        organization_id IN (SELECT get_user_org_ids())
+        organization_id = ANY(get_user_org_ids())
     );
 
 COMMIT;

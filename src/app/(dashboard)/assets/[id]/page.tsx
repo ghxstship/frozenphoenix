@@ -27,13 +27,99 @@ import {
     AlertTriangle,
     Barcode,
     Calendar,
+    Clock,
     DollarSign,
     Edit,
-    History,
     Loader2,
     MapPin,
     Package,
+    ScanBarcode,
 } from "lucide-react";
+import { QRDisplay, QrGeneratorDialog } from "@/components/scanning";
+import { useAssetScanHistory } from "@/lib/supabase/hooks-scanning";
+import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
+
+const SCAN_S = SCANNING_STRINGS.assetScanner;
+
+function AssetScanHistoryTab({ assetId }: { assetId: string }) {
+    const { data: history, isLoading } = useAssetScanHistory(assetId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!history || history.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <ScanBarcode className="h-5 w-5" />
+                        {SCAN_S.scanHistory}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ScanBarcode}
+                        title="No scan history"
+                        description="Scans for this asset will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ScanBarcode className="h-5 w-5" />
+                    {SCAN_S.scanHistory} ({history.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {history.map((entry, i) => {
+                        const e = entry as Record<string, unknown>;
+                        return (
+                            <div
+                                key={i}
+                                className="flex items-center justify-between p-2 rounded-lg border"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <ScanBarcode className="h-4 w-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-xs font-medium">
+                                            {typeof e.scan_action === "string"
+                                                ? e.scan_action.replace("_", " ").toUpperCase()
+                                                : "Scan"}
+                                        </p>
+                                        {typeof e.scan_method === "string" && (
+                                            <p className="text-[10px] text-muted-foreground">
+                                                via {e.scan_method}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    <Clock className="h-3 w-3" />
+                                    {typeof e.scanned_at === "string"
+                                        ? formatDate(e.scanned_at)
+                                        : "—"}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "assets",
@@ -59,6 +145,7 @@ export default function AssetDetailPage() {
         useDeleteHook: useDeleteAsset,
     });
     const [checkoutOpen, setCheckoutOpen] = useState(false);
+    const [qrDialogOpen, setQrDialogOpen] = useState(false);
     const [maintenanceOpen, setMaintenanceOpen] = useState(false);
     const [checkoutProject, setCheckoutProject] = useState("");
     const [maintenanceNote, setMaintenanceNote] = useState("");
@@ -201,6 +288,24 @@ export default function AssetDetailPage() {
                     </CardContent>
                 </Card>
             )}
+            {asset.barcode && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">QR Code</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-2">
+                        <QRDisplay value={asset.barcode} size={160} label={asset.name} />
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setQrDialogOpen(true)}
+                        >
+                            Download / Print
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     ) : undefined;
 
@@ -278,20 +383,7 @@ export default function AssetDetailPage() {
             {
                 id: "history",
                 label: "History",
-                content: (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Usage History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <EmptyState
-                                icon={History}
-                                title="No history recorded"
-                                description="Asset usage history will appear here when connected to Supabase"
-                            />
-                        </CardContent>
-                    </Card>
-                ),
+                content: <AssetScanHistoryTab assetId={assetId} />,
             },
             {
                 id: "maintenance",
@@ -406,6 +498,17 @@ export default function AssetDetailPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {asset?.barcode && (
+                <QrGeneratorDialog
+                    open={qrDialogOpen}
+                    onOpenChange={setQrDialogOpen}
+                    value={asset.barcode}
+                    label={asset.name}
+                    entityType="asset"
+                    entityId={assetId}
+                />
+            )}
         </>
     );
 }

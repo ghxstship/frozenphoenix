@@ -27,23 +27,15 @@ export type CredentialAssignmentStatus =
     | "revoked"
     | "expired";
 
-export type CredentialFormat =
-    | "wristband"
-    | "badge"
-    | "lanyard"
-    | "digital"
-    | "rfid"
-    | "ticket";
+export type CredentialFormat = "wristband" | "badge" | "lanyard" | "digital" | "rfid" | "ticket";
 
 export type CredentialScanType = "check_in" | "check_out" | "verify" | "deny";
 
-export type ScanResult =
-    | "valid"
-    | "denied"
-    | "expired"
-    | "revoked"
-    | "zone_denied"
-    | "flagged";
+export type ScanResult = "valid" | "denied" | "expired" | "revoked" | "zone_denied" | "flagged";
+
+export type ScanMethodType = "keyboard" | "camera" | "rfid" | "nfc" | "file" | "api";
+
+export type IdentifierType = "barcode" | "rfid" | "nfc" | "auto";
 
 export type BulkJobStatus =
     | "pending"
@@ -104,6 +96,7 @@ export interface CredentialAssignment {
     assignee_email: string | null;
     barcode_value: string;
     rfid_tag: string | null;
+    nfc_serial: string | null;
     status: CredentialAssignmentStatus;
     zone_access: string[];
     valid_from: string | null;
@@ -132,6 +125,8 @@ export interface CredentialScanLog {
     assignment_id: string;
     scan_type: CredentialScanType;
     scan_result: ScanResult;
+    scan_method: ScanMethodType;
+    scanned_identifier: string | null;
     zone_id: string | null;
     device_id: string | null;
     latitude: number | null;
@@ -268,8 +263,12 @@ export interface AssignCredentialRequest {
 }
 
 export interface ScanCredentialRequest {
-    barcode_value: string;
+    /** The scanned value — can be barcode, RFID tag, or NFC serial. */
+    identifier: string;
+    /** How to interpret the identifier. Default "auto" tries all. */
+    identifier_type?: IdentifierType;
     scan_type: CredentialScanType;
+    scan_method?: ScanMethodType;
     zone_id?: string;
     device_id?: string;
     latitude?: number;
@@ -282,6 +281,8 @@ export interface ScanCredentialResponse {
     assignment: CredentialAssignment | null;
     credential_type: CredentialType | null;
     message: string;
+    matched_by?: IdentifierType;
+    scan_method?: ScanMethodType;
 }
 
 export interface BulkImportRequest {

@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
-  NEXT_TELEMETRY_DISABLED: '1'
+  NODE_VERSION: "20"
+  NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
@@ -159,7 +159,32 @@ jobs:
           echo "✅ Test suite completed with coverage"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # Stage 5: Database migrations check
+  # Stage 5: API Spec Hygiene
+  # ─────────────────────────────────────────────────────────────────────────
+  api-spec:
+    name: API Spec Hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check undocumented endpoints
+        run: npm run check:api-coverage
+
+      - name: Lint OpenAPI spec (Spectral)
+        run: npm run lint:api-spec
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Stage 6: Database migrations check
   # ─────────────────────────────────────────────────────────────────────────
   migrations:
     name: Migration Integrity
@@ -194,7 +219,7 @@ jobs:
     name: "🚦 Quality Gate"
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [lint-typecheck, security, build, test, migrations]
+    needs: [lint-typecheck, security, build, test, api-spec, migrations]
     if: always()
     steps:
       - name: Evaluate gate
@@ -220,6 +245,7 @@ jobs:
           check_job "Security Audit"    "${{ needs.security.result }}"
           check_job "Production Build"  "${{ needs.build.result }}"
           check_job "Test Suite"        "${{ needs.test.result }}"
+          check_job "API Spec Hygiene"  "${{ needs.api-spec.result }}"
           check_job "Migrations"        "${{ needs.migrations.result }}"
 
           echo "═══════════════════════════════════════════════════════"

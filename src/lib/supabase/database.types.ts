@@ -1,30 +1,10 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-    graphql_public: {
-        Tables: {
-            [_ in never]: never;
-        };
-        Views: {
-            [_ in never]: never;
-        };
-        Functions: {
-            graphql: {
-                Args: {
-                    extensions?: Json;
-                    operationName?: string;
-                    query?: string;
-                    variables?: Json;
-                };
-                Returns: Json;
-            };
-        };
-        Enums: {
-            [_ in never]: never;
-        };
-        CompositeTypes: {
-            [_ in never]: never;
-        };
+    // Allows to automatically instantiate createClient with right options
+    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+    __InternalSupabase: {
+        PostgrestVersion: "14.1";
     };
     public: {
         Tables: {
@@ -981,6 +961,357 @@ export type Database = {
                     },
                 ];
             };
+            ai_api_keys: {
+                Row: {
+                    created_at: string;
+                    created_by: string;
+                    encrypted_key: string;
+                    id: string;
+                    is_valid: boolean;
+                    key_hint: string;
+                    last_validated_at: string | null;
+                    org_id: string;
+                    provider_id: string;
+                    rotated_at: string | null;
+                };
+                Insert: {
+                    created_at?: string;
+                    created_by: string;
+                    encrypted_key: string;
+                    id?: string;
+                    is_valid?: boolean;
+                    key_hint: string;
+                    last_validated_at?: string | null;
+                    org_id: string;
+                    provider_id: string;
+                    rotated_at?: string | null;
+                };
+                Update: {
+                    created_at?: string;
+                    created_by?: string;
+                    encrypted_key?: string;
+                    id?: string;
+                    is_valid?: boolean;
+                    key_hint?: string;
+                    last_validated_at?: string | null;
+                    org_id?: string;
+                    provider_id?: string;
+                    rotated_at?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_api_keys_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_api_keys_provider_id_fkey";
+                        columns: ["provider_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_providers";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_conversations: {
+                Row: {
+                    archived: boolean;
+                    created_at: string;
+                    id: string;
+                    model_id: string | null;
+                    org_id: string;
+                    pinned: boolean;
+                    summary: string | null;
+                    title: string;
+                    updated_at: string;
+                    user_id: string;
+                    workspace_context: string;
+                };
+                Insert: {
+                    archived?: boolean;
+                    created_at?: string;
+                    id?: string;
+                    model_id?: string | null;
+                    org_id: string;
+                    pinned?: boolean;
+                    summary?: string | null;
+                    title?: string;
+                    updated_at?: string;
+                    user_id: string;
+                    workspace_context?: string;
+                };
+                Update: {
+                    archived?: boolean;
+                    created_at?: string;
+                    id?: string;
+                    model_id?: string | null;
+                    org_id?: string;
+                    pinned?: boolean;
+                    summary?: string | null;
+                    title?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                    workspace_context?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_conversations_model_id_fkey";
+                        columns: ["model_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_models";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_conversations_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_document_chunks: {
+                Row: {
+                    chunk_index: number;
+                    content: string;
+                    created_at: string;
+                    document_id: string;
+                    embedding: string | null;
+                    id: string;
+                    metadata: Json;
+                    token_count: number;
+                };
+                Insert: {
+                    chunk_index: number;
+                    content: string;
+                    created_at?: string;
+                    document_id: string;
+                    embedding?: string | null;
+                    id?: string;
+                    metadata?: Json;
+                    token_count?: number;
+                };
+                Update: {
+                    chunk_index?: number;
+                    content?: string;
+                    created_at?: string;
+                    document_id?: string;
+                    embedding?: string | null;
+                    id?: string;
+                    metadata?: Json;
+                    token_count?: number;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_document_chunks_document_id_fkey";
+                        columns: ["document_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_documents";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_documents: {
+                Row: {
+                    chunk_count: number;
+                    created_at: string;
+                    id: string;
+                    mime_type: string;
+                    org_id: string;
+                    original_filename: string;
+                    processing_status: Database["public"]["Enums"]["ai_document_processing_status"];
+                    source_type: Database["public"]["Enums"]["ai_document_source_type"];
+                    storage_path: string;
+                    title: string;
+                    total_tokens: number;
+                };
+                Insert: {
+                    chunk_count?: number;
+                    created_at?: string;
+                    id?: string;
+                    mime_type: string;
+                    org_id: string;
+                    original_filename: string;
+                    processing_status?: Database["public"]["Enums"]["ai_document_processing_status"];
+                    source_type?: Database["public"]["Enums"]["ai_document_source_type"];
+                    storage_path: string;
+                    title: string;
+                    total_tokens?: number;
+                };
+                Update: {
+                    chunk_count?: number;
+                    created_at?: string;
+                    id?: string;
+                    mime_type?: string;
+                    org_id?: string;
+                    original_filename?: string;
+                    processing_status?: Database["public"]["Enums"]["ai_document_processing_status"];
+                    source_type?: Database["public"]["Enums"]["ai_document_source_type"];
+                    storage_path?: string;
+                    title?: string;
+                    total_tokens?: number;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_documents_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_messages: {
+                Row: {
+                    attachments: Json | null;
+                    content: string;
+                    conversation_id: string;
+                    created_at: string;
+                    id: string;
+                    latency_ms: number;
+                    model_id: string | null;
+                    role: Database["public"]["Enums"]["ai_message_role"];
+                    token_count_input: number;
+                    token_count_output: number;
+                    tool_calls: Json | null;
+                };
+                Insert: {
+                    attachments?: Json | null;
+                    content?: string;
+                    conversation_id: string;
+                    created_at?: string;
+                    id?: string;
+                    latency_ms?: number;
+                    model_id?: string | null;
+                    role: Database["public"]["Enums"]["ai_message_role"];
+                    token_count_input?: number;
+                    token_count_output?: number;
+                    tool_calls?: Json | null;
+                };
+                Update: {
+                    attachments?: Json | null;
+                    content?: string;
+                    conversation_id?: string;
+                    created_at?: string;
+                    id?: string;
+                    latency_ms?: number;
+                    model_id?: string | null;
+                    role?: Database["public"]["Enums"]["ai_message_role"];
+                    token_count_input?: number;
+                    token_count_output?: number;
+                    tool_calls?: Json | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_messages_conversation_id_fkey";
+                        columns: ["conversation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_conversations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_messages_model_id_fkey";
+                        columns: ["model_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_models";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_models: {
+                Row: {
+                    context_window: number;
+                    cost_per_1k_input: number;
+                    cost_per_1k_output: number;
+                    created_at: string;
+                    display_name: string;
+                    id: string;
+                    is_active: boolean;
+                    is_default: boolean;
+                    max_output_tokens: number;
+                    model_key: string;
+                    provider_id: string;
+                    supports_json_mode: boolean;
+                    supports_streaming: boolean;
+                    supports_tools: boolean;
+                    supports_vision: boolean;
+                };
+                Insert: {
+                    context_window?: number;
+                    cost_per_1k_input?: number;
+                    cost_per_1k_output?: number;
+                    created_at?: string;
+                    display_name: string;
+                    id?: string;
+                    is_active?: boolean;
+                    is_default?: boolean;
+                    max_output_tokens?: number;
+                    model_key: string;
+                    provider_id: string;
+                    supports_json_mode?: boolean;
+                    supports_streaming?: boolean;
+                    supports_tools?: boolean;
+                    supports_vision?: boolean;
+                };
+                Update: {
+                    context_window?: number;
+                    cost_per_1k_input?: number;
+                    cost_per_1k_output?: number;
+                    created_at?: string;
+                    display_name?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    is_default?: boolean;
+                    max_output_tokens?: number;
+                    model_key?: string;
+                    provider_id?: string;
+                    supports_json_mode?: boolean;
+                    supports_streaming?: boolean;
+                    supports_tools?: boolean;
+                    supports_vision?: boolean;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_models_provider_id_fkey";
+                        columns: ["provider_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_providers";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_providers: {
+                Row: {
+                    api_base_url: string | null;
+                    created_at: string;
+                    display_name: string;
+                    id: string;
+                    is_active: boolean;
+                    provider_key: Database["public"]["Enums"]["ai_provider_key"];
+                    updated_at: string;
+                };
+                Insert: {
+                    api_base_url?: string | null;
+                    created_at?: string;
+                    display_name: string;
+                    id?: string;
+                    is_active?: boolean;
+                    provider_key: Database["public"]["Enums"]["ai_provider_key"];
+                    updated_at?: string;
+                };
+                Update: {
+                    api_base_url?: string | null;
+                    created_at?: string;
+                    display_name?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    provider_key?: Database["public"]["Enums"]["ai_provider_key"];
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
             ai_report_queries: {
                 Row: {
                     created_at: string | null;
@@ -1038,6 +1369,158 @@ export type Database = {
                         columns: ["organization_id"];
                         isOneToOne: false;
                         referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_system_prompts: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    is_active: boolean;
+                    org_id: string;
+                    prompt_name: string;
+                    prompt_text: string;
+                    role_id: string | null;
+                    updated_at: string;
+                    version: number;
+                    workspace_context: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    org_id: string;
+                    prompt_name: string;
+                    prompt_text: string;
+                    role_id?: string | null;
+                    updated_at?: string;
+                    version?: number;
+                    workspace_context?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    org_id?: string;
+                    prompt_name?: string;
+                    prompt_text?: string;
+                    role_id?: string | null;
+                    updated_at?: string;
+                    version?: number;
+                    workspace_context?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_system_prompts_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_usage_limits: {
+                Row: {
+                    active: boolean;
+                    created_at: string;
+                    daily_token_limit: number;
+                    id: string;
+                    max_context_per_request: number;
+                    monthly_token_limit: number;
+                    org_id: string;
+                    role_id: string | null;
+                };
+                Insert: {
+                    active?: boolean;
+                    created_at?: string;
+                    daily_token_limit?: number;
+                    id?: string;
+                    max_context_per_request?: number;
+                    monthly_token_limit?: number;
+                    org_id: string;
+                    role_id?: string | null;
+                };
+                Update: {
+                    active?: boolean;
+                    created_at?: string;
+                    daily_token_limit?: number;
+                    id?: string;
+                    max_context_per_request?: number;
+                    monthly_token_limit?: number;
+                    org_id?: string;
+                    role_id?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_usage_limits_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            ai_usage_logs: {
+                Row: {
+                    created_at: string;
+                    endpoint_called: string;
+                    estimated_cost: number;
+                    id: string;
+                    model_id: string | null;
+                    org_id: string;
+                    provider_id: string;
+                    response_status: number;
+                    token_count_input: number;
+                    token_count_output: number;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    endpoint_called: string;
+                    estimated_cost?: number;
+                    id?: string;
+                    model_id?: string | null;
+                    org_id: string;
+                    provider_id: string;
+                    response_status?: number;
+                    token_count_input?: number;
+                    token_count_output?: number;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    endpoint_called?: string;
+                    estimated_cost?: number;
+                    id?: string;
+                    model_id?: string | null;
+                    org_id?: string;
+                    provider_id?: string;
+                    response_status?: number;
+                    token_count_input?: number;
+                    token_count_output?: number;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "ai_usage_logs_model_id_fkey";
+                        columns: ["model_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_models";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_usage_logs_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_usage_logs_provider_id_fkey";
+                        columns: ["provider_id"];
+                        isOneToOne: false;
+                        referencedRelation: "ai_providers";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -3111,12 +3594,10 @@ export type Database = {
             };
             automations: {
                 Row: {
-                    conditions: Json | null;
                     created_at: string | null;
                     created_by: string | null;
                     description: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
-                    error_count: number | null;
                     id: string;
                     is_active: boolean | null;
                     last_triggered_at: string | null;
@@ -3128,12 +3609,10 @@ export type Database = {
                     updated_by: string | null;
                 };
                 Insert: {
-                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
-                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -3145,12 +3624,10 @@ export type Database = {
                     updated_by?: string | null;
                 };
                 Update: {
-                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type?: Database["public"]["Enums"]["entity_type"];
-                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -24431,8 +24908,6 @@ export type Database = {
                     status: string;
                     sustainability_score: number | null;
                     team_id: string | null;
-                    template_id: string | null;
-                    template_version: number | null;
                     timezone: string;
                     updated_at: string | null;
                     weather_contingency_plan: string | null;
@@ -24469,8 +24944,6 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
-                    template_id?: string | null;
-                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -24507,8 +24980,6 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
-                    template_id?: string | null;
-                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -24610,13 +25081,6 @@ export type Database = {
                         columns: ["team_id"];
                         isOneToOne: false;
                         referencedRelation: "teams";
-                        referencedColumns: ["id"];
-                    },
-                    {
-                        foreignKeyName: "projects_template_id_fkey";
-                        columns: ["template_id"];
-                        isOneToOne: false;
-                        referencedRelation: "project_templates";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -37841,7 +38305,6 @@ export type Database = {
                 };
                 Returns: Json;
             };
-            erase_user_data: { Args: { target_user_id: string }; Returns: undefined };
             evaluate_feature_flag: {
                 Args: {
                     p_flag_key: string;
@@ -37874,11 +38337,26 @@ export type Database = {
                 Args: { p_field_type_id: string; p_org_id: string };
                 Returns: boolean;
             };
-            purge_expired_data: {
-                Args: never;
+            match_document_chunks: {
+                Args: {
+                    filter_document_ids?: string[];
+                    filter_org_id?: string;
+                    filter_source_types?: string[];
+                    match_count?: number;
+                    match_threshold?: number;
+                    query_embedding: string;
+                };
                 Returns: {
-                    entity: string;
-                    rows_purged: number;
+                    chunk_id: string;
+                    chunk_index: number;
+                    content: string;
+                    created_at: string;
+                    document_id: string;
+                    document_title: string;
+                    metadata: Json;
+                    similarity: number;
+                    source_type: string;
+                    token_count: number;
                 }[];
             };
             resolve_setting: {
@@ -37972,6 +38450,21 @@ export type Database = {
                 | "completed"
                 | "cancelled";
             advance_type: "pre_event" | "load_in" | "show_day" | "strike" | "post_event";
+            ai_document_processing_status:
+                | "pending"
+                | "chunking"
+                | "embedding"
+                | "ready"
+                | "failed";
+            ai_document_source_type:
+                | "upload"
+                | "sop"
+                | "handbook"
+                | "template"
+                | "proposal"
+                | "runsheet";
+            ai_message_role: "user" | "assistant" | "system" | "tool_call" | "tool_result";
+            ai_provider_key: "anthropic" | "openai" | "google" | "ollama" | "mistral" | "groq";
             api_token_status: "active" | "expired" | "revoked";
             approval_entity_type:
                 | "budget"
@@ -39748,9 +40241,6 @@ export type CompositeTypes<
       : never;
 
 export const Constants = {
-    graphql_public: {
-        Enums: {},
-    },
     public: {
         Enums: {
             access_grant_status: ["active", "expired", "revoked"],
@@ -39808,6 +40298,17 @@ export const Constants = {
                 "cancelled",
             ],
             advance_type: ["pre_event", "load_in", "show_day", "strike", "post_event"],
+            ai_document_processing_status: ["pending", "chunking", "embedding", "ready", "failed"],
+            ai_document_source_type: [
+                "upload",
+                "sop",
+                "handbook",
+                "template",
+                "proposal",
+                "runsheet",
+            ],
+            ai_message_role: ["user", "assistant", "system", "tool_call", "tool_result"],
+            ai_provider_key: ["anthropic", "openai", "google", "ollama", "mistral", "groq"],
             api_token_status: ["active", "expired", "revoked"],
             approval_entity_type: [
                 "budget",

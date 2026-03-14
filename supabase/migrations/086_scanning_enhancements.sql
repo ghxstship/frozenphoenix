@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- 084 — Scanning Enhancements
+-- 086 — Scanning Enhancements
 -- Adds scan_method tracking, NFC serial columns, and indexes
 -- for multi-identifier credential/asset lookup.
 -- ═══════════════════════════════════════════════════════════════

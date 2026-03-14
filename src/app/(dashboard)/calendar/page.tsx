@@ -112,7 +112,9 @@ export default function CalendarPage() {
         requestedAt: a.requested_at,
         deadline: a.deadline,
         approvedAt: a.approved_at ?? undefined,
-        approverName: (a as unknown as { profiles?: { name: string } }).profiles?.name || "",
+        approverName:
+            (a as unknown as { user_profiles?: { display_name: string } }).user_profiles
+                ?.display_name || "",
         deliverableUrl: a.deliverable_url ?? undefined,
         timelineImpactDays: a.timeline_impact_days ?? undefined,
     }));

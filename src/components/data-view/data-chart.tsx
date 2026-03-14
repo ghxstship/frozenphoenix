@@ -11,6 +11,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useReducedMotion } from "@/hooks/use-media-query";
 
 // ─── Types ───
 
@@ -49,6 +50,7 @@ export function getChartColor(index: number): string {
 // ─── Bar Chart ───
 
 function BarChart({ segments, height = 240 }: { segments: ChartSegment[]; height: number }) {
+    const reducedMotion = useReducedMotion();
     const maxValue = Math.max(...segments.map((s) => s.value), 1);
     const barWidth = Math.min(48, Math.max(20, 400 / segments.length));
     const gap = Math.min(12, Math.max(4, 200 / segments.length));
@@ -111,6 +113,12 @@ function BarChart({ segments, height = 240 }: { segments: ChartSegment[]; height
                                     className="transition-opacity hover:opacity-80"
                                     role="graphics-symbol"
                                     aria-label={`${seg.label}: ${seg.value}`}
+                                    {...(!reducedMotion && {
+                                        style: {
+                                            transformOrigin: `${x + barWidth / 2}px ${height}px`,
+                                            animation: `scaleIn 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms both`,
+                                        },
+                                    })}
                                 />
                             </Tooltip>
                             {/* X-axis label */}

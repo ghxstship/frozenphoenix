@@ -5,7 +5,21 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import * as React from "react";
+import {
+    closestCenter,
+    DndContext,
+    type DragEndEvent,
+    DragOverlay,
+    type DragStartEvent,
+    PointerSensor,
+    useDraggable,
+    useDroppable,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "@/lib/motion";
+import { useMotion } from "@/hooks/use-motion";
 import { Badge } from "@/components/ui/badge";
 import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
@@ -42,6 +56,7 @@ interface DataBoardProps<T> {
     cardTitle: keyof T | ((row: T) => string);
     cardSubtitle?: keyof T | ((row: T) => string);
     // Interactions
+    actions?: (row: T) => React.ReactNode;
     onCardClick?: (item: T) => void;
     onDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
     // Styling
@@ -54,6 +69,62 @@ interface DataBoardProps<T> {
     emptyState?: React.ReactNode;
 }
 
+// ─── Droppable Column Wrapper ───
+function DroppableColumn({
+    id,
+    children,
+    className,
+    style,
+    role,
+    ariaLabel,
+}: {
+    id: string;
+    children: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+    role?: string;
+    ariaLabel?: string;
+}) {
+    const { setNodeRef, isOver } = useDroppable({ id });
+    return (
+        <div
+            ref={setNodeRef}
+            className={cn(className, isOver && "ring-2 ring-primary/30 bg-primary/5")}
+            style={style}
+            role={role}
+            aria-label={ariaLabel}
+        >
+            {children}
+        </div>
+    );
+}
+
+// ─── Draggable Card Wrapper ───
+function DraggableCard({
+    id,
+    disabled,
+    children,
+}: {
+    id: string;
+    disabled?: boolean;
+    children: React.ReactNode;
+}) {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id,
+        disabled,
+    });
+    return (
+        <div
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            className={cn("touch-none", isDragging && "opacity-30")}
+        >
+            {children}
+        </div>
+    );
+}
+
 export function DataBoard<T extends object>({
     data,
     columns,
@@ -61,13 +132,19 @@ export function DataBoard<T extends object>({
     cardFields,
     cardTitle,
     cardSubtitle,
+    actions,
     onCardClick,
+    onDragEnd,
     columnWidth = 300,
     cardClassName,
     className,
     emptyColumnState,
     emptyState,
 }: DataBoardProps<T>) {
+    const { shouldAnimate, getSpring } = useMotion();
+    const [activeId, setActiveId] = React.useState<string | null>(null);
+    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
     // ─── Group Data by Column ───
     const groupedData = React.useMemo(() => {
         const groups: Record<string, T[]> = {};
@@ -76,6 +153,51 @@ export function DataBoard<T extends object>({
         });
         return groups;
     }, [data, columns]);
+
+    // ─── Lookup helpers ───
+    const dataMap = React.useMemo(() => {
+        const map = new Map<string, T>();
+        data.forEach((item) => map.set(String(item[keyField]), item));
+        return map;
+    }, [data, keyField]);
+
+    const findColumnForItem = React.useCallback(
+        (itemId: string): string | undefined => {
+            for (const [colId, items] of Object.entries(groupedData)) {
+                if (items.some((item) => String(item[keyField]) === itemId)) {
+                    return colId;
+                }
+            }
+            return undefined;
+        },
+        [groupedData, keyField]
+    );
+
+    // ─── DnD handlers ───
+    const handleDragStart = React.useCallback((event: DragStartEvent) => {
+        setActiveId(String(event.active.id));
+    }, []);
+
+    const handleDragEnd = React.useCallback(
+        (event: DragEndEvent) => {
+            setActiveId(null);
+            const { active, over } = event;
+            if (!over || !onDragEnd) return;
+
+            const itemId = String(active.id);
+            const fromColumn = findColumnForItem(itemId);
+            const toColumn = String(over.id);
+
+            if (fromColumn && toColumn && fromColumn !== toColumn) {
+                onDragEnd(itemId, fromColumn, toColumn);
+            }
+        },
+        [onDragEnd, findColumnForItem]
+    );
+
+    const handleDragCancel = React.useCallback(() => {
+        setActiveId(null);
+    }, []);
 
     // ─── Get Field Value ───
     const getFieldValue = (row: T, field: CardField<T>): unknown => {
@@ -119,9 +241,8 @@ export function DataBoard<T extends object>({
         return <span className="text-sm">{String(value)}</span>;
     };
 
-    // ─── Render Card ───
-    const renderCard = (item: T) => {
-        const key = String(item[keyField]);
+    // ─── Render Card Content (shared between inline + overlay) ───
+    const renderCardContent = (item: T) => {
         const title = getTitle(item);
         const subtitle = getSubtitle(item);
 
@@ -131,7 +252,6 @@ export function DataBoard<T extends object>({
 
         return (
             <div
-                key={key}
                 onClick={() => onCardClick?.(item)}
                 onKeyDown={(e) => {
                     if ((e.key === "Enter" || e.key === " ") && onCardClick) {
@@ -147,6 +267,7 @@ export function DataBoard<T extends object>({
                     "hover:shadow-md hover:border-border/80 transition-all duration-200",
                     onCardClick &&
                         "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    onDragEnd && "cursor-grab active:cursor-grabbing",
                     cardClassName
                 )}
             >
@@ -208,15 +329,55 @@ export function DataBoard<T extends object>({
                         ))}
                     </div>
                 )}
+
+                {/* Actions */}
+                {actions && (
+                    <div
+                        className="flex items-center justify-end mt-2 pt-2 border-t border-border"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {actions(item)}
+                    </div>
+                )}
             </div>
         );
     };
+
+    // ─── Render Card (with optional DnD + layout animation) ───
+    const renderCard = (item: T) => {
+        const key = String(item[keyField]);
+        const isDragEnabled = Boolean(onDragEnd);
+        const spring = getSpring("snappy");
+        const MotionWrapper = shouldAnimate ? motion.div : "div";
+        const motionProps = shouldAnimate
+            ? { layout: true, transition: { type: "spring" as const, ...spring } }
+            : {};
+
+        const card = (
+            <MotionWrapper key={key} {...motionProps}>
+                {renderCardContent(item)}
+            </MotionWrapper>
+        );
+
+        if (isDragEnabled) {
+            return (
+                <DraggableCard key={key} id={key}>
+                    {card}
+                </DraggableCard>
+            );
+        }
+
+        return card;
+    };
+
+    // ─── Drag Overlay ───
+    const activeItem = activeId ? dataMap.get(activeId) : null;
 
     if (data.length === 0 && emptyState) {
         return <>{emptyState}</>;
     }
 
-    return (
+    const boardContent = (
         <div
             className={cn(
                 "flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth",
@@ -253,8 +414,9 @@ export function DataBoard<T extends object>({
                             </div>
                         </div>
 
-                        {/* Column Content */}
-                        <div
+                        {/* Column Content — droppable zone */}
+                        <DroppableColumn
+                            id={column.id}
                             className={cn(
                                 "flex-1 space-y-2 min-h-[200px] p-2 rounded-lg transition-colors",
                                 items.length === 0
@@ -269,12 +431,37 @@ export function DataBoard<T extends object>({
                                     </p>
                                 </div>
                             ) : (
-                                items.map(renderCard)
+                                <AnimatePresence mode="popLayout" initial={false}>
+                                    {items.map(renderCard)}
+                                </AnimatePresence>
                             )}
-                        </div>
+                        </DroppableColumn>
                     </div>
                 );
             })}
         </div>
+    );
+
+    if (!onDragEnd) {
+        return boardContent;
+    }
+
+    return (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+        >
+            {boardContent}
+            <DragOverlay dropAnimation={shouldAnimate ? undefined : null}>
+                {activeItem ? (
+                    <div className="rotate-2 scale-105 shadow-xl opacity-90">
+                        {renderCardContent(activeItem)}
+                    </div>
+                ) : null}
+            </DragOverlay>
+        </DndContext>
     );
 }

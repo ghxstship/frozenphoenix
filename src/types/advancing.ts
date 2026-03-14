@@ -13,30 +13,15 @@ export type CatalogCategoryType =
     | "travel"
     | "custom";
 
-export type CatalogItemStatus =
-    | "active"
-    | "discontinued"
-    | "out_of_stock"
-    | "seasonal"
-    | "draft";
+export type CatalogItemStatus = "active" | "discontinued" | "out_of_stock" | "seasonal" | "draft";
 
-export type ModifierType =
-    | "single_select"
-    | "multi_select"
-    | "quantity"
-    | "text"
-    | "boolean";
+export type ModifierType = "single_select" | "multi_select" | "quantity" | "text" | "boolean";
 
 export type PriceAdjustmentType = "flat" | "percentage" | "per_unit";
 
 // ─── Advance Enums ───
 
-export type AdvanceType =
-    | "pre_event"
-    | "load_in"
-    | "show_day"
-    | "strike"
-    | "post_event";
+export type AdvanceType = "pre_event" | "load_in" | "show_day" | "strike" | "post_event";
 
 export type AdvanceStatus =
     | "draft"
@@ -48,12 +33,7 @@ export type AdvanceStatus =
     | "completed"
     | "cancelled";
 
-export type AdvancePriority =
-    | "low"
-    | "medium"
-    | "high"
-    | "urgent"
-    | "critical";
+export type AdvancePriority = "low" | "medium" | "high" | "urgent" | "critical";
 
 export type AdvanceItemStatus =
     | "pending"
@@ -243,11 +223,13 @@ export interface ProductionAdvanceItem {
     id: string;
     advance_id: string;
     catalog_item_id: string;
+    category_id: string | null;
     vendor_id: string | null;
     assigned_to: string | null;
     quantity_requested: number;
     quantity_confirmed: number | null;
     selected_modifiers: SelectedModifier[];
+    item_specifications: Record<string, unknown>;
     status: AdvanceItemStatus;
     unit_cost: number;
     total_cost: number;
@@ -257,9 +239,15 @@ export interface ProductionAdvanceItem {
     strike_time: string | null;
     delivery_zone: string | null;
     delivery_location: string | null;
+    location_id: string | null;
     is_critical_path: boolean;
     dependencies: string[];
     notes: string | null;
+    operational_purpose: string | null;
+    special_requests: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    duration_days: number | null;
     budget_line_id: string | null;
     reservation_id: string | null;
     confirmed_at: string | null;
@@ -321,6 +309,8 @@ export interface ProductionAdvanceWithJoins extends ProductionAdvance {
 
 export interface ProductionAdvanceItemWithJoins extends ProductionAdvanceItem {
     catalog_items?: { name: string; sku: string | null; thumbnail_url: string | null } | null;
+    catalog_categories?: { name: string; slug: string; category_type: CatalogCategoryType } | null;
+    locations?: { name: string } | null;
     vendors?: { name: string } | null;
     assigned_to_profile?: { name: string } | null;
 }
@@ -329,6 +319,7 @@ export interface ProductionAdvanceItemWithJoins extends ProductionAdvanceItem {
 
 export interface AdvanceCartItem {
     catalog_item_id: string;
+    category_id?: string;
     name: string;
     sku?: string;
     thumbnail_url?: string;
@@ -336,11 +327,17 @@ export interface AdvanceCartItem {
     quantity: number;
     unit_cost: number;
     selected_modifiers?: SelectedModifier[];
+    item_specifications?: Record<string, unknown>;
     notes?: string | null;
     is_critical_path: boolean;
     delivery_zone?: string;
     delivery_location?: string;
+    location_id?: string;
     scheduled_delivery?: string;
+    start_date?: string;
+    end_date?: string;
+    operational_purpose?: string;
+    special_requests?: string;
 }
 
 export interface AdvanceCartState {
@@ -362,15 +359,22 @@ export interface AdvanceCartState {
 
 export interface CartItem {
     catalog_item_id: string;
+    category_id: string | null;
     catalog_item: CatalogItemWithOverride;
     quantity: number;
     unit_cost: number;
     selected_modifiers: SelectedModifier[];
+    item_specifications: Record<string, unknown>;
     notes: string | null;
     is_critical_path: boolean;
     delivery_zone: string | null;
     delivery_location: string | null;
+    location_id: string | null;
     scheduled_delivery: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    operational_purpose: string | null;
+    special_requests: string | null;
 }
 
 export interface CartState {
@@ -407,15 +411,22 @@ export interface CreateAdvanceRequest {
 
 export interface CreateAdvanceItemRequest {
     catalog_item_id: string;
+    category_id?: string;
     quantity_requested: number;
     unit_cost: number;
     selected_modifiers?: SelectedModifier[];
+    item_specifications?: Record<string, unknown>;
     vendor_id?: string;
     notes?: string;
     is_critical_path?: boolean;
     delivery_zone?: string;
     delivery_location?: string;
+    location_id?: string;
     scheduled_delivery?: string;
+    start_date?: string;
+    end_date?: string;
+    operational_purpose?: string;
+    special_requests?: string;
 }
 
 export interface UpdateAdvanceRequest {

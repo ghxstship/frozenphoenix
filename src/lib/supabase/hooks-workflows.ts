@@ -6,7 +6,7 @@ import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
 
-type ProfileName = { profiles: { name: string } | null };
+type ProfileName = { user_profiles: { display_name: string } | null };
 type ProjectName = { projects: { name: string } | null };
 // VendorName available if needed for future joins
 type LocationName = { locations: { name: string } | null };
@@ -315,7 +315,7 @@ export function useWorkflowInstances(entityType?: string, entityId?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("workflow_instances")
-                .select("*, approval_workflows(name), profiles(name)")
+                .select("*, approval_workflows(name), user_profiles(display_name)")
                 .order("created_at", { ascending: false });
             if (entityType) query = query.eq("entity_type", entityType);
             if (entityId) query = query.eq("entity_id", entityId);
@@ -369,7 +369,7 @@ export function useWorkflowStepApprovals(instanceId: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("workflow_step_approvals")
-                .select("*, profiles(name), approval_steps(name, step_order)")
+                .select("*, user_profiles(display_name), approval_steps(name, step_order)")
                 .eq("instance_id", instanceId)
                 .order("assigned_at");
             if (error) throw error;

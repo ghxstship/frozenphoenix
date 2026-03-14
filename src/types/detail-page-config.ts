@@ -87,6 +87,19 @@ export interface DetailTabDef {
     content?: React.ReactNode;
 }
 
+// ─── Quick View Config (for slide-panel preview) ────────────
+
+export interface QuickViewConfig {
+    /** Fields shown in the preview panel (subset of full detail) */
+    previewFields: DetailFieldDef[];
+    /** Optional preview stats (defaults to first 3 from DetailPageConfig.stats when used with DetailPageShell) */
+    previewStats?: DetailStatDef[];
+    /** Panel width class (default: "max-w-lg") */
+    width?: string;
+    /** Enable prev/next record navigation via ↑/↓ keys */
+    navigable?: boolean;
+}
+
 // ─── Main Config ────────────────────────────────────────────
 
 export interface DetailPageConfig {

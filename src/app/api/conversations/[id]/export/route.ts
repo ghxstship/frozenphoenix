@@ -3,15 +3,14 @@ import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase
 import { ApiErrors } from "@/lib/api-utils";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id: conversationId } = await params;
     const supabase = await createClient();
     if (!supabase) return ApiErrors.serviceUnavailable();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return ApiErrors.unauthorized();
 
     const admin = createAdminClient();
@@ -39,7 +38,9 @@ export async function GET(
 
     // Get all messages
     const { data: messages, error } = await serverFromTable(admin!, "messages")
-        .select("id, body, priority, created_at, edited_at, is_pinned, profiles:sender_id(name)")
+        .select(
+            "id, body, priority, created_at, edited_at, is_pinned, user_profiles:sender_id(display_name)"
+        )
         .eq("conversation_id", conversationId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true });
@@ -51,10 +52,10 @@ export async function GET(
 
     const rows = (messages ?? []).map((msg: Record<string, unknown>) => {
         const raw = msg as Record<string, unknown>;
-        const sender = raw.profiles as { name: string } | null;
+        const sender = raw.user_profiles as { display_name: string } | null;
         return {
             timestamp: raw.created_at as string,
-            sender: sender?.name ?? "System",
+            sender: sender?.display_name ?? "System",
             message: (raw.body as string).replace(/\n/g, " "),
             type: (raw.priority as string) ?? "normal",
             pinned: raw.is_pinned ? "Yes" : "No",
@@ -67,15 +68,23 @@ export async function GET(
 
     if (format === "csv") {
         const header = "Timestamp,Sender,Message,Type,Pinned,Edited\n";
-        const csvRows = rows.map((r: { timestamp: string; sender: string; message: string; type: string; pinned: string; edited: string }) =>
-            [
-                r.timestamp,
-                `"${r.sender.replace(/"/g, '""')}"`,
-                `"${r.message.replace(/"/g, '""')}"`,
-                r.type,
-                r.pinned,
-                r.edited,
-            ].join(",")
+        const csvRows = rows.map(
+            (r: {
+                timestamp: string;
+                sender: string;
+                message: string;
+                type: string;
+                pinned: string;
+                edited: string;
+            }) =>
+                [
+                    r.timestamp,
+                    `"${r.sender.replace(/"/g, '""')}"`,
+                    `"${r.message.replace(/"/g, '""')}"`,
+                    r.type,
+                    r.pinned,
+                    r.edited,
+                ].join(",")
         );
 
         const csvContent = header + csvRows.join("\n");

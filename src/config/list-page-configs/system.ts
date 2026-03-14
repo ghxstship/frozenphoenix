@@ -754,9 +754,9 @@ export const PROFILES_PAGE: ListPageConfig = {
     description: "User profiles and account information",
     icon: UserCog,
     createConfig: CREATE_PROFILE_CONFIG,
-    searchKeys: ["name", "email"],
+    searchKeys: ["display_name", "email"],
     columns: [
-        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "display_name", header: "Name", accessorKey: "display_name" },
         { id: "email", header: "Email", accessorKey: "email" },
         { id: "role", header: "Role", accessorKey: "role", fieldType: "status" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
@@ -770,7 +770,7 @@ export const PROFILES_PAGE: ListPageConfig = {
     views: ["table", "cards"],
     defaultView: "table",
     cardConfig: {
-        titleKey: "name",
+        titleKey: "display_name",
         subtitleKey: "email",
         statusKey: "role",
         fields: [{ id: "status", label: "Status", accessorKey: "status", fieldType: "status" }],

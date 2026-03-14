@@ -982,9 +982,9 @@ export const lostReasonCreateSchema = z.object({
 });
 export const lostReasonUpdateSchema = lostReasonCreateSchema.partial();
 
-// ─── Profiles ───────────────────────────────────────────────
+// ─── User Profiles ──────────────────────────────────────────
 export const profileCreateSchema = z.object({
-    name: nonEmptyString.max(200),
+    display_name: nonEmptyString.max(200),
     email: emailField,
     avatar_url: optionalString.pipe(z.string().max(2000)),
 });

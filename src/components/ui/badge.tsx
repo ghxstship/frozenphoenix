@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
@@ -21,10 +23,34 @@ const badgeVariants = cva(
     }
 );
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> { }
+export interface BadgeProps
+    extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
+    /** When true, badge pulses on content change via key-based re-trigger */
+    animate?: boolean;
+}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-    return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
+function Badge({ className, variant, animate, ...props }: BadgeProps) {
+    const [bumpKey, setBumpKey] = React.useState(0);
+    const prevChildren = React.useRef(props.children);
+
+    React.useEffect(() => {
+        if (animate && prevChildren.current !== props.children) {
+            setBumpKey((k) => k + 1);
+        }
+        prevChildren.current = props.children;
+    }, [animate, props.children]);
+
+    return (
+        <div
+            key={animate ? bumpKey : undefined}
+            className={cn(
+                badgeVariants({ variant }),
+                animate && bumpKey > 0 && "motion-safe:animate-badge-bump",
+                className
+            )}
+            {...props}
+        />
+    );
 }
 
 export { Badge, badgeVariants };

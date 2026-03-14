@@ -544,13 +544,19 @@ export const useDeleteAccount = makeDeleteHook("stakeholder", "/api/stakeholders
 // PEOPLE (profiles)
 // ═══════════════════════════════════════════════════════════════
 
-export const usePeople = makeListHook<Tables<"profiles">>("people", "/api/profiles", {
-    sort_by: "name",
+export const usePeople = makeListHook<Tables<"user_profiles">>("people", "/api/user-profiles", {
+    sort_by: "display_name",
     sort_order: "asc",
 });
-export const useCreatePerson = makeCreateHook<Tables<"profiles">>("people", "/api/profiles");
-export const useUpdatePerson = makeUpdateHook<Tables<"profiles">>("people", "/api/profiles");
-export const useDeletePerson = makeDeleteHook("people", "/api/profiles");
+export const useCreatePerson = makeCreateHook<Tables<"user_profiles">>(
+    "people",
+    "/api/user-profiles"
+);
+export const useUpdatePerson = makeUpdateHook<Tables<"user_profiles">>(
+    "people",
+    "/api/user-profiles"
+);
+export const useDeletePerson = makeDeleteHook("people", "/api/user-profiles");
 
 // ═══════════════════════════════════════════════════════════════
 // CREATIVE ASSETS (digital_assets alias)
@@ -1850,7 +1856,7 @@ export const useApprovalSteps = makeListHook<Tables<"approval_steps">>(
 export const useBrandKit = makeDetailHook<Tables<"brand_kits">>("brand_kit", "/api/brand-kits");
 export const useContract = makeDetailHook<Tables<"contracts">>("contract", "/api/contracts");
 export const useInvoice = makeDetailHook<Tables<"invoices">>("invoice", "/api/invoices");
-export const usePerson = makeDetailHook<Tables<"profiles">>("people", "/api/profiles");
+export const usePerson = makeDetailHook<Tables<"user_profiles">>("people", "/api/user-profiles");
 export const useTemplate = makeDetailHook<Tables<"project_templates">>(
     "template",
     "/api/project-templates"
@@ -1881,7 +1887,7 @@ export const useVendorComplianceDocs = useVendorComplianceDocuments;
 export { useDocuments as useMyDocuments };
 export { useCampaignKPIs as useCampaignKpis };
 
-export const useUserDirectory = makeListHook<Tables<"profiles">>(
+export const useUserDirectory = makeListHook<Tables<"user_profiles">>(
     "user_directory",
     "/api/user-directory",
     { sort_by: "display_name", sort_order: "asc" }

@@ -137,9 +137,9 @@ async function dispatchToEmail(
     }
     // No prefs row → defaults to email_enabled=true (schema default)
 
-    // 2. Look up user email from profiles
-    const { data: profile } = await serverFromTable(admin, "profiles")
-        .select("email, name")
+    // 2. Look up user email from user_profiles
+    const { data: profile } = await serverFromTable(admin, "user_profiles")
+        .select("email, display_name")
         .eq("id", notification.user_id)
         .single();
 

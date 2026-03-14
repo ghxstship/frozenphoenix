@@ -134,13 +134,13 @@ export function motionClass(animate: boolean, className: string): string {
 }
 
 export function staggerClass(animate: boolean): string {
-    return animate ? "animate-slide-up" : "";
+    return animate ? "motion-safe:animate-slide-up" : "";
 }
 
 export function fadeClass(animate: boolean): string {
-    return animate ? "animate-fade-in" : "";
+    return animate ? "motion-safe:animate-fade-in" : "";
 }
 
 export function scaleClass(animate: boolean): string {
-    return animate ? "animate-scale-in" : "";
+    return animate ? "motion-safe:animate-scale-in" : "";
 }

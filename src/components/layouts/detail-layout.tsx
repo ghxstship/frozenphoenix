@@ -120,7 +120,7 @@ export function DetailLayout({
     }, [menuOpen]);
 
     return (
-        <div className={cn("animate-fade-in", className)}>
+        <div className={cn("motion-safe:animate-fade-in", className)}>
             {/* Back Link */}
             <Link
                 href={backHref}

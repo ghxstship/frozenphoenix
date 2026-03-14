@@ -68,17 +68,7 @@ export async function POST(
             return ApiErrors.internalError("Failed to join organization");
         }
 
-        // Update profile org_id if user has no org yet
-        const { data: profile } = await serverFromTable(supabase!, "profiles")
-            .select("organization_id")
-            .eq("id", user.id)
-            .single();
-
-        if (profile && !profile.organization_id) {
-            await serverFromTable(supabase!, "profiles")
-                .update({ organization_id: invitation.organization_id })
-                .eq("id", user.id);
-        }
+        // org_memberships upsert above already tracks user→org relationship (profiles table dropped)
     }
 
     // Mark invitation as accepted

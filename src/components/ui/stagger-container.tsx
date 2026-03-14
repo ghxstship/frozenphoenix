@@ -19,10 +19,10 @@ export function StaggerContainer({
     const delay = STAGGER_SCALE[stagger];
     const animClass =
         animation === "slide-up"
-            ? "animate-slide-up"
+            ? "motion-safe:animate-slide-up"
             : animation === "fade-in"
-              ? "animate-fade-in"
-              : "animate-scale-in";
+              ? "motion-safe:animate-fade-in"
+              : "motion-safe:animate-scale-in";
 
     return (
         <div className={className} {...props}>
@@ -59,10 +59,10 @@ export function StaggerItem({
     const delay = STAGGER_SCALE[stagger];
     const animClass =
         animation === "slide-up"
-            ? "animate-slide-up"
+            ? "motion-safe:animate-slide-up"
             : animation === "fade-in"
-              ? "animate-fade-in"
-              : "animate-scale-in";
+              ? "motion-safe:animate-fade-in"
+              : "motion-safe:animate-scale-in";
 
     return (
         <div

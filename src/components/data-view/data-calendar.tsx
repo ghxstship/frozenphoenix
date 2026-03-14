@@ -12,6 +12,13 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Types ───
@@ -27,6 +34,7 @@ export interface CalendarItem {
 interface DataCalendarProps {
     data: CalendarItem[];
     className?: string;
+    actions?: (item: CalendarItem) => React.ReactNode;
     onItemClick?: (item: CalendarItem) => void;
 }
 
@@ -66,7 +74,7 @@ const DEFAULT_DOT_COLORS = ["bg-primary", "bg-info", "bg-success", "bg-warning",
 
 // ─── Component ───
 
-export function DataCalendar({ data, className, onItemClick }: DataCalendarProps) {
+export function DataCalendar({ data, className, actions, onItemClick }: DataCalendarProps) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -171,26 +179,64 @@ export function DataCalendar({ data, className, onItemClick }: DataCalendarProps
                                     {day}
                                 </span>
                                 <div className="mt-1 space-y-0.5">
-                                    {dayItems.slice(0, 3).map((item, i) => (
-                                        <Tooltip key={item.id} content={item.title} side="top">
-                                            <button
-                                                type="button"
-                                                className={cn(
-                                                    "w-full text-left rounded px-1 py-0.5 text-[9px] font-medium truncate transition-colors",
-                                                    item.color ??
-                                                        DEFAULT_DOT_COLORS[
-                                                            i % DEFAULT_DOT_COLORS.length
-                                                        ],
-                                                    "text-white",
-                                                    onItemClick && "cursor-pointer hover:opacity-80"
-                                                )}
-                                                onClick={() => onItemClick?.(item)}
-                                                aria-label={item.title}
-                                            >
-                                                {item.title}
-                                            </button>
-                                        </Tooltip>
-                                    ))}
+                                    {dayItems.slice(0, 3).map((item, i) => {
+                                        const chipClass = cn(
+                                            "w-full text-left rounded px-1 py-0.5 text-[9px] font-medium truncate transition-colors",
+                                            item.color ??
+                                                DEFAULT_DOT_COLORS[i % DEFAULT_DOT_COLORS.length],
+                                            "text-white",
+                                            "cursor-pointer hover:opacity-80"
+                                        );
+
+                                        if (actions) {
+                                            const dateLabel = item.endDate
+                                                ? `${new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })} \u2013 ${new Date(item.endDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`
+                                                : new Date(item.date).toLocaleDateString(
+                                                      undefined,
+                                                      { month: "short", day: "numeric" }
+                                                  );
+
+                                            return (
+                                                <DropdownMenu key={item.id}>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button
+                                                            type="button"
+                                                            className={chipClass}
+                                                            aria-label={item.title}
+                                                        >
+                                                            {item.title}
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent
+                                                        align="start"
+                                                        className="min-w-[180px]"
+                                                    >
+                                                        <DropdownMenuLabel className="font-medium">
+                                                            {item.title}
+                                                        </DropdownMenuLabel>
+                                                        <p className="px-2 pb-1.5 text-[10px] text-muted-foreground">
+                                                            {dateLabel}
+                                                        </p>
+                                                        <DropdownMenuSeparator />
+                                                        {actions(item)}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            );
+                                        }
+
+                                        return (
+                                            <Tooltip key={item.id} content={item.title} side="top">
+                                                <button
+                                                    type="button"
+                                                    className={chipClass}
+                                                    onClick={() => onItemClick?.(item)}
+                                                    aria-label={item.title}
+                                                >
+                                                    {item.title}
+                                                </button>
+                                            </Tooltip>
+                                        );
+                                    })}
                                     {dayItems.length > 3 && (
                                         <span className="text-[9px] text-muted-foreground pl-1">
                                             +{dayItems.length - 3} more

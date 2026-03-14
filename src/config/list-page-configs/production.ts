@@ -7,7 +7,6 @@
 
 import type { ListPageConfig } from "@/types/list-page-config";
 import {
-    CREATE_ADVANCE_CONFIG,
     CREATE_ADVANCE_TEMPLATE_CONFIG,
     CREATE_READINESS_GATE_CONFIG,
     CREATE_ROS_CUE_CONFIG,
@@ -19,6 +18,7 @@ import {
     CREATE_LIVE_EVENT_CONFIG,
     CREATE_POST_EVENT_REPORT_CONFIG,
     CREATE_PRODUCTION_ADVANCE_CONFIG,
+    CREATE_PRODUCTION_ADVANCE_ITEM_CONFIG,
     CREATE_PRODUCTION_BUDGET_LINE_CONFIG,
     CREATE_PRODUCTION_CHECKLIST_CONFIG,
     CREATE_PRODUCTION_EXPENSE_CONFIG,
@@ -407,14 +407,16 @@ export const PRODUCTION_ADVANCE_ITEMS_PAGE: ListPageConfig = {
     entityKey: "production_advance_item",
     description: "Line items within production advances",
     icon: HandCoins,
-    createConfig: CREATE_ADVANCE_CONFIG,
-    searchKeys: ["description", "category"],
+    createConfig: CREATE_PRODUCTION_ADVANCE_ITEM_CONFIG,
+    searchKeys: ["catalog_item_id", "operational_purpose", "special_requests"],
     columns: [
-        { id: "description", header: "Item", accessorKey: "description" },
-        { id: "category", header: "Category", accessorKey: "category", fieldType: "status" },
-        { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+        { id: "catalog_item_id", header: "Item", accessorKey: "catalog_item_id" },
+        { id: "category_id", header: "Category", accessorKey: "category_id" },
+        { id: "quantity_requested", header: "Qty", accessorKey: "quantity_requested" },
+        { id: "unit_cost", header: "Unit Cost", accessorKey: "unit_cost", fieldType: "currency" },
+        { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
 };
 

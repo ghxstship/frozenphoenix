@@ -409,6 +409,23 @@ a svg {
     transform: translateY(-1px);
 }
 
+/* Form field focus glow — subtle border + shadow transition on focus */
+@media (prefers-reduced-motion: no-preference) {
+    .form-field-animated:focus-within {
+        box-shadow: 0 0 0 2px hsl(var(--ring) / 0.15);
+        border-color: hsl(var(--ring));
+        transition:
+            box-shadow var(--duration-fast) var(--ease-out-expo),
+            border-color var(--duration-fast) var(--ease-out-expo);
+    }
+    .form-field-animated label {
+        transition: color var(--duration-fast) var(--ease-out-expo);
+    }
+    .form-field-animated:focus-within label {
+        color: hsl(var(--ring));
+    }
+}
+
 /* Glow effect for primary actions */
 .glow-primary {
     box-shadow:
@@ -708,6 +725,22 @@ a svg {
 }
 .animate-count-up {
     animation: countUp var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Badge count bump — brief scale pulse on value change */
+@keyframes badgeBump {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+.animate-badge-bump {
+    animation: badgeBump var(--duration-normal) var(--ease-spring);
 }
 
 /* Toast auto-dismiss timer bar */

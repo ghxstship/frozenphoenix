@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: messages, error } = await serverFromTable(admin!, "messages")
-        .select("*, profiles:sender_id(id, name, avatar_url)")
+        .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
         .eq("entity_type", entityType)
         .eq("entity_id", entityId)
         .is("deleted_at", null)
@@ -47,15 +47,23 @@ export async function GET(request: NextRequest) {
 
     if (error) return ApiErrors.internalError("Failed to fetch entity messages");
 
-    const enriched = (messages as Record<string, unknown>[] | null)?.map((m) => {
-        const profile = m.profiles as { id: string; name: string; avatar_url: string | null } | null;
-        return {
-            ...m,
-            profiles: undefined,
-            sender: profile,
-            reactions: [],
-        };
-    }) ?? [];
+    const enriched =
+        (messages as Record<string, unknown>[] | null)?.map((m) => {
+            const up = m.user_profiles as {
+                id: string;
+                display_name: string;
+                avatar_url: string | null;
+            } | null;
+            const profile = up
+                ? { id: up.id, name: up.display_name, avatar_url: up.avatar_url }
+                : null;
+            return {
+                ...m,
+                user_profiles: undefined,
+                sender: profile,
+                reactions: [],
+            };
+        }) ?? [];
 
     return NextResponse.json({ data: enriched });
 }
@@ -83,11 +91,13 @@ export async function POST(request: NextRequest) {
         parsed.data;
 
     // Get user's org
-    const { data: profile } = await serverFromTable(admin!, "profiles")
+    const { data: membership } = await serverFromTable(admin!, "org_memberships")
         .select("organization_id")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
+        .eq("is_default_org", true)
+        .eq("status", "active")
         .single();
-    const orgId = (profile as Record<string, unknown> | null)?.organization_id as string | null;
+    const orgId = (membership as Record<string, unknown> | null)?.organization_id as string | null;
 
     const { data: message, error } = await serverFromTable(admin!, "messages")
         .insert({
@@ -101,7 +111,7 @@ export async function POST(request: NextRequest) {
             priority: priority ?? "normal",
             organization_id: orgId,
         })
-        .select("*, profiles:sender_id(id, name, avatar_url)")
+        .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
         .single();
 
     if (error) {
@@ -111,8 +121,10 @@ export async function POST(request: NextRequest) {
 
     // Dispatch @mention notifications (async, non-blocking)
     if (mentioned_user_ids && mentioned_user_ids.length > 0) {
-        const senderProfile = (message as Record<string, unknown>).profiles as { name: string } | null;
-        const senderName = senderProfile?.name ?? "Someone";
+        const senderProfile = (message as Record<string, unknown>).user_profiles as {
+            display_name: string;
+        } | null;
+        const senderName = senderProfile?.display_name ?? "Someone";
 
         for (const mentionedUserId of mentioned_user_ids) {
             if (mentionedUserId === user.id) continue;

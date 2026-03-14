@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     if (!supabase) return ApiErrors.serviceUnavailable();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return ApiErrors.unauthorized();
 
     const admin = createAdminClient();
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
     // Build search query
     let searchQuery = serverFromTable(admin!, "messages")
         .select(
-            "id, conversation_id, sender_id, body, priority, created_at, edited_at, entity_type, entity_id, profiles:sender_id(id, name, avatar_url), conversations:conversation_id(id, name, type, category)",
+            "id, conversation_id, sender_id, body, priority, created_at, edited_at, entity_type, entity_id, user_profiles:sender_id(id, display_name, avatar_url), conversations:conversation_id(id, name, type, category)",
             { count: "exact" }
         )
         .ilike("body", `%${query}%`)
@@ -66,8 +68,17 @@ export async function GET(request: NextRequest) {
     }
 
     const results = ((messages ?? []) as Array<Record<string, unknown>>).map((raw) => {
-        const sender = raw.profiles as { id: string; name: string; avatar_url: string | null } | null;
-        const conversation = raw.conversations as { id: string; name: string | null; type: string; category: string | null } | null;
+        const sender = raw.profiles as {
+            id: string;
+            name: string;
+            avatar_url: string | null;
+        } | null;
+        const conversation = raw.conversations as {
+            id: string;
+            name: string | null;
+            type: string;
+            category: string | null;
+        } | null;
 
         return {
             id: raw.id,

@@ -161,13 +161,13 @@ export async function updateUserMetadata(metadata: ProfileUpdateRequest): Promis
     return supabase.auth.updateUser({ data: metadata });
 }
 
-// ─── Update Profile Row (profiles table) ───
+// ─── Update Profile Row (user_profiles table) ───
 export async function updateProfile(
     userId: string,
     updates: Record<string, unknown>
 ): Promise<void> {
     const supabase = getSupabase();
-    const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
+    const { error } = await supabase.from("user_profiles").update(updates).eq("id", userId);
     if (error) throw error;
 }
 
@@ -368,7 +368,7 @@ export function useUpdateUserMetadata() {
             return result.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["profiles"] });
+            queryClient.invalidateQueries({ queryKey: ["user_profiles"] });
         },
     });
 }
@@ -386,7 +386,7 @@ export function useUpdateProfile() {
             await updateProfile(userId, updates);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["profiles"] });
+            queryClient.invalidateQueries({ queryKey: ["user_profiles"] });
         },
     });
 }
@@ -408,4 +408,3 @@ export function useUnenrollMFA() {
         mutationFn: async (factorId: string) => unenrollMFA(factorId),
     });
 }
-

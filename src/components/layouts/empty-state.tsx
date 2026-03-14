@@ -33,7 +33,7 @@ export function EmptyState({
     return (
         <div
             className={cn(
-                "flex flex-col items-center justify-center text-center animate-fade-in",
+                "flex flex-col items-center justify-center text-center motion-safe:animate-fade-in",
                 compact ? "py-8 px-4" : "py-16 px-4",
                 className
             )}
@@ -56,12 +56,21 @@ export function EmptyState({
             {(action || secondaryAction) && (
                 <div className="flex items-center gap-3">
                     {secondaryAction && (
-                        <Button variant="ghost" size="sm" onClick={secondaryAction.onClick} aria-label={secondaryAction.label}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={secondaryAction.onClick}
+                            aria-label={secondaryAction.label}
+                        >
                             {secondaryAction.label}
                         </Button>
                     )}
                     {action && (
-                        <Button size={compact ? "sm" : "default"} onClick={action.onClick} aria-label={action.label}>
+                        <Button
+                            size={compact ? "sm" : "default"}
+                            onClick={action.onClick}
+                            aria-label={action.label}
+                        >
                             {action.label}
                         </Button>
                     )}

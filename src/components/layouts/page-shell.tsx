@@ -42,7 +42,7 @@ export function PageShell({
 
     return (
         <div
-            className={cn("animate-fade-in", className)}
+            className={cn("motion-safe:animate-fade-in", className)}
             style={{ display: "flex", flexDirection: "column", gap: "var(--density-page-gap)" }}
         >
             <PageHeader title={title} description={description}>

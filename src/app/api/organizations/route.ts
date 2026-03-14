@@ -115,8 +115,7 @@ export async function POST(request: NextRequest) {
         return ApiErrors.internalError("Organization created but membership failed");
     }
 
-    // 4. Update the user's profile org_id to the new org
-    await serverFromTable(admin!, "profiles").update({ organization_id: org.id }).eq("id", user.id);
+    // 4. org_memberships already tracks user→org relationship (profiles table dropped)
 
     return NextResponse.json({ organization: org }, { status: 201 });
 }

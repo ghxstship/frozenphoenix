@@ -411,7 +411,7 @@ export function Sidebar() {
                 role={isMobile && isOpen ? "dialog" : "navigation"}
                 aria-label="Main navigation"
                 className={cn(
-                    "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-all duration-300",
+                    "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground motion-safe:transition-[width,transform] motion-safe:duration-300 motion-safe:[transition-timing-function:var(--ease-spring)] motion-reduce:transition-none",
                     isMobile && (isOpen ? "translate-x-0" : "-translate-x-full")
                 )}
                 style={{ width: isMobile ? mobileSidebarWidth : sidebarWidth }}

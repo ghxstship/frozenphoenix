@@ -77,7 +77,7 @@ export default function SchedulingPage() {
         const nowMs = new Date().getTime();
         return (sbBookings as Record<string, unknown>[]).map((b) => {
             const proj = b.projects as { name: string } | null;
-            const member = b.profiles as { name: string } | null;
+            const member = b.user_profiles as { display_name: string } | null;
             const startD = new Date(b.start_date as string);
             const endD = new Date(b.end_date as string);
             const totalDays = Math.max(
@@ -89,7 +89,7 @@ export default function SchedulingPage() {
             return {
                 id: b.id as string,
                 label: proj?.name ?? "Unassigned",
-                sublabel: member?.name ?? (b.placeholder_name as string) ?? "",
+                sublabel: member?.display_name ?? (b.placeholder_name as string) ?? "",
                 startDate: b.start_date as string,
                 endDate: b.end_date as string,
                 progress,

@@ -69,7 +69,7 @@ export default function CollaborativeEditingPage() {
                 id: a.id,
                 title: a.title,
                 category: a.category,
-                lastEditedBy: a.profiles?.name ?? "",
+                lastEditedBy: a.user_profiles?.display_name ?? "",
                 lastEditedAt: a.updated_at ?? a.created_at,
                 activeEditors: [] as ActiveEditor[],
                 version: a.version,

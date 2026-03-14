@@ -32,6 +32,7 @@ interface DataWorkloadProps {
     data: WorkloadAllocation[];
     capacityHoursPerDay?: number;
     className?: string;
+    actions?: (item: WorkloadAllocation) => React.ReactNode;
     onItemClick?: (item: WorkloadAllocation) => void;
 }
 
@@ -63,6 +64,7 @@ export function DataWorkload({
     data,
     capacityHoursPerDay = 8,
     className,
+    actions,
     onItemClick: _onItemClick,
 }: DataWorkloadProps) {
     const [weekOffset, setWeekOffset] = React.useState(0);
@@ -166,7 +168,7 @@ export function DataWorkload({
                         {resources.map(([resourceName, allocations]) => (
                             <tr
                                 key={resourceName}
-                                className="border-b border-border/30 hover:bg-secondary/5"
+                                className="border-b border-border/30 hover:bg-secondary/5 group/row"
                             >
                                 <td className="p-3 sticky left-0 bg-background z-10">
                                     <div className="flex items-center gap-2">
@@ -183,9 +185,17 @@ export function DataWorkload({
                                                 {resourceName.charAt(0).toUpperCase()}
                                             </div>
                                         )}
-                                        <span className="text-xs font-medium truncate max-w-[140px]">
+                                        <span className="text-xs font-medium truncate max-w-[140px] flex-1">
                                             {resourceName}
                                         </span>
+                                        {actions && allocations[0] && (
+                                            <div
+                                                className="shrink-0"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {actions(allocations[0])}
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
                                 {weeks.map((w) => {

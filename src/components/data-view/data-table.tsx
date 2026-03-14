@@ -492,7 +492,7 @@ export function DataTable<T extends object>({
                                                                 <tr
                                                                     key={key}
                                                                     className={cn(
-                                                                        "transition-colors",
+                                                                        "transition-colors group/row",
                                                                         striped &&
                                                                             rowIndex % 2 === 1 &&
                                                                             "bg-muted/30",
@@ -609,7 +609,7 @@ export function DataTable<T extends object>({
                                         <tr
                                             key={key}
                                             className={cn(
-                                                "transition-colors",
+                                                "transition-colors group/row",
                                                 striped && rowIndex % 2 === 1 && "bg-muted/30",
                                                 hoverable && "hover:bg-muted/50",
                                                 isSelected && "bg-primary/5",

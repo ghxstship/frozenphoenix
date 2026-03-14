@@ -142,4 +142,4 @@ CREATE POLICY user_certifications_org_read ON user_certifications
 CREATE TRIGGER set_user_certifications_updated_at
     BEFORE UPDATE ON user_certifications
     FOR EACH ROW
-    EXECUTE FUNCTION public.set_updated_at();
+    EXECUTE FUNCTION public.update_updated_at_column();

@@ -6,11 +6,7 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from "lucide-react";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import { useCreateAdvance } from "@/lib/supabase/hooks-advancing";
 import { useEvents } from "@/lib/supabase/hooks";
-import {
-    ADVANCE_PRIORITIES,
-    ADVANCE_TYPES,
-    formatAdvanceCost,
-} from "@/config/advancing-config";
+import { ADVANCE_PRIORITIES, ADVANCE_TYPES, formatAdvanceCost } from "@/config/advancing-config";
 import { Badge } from "@/components/ui/badge";
 import type { AdvancePriority, AdvanceType } from "@/types";
 
@@ -51,10 +47,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
     const [submitError, setSubmitError] = React.useState<string | null>(null);
 
     const canSubmit =
-        title.trim().length > 0 &&
-        eventId.trim().length > 0 &&
-        items.length > 0 &&
-        !isSubmitting;
+        title.trim().length > 0 && eventId.trim().length > 0 && items.length > 0 && !isSubmitting;
 
     const hasCriticalItems = items.some((i) => i.is_critical_path);
 
@@ -77,15 +70,22 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                 source_template_id: sourceTemplateId,
                 items: items.map((item) => ({
                     catalog_item_id: item.catalog_item_id,
+                    category_id: item.category_id,
                     quantity_requested: item.quantity,
                     unit_cost: item.unit_cost,
                     selected_modifiers: item.selected_modifiers ?? [],
+                    item_specifications: item.item_specifications ?? {},
                     vendor_id: item.vendor_id,
                     notes: item.notes ?? undefined,
                     is_critical_path: item.is_critical_path ?? false,
                     delivery_zone: item.delivery_zone,
                     delivery_location: item.delivery_location,
+                    location_id: item.location_id,
                     scheduled_delivery: item.scheduled_delivery,
+                    start_date: item.start_date,
+                    end_date: item.end_date,
+                    operational_purpose: item.operational_purpose,
+                    special_requests: item.special_requests,
                 })),
             });
 
@@ -99,9 +99,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
             clearCart();
             onSuccess((result as Record<string, unknown>).id as string);
         } catch (err) {
-            setSubmitError(
-                err instanceof Error ? err.message : "Failed to create advance"
-            );
+            setSubmitError(err instanceof Error ? err.message : "Failed to create advance");
         } finally {
             setIsSubmitting(false);
         }
@@ -315,18 +313,36 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                                         <span>&times;</span>
                                         <span>{formatAdvanceCost(item.unit_cost)}</span>
                                     </div>
-                                    {item.selected_modifiers && item.selected_modifiers.length > 0 && (
-                                        <div className="mt-1 flex flex-wrap gap-1">
-                                            {item.selected_modifiers.map((mod) => (
-                                                <Badge
-                                                    key={mod.modifier_id}
-                                                    variant="outline"
-                                                    className="text-[10px]"
-                                                >
-                                                    {mod.option_label}
-                                                </Badge>
-                                            ))}
-                                        </div>
+                                    {item.selected_modifiers &&
+                                        item.selected_modifiers.length > 0 && (
+                                            <div className="mt-1 flex flex-wrap gap-1">
+                                                {item.selected_modifiers.map((mod) => (
+                                                    <Badge
+                                                        key={mod.modifier_id}
+                                                        variant="outline"
+                                                        className="text-[10px]"
+                                                    >
+                                                        {mod.option_label}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        )}
+                                    {(item.start_date || item.end_date) && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {item.start_date}
+                                            {item.start_date && item.end_date && " → "}
+                                            {item.end_date}
+                                        </span>
+                                    )}
+                                    {item.operational_purpose && (
+                                        <span className="text-xs text-muted-foreground truncate">
+                                            Purpose: {item.operational_purpose}
+                                        </span>
+                                    )}
+                                    {item.special_requests && (
+                                        <span className="text-xs text-muted-foreground truncate">
+                                            Requests: {item.special_requests}
+                                        </span>
                                     )}
                                 </div>
                                 <span className="shrink-0 text-sm font-semibold">
@@ -339,9 +355,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                     {/* Total */}
                     <div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
                         <span className="font-medium">Estimated Total</span>
-                        <span className="text-lg font-bold">
-                            {formatAdvanceCost(totalCost)}
-                        </span>
+                        <span className="text-lg font-bold">{formatAdvanceCost(totalCost)}</span>
                     </div>
                 </div>
             </div>

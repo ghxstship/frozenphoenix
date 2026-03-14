@@ -85,7 +85,7 @@ export default function KBArticleDetailPage() {
             (sbActivity ?? []).map((a) => ({
                 id: a.id,
                 action: a.action as ActivityItem["action"],
-                actorName: a.profiles?.name ?? "System",
+                actorName: a.user_profiles?.display_name ?? "System",
                 entityType: a.entity_type,
                 description: (a.metadata?.description as string) ?? undefined,
                 createdAt: a.created_at,
@@ -98,7 +98,7 @@ export default function KBArticleDetailPage() {
             (sbComments ?? []).map((c) => ({
                 id: c.id,
                 authorId: c.author_id,
-                authorName: c.profiles?.name ?? "",
+                authorName: c.user_profiles?.display_name ?? "",
                 content: c.body,
                 createdAt: c.created_at,
                 updatedAt: c.updated_at,
@@ -151,7 +151,9 @@ export default function KBArticleDetailPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Author</span>
-                        <span className="font-medium">{article.profiles?.name ?? "—"}</span>
+                        <span className="font-medium">
+                            {article.user_profiles?.display_name ?? "—"}
+                        </span>
                     </div>
                     {article.published_at && (
                         <div className="flex justify-between">

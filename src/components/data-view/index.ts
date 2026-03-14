@@ -51,3 +51,6 @@ export { DataMap, type MapItem } from "./data-map";
 
 // Data Workload
 export { DataWorkload, type WorkloadAllocation } from "./data-workload";
+
+// Row Actions Menu
+export { RowActionsMenu, type RowActionsMenuProps } from "./row-actions-menu";

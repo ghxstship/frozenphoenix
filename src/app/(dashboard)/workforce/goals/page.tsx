@@ -109,7 +109,7 @@ export default function GoalsPage() {
                     id: g.id,
                     title: g.title,
                     description: g.description ?? "",
-                    ownerName: g.profiles?.name ?? "",
+                    ownerName: g.user_profiles?.display_name ?? "",
                     category: (g.goal_type as GoalCategory) ?? "performance",
                     status: (g.status as GoalStatus) ?? "not_started",
                     period: "q2" as GoalPeriod,

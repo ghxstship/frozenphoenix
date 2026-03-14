@@ -10,8 +10,10 @@ import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 // These explicit types ensure consumers get the full base row + joined fields.
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
 
-type ProfileName = { profiles: { name: string } | null };
-type ProfileNameAvatar = { profiles: { name: string; avatar_url: string | null } | null };
+type ProfileName = { user_profiles: { display_name: string } | null };
+type ProfileNameAvatar = {
+    user_profiles: { display_name: string; avatar_url: string | null } | null;
+};
 type ProjectName = { projects: { name: string } | null };
 type VendorName = { vendors: { name: string } | null };
 type LocationName = { locations: { name: string } | null };
@@ -42,7 +44,11 @@ export type ProjectDetailWithMembers = WithJoin<
     {
         project_members: {
             profile_id: string;
-            profiles: { name: string; email: string; avatar_url: string | null } | null;
+            user_profiles: {
+                display_name: string;
+                email: string;
+                avatar_url: string | null;
+            } | null;
         }[];
     } & CompanyName
 >;
@@ -266,34 +272,16 @@ export function useMyTaskCounts() {
     return useQuery({
         queryKey: ["my-task-counts"],
         queryFn: async () => {
-            const {
-                data: { user },
-            } = await getSupabase().auth.getUser();
-            if (!user) return { total: 0, overdue: 0, dueToday: 0, dueThisWeek: 0, inProgress: 0 };
-
-            const res = await apiList<{ id: string; status: string; due_date: string | null }>(
-                "/api/tasks",
-                { assignee_id: user.id, per_page: 500 }
-            );
-
-            const now = new Date();
-            const todayStr = now.toISOString().slice(0, 10);
-            const endOfWeek = new Date(now);
-            endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
-            const endOfWeekStr = endOfWeek.toISOString().slice(0, 10);
-
-            const tasks = res.data.filter(
-                (t) => !["done", "completed", "cancelled"].includes(t.status)
-            );
-            return {
-                total: tasks.length,
-                overdue: tasks.filter((t) => t.due_date && t.due_date < todayStr).length,
-                dueToday: tasks.filter((t) => t.due_date === todayStr).length,
-                dueThisWeek: tasks.filter(
-                    (t) => t.due_date && t.due_date >= todayStr && t.due_date <= endOfWeekStr
-                ).length,
-                inProgress: tasks.filter((t) => t.status === "in_progress").length,
-            };
+            const res = await fetch("/api/tasks/counts");
+            if (!res.ok)
+                return { total: 0, overdue: 0, dueToday: 0, dueThisWeek: 0, inProgress: 0 };
+            return res.json() as Promise<{
+                total: number;
+                overdue: number;
+                dueToday: number;
+                dueThisWeek: number;
+                inProgress: number;
+            }>;
         },
     });
 }

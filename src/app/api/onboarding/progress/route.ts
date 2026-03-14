@@ -9,7 +9,9 @@ export async function GET() {
         return ApiErrors.serviceUnavailable();
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
         return ApiErrors.unauthorized();
     }
@@ -18,14 +20,23 @@ export async function GET() {
     let userRole = "pm";
     let profileName: string | null = null;
 
-    const { data: profileData } = await serverFromTable(supabase!, "profiles")
-        .select("role, name")
+    const { data: profileData } = await serverFromTable(supabase!, "user_profiles")
+        .select("display_name")
         .eq("id", user.id)
         .single();
 
+    const { data: membershipData } = await serverFromTable(supabase!, "org_memberships")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("is_default_org", true)
+        .eq("status", "active")
+        .single();
+
+    if (membershipData) {
+        userRole = membershipData.role || "pm";
+    }
     if (profileData) {
-        userRole = profileData.role || "pm";
-        profileName = profileData.name;
+        profileName = profileData.display_name;
     }
 
     // Get step definitions relevant to this user's role
@@ -53,7 +64,8 @@ export async function GET() {
     };
 
     const enrichedSteps = (steps || []).map((step: Record<string, unknown>) => {
-        const manuallyCompleted = progressMap.has(step.id) &&
+        const manuallyCompleted =
+            progressMap.has(step.id) &&
             (progressMap.get(step.id) as Record<string, unknown>)?.status === "completed";
         const autoCompleted = autoCompleteMap[step.step_key as string] ?? false;
         const completed = manuallyCompleted || autoCompleted;
@@ -88,7 +100,9 @@ export async function GET() {
         Promise.allSettled(autoCompletePersistPromises);
     }
 
-    const totalRequired = enrichedSteps.filter((s: Record<string, unknown>) => s.is_required).length;
+    const totalRequired = enrichedSteps.filter(
+        (s: Record<string, unknown>) => s.is_required
+    ).length;
     const completedRequired = enrichedSteps.filter(
         (s: Record<string, unknown>) => s.is_required && s.completed
     ).length;
@@ -111,7 +125,9 @@ export async function POST(request: NextRequest) {
         return ApiErrors.serviceUnavailable();
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
         return ApiErrors.unauthorized();
     }

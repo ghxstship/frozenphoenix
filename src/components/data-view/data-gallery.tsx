@@ -28,6 +28,7 @@ interface DataGalleryProps {
     data: GalleryItem[];
     aspectRatio?: "square" | "video" | "wide";
     className?: string;
+    actions?: (item: GalleryItem) => React.ReactNode;
     onItemClick?: (item: GalleryItem) => void;
 }
 
@@ -45,6 +46,7 @@ export function DataGallery({
     data,
     aspectRatio = "video",
     className,
+    actions,
     onItemClick,
 }: DataGalleryProps) {
     if (data.length === 0) {
@@ -70,7 +72,7 @@ export function DataGallery({
                     type="button"
                     role="listitem"
                     className={cn(
-                        "group relative overflow-hidden rounded-lg border bg-card text-left transition-all",
+                        "group/row relative overflow-hidden rounded-lg border bg-card text-left transition-all",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         onItemClick
                             ? "cursor-pointer hover:shadow-lg hover:border-primary/30"
@@ -102,6 +104,16 @@ export function DataGallery({
 
                         {/* Gradient overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                        {/* Actions overlay */}
+                        {actions && (
+                            <div
+                                className="absolute top-2 left-2 z-10"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {actions(item)}
+                            </div>
+                        )}
 
                         {/* Status badge */}
                         {item.status && (

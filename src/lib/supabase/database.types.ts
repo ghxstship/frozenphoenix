@@ -18990,6 +18990,8 @@ export type Database = {
                     default_timezone: string;
                     description: string | null;
                     employee_count_range: string | null;
+                    enable_item_extensions: boolean;
+                    enable_item_modifications: boolean;
                     enforce_sso: boolean;
                     id: string;
                     industry: string | null;
@@ -19018,6 +19020,8 @@ export type Database = {
                     default_timezone?: string;
                     description?: string | null;
                     employee_count_range?: string | null;
+                    enable_item_extensions?: boolean;
+                    enable_item_modifications?: boolean;
                     enforce_sso?: boolean;
                     id?: string;
                     industry?: string | null;
@@ -19046,6 +19050,8 @@ export type Database = {
                     default_timezone?: string;
                     description?: string | null;
                     employee_count_range?: string | null;
+                    enable_item_extensions?: boolean;
+                    enable_item_modifications?: boolean;
                     enforce_sso?: boolean;
                     id?: string;
                     industry?: string | null;
@@ -19995,6 +20001,7 @@ export type Database = {
                     assigned_to: string | null;
                     budget_line_id: string | null;
                     catalog_item_id: string;
+                    category_id: string | null;
                     confirmed_at: string | null;
                     created_at: string;
                     deleted_at: string | null;
@@ -20002,17 +20009,24 @@ export type Database = {
                     delivery_location: string | null;
                     delivery_zone: string | null;
                     dependencies: string[] | null;
+                    duration_days: number | null;
+                    end_date: string | null;
                     id: string;
                     installed_at: string | null;
                     is_critical_path: boolean;
+                    item_specifications: Json;
                     load_in_time: string | null;
+                    location_id: string | null;
                     notes: string | null;
+                    operational_purpose: string | null;
                     quantity_confirmed: number | null;
                     quantity_requested: number;
                     reservation_id: string | null;
                     returned_at: string | null;
                     scheduled_delivery: string | null;
                     selected_modifiers: Json | null;
+                    special_requests: string | null;
+                    start_date: string | null;
                     status: Database["public"]["Enums"]["advance_item_status"];
                     strike_time: string | null;
                     struck_at: string | null;
@@ -20027,6 +20041,7 @@ export type Database = {
                     assigned_to?: string | null;
                     budget_line_id?: string | null;
                     catalog_item_id: string;
+                    category_id?: string | null;
                     confirmed_at?: string | null;
                     created_at?: string;
                     deleted_at?: string | null;
@@ -20034,17 +20049,23 @@ export type Database = {
                     delivery_location?: string | null;
                     delivery_zone?: string | null;
                     dependencies?: string[] | null;
+                    end_date?: string | null;
                     id?: string;
                     installed_at?: string | null;
                     is_critical_path?: boolean;
+                    item_specifications?: Json;
                     load_in_time?: string | null;
+                    location_id?: string | null;
                     notes?: string | null;
+                    operational_purpose?: string | null;
                     quantity_confirmed?: number | null;
                     quantity_requested?: number;
                     reservation_id?: string | null;
                     returned_at?: string | null;
                     scheduled_delivery?: string | null;
                     selected_modifiers?: Json | null;
+                    special_requests?: string | null;
+                    start_date?: string | null;
                     status?: Database["public"]["Enums"]["advance_item_status"];
                     strike_time?: string | null;
                     struck_at?: string | null;
@@ -20059,6 +20080,7 @@ export type Database = {
                     assigned_to?: string | null;
                     budget_line_id?: string | null;
                     catalog_item_id?: string;
+                    category_id?: string | null;
                     confirmed_at?: string | null;
                     created_at?: string;
                     deleted_at?: string | null;
@@ -20066,17 +20088,23 @@ export type Database = {
                     delivery_location?: string | null;
                     delivery_zone?: string | null;
                     dependencies?: string[] | null;
+                    end_date?: string | null;
                     id?: string;
                     installed_at?: string | null;
                     is_critical_path?: boolean;
+                    item_specifications?: Json;
                     load_in_time?: string | null;
+                    location_id?: string | null;
                     notes?: string | null;
+                    operational_purpose?: string | null;
                     quantity_confirmed?: number | null;
                     quantity_requested?: number;
                     reservation_id?: string | null;
                     returned_at?: string | null;
                     scheduled_delivery?: string | null;
                     selected_modifiers?: Json | null;
+                    special_requests?: string | null;
+                    start_date?: string | null;
                     status?: Database["public"]["Enums"]["advance_item_status"];
                     strike_time?: string | null;
                     struck_at?: string | null;
@@ -20105,6 +20133,20 @@ export type Database = {
                         columns: ["catalog_item_id"];
                         isOneToOne: false;
                         referencedRelation: "catalog_items";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_advance_items_category_id_fkey";
+                        columns: ["category_id"];
+                        isOneToOne: false;
+                        referencedRelation: "catalog_categories";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_advance_items_location_id_fkey";
+                        columns: ["location_id"];
+                        isOneToOne: false;
+                        referencedRelation: "locations";
                         referencedColumns: ["id"];
                     },
                     {

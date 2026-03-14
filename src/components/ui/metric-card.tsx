@@ -106,7 +106,7 @@ export function MetricCard({
     return (
         <div
             className={cn(
-                "spatial-card p-5 animate-fade-in transition-colors",
+                "spatial-card p-5 motion-safe:animate-fade-in transition-colors",
                 VARIANT_STYLES[resolved],
                 className
             )}

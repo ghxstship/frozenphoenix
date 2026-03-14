@@ -473,7 +473,7 @@ export async function getInstanceStatus(
     const { data: instance, error: instErr } = await supabase
         .from("workflow_instances")
         .select(
-            "*, approval_workflows(id, name, entity_type, description, require_comments), profiles:initiated_by(name)"
+            "*, approval_workflows(id, name, entity_type, description, require_comments), user_profiles:initiated_by(display_name)"
         )
         .eq("id", instanceId)
         .single();
@@ -494,7 +494,7 @@ export async function getInstanceStatus(
     // All approvals for this instance
     const { data: approvals } = await supabase
         .from("workflow_step_approvals")
-        .select("*, profiles:approver_id(name), approval_steps(name, step_order)")
+        .select("*, user_profiles:approver_id(display_name), approval_steps(name, step_order)")
         .eq("instance_id", instanceId)
         .order("assigned_at", { ascending: true });
 

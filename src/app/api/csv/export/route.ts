@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
     const entity = body.entity as string | undefined;
     const filters = body.filters as Record<string, unknown> | undefined;
     const limit = Math.min(Number(body.limit) || MAX_EXPORT_ROWS, MAX_EXPORT_ROWS);
+    const preview = body.preview === true;
+    const selectedColumns = Array.isArray(body.columns) ? (body.columns as string[]) : undefined;
 
     if (!entity) {
         return ApiErrors.badRequest("entity is required");
@@ -33,7 +35,9 @@ export async function POST(request: NextRequest) {
 
     const template = getEntityTemplate(entity);
     if (!template) {
-        return ApiErrors.badRequest(`Unknown entity: ${entity}. Valid entities: ${Object.keys((await import("@/lib/csv/csv-templates")).CSV_ENTITY_TEMPLATES).join(", ")}`);
+        return ApiErrors.badRequest(
+            `Unknown entity: ${entity}. Valid entities: ${Object.keys((await import("@/lib/csv/csv-templates")).CSV_ENTITY_TEMPLATES).join(", ")}`
+        );
     }
 
     if (!template.exportEnabled) {
@@ -43,13 +47,22 @@ export async function POST(request: NextRequest) {
     const sb = supabase!;
 
     try {
-        // Build select string from exportable fields
-        const exportFields = getExportableFields(template);
+        // Build select string from exportable fields, optionally filtered by user selection
+        const allExportFields = getExportableFields(template);
+        const exportFields = selectedColumns
+            ? allExportFields.filter((f) => selectedColumns.includes(f.dbColumn))
+            : allExportFields;
+
+        if (exportFields.length === 0) {
+            return ApiErrors.badRequest("No columns selected for export");
+        }
+
         const selectColumns = exportFields.map((f) => f.dbColumn).join(", ");
+        const effectiveLimit = preview ? 5 : limit;
 
         let query = serverFromTable(sb, template.dbTable)
             .select(template.selectQuery ?? selectColumns)
-            .limit(limit);
+            .limit(effectiveLimit);
 
         // Apply default sort
         if (template.defaultSort) {
@@ -66,7 +79,16 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const { data: rows, error } = await query;
+        const {
+            data: rows,
+            error,
+            count,
+        } = preview
+            ? await query.select(template.selectQuery ?? selectColumns, {
+                  count: "exact",
+                  head: false,
+              })
+            : await query;
 
         if (error) {
             logger.error("[POST /api/csv/export]", { entity, error });
@@ -75,7 +97,22 @@ export async function POST(request: NextRequest) {
 
         const records = (rows ?? []) as Record<string, unknown>[];
 
-        // Map to CSV headers
+        // Preview mode: return JSON with rows + total count
+        if (preview) {
+            return Response.json({
+                data: {
+                    rows: records,
+                    total_count: count ?? records.length,
+                    columns: exportFields.map((f) => ({
+                        key: f.dbColumn,
+                        label: f.csvHeader,
+                        type: f.type,
+                    })),
+                },
+            });
+        }
+
+        // Full export: return CSV file
         const headers = exportFields.map((f) => ({
             key: f.dbColumn,
             label: f.csvHeader,

@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api/client";
 import { getEntityConfig } from "@/lib/api/entity-config";
 import { LoadingState } from "@/components/layouts/loading-state";
+import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import type { DetailLayoutProps } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -184,9 +185,12 @@ export function DetailPageShell({
         }));
     }, [config.stats, record]);
 
-    // Loading
     if (isLoading) {
-        return <LoadingState />;
+        return (
+            <SkeletonCrossfade isLoading skeleton={<LoadingState />}>
+                {null}
+            </SkeletonCrossfade>
+        );
     }
 
     if (!record) {

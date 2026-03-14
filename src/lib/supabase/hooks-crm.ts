@@ -19,7 +19,7 @@ export function useLeads(status?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("leads")
-                .select("*, profiles(name)")
+                .select("*, user_profiles(display_name)")
                 .order("created_at", { ascending: false });
             if (status && status !== "all") query = query.eq("status", filterValue(status));
             const { data, error } = await query;
@@ -35,12 +35,12 @@ export function useLead(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("leads")
-                .select("*, profiles(name), lead_activities(*)")
+                .select("*, user_profiles(display_name), lead_activities(*)")
                 .eq("id", id)
                 .single();
             if (error) throw error;
             return data as unknown as Lead & {
-                profiles: { name: string } | null;
+                user_profiles: { display_name: string } | null;
                 lead_activities: Tables<"lead_activities">[];
             };
         },

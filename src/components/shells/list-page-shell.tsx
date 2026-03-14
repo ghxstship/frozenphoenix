@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { apiList } from "@/lib/api/client";
 import { getEntityConfig } from "@/lib/api/entity-config";
 import { LoadingState } from "@/components/layouts/loading-state";
+import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import { FilterBar } from "@/components/ui/filter-bar";
 import { type ViewMode, ViewSwitcher } from "@/components/ui/view-switcher";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
+import { RowActionsMenu } from "@/components/data-view/row-actions-menu";
 import { DataBoard } from "@/components/data-view/data-board";
 import { DataCards } from "@/components/data-view/data-cards";
 import { DataTimeline } from "@/components/data-view/data-timeline";
@@ -38,8 +40,26 @@ import { PermissionGate } from "@/components/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
-import { AlertCircle, CheckCircle2, Clock, LayoutList, Plus, Upload } from "lucide-react";
-import type { ListAlertDef, ListColumnDef, ListPageConfig } from "@/types/list-page-config";
+import { QuickViewPanel } from "@/components/shells/quick-view-panel";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+    AlertCircle,
+    CheckCircle2,
+    Clock,
+    Eye,
+    LayoutList,
+    Pencil,
+    Plus,
+    Trash2,
+    Upload,
+} from "lucide-react";
+import type {
+    ListAlertDef,
+    ListColumnDef,
+    ListPageConfig,
+    ListRowActionDef,
+} from "@/types/list-page-config";
+import { apiDelete } from "@/lib/api/client";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -125,6 +145,8 @@ interface ViewContentProps {
     selectedKeys: Set<string>;
     setSelectedKeys: (keys: Set<string>) => void;
     handleRowClick: (record: EntityRecord) => void;
+    renderRowActions?: (row: EntityRecord) => React.ReactNode;
+    renderRowActionItems?: (row: EntityRecord) => React.ReactNode;
 }
 
 function ViewContent({
@@ -137,6 +159,8 @@ function ViewContent({
     selectedKeys,
     setSelectedKeys,
     handleRowClick,
+    renderRowActions,
+    renderRowActionItems,
 }: ViewContentProps) {
     // ─── Table ───
     if (viewMode === "table") {
@@ -158,6 +182,7 @@ function ViewContent({
                 selectedKeys={hasBulkActions ? selectedKeys : undefined}
                 onSelectionChange={hasBulkActions ? setSelectedKeys : undefined}
                 onRowClick={handleRowClick}
+                rowActions={renderRowActions}
                 caption={`${title} list`}
             />
         );
@@ -184,6 +209,7 @@ function ViewContent({
                 cardTitle={(bc.cardTitleKey ?? "name") as keyof EntityRecord}
                 cardSubtitle={bc.cardSubtitleKey as keyof EntityRecord | undefined}
                 cardFields={[]}
+                actions={renderRowActions}
                 onCardClick={handleRowClick}
             />
         );
@@ -211,6 +237,7 @@ function ViewContent({
                 subtitle={cc.subtitleKey as keyof EntityRecord | undefined}
                 badge={cc.statusKey as keyof EntityRecord | undefined}
                 fields={cardFields}
+                actions={renderRowActions}
                 onCardClick={handleRowClick}
             />
         );
@@ -231,7 +258,15 @@ function ViewContent({
             group: tc.groupByKey ? String(r[tc.groupByKey] ?? "") : undefined,
         }));
         return (
-            <DataTimeline data={items} onItemClick={(item) => handleRowClick({ id: item.id })} />
+            <DataTimeline
+                data={items}
+                actions={
+                    renderRowActions
+                        ? (item) => renderRowActions({ id: item.id } as EntityRecord)
+                        : undefined
+                }
+                onItemClick={(item) => handleRowClick({ id: item.id })}
+            />
         );
     }
 
@@ -247,7 +282,15 @@ function ViewContent({
                 cc.colorKey && cc.colorMap ? cc.colorMap[String(r[cc.colorKey] ?? "")] : undefined,
         }));
         return (
-            <DataCalendar data={items} onItemClick={(item) => handleRowClick({ id: item.id })} />
+            <DataCalendar
+                data={items}
+                actions={
+                    renderRowActionItems
+                        ? (item) => renderRowActionItems({ id: item.id } as EntityRecord)
+                        : undefined
+                }
+                onItemClick={(item) => handleRowClick({ id: item.id })}
+            />
         );
     }
 
@@ -265,6 +308,11 @@ function ViewContent({
             <DataGallery
                 data={items}
                 aspectRatio={gc.aspectRatio}
+                actions={
+                    renderRowActions
+                        ? (item) => renderRowActions({ id: item.id } as EntityRecord)
+                        : undefined
+                }
                 onItemClick={(item) => handleRowClick({ id: item.id })}
             />
         );
@@ -327,7 +375,17 @@ function ViewContent({
                         ? mc.colorMap[String(r[mc.colorKey] ?? "")]
                         : undefined,
             }));
-        return <DataMap data={items} onItemClick={(item) => handleRowClick({ id: item.id })} />;
+        return (
+            <DataMap
+                data={items}
+                actions={
+                    renderRowActionItems
+                        ? (item) => renderRowActionItems({ id: item.id } as EntityRecord)
+                        : undefined
+                }
+                onItemClick={(item) => handleRowClick({ id: item.id })}
+            />
+        );
     }
 
     // ─── Workload ───
@@ -348,7 +406,17 @@ function ViewContent({
                     ? wc.colorMap[String(r[wc.categoryKey] ?? "")]
                     : undefined,
         }));
-        return <DataWorkload data={items} capacityHoursPerDay={wc.capacityHoursPerDay} />;
+        return (
+            <DataWorkload
+                data={items}
+                capacityHoursPerDay={wc.capacityHoursPerDay}
+                actions={
+                    renderRowActions
+                        ? (item) => renderRowActions({ id: item.id } as EntityRecord)
+                        : undefined
+                }
+            />
+        );
     }
 
     // Fallback: table
@@ -359,6 +427,7 @@ function ViewContent({
             keyField={"id" as keyof EntityRecord}
             searchable={false}
             onRowClick={handleRowClick}
+            rowActions={renderRowActions}
             caption={`${title} list`}
         />
     );
@@ -379,6 +448,7 @@ export function ListPageShell({
     const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [importOpen, setImportOpen] = useState(false);
+    const [quickViewRecordId, setQuickViewRecordId] = useState<string | null>(null);
 
     // Resolve entity metadata
     const resource = entityConfig?.resource ?? config.entityKey;
@@ -513,150 +583,263 @@ export function ListPageShell({
 
     const handleRowClick = useCallback(
         (record: EntityRecord) => {
-            if (record.id) {
+            if (!record.id) return;
+            if (config.quickViewConfig) {
+                setQuickViewRecordId(String(record.id));
+            } else {
                 router.push(`/${slug}/${String(record.id)}`);
             }
         },
-        [router, slug]
+        [router, slug, config.quickViewConfig]
     );
+
+    // Record IDs for quick view prev/next navigation
+    const filteredRecordIds = useMemo(() => {
+        if (!config.quickViewConfig?.navigable) return undefined;
+        return filtered.map((r) => String(r.id ?? "")).filter(Boolean);
+    }, [filtered, config.quickViewConfig?.navigable]);
 
     const handleClearSelection = useCallback(() => {
         setSelectedKeys(new Set());
     }, []);
 
+    // ─── Row Actions ─────────────────────────────────────────
+    const defaultRowActions = useMemo<ListRowActionDef[]>(
+        () => [
+            {
+                id: "view",
+                label: "View Details",
+                icon: Eye,
+                onExecute: (record) => {
+                    if (record.id) router.push(`/${slug}/${String(record.id)}`);
+                },
+            },
+            {
+                id: "edit",
+                label: "Edit",
+                icon: Pencil,
+                onExecute: (record) => {
+                    if (record.id) router.push(`/${slug}/${String(record.id)}/edit`);
+                },
+            },
+            {
+                id: "delete",
+                label: "Delete",
+                icon: Trash2,
+                variant: "destructive",
+                onExecute: async (record) => {
+                    if (!record.id) return;
+                    if (
+                        !window.confirm(
+                            `Delete this ${entityConfig?.displayName ?? config.entityKey}?`
+                        )
+                    )
+                        return;
+                    try {
+                        await apiDelete(basePath, String(record.id));
+                        // Invalidate via window reload for now — queryClient invalidation
+                        // can be wired when a shared queryClient reference is available
+                        window.location.reload();
+                    } catch {
+                        // Silently fail — API errors surface via toast in production
+                    }
+                },
+            },
+        ],
+        [router, slug, basePath, entityConfig?.displayName, config.entityKey]
+    );
+
+    const resolvedRowActions = useMemo<ListRowActionDef[]>(() => {
+        if (config.rowActions) return config.rowActions;
+        return defaultRowActions;
+    }, [config.rowActions, defaultRowActions]);
+
+    const renderRowActions = useCallback(
+        (row: EntityRecord) => <RowActionsMenu record={row} actions={resolvedRowActions} />,
+        [resolvedRowActions]
+    );
+
+    // Render action items as raw DropdownMenuItem elements (for Calendar/Map
+    // where the parent component already provides the DropdownMenu shell)
+    const renderRowActionItems = useCallback(
+        (row: EntityRecord) => {
+            const defaultActions = resolvedRowActions.filter((a) => a.variant !== "destructive");
+            const destructiveActions = resolvedRowActions.filter(
+                (a) => a.variant === "destructive"
+            );
+            return (
+                <>
+                    {defaultActions.map((action) => {
+                        const Icon = action.icon;
+                        return (
+                            <DropdownMenuItem key={action.id} onClick={() => action.onExecute(row)}>
+                                {Icon && <Icon className="h-4 w-4 mr-2" />}
+                                {action.label}
+                            </DropdownMenuItem>
+                        );
+                    })}
+                    {defaultActions.length > 0 && destructiveActions.length > 0 && (
+                        <DropdownMenuSeparator />
+                    )}
+                    {destructiveActions.map((action) => {
+                        const Icon = action.icon;
+                        return (
+                            <DropdownMenuItem
+                                key={action.id}
+                                className="text-destructive"
+                                onClick={() => action.onExecute(row)}
+                            >
+                                {Icon && <Icon className="h-4 w-4 mr-2" />}
+                                {action.label}
+                            </DropdownMenuItem>
+                        );
+                    })}
+                </>
+            );
+        },
+        [resolvedRowActions]
+    );
+
     const hasCreate = !!config.createConfig;
     const hasBulkActions = (config.bulkActions?.length ?? 0) > 0;
     const hasMultiView = views.length > 1;
 
-    // Loading
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
     return (
         <PermissionGate resource={resource} action="read">
-            <div
-                className="animate-fade-in"
-                style={{ display: "flex", flexDirection: "column", gap: "var(--density-page-gap)" }}
-            >
-                {/* Header */}
-                {config.headerSlot ?? (
-                    <PageHeader title={title} description={description}>
-                        {config.importable && (
-                            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
-                                <Upload className="h-4 w-4" /> Import
-                            </Button>
-                        )}
-                        {config.exportable && (
-                            <CsvExportButton
-                                entity={config.entityKey}
-                                size="sm"
-                                variant="outline"
+            <SkeletonCrossfade isLoading={isLoading} skeleton={<LoadingState />}>
+                <div
+                    className="motion-safe:animate-fade-in"
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--density-page-gap)",
+                    }}
+                >
+                    {/* Header */}
+                    {config.headerSlot ?? (
+                        <PageHeader title={title} description={description}>
+                            {config.importable && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setImportOpen(true)}
+                                >
+                                    <Upload className="h-4 w-4" /> Import
+                                </Button>
+                            )}
+                            {config.exportable && (
+                                <CsvExportButton
+                                    entity={config.entityKey}
+                                    size="sm"
+                                    variant="outline"
+                                />
+                            )}
+                            {hasCreate && (
+                                <Button size="sm" onClick={openCreate}>
+                                    <Plus className="h-4 w-4" />{" "}
+                                    {config.createLabel ??
+                                        `New ${entityConfig?.displayName ?? config.entityKey}`}
+                                </Button>
+                            )}
+                        </PageHeader>
+                    )}
+
+                    {/* Stats */}
+                    {config.statsSlot ??
+                        (statsToRender && statsToRender.length > 0 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {statsToRender.map((s) => (
+                                    <StatCard
+                                        key={s.label}
+                                        title={s.label}
+                                        value={s.computedValue}
+                                        icon={s.icon}
+                                    />
+                                ))}
+                            </div>
+                        ))}
+
+                    {/* Alerts */}
+                    {config.alerts?.map((alert, i) => (
+                        <AlertBanner key={i} alert={alert} records={records} />
+                    ))}
+
+                    {/* Toolbar */}
+                    {config.toolbarSlot ?? (
+                        <FilterBar
+                            search={{
+                                value: search,
+                                onValueChange: setSearch,
+                                placeholder: `Search ${title.toLowerCase()}...`,
+                            }}
+                            filters={filterBarFilters}
+                            activeCount={activeFilterCount}
+                            onClearAll={() => setFilterValues({})}
+                            actions={
+                                hasMultiView ? (
+                                    <ViewSwitcher
+                                        views={views}
+                                        value={viewMode}
+                                        onValueChange={setViewMode}
+                                    />
+                                ) : undefined
+                            }
+                        />
+                    )}
+
+                    {/* Content */}
+                    {config.contentSlot ??
+                        (filtered.length === 0 ? (
+                            <EmptyState
+                                icon={Icon}
+                                title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
+                                description={
+                                    search || activeFilterCount > 0
+                                        ? "Try adjusting your search or filters"
+                                        : (config.emptyDescription ??
+                                          `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
+                                }
+                                action={
+                                    !search && activeFilterCount === 0 && hasCreate
+                                        ? {
+                                              label:
+                                                  config.createLabel ??
+                                                  `New ${entityConfig?.displayName ?? "Record"}`,
+                                              onClick: openCreate,
+                                          }
+                                        : undefined
+                                }
                             />
-                        )}
-                        {hasCreate && (
-                            <Button size="sm" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />{" "}
-                                {config.createLabel ??
-                                    `New ${entityConfig?.displayName ?? config.entityKey}`}
-                            </Button>
-                        )}
-                    </PageHeader>
-                )}
+                        ) : (
+                            <ViewContent
+                                viewMode={viewMode}
+                                filtered={filtered}
+                                dtColumns={dtColumns}
+                                config={config}
+                                title={title}
+                                hasBulkActions={hasBulkActions}
+                                selectedKeys={selectedKeys}
+                                setSelectedKeys={setSelectedKeys}
+                                handleRowClick={handleRowClick}
+                                renderRowActions={renderRowActions}
+                                renderRowActionItems={renderRowActionItems}
+                            />
+                        ))}
 
-                {/* Stats */}
-                {config.statsSlot ??
-                    (statsToRender && statsToRender.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {statsToRender.map((s) => (
-                                <StatCard
-                                    key={s.label}
-                                    title={s.label}
-                                    value={s.computedValue}
-                                    icon={s.icon}
-                                />
-                            ))}
-                        </div>
-                    ))}
+                    {/* Footer slot */}
+                    {config.footerSlot}
 
-                {/* Alerts */}
-                {config.alerts?.map((alert, i) => (
-                    <AlertBanner key={i} alert={alert} records={records} />
-                ))}
-
-                {/* Toolbar */}
-                {config.toolbarSlot ?? (
-                    <FilterBar
-                        search={{
-                            value: search,
-                            onValueChange: setSearch,
-                            placeholder: `Search ${title.toLowerCase()}...`,
-                        }}
-                        filters={filterBarFilters}
-                        activeCount={activeFilterCount}
-                        onClearAll={() => setFilterValues({})}
-                        actions={
-                            hasMultiView ? (
-                                <ViewSwitcher
-                                    views={views}
-                                    value={viewMode}
-                                    onValueChange={setViewMode}
-                                />
-                            ) : undefined
-                        }
-                    />
-                )}
-
-                {/* Content */}
-                {config.contentSlot ??
-                    (filtered.length === 0 ? (
-                        <EmptyState
-                            icon={Icon}
-                            title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
-                            description={
-                                search || activeFilterCount > 0
-                                    ? "Try adjusting your search or filters"
-                                    : (config.emptyDescription ??
-                                      `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
-                            }
-                            action={
-                                !search && activeFilterCount === 0 && hasCreate
-                                    ? {
-                                          label:
-                                              config.createLabel ??
-                                              `New ${entityConfig?.displayName ?? "Record"}`,
-                                          onClick: openCreate,
-                                      }
-                                    : undefined
-                            }
+                    {/* Bulk Action Bar */}
+                    {hasBulkActions && (
+                        <BulkActionBar
+                            selectedCount={selectedKeys.size}
+                            actions={config.bulkActions!}
+                            selectedIds={Array.from(selectedKeys)}
+                            onClearSelection={handleClearSelection}
                         />
-                    ) : (
-                        <ViewContent
-                            viewMode={viewMode}
-                            filtered={filtered}
-                            dtColumns={dtColumns}
-                            config={config}
-                            title={title}
-                            hasBulkActions={hasBulkActions}
-                            selectedKeys={selectedKeys}
-                            setSelectedKeys={setSelectedKeys}
-                            handleRowClick={handleRowClick}
-                        />
-                    ))}
-
-                {/* Footer slot */}
-                {config.footerSlot}
-
-                {/* Bulk Action Bar */}
-                {hasBulkActions && (
-                    <BulkActionBar
-                        selectedCount={selectedKeys.size}
-                        actions={config.bulkActions!}
-                        selectedIds={Array.from(selectedKeys)}
-                        onClearSelection={handleClearSelection}
-                    />
-                )}
-            </div>
+                    )}
+                </div>
+            </SkeletonCrossfade>
 
             {/* Create dialog */}
             {config.createConfig && (
@@ -673,6 +856,23 @@ export function ListPageShell({
                     open={importOpen}
                     onOpenChange={setImportOpen}
                     entity={config.entityKey}
+                />
+            )}
+
+            {/* Quick view panel */}
+            {config.quickViewConfig && (
+                <QuickViewPanel
+                    open={quickViewRecordId !== null}
+                    onClose={() => setQuickViewRecordId(null)}
+                    config={config.quickViewConfig}
+                    entityKey={config.entityKey}
+                    recordId={quickViewRecordId}
+                    titleKey={config.quickViewConfig.previewFields[0]?.accessorKey ?? "name"}
+                    statusKey="status"
+                    rowActions={resolvedRowActions}
+                    recordIds={filteredRecordIds}
+                    onNavigate={setQuickViewRecordId}
+                    icon={config.icon}
                 />
             )}
         </PermissionGate>

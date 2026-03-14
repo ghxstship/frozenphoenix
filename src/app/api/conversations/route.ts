@@ -38,7 +38,10 @@ export async function GET() {
     if (!admin) return ApiErrors.serviceUnavailable();
 
     // Get conversations user is a member of
-    const { data: memberships, error: memErr } = await serverFromTable(admin!, "conversation_members")
+    const { data: memberships, error: memErr } = await serverFromTable(
+        admin!,
+        "conversation_members"
+    )
         .select("conversation_id, last_read_at, is_muted, is_pinned, role, notification_preference")
         .eq("user_id", user.id);
 
@@ -86,7 +89,9 @@ export async function GET() {
 
             // Last message
             const { data: lastMsgs } = await serverFromTable(admin!, "messages")
-                .select("id, body, sender_id, created_at, is_system_message, profiles:sender_id(name)")
+                .select(
+                    "id, body, sender_id, created_at, is_system_message, user_profiles:sender_id(display_name)"
+                )
                 .eq("conversation_id", conv.id as string)
                 .is("deleted_at", null)
                 .order("created_at", { ascending: false })
@@ -98,7 +103,8 @@ export async function GET() {
                       id: lastMsg.id as string,
                       body: ((lastMsg.body as string) ?? "").slice(0, 100),
                       sender_name:
-                          (lastMsg.profiles as { name: string } | null)?.name ?? "Unknown",
+                          (lastMsg.user_profiles as { display_name: string } | null)
+                              ?.display_name ?? "Unknown",
                       sender_id: lastMsg.sender_id as string | null,
                       created_at: lastMsg.created_at as string,
                       is_system_message: (lastMsg.is_system_message as boolean) ?? false,
@@ -107,19 +113,23 @@ export async function GET() {
 
             // Members preview (max 5)
             const { data: members } = await serverFromTable(admin!, "conversation_members")
-                .select("user_id, role, profiles:user_id(name, avatar_url)")
+                .select("user_id, role, user_profiles:user_id(display_name, avatar_url)")
                 .eq("conversation_id", conv.id as string)
                 .limit(5);
 
-            const memberPreviews = (members as Record<string, unknown>[] | null)?.map((m) => {
-                const p = m.profiles as { name: string; avatar_url: string | null } | null;
-                return {
-                    user_id: m.user_id as string,
-                    name: p?.name ?? "Unknown",
-                    avatar_url: p?.avatar_url ?? null,
-                    role: m.role as string,
-                };
-            }) ?? [];
+            const memberPreviews =
+                (members as Record<string, unknown>[] | null)?.map((m) => {
+                    const p = m.user_profiles as {
+                        display_name: string;
+                        avatar_url: string | null;
+                    } | null;
+                    return {
+                        user_id: m.user_id as string,
+                        name: p?.display_name ?? "Unknown",
+                        avatar_url: p?.avatar_url ?? null,
+                        role: m.role as string,
+                    };
+                }) ?? [];
 
             return {
                 ...conv,
@@ -154,14 +164,27 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient();
     if (!admin) return ApiErrors.serviceUnavailable();
 
-    const { type, name, description, slug, is_public, is_announcement_only, category, event_id, project_id, member_ids } = parsed.data;
+    const {
+        type,
+        name,
+        description,
+        slug,
+        is_public,
+        is_announcement_only,
+        category,
+        event_id,
+        project_id,
+        member_ids,
+    } = parsed.data;
 
-    // Get user's org
-    const { data: profile } = await serverFromTable(admin!, "profiles")
+    // Get user's org from org_memberships (profiles table dropped)
+    const { data: membership } = await serverFromTable(admin!, "org_memberships")
         .select("organization_id")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
+        .eq("is_default_org", true)
+        .eq("status", "active")
         .single();
-    const orgId = (profile as Record<string, unknown> | null)?.organization_id as string | null;
+    const orgId = (membership as Record<string, unknown> | null)?.organization_id as string | null;
     if (!orgId) return ApiErrors.forbidden("User is not in an organization");
 
     // For DMs: check if 1:1 conversation already exists
@@ -212,7 +235,7 @@ export async function POST(request: NextRequest) {
             name: name?.trim() ?? null,
             description: description?.trim() ?? null,
             slug: slug ?? null,
-            is_public: is_public ?? (type === "channel"),
+            is_public: is_public ?? type === "channel",
             is_announcement_only: is_announcement_only ?? false,
             category: category ?? null,
             event_id: event_id ?? null,
@@ -224,7 +247,9 @@ export async function POST(request: NextRequest) {
 
     if (convErr) {
         if (convErr.code === "23505") {
-            return ApiErrors.conflict("A conversation with this slug already exists in this organization");
+            return ApiErrors.conflict(
+                "A conversation with this slug already exists in this organization"
+            );
         }
         logger.error("[POST /api/conversations] insert failed", { error: convErr });
         return ApiErrors.internalError("Failed to create conversation");
@@ -238,7 +263,9 @@ export async function POST(request: NextRequest) {
         role: i === 0 ? "owner" : "member",
     }));
 
-    const { error: memErr } = await serverFromTable(admin!, "conversation_members").insert(memberRows);
+    const { error: memErr } = await serverFromTable(admin!, "conversation_members").insert(
+        memberRows
+    );
     if (memErr) {
         logger.error("[POST /api/conversations] members insert failed", { error: memErr });
     }

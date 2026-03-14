@@ -6,56 +6,122 @@
 // ─── Enums ───
 
 export type AssetClass =
-    | 'capital_equipment' | 'rental_equipment' | 'consumable' | 'tool'
-    | 'safety_equipment' | 'scenic_element' | 'technology' | 'vehicle'
-    | 'vendor_managed';
+    | "capital_equipment"
+    | "rental_equipment"
+    | "consumable"
+    | "tool"
+    | "safety_equipment"
+    | "scenic_element"
+    | "technology"
+    | "vehicle"
+    | "vendor_managed";
 
 export type WarehouseZoneType =
-    | 'receiving' | 'storage' | 'staging_outbound' | 'staging_inbound'
-    | 'maintenance' | 'quarantine' | 'hazmat' | 'outdoor'
-    | 'cold_storage' | 'secure';
+    | "receiving"
+    | "storage"
+    | "staging_outbound"
+    | "staging_inbound"
+    | "maintenance"
+    | "quarantine"
+    | "hazmat"
+    | "outdoor"
+    | "cold_storage"
+    | "secure";
 
 export type WarehouseLocationType =
-    | 'shelf' | 'floor' | 'pallet' | 'cage' | 'outdoor' | 'rack' | 'bin';
+    | "shelf"
+    | "floor"
+    | "pallet"
+    | "cage"
+    | "outdoor"
+    | "rack"
+    | "bin";
 
 export type ReservationStatus =
-    | 'pending' | 'confirmed' | 'checked_out' | 'released' | 'expired' | 'cancelled';
+    | "pending"
+    | "confirmed"
+    | "checked_out"
+    | "released"
+    | "expired"
+    | "cancelled";
 
 export type ShipmentItemCondition =
-    | 'new' | 'excellent' | 'good' | 'fair' | 'needs_repair' | 'damaged' | 'missing';
+    | "new"
+    | "excellent"
+    | "good"
+    | "fair"
+    | "needs_repair"
+    | "damaged"
+    | "missing";
 
-export type KitStatus = 'draft' | 'active' | 'deployed' | 'retired';
+export type KitStatus = "draft" | "active" | "deployed" | "retired";
 
 export type ScanType =
-    | 'check_in' | 'check_out' | 'transfer' | 'count' | 'receive'
-    | 'ship' | 'verify' | 'damage';
+    | "check_in"
+    | "check_out"
+    | "transfer"
+    | "count"
+    | "receive"
+    | "ship"
+    | "verify"
+    | "damage";
 
-export type LoadPlanStatus = 'draft' | 'confirmed' | 'loading' | 'loaded' | 'departed';
+export type LoadPlanStatus = "draft" | "confirmed" | "loading" | "loaded" | "departed";
 
 export type LogisticsEventType =
-    | 'booked' | 'picked_up' | 'in_transit' | 'customs_hold' | 'customs_cleared'
-    | 'cross_dock' | 'out_for_delivery' | 'delivered' | 'exception'
-    | 'damage_reported' | 'returned';
+    | "booked"
+    | "picked_up"
+    | "in_transit"
+    | "customs_hold"
+    | "customs_cleared"
+    | "cross_dock"
+    | "out_for_delivery"
+    | "delivered"
+    | "exception"
+    | "damage_reported"
+    | "returned";
 
-export type AssetDamageType = 'cosmetic' | 'functional' | 'structural' | 'total_loss' | 'missing';
+export type AssetDamageType = "cosmetic" | "functional" | "structural" | "total_loss" | "missing";
 
-export type DamageSeverity = 'minor' | 'moderate' | 'major' | 'write_off';
+export type DamageSeverity = "minor" | "moderate" | "major" | "write_off";
 
-export type DamageResolution = 'pending' | 'repaired' | 'replaced' | 'written_off' | 'insurance_claim';
+export type DamageResolution =
+    | "pending"
+    | "repaired"
+    | "replaced"
+    | "written_off"
+    | "insurance_claim";
 
-export type MaintenanceFrequencyType = 'calendar' | 'usage_hours' | 'usage_miles' | 'event_count';
+export type MaintenanceFrequencyType = "calendar" | "usage_hours" | "usage_miles" | "event_count";
 
-export type MaintenanceFrequencyUnit = 'days' | 'weeks' | 'months' | 'years' | 'hours' | 'miles' | 'events';
+export type MaintenanceFrequencyUnit =
+    | "days"
+    | "weeks"
+    | "months"
+    | "years"
+    | "hours"
+    | "miles"
+    | "events";
 
-export type DepreciationMethod = 'straight_line' | 'declining_balance' | 'units_of_production' | 'sum_of_years';
+export type DepreciationMethod =
+    | "straight_line"
+    | "declining_balance"
+    | "units_of_production"
+    | "sum_of_years";
 
-export type InventoryAuditType = 'full' | 'cycle' | 'spot' | 'annual';
+export type InventoryAuditType = "full" | "cycle" | "spot" | "annual";
 
-export type InventoryAuditStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
+export type InventoryAuditStatus = "planned" | "in_progress" | "completed" | "cancelled";
 
-export type DisposalMethod = 'sold' | 'donated' | 'scrapped' | 'returned_to_vendor' | 'transferred' | 'insurance_claim';
+export type DisposalMethod =
+    | "sold"
+    | "donated"
+    | "scrapped"
+    | "returned_to_vendor"
+    | "transferred"
+    | "insurance_claim";
 
-export type FuelType = 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'propane' | 'cng' | 'other';
+export type FuelType = "gasoline" | "diesel" | "electric" | "hybrid" | "propane" | "cng" | "other";
 
 // ─── Warehouse Hierarchy ───
 
@@ -416,5 +482,5 @@ export interface InventoryReservationWithRefs extends InventoryReservation {
     assets: { id: string; name: string; barcode: string } | null;
     consumables: { id: string; name: string; sku: string } | null;
     projects: { id: string; name: string } | null;
-    profiles: { id: string; name: string } | null;
+    user_profiles: { id: string; display_name: string } | null;
 }

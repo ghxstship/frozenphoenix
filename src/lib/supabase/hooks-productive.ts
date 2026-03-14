@@ -7,7 +7,7 @@ import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 // ─── Join-aware return types ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
 
-type ProfileName = { profiles: { name: string } | null };
+type ProfileName = { user_profiles: { display_name: string } | null };
 type CompanyName = { companies: { name: string } | null };
 type ContactName = { contacts: { full_name: string } | null };
 type ProjectName = { projects: { name: string } | null };
@@ -53,7 +53,7 @@ export function useCompanies() {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("companies")
-                .select("*, profiles:account_manager_id(name)")
+                .select("*, user_profiles:account_manager_id(display_name)")
                 .order("name", { ascending: true });
             if (error) throw error;
             return data as unknown as CompanyWithManager[];
@@ -67,7 +67,7 @@ export function useCompany(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("companies")
-                .select("*, profiles:account_manager_id(name)")
+                .select("*, user_profiles:account_manager_id(display_name)")
                 .eq("id", id)
                 .single();
             if (error) throw error;
@@ -257,20 +257,20 @@ export function useUpdatePipeline() {
 
 export function useCustomFields(entityType?: string) {
     return useQuery({
-        queryKey: ["custom_fields", { entityType }],
+        queryKey: ["custom_field_definitions", { entityType }],
         queryFn: async () => {
             let query = getSupabase()
-                .from("custom_fields")
+                .from("custom_field_definitions")
                 .select("*")
                 .order("display_order", { ascending: true });
 
             if (entityType) {
-                query = query.eq("entity_type", filterValue(entityType));
+                query = query.contains("entity_types", [entityType]);
             }
 
             const { data, error } = await query;
             if (error) throw error;
-            return data as unknown as Tables<"custom_fields">[];
+            return data as unknown as Tables<"custom_field_definitions">[];
         },
     });
 }
@@ -281,11 +281,11 @@ export function useCustomFieldValues(entityId: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("custom_field_values")
-                .select("*, custom_fields(*)")
+                .select("*, custom_field_definitions:field_definition_id(*)")
                 .eq("entity_id", entityId);
             if (error) throw error;
             return data as unknown as (Tables<"custom_field_values"> & {
-                custom_fields: Tables<"custom_fields">;
+                custom_field_definitions: Tables<"custom_field_definitions">;
             })[];
         },
         enabled: !!entityId,
@@ -295,16 +295,16 @@ export function useCustomFieldValues(entityId: string) {
 export function useCreateCustomField() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (field: TablesInsert<"custom_fields">) => {
+        mutationFn: async (field: TablesInsert<"custom_field_definitions">) => {
             const { data, error } = await getSupabase()
-                .from("custom_fields")
+                .from("custom_field_definitions")
                 .insert(field)
                 .select()
                 .single();
             if (error) throw error;
-            return data as unknown as Tables<"custom_fields">;
+            return data as unknown as Tables<"custom_field_definitions">;
         },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["custom_fields"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["custom_field_definitions"] }),
     });
 }
 
@@ -314,7 +314,7 @@ export function useUpsertCustomFieldValue() {
         mutationFn: async (value: TablesInsert<"custom_field_values">) => {
             const { data, error } = await getSupabase()
                 .from("custom_field_values")
-                .upsert(value, { onConflict: "custom_field_id,entity_id" })
+                .upsert(value, { onConflict: "field_definition_id,entity_id" })
                 .select()
                 .single();
             if (error) throw error;
@@ -336,7 +336,7 @@ export function useSavedViews(entityType?: string, projectId?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("saved_views")
-                .select("*, profiles:owner_id(name)")
+                .select("*, user_profiles:owner_id(display_name)")
                 .order("name", { ascending: true });
 
             if (entityType) {
@@ -652,7 +652,7 @@ export function useTimeOffRequests(status?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("time_off_requests")
-                .select("*, crew_members(name), profiles:approver_id(name)")
+                .select("*, crew_members(name), user_profiles:approver_id(display_name)")
                 .order("start_date", { ascending: false });
 
             if (status) {
@@ -903,7 +903,7 @@ export function useDashboards() {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("dashboards")
-                .select("*, profiles:owner_id(name)")
+                .select("*, user_profiles:owner_id(display_name)")
                 .order("name", { ascending: true });
             if (error) throw error;
             return data as unknown as DashboardWithOwner[];
@@ -995,7 +995,7 @@ export function useDocuments(projectId?: string) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("documents")
-                .select("*, profiles:owner_id(name), projects(name)")
+                .select("*, user_profiles:owner_id(display_name), projects(name)")
                 .order("updated_at", { ascending: false });
 
             if (projectId) {
@@ -1015,7 +1015,7 @@ export function useDocument(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("documents")
-                .select("*, profiles:owner_id(name), projects(name)")
+                .select("*, user_profiles:owner_id(display_name), projects(name)")
                 .eq("id", id)
                 .single();
             if (error) throw error;

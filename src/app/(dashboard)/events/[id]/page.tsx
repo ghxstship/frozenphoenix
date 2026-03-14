@@ -58,7 +58,7 @@ export default function EventDetailPage() {
             (sbActivity ?? []).map((a) => ({
                 id: a.id,
                 action: a.action as ActivityItem["action"],
-                actorName: a.profiles?.name ?? "System",
+                actorName: a.user_profiles?.display_name ?? "System",
                 entityType: a.entity_type,
                 description: (a.metadata?.description as string) ?? undefined,
                 createdAt: a.created_at,
@@ -71,7 +71,7 @@ export default function EventDetailPage() {
             (sbComments ?? []).map((c) => ({
                 id: c.id,
                 authorId: c.author_id,
-                authorName: c.profiles?.name ?? "",
+                authorName: c.user_profiles?.display_name ?? "",
                 content: c.body,
                 createdAt: c.created_at,
                 updatedAt: c.updated_at,

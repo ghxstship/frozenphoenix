@@ -6,7 +6,7 @@ import { clearWorkspaceContext } from "@/hooks/use-workspace-context";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database, Tables } from "./database.types";
 
-type Profile = Tables<"profiles">;
+type Profile = Tables<"user_profiles">;
 type OrgMembershipStatus = Database["public"]["Enums"]["org_membership_status"];
 
 // ─── Org Membership (lightweight shape for context) ────────────
@@ -133,7 +133,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchProfile = useCallback(
         async (userId: string) => {
             if (!supabase) return;
-            const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+            const { data } = await supabase
+                .from("user_profiles")
+                .select("*")
+                .eq("id", userId)
+                .single();
 
             if (data) {
                 setProfile(data as Profile);
@@ -154,12 +158,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 "User";
 
             const { data: created } = await supabase
-                .from("profiles")
+                .from("user_profiles")
                 .upsert(
                     {
                         id: userId,
                         email: authUser.email ?? "",
-                        name: displayName,
+                        display_name: displayName,
                     },
                     { onConflict: "id" }
                 )
@@ -186,9 +190,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refreshProfile = useCallback(async () => {
         if (user) {
-            await fetchProfile(user.id);
-            await fetchMemberships(user.id);
-            await fetchUsername(user.id);
+            await Promise.all([
+                fetchProfile(user.id),
+                fetchMemberships(user.id),
+                fetchUsername(user.id),
+            ]);
         }
     }, [user, fetchProfile, fetchMemberships, fetchUsername]);
 
@@ -234,9 +240,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                await fetchProfile(session.user.id);
-                await fetchMemberships(session.user.id);
-                await fetchUsername(session.user.id);
+                await Promise.all([
+                    fetchProfile(session.user.id),
+                    fetchMemberships(session.user.id),
+                    fetchUsername(session.user.id),
+                ]);
             }
 
             setLoading(false);
@@ -251,9 +259,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                await fetchProfile(session.user.id);
-                await fetchMemberships(session.user.id);
-                await fetchUsername(session.user.id);
+                await Promise.all([
+                    fetchProfile(session.user.id),
+                    fetchMemberships(session.user.id),
+                    fetchUsername(session.user.id),
+                ]);
             } else {
                 setProfile(null);
                 setUsername(null);

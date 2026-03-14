@@ -4,52 +4,45 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const progressBarVariants = cva(
-    "relative w-full overflow-hidden rounded-full bg-muted",
-    {
-        variants: {
-            size: {
-                xs: "h-1",
-                sm: "h-1.5",
-                md: "h-2",
-                lg: "h-3",
-                xl: "h-4",
-            },
-            variant: {
-                default: "",
-                success: "",
-                warning: "",
-                destructive: "",
-                info: "",
-            },
+const progressBarVariants = cva("relative w-full overflow-hidden rounded-full bg-muted", {
+    variants: {
+        size: {
+            xs: "h-1",
+            sm: "h-1.5",
+            md: "h-2",
+            lg: "h-3",
+            xl: "h-4",
         },
-        defaultVariants: { size: "md", variant: "default" },
-    }
-);
+        variant: {
+            default: "",
+            success: "",
+            warning: "",
+            destructive: "",
+            info: "",
+        },
+    },
+    defaultVariants: { size: "md", variant: "default" },
+});
 
-const progressFillVariants = cva(
-    "h-full rounded-full transition-all duration-300 ease-out",
-    {
-        variants: {
-            variant: {
-                default: "bg-primary",
-                success: "bg-success",
-                warning: "bg-warning",
-                destructive: "bg-destructive",
-                info: "bg-info",
-            },
-            animated: {
-                true: "",
-                false: "",
-            },
+const progressFillVariants = cva("h-full rounded-full transition-all duration-300 ease-out", {
+    variants: {
+        variant: {
+            default: "bg-primary",
+            success: "bg-success",
+            warning: "bg-warning",
+            destructive: "bg-destructive",
+            info: "bg-info",
         },
-        defaultVariants: { variant: "default", animated: false },
-    }
-);
+        animated: {
+            true: "motion-safe:animate-progress-fill",
+            false: "",
+        },
+    },
+    defaultVariants: { variant: "default", animated: false },
+});
 
 export interface ProgressBarProps
-    extends React.HTMLAttributes<HTMLDivElement>,
-        VariantProps<typeof progressBarVariants> {
+    extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof progressBarVariants> {
     value: number;
     max?: number;
     showLabel?: boolean;
@@ -71,9 +64,7 @@ export function ProgressBar({
     ...props
 }: ProgressBarProps) {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
-    const label = formatLabel
-        ? formatLabel(value, max)
-        : `${Math.round(percentage)}%`;
+    const label = formatLabel ? formatLabel(value, max) : `${Math.round(percentage)}%`;
 
     const autoVariant =
         variant === "default"
@@ -94,9 +85,7 @@ export function ProgressBar({
             {...props}
         >
             {showLabel && labelPosition === "above" && (
-                <span className="text-xs font-medium text-muted-foreground">
-                    {label}
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">{label}</span>
             )}
             <div
                 className={cn(progressBarVariants({ size, variant }))}
@@ -115,14 +104,11 @@ export function ProgressBar({
                     )}
                     style={{ width: `${percentage}%` }}
                 >
-                    {showLabel &&
-                        labelPosition === "inside" &&
-                        size !== "xs" &&
-                        size !== "sm" && (
-                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-                                {label}
-                            </span>
-                        )}
+                    {showLabel && labelPosition === "inside" && size !== "xs" && size !== "sm" && (
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                            {label}
+                        </span>
+                    )}
                 </div>
             </div>
             {showLabel && labelPosition === "right" && (

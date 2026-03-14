@@ -6,6 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ListPageConfig } from "@/types/list-page-config";
+import type { QuickViewConfig } from "@/types/detail-page-config";
 import {
     CREATE_CALL_SHEET_CONFIG,
     CREATE_CERTIFICATION_CONFIG,
@@ -493,6 +494,23 @@ export const WORKER_COMPLIANCE_DOCS_PAGE: ListPageConfig = {
 
 // ─── worker_profile ───
 
+const WORKER_PROFILE_QUICK_VIEW: QuickViewConfig = {
+    previewFields: [
+        { id: "department", label: "Department", accessorKey: "department", fieldType: "status" },
+        {
+            id: "classification",
+            label: "Classification",
+            accessorKey: "classification",
+            fieldType: "status",
+        },
+        { id: "hire_date", label: "Hire Date", accessorKey: "hire_date", fieldType: "date" },
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email" },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone" },
+        { id: "skills", label: "Skills", accessorKey: "skills", fullWidth: true },
+    ],
+    navigable: true,
+};
+
 export const WORKER_PROFILES_PAGE: ListPageConfig = {
     entityKey: "worker_profile",
     description: "Extended worker profiles with skills and qualifications",
@@ -531,6 +549,7 @@ export const WORKER_PROFILES_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "department",
     },
+    quickViewConfig: WORKER_PROFILE_QUICK_VIEW,
 };
 
 // ─── worker_review ───

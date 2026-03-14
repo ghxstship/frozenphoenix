@@ -8,14 +8,37 @@ interface AdvanceCartStore extends AdvanceCartState {
     addItem: (item: AdvanceCartItem) => void;
     removeItem: (catalogItemId: string) => void;
     updateItemQuantity: (catalogItemId: string, quantity: number) => void;
-    updateItemModifiers: (catalogItemId: string, modifiers: AdvanceCartItem["selected_modifiers"]) => void;
+    updateItemModifiers: (
+        catalogItemId: string,
+        modifiers: AdvanceCartItem["selected_modifiers"]
+    ) => void;
     updateItemNotes: (catalogItemId: string, notes: string) => void;
     updateItemCriticalPath: (catalogItemId: string, isCritical: boolean) => void;
-    updateItemDelivery: (catalogItemId: string, delivery: {
-        delivery_zone?: string;
-        delivery_location?: string;
-        scheduled_delivery?: string;
-    }) => void;
+    updateItemDelivery: (
+        catalogItemId: string,
+        delivery: {
+            delivery_zone?: string;
+            delivery_location?: string;
+            location_id?: string;
+            scheduled_delivery?: string;
+        }
+    ) => void;
+    updateItemDates: (
+        catalogItemId: string,
+        dates: {
+            start_date?: string;
+            end_date?: string;
+        }
+    ) => void;
+    updateItemEnrichment: (
+        catalogItemId: string,
+        enrichment: {
+            category_id?: string;
+            item_specifications?: Record<string, unknown>;
+            operational_purpose?: string;
+            special_requests?: string;
+        }
+    ) => void;
     setEventId: (eventId: string) => void;
     setProjectId: (projectId: string | undefined) => void;
     setAdvanceType: (advanceType: AdvanceCartState["advance_type"]) => void;
@@ -33,7 +56,8 @@ function computeTotals(items: AdvanceCartItem[]) {
         const modifierCost = (item.selected_modifiers ?? []).reduce((ms, m) => {
             if (m.adjustment_type === "flat") return ms + m.price_adjustment;
             if (m.adjustment_type === "per_unit") return ms + m.price_adjustment * item.quantity;
-            if (m.adjustment_type === "percentage") return ms + item.unit_cost * item.quantity * (m.price_adjustment / 100);
+            if (m.adjustment_type === "percentage")
+                return ms + item.unit_cost * item.quantity * (m.price_adjustment / 100);
             return ms;
         }, 0);
         return sum + item.unit_cost * item.quantity + modifierCost;
@@ -64,7 +88,9 @@ export const useAdvanceCart = create<AdvanceCartStore>()(
 
             addItem: (item) =>
                 set((state) => {
-                    const existing = state.items.find((i) => i.catalog_item_id === item.catalog_item_id);
+                    const existing = state.items.find(
+                        (i) => i.catalog_item_id === item.catalog_item_id
+                    );
                     let items: AdvanceCartItem[];
                     if (existing) {
                         items = state.items.map((i) =>
@@ -121,6 +147,20 @@ export const useAdvanceCart = create<AdvanceCartStore>()(
                 set((state) => ({
                     items: state.items.map((i) =>
                         i.catalog_item_id === catalogItemId ? { ...i, ...delivery } : i
+                    ),
+                })),
+
+            updateItemDates: (catalogItemId, dates) =>
+                set((state) => ({
+                    items: state.items.map((i) =>
+                        i.catalog_item_id === catalogItemId ? { ...i, ...dates } : i
+                    ),
+                })),
+
+            updateItemEnrichment: (catalogItemId, enrichment) =>
+                set((state) => ({
+                    items: state.items.map((i) =>
+                        i.catalog_item_id === catalogItemId ? { ...i, ...enrichment } : i
                     ),
                 })),
 

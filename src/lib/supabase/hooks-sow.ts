@@ -7,7 +7,7 @@ import type { Tables, TablesInsert, TablesUpdate } from "./database.types";
 // ─── Join-aware return types ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
 
-type ProfileName = { profiles: { name: string } | null };
+type ProfileName = { user_profiles: { display_name: string } | null };
 type ProjectName = { projects: { name: string } | null };
 type CompanyName = { companies: { name: string } | null };
 type ContactName = { contacts: { full_name: string } | null };
@@ -417,7 +417,7 @@ export function useSOWChangeLog(sowId: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("sow_change_log")
-                .select("*, profiles:changed_by(name)")
+                .select("*, user_profiles:changed_by(display_name)")
                 .eq("sow_id", sowId)
                 .order("changed_at", { ascending: false });
             if (error) throw error;

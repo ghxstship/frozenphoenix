@@ -2,17 +2,9 @@
 
 import { useMemo } from "react";
 import { formatCurrency } from "@/lib/utils";
-import { Building2, Globe, MapPin, MoreHorizontal, Star, Users } from "lucide-react";
+import { Building2, Eye, Globe, MapPin, Pencil, Star, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCompanies } from "@/lib/supabase/hooks-pages";
 import { ListPageShell } from "@/components/shells/list-page-shell";
@@ -21,7 +13,9 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
-import type { ListPageConfig } from "@/types/list-page-config";
+import { RowActionsMenu } from "@/components/data-view/row-actions-menu";
+import type { ListPageConfig, ListRowActionDef } from "@/types/list-page-config";
+import { apiDelete } from "@/lib/api/client";
 
 type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
 type CompanyStatus = "prospect" | "active" | "inactive" | "churned";
@@ -134,28 +128,40 @@ const tableColumns: ColumnDef<Company>[] = [
         align: "right",
         render: (v) => <span className="font-medium">{formatCurrency(Number(v))}</span>,
     },
+];
+
+const companyRowActions: ListRowActionDef[] = [
     {
-        id: "actions",
-        header: "",
-        accessorKey: "id",
-        width: 50,
-        render: () => (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Company actions">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem>View Contacts</DropdownMenuItem>
-                    <DropdownMenuItem>View Projects</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        ),
+        id: "view",
+        label: "View Details",
+        icon: Eye,
+        onExecute: (record) => {
+            if (record.id) window.location.href = `/companies/${String(record.id)}`;
+        },
+    },
+    {
+        id: "edit",
+        label: "Edit",
+        icon: Pencil,
+        onExecute: (record) => {
+            if (record.id) window.location.href = `/companies/${String(record.id)}/edit`;
+        },
+    },
+    {
+        id: "delete",
+        label: "Delete",
+        icon: Trash2,
+        variant: "destructive",
+        onExecute: async (record) => {
+            if (!record.id) return;
+            if (!window.confirm("Delete this company?")) return;
+            try {
+                await apiDelete("/api/companies", String(record.id));
+                window.location.reload();
+            } catch {
+                // API errors surface via toast in production
+            }
+        },
     },
 ];
 
@@ -177,17 +183,11 @@ function CompanyCard({ company }: { company: Company }) {
                             <CardDescription>{company.industry}</CardDescription>
                         </div>
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" aria-label="Company actions">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <RowActionsMenu
+                        record={company as unknown as Record<string, unknown>}
+                        actions={companyRowActions}
+                        ariaLabel="Company actions"
+                    />
                 </div>
             </CardHeader>
             <CardContent className="space-y-3">

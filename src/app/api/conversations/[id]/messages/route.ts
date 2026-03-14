@@ -80,7 +80,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const threadId = searchParams.get("thread_id");
 
     let query = serverFromTable(admin!, "messages")
-        .select("*, profiles:sender_id(id, name, avatar_url)")
+        .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
         .eq("conversation_id", conversationId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -100,9 +100,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (error) return ApiErrors.internalError("Failed to fetch messages");
 
     // Fetch reactions for these messages
-    const messageIds = (messages as Record<string, unknown>[] | null)?.map(
-        (m) => m.id as string
-    ) ?? [];
+    const messageIds =
+        (messages as Record<string, unknown>[] | null)?.map((m) => m.id as string) ?? [];
 
     let reactions: Record<string, unknown>[] = [];
     if (messageIds.length > 0) {
@@ -121,35 +120,43 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // Map messages with sender and reactions
-    const enriched = (messages as Record<string, unknown>[] | null)?.map((m) => {
-        const profile = m.profiles as { id: string; name: string; avatar_url: string | null } | null;
-        const msgReactions = reactionsByMessage.get(m.id as string) ?? [];
+    const enriched =
+        (messages as Record<string, unknown>[] | null)?.map((m) => {
+            const up = m.user_profiles as {
+                id: string;
+                display_name: string;
+                avatar_url: string | null;
+            } | null;
+            const profile = up
+                ? { id: up.id, name: up.display_name, avatar_url: up.avatar_url }
+                : null;
+            const msgReactions = reactionsByMessage.get(m.id as string) ?? [];
 
-        // Aggregate reactions
-        const emojiMap = new Map<string, { count: number; user_ids: string[] }>();
-        for (const r of msgReactions) {
-            const emoji = r.emoji as string;
-            const uid = r.user_id as string;
-            if (!emojiMap.has(emoji)) emojiMap.set(emoji, { count: 0, user_ids: [] });
-            const entry = emojiMap.get(emoji)!;
-            entry.count++;
-            entry.user_ids.push(uid);
-        }
+            // Aggregate reactions
+            const emojiMap = new Map<string, { count: number; user_ids: string[] }>();
+            for (const r of msgReactions) {
+                const emoji = r.emoji as string;
+                const uid = r.user_id as string;
+                if (!emojiMap.has(emoji)) emojiMap.set(emoji, { count: 0, user_ids: [] });
+                const entry = emojiMap.get(emoji)!;
+                entry.count++;
+                entry.user_ids.push(uid);
+            }
 
-        const aggregatedReactions = Array.from(emojiMap.entries()).map(([emoji, data]) => ({
-            emoji,
-            count: data.count,
-            user_ids: data.user_ids,
-            has_reacted: data.user_ids.includes(user.id),
-        }));
+            const aggregatedReactions = Array.from(emojiMap.entries()).map(([emoji, data]) => ({
+                emoji,
+                count: data.count,
+                user_ids: data.user_ids,
+                has_reacted: data.user_ids.includes(user.id),
+            }));
 
-        return {
-            ...m,
-            profiles: undefined,
-            sender: profile,
-            reactions: aggregatedReactions,
-        };
-    }) ?? [];
+            return {
+                ...m,
+                user_profiles: undefined,
+                sender: profile,
+                reactions: aggregatedReactions,
+            };
+        }) ?? [];
 
     const nextCursor =
         enriched.length === limit
@@ -210,7 +217,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const parsed = await parseAndValidate(request, sendMessageSchema);
     if (!parsed.success) return parsed.response;
 
-    const { body, body_html, parent_message_id, mentioned_user_ids, attachments, is_internal, priority, is_mandatory_read, scheduled_at } = parsed.data;
+    const {
+        body,
+        body_html,
+        parent_message_id,
+        mentioned_user_ids,
+        attachments,
+        is_internal,
+        priority,
+        is_mandatory_read,
+        scheduled_at,
+    } = parsed.data;
 
     // Insert message
     const { data: message, error } = await serverFromTable(admin!, "messages")
@@ -226,9 +243,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
             priority: priority ?? "normal",
             is_mandatory_read: is_mandatory_read ?? false,
             scheduled_at: scheduled_at ?? null,
-            organization_id: convRecord?.organization_id as string ?? null,
+            organization_id: (convRecord?.organization_id as string) ?? null,
         })
-        .select("*, profiles:sender_id(id, name, avatar_url)")
+        .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
         .single();
 
     if (error) {
@@ -238,8 +255,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Dispatch notifications for @mentions (async, non-blocking)
     if (mentioned_user_ids && mentioned_user_ids.length > 0) {
-        const senderProfile = (message as Record<string, unknown>).profiles as { name: string } | null;
-        const senderName = senderProfile?.name ?? "Someone";
+        const senderProfile = (message as Record<string, unknown>).user_profiles as {
+            display_name: string;
+        } | null;
+        const senderName = senderProfile?.display_name ?? "Someone";
 
         // Fire and forget — notification dispatch
         for (const mentionedUserId of mentioned_user_ids) {

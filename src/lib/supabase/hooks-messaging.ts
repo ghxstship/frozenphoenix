@@ -128,14 +128,17 @@ export function useConversationMembers(conversationId: string | undefined) {
             const supabase = getSupabase();
             const { data, error } = await supabase
                 .from("conversation_members")
-                .select("user_id, role, profiles(name, avatar_url)")
+                .select("user_id, role, user_profiles(display_name, avatar_url)")
                 .eq("conversation_id", conversationId);
             if (error || !data) return [];
             return (data as Record<string, unknown>[]).map((m) => {
-                const profile = m.profiles as { name: string; avatar_url: string | null } | null;
+                const profile = m.user_profiles as {
+                    display_name: string;
+                    avatar_url: string | null;
+                } | null;
                 return {
                     user_id: m.user_id as string,
-                    name: profile?.name ?? "Unknown",
+                    name: profile?.display_name ?? "Unknown",
                     avatar_url: profile?.avatar_url ?? null,
                     role: m.role as ConversationMemberPreview["role"],
                 };
@@ -154,7 +157,7 @@ export function useMessages(conversationId: string | undefined) {
 
             let query = supabase
                 .from("messages")
-                .select("*, profiles:sender_id(id, name, avatar_url)")
+                .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
                 .eq("conversation_id", conversationId)
                 .is("deleted_at", null)
                 .is("parent_message_id", null)
@@ -187,7 +190,7 @@ export function useEntityMessages(entityType: string | undefined, entityId: stri
             const supabase = getSupabase();
             const { data, error } = await supabase
                 .from("messages")
-                .select("*, profiles:sender_id(id, name, avatar_url)")
+                .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
                 .eq("entity_type", entityType)
                 .eq("entity_id", entityId)
                 .is("deleted_at", null)
@@ -207,7 +210,7 @@ export function useThreadMessages(parentMessageId: string | undefined) {
             const supabase = getSupabase();
             const { data, error } = await supabase
                 .from("messages")
-                .select("*, profiles:sender_id(id, name, avatar_url)")
+                .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
                 .eq("parent_message_id", parentMessageId)
                 .is("deleted_at", null)
                 .order("created_at", { ascending: true });
@@ -265,7 +268,7 @@ export function usePinnedMessages(conversationId: string | undefined) {
             const supabase = getSupabase();
             const { data, error } = await supabase
                 .from("messages")
-                .select("*, profiles:sender_id(id, name, avatar_url)")
+                .select("*, user_profiles:sender_id(id, display_name, avatar_url)")
                 .eq("conversation_id", conversationId)
                 .eq("is_pinned", true)
                 .is("deleted_at", null)
@@ -590,33 +593,41 @@ export function useOrgMembers() {
             } = await supabase.auth.getUser();
             if (!user) return [];
 
-            // Get user's org
-            const { data: myProfile } = await supabase
-                .from("profiles")
+            // Get user's default org via org_memberships
+            const { data: myMembership } = await supabase
+                .from("org_memberships")
                 .select("organization_id")
-                .eq("id", user.id)
+                .eq("user_id", user.id)
+                .eq("is_default_org", true)
+                .eq("status", "active")
                 .single();
 
-            const orgId = (myProfile as Record<string, unknown> | null)?.organization_id as
+            const orgId = (myMembership as Record<string, unknown> | null)?.organization_id as
                 | string
                 | null;
             if (!orgId) return [];
 
-            // Get all org members except current user
-            const { data: profiles, error } = await supabase
-                .from("profiles")
-                .select("id, name, avatar_url")
+            // Get all org members except current user via org_memberships → user_profiles
+            const { data: members, error } = await supabase
+                .from("org_memberships")
+                .select("user_id, user_profiles(id, display_name, avatar_url)")
                 .eq("organization_id", orgId)
-                .neq("id", user.id)
-                .order("name", { ascending: true });
+                .eq("status", "active")
+                .neq("user_id", user.id);
 
-            if (error || !profiles) return [];
+            if (error || !members) return [];
 
-            return (profiles as Record<string, unknown>[]).map((p) => ({
-                id: p.id as string,
-                name: p.name as string,
-                avatar_url: (p.avatar_url as string | null) ?? null,
-            }));
+            return (members as Record<string, unknown>[])
+                .map((m) => {
+                    const up = m.user_profiles as Record<string, unknown> | null;
+                    if (!up) return null;
+                    return {
+                        id: up.id as string,
+                        name: up.display_name as string,
+                        avatar_url: (up.avatar_url as string | null) ?? null,
+                    };
+                })
+                .filter((x): x is NonNullable<typeof x> => x !== null);
         },
         staleTime: 120_000,
     });
@@ -625,7 +636,12 @@ export function useOrgMembers() {
 // ─── Helper: Map raw DB record → MessageWithSender ──────────
 
 function mapMessageWithSender(raw: Record<string, unknown>): MessageWithSender {
-    const profile = raw.profiles as { id: string; name: string; avatar_url: string | null } | null;
+    const up = raw.user_profiles as {
+        id: string;
+        display_name: string;
+        avatar_url: string | null;
+    } | null;
+    const sender = up ? { id: up.id, name: up.display_name, avatar_url: up.avatar_url } : null;
     return {
         id: raw.id as string,
         conversation_id: raw.conversation_id as string | null,
@@ -652,7 +668,7 @@ function mapMessageWithSender(raw: Record<string, unknown>): MessageWithSender {
         organization_id: raw.organization_id as string | null,
         created_at: raw.created_at as string,
         updated_at: raw.updated_at as string,
-        sender: profile,
+        sender,
         reactions: [],
     };
 }

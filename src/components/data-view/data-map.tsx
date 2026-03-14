@@ -12,6 +12,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MapPin } from "lucide-react";
 
 // ─── Types ───
@@ -29,6 +36,7 @@ interface DataMapProps {
     data: MapItem[];
     className?: string;
     height?: number;
+    actions?: (item: MapItem) => React.ReactNode;
     onItemClick?: (item: MapItem) => void;
 }
 
@@ -61,7 +69,7 @@ const DEFAULT_MARKER_COLORS = [
 
 // ─── Component ───
 
-export function DataMap({ data, className, height = 400, onItemClick }: DataMapProps) {
+export function DataMap({ data, className, height = 400, actions, onItemClick }: DataMapProps) {
     if (data.length === 0) {
         return (
             <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
@@ -99,6 +107,44 @@ export function DataMap({ data, className, height = 400, onItemClick }: DataMapP
                     const y = ((bounds.maxLat - item.lat) / latRange) * 100;
                     const colorClass =
                         item.color ?? DEFAULT_MARKER_COLORS[i % DEFAULT_MARKER_COLORS.length];
+                    const markerStyle = {
+                        left: `${Math.min(95, Math.max(5, x))}%`,
+                        top: `${Math.min(90, Math.max(5, y))}%`,
+                    };
+                    const markerClass = cn(
+                        "absolute -translate-x-1/2 -translate-y-full transition-transform hover:scale-125 cursor-pointer",
+                        colorClass
+                    );
+                    const markerLabel = `${item.title} at ${item.lat.toFixed(4)}, ${item.lng.toFixed(4)}`;
+
+                    if (actions) {
+                        return (
+                            <DropdownMenu key={item.id}>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className={markerClass}
+                                        style={markerStyle}
+                                        aria-label={markerLabel}
+                                    >
+                                        <MapPin className="h-6 w-6 drop-shadow-md" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="center" className="min-w-[180px]">
+                                    <DropdownMenuLabel className="font-medium">
+                                        {item.title}
+                                    </DropdownMenuLabel>
+                                    {item.subtitle && (
+                                        <p className="px-2 pb-1.5 text-[10px] text-muted-foreground">
+                                            {item.subtitle}
+                                        </p>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    {actions(item)}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        );
+                    }
 
                     return (
                         <Tooltip
@@ -117,17 +163,10 @@ export function DataMap({ data, className, height = 400, onItemClick }: DataMapP
                         >
                             <button
                                 type="button"
-                                className={cn(
-                                    "absolute -translate-x-1/2 -translate-y-full transition-transform hover:scale-125",
-                                    colorClass,
-                                    onItemClick && "cursor-pointer"
-                                )}
-                                style={{
-                                    left: `${Math.min(95, Math.max(5, x))}%`,
-                                    top: `${Math.min(90, Math.max(5, y))}%`,
-                                }}
+                                className={markerClass}
+                                style={markerStyle}
                                 onClick={() => onItemClick?.(item)}
-                                aria-label={`${item.title} at ${item.lat.toFixed(4)}, ${item.lng.toFixed(4)}`}
+                                aria-label={markerLabel}
                             >
                                 <MapPin className="h-6 w-6 drop-shadow-md" />
                             </button>

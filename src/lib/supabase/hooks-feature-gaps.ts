@@ -142,7 +142,7 @@ export interface RecordCommentRow {
     is_internal: boolean;
     created_at: string;
     updated_at: string;
-    profiles?: { name: string; avatar_url: string | null } | null;
+    user_profiles?: { display_name: string; avatar_url: string | null } | null;
 }
 
 export function useRecordComments(entityType: string, entityId: string) {
@@ -150,7 +150,7 @@ export function useRecordComments(entityType: string, entityId: string) {
         queryKey: ["record_comments", entityType, entityId],
         queryFn: async () => {
             const { data, error } = await fromTable("record_comments")
-                .select("*, profiles(name, avatar_url)")
+                .select("*, user_profiles(display_name, avatar_url)")
                 .eq("entity_type", entityType)
                 .eq("entity_id", entityId)
                 .order("created_at", { ascending: true });
@@ -174,7 +174,7 @@ export function useCreateRecordComment() {
         }) => {
             const { data, error } = await fromTable("record_comments")
                 .insert(comment)
-                .select("*, profiles(name, avatar_url)")
+                .select("*, user_profiles(display_name, avatar_url)")
                 .single();
             if (error) throw error;
             return data as RecordCommentRow;
@@ -200,7 +200,7 @@ export interface RecordActivityRow {
     changes: Record<string, unknown>;
     metadata: Record<string, unknown>;
     created_at: string;
-    profiles?: { name: string } | null;
+    user_profiles?: { display_name: string } | null;
 }
 
 export function useRecordActivityLog(entityType: string, entityId: string) {
@@ -208,7 +208,7 @@ export function useRecordActivityLog(entityType: string, entityId: string) {
         queryKey: ["record_activity_log", entityType, entityId],
         queryFn: async () => {
             const { data, error } = await fromTable("record_activity_log")
-                .select("*, profiles(name)")
+                .select("*, user_profiles(display_name)")
                 .eq("entity_type", entityType)
                 .eq("entity_id", entityId)
                 .order("created_at", { ascending: false })
@@ -262,7 +262,7 @@ export interface QualityCheckRow {
     photos: unknown[];
     completed_at: string | null;
     created_at: string;
-    profiles?: { name: string } | null;
+    user_profiles?: { display_name: string } | null;
 }
 
 export function useAllQualityChecks() {
@@ -271,7 +271,7 @@ export function useAllQualityChecks() {
         queryFn: async () => {
             const { data, error } = await fromTable("quality_checks")
                 .select(
-                    "*, profiles(name), quality_check_templates(name, description, entity_type, check_items)"
+                    "*, user_profiles(display_name), quality_check_templates(name, description, entity_type, check_items)"
                 )
                 .order("created_at", { ascending: false });
             if (error) throw error;
@@ -292,7 +292,7 @@ export function useQualityChecks(entityType: string, entityId: string) {
         queryKey: ["quality_checks", entityType, entityId],
         queryFn: async () => {
             const { data, error } = await fromTable("quality_checks")
-                .select("*, profiles(name)")
+                .select("*, user_profiles(display_name)")
                 .eq("entity_type", entityType)
                 .eq("entity_id", entityId)
                 .order("created_at", { ascending: false });
@@ -381,7 +381,7 @@ export function useReviewFeedback(cycleId?: string, revieweeId?: string) {
         queryKey: ["review_feedback", cycleId, revieweeId],
         queryFn: async () => {
             let query = fromTable("review_feedback_requests")
-                .select("*, profiles!review_feedback_requests_reviewer_id_fkey(name)")
+                .select("*, user_profiles!review_feedback_requests_reviewer_id_fkey(display_name)")
                 .order("created_at", { ascending: false });
             if (cycleId) query = query.eq("review_cycle_id", cycleId);
             if (revieweeId) query = query.eq("reviewee_id", revieweeId);
@@ -418,13 +418,13 @@ export function useGoals(ownerId?: string) {
         queryKey: ["goals", ownerId],
         queryFn: async () => {
             let query = fromTable("goals")
-                .select("*, profiles(name), projects(name)")
+                .select("*, user_profiles(display_name), projects(name)")
                 .order("created_at", { ascending: false });
             if (ownerId) query = query.eq("owner_id", ownerId);
             const { data, error } = await query;
             if (error) throw error;
             return (data ?? []) as (GoalRow & {
-                profiles?: { name: string } | null;
+                user_profiles?: { display_name: string } | null;
                 projects?: { name: string } | null;
             })[];
         },
@@ -475,7 +475,7 @@ export interface KnowledgeArticleRow {
     published_at: string | null;
     created_at: string;
     updated_at: string;
-    profiles?: { name: string } | null;
+    user_profiles?: { display_name: string } | null;
 }
 
 export function useKnowledgeArticles(category?: string) {
@@ -483,7 +483,7 @@ export function useKnowledgeArticles(category?: string) {
         queryKey: ["knowledge_articles", category],
         queryFn: async () => {
             let query = fromTable("knowledge_articles")
-                .select("*, profiles(name)")
+                .select("*, user_profiles(display_name)")
                 .order("updated_at", { ascending: false });
             if (category) query = query.eq("category", category);
             const { data, error } = await query;
@@ -498,7 +498,7 @@ export function useKnowledgeArticle(id: string) {
         queryKey: ["knowledge_article", id],
         queryFn: async () => {
             const { data, error } = await fromTable("knowledge_articles")
-                .select("*, profiles(name)")
+                .select("*, user_profiles(display_name)")
                 .eq("id", id)
                 .single();
             if (error) throw error;

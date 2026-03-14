@@ -27,8 +27,10 @@ export const AUTH_STRINGS = {
     signup: {
         title: "Create your account",
         subtitle: "Get started with your production workspace",
-        nameLabel: "Full Name",
-        namePlaceholder: "Jane Doe",
+        firstNameLabel: "First Name",
+        firstNamePlaceholder: "Alex",
+        lastNameLabel: "Last Name",
+        lastNamePlaceholder: "Rivera",
         emailLabel: "Email",
         emailPlaceholder: "you@company.com",
         passwordLabel: "Password",

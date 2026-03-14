@@ -6,6 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ListPageConfig } from "@/types/list-page-config";
+import type { QuickViewConfig } from "@/types/detail-page-config";
 import {
     CREATE_MILESTONE_CONFIG,
     CREATE_PROJECT_TEMPLATE_CONFIG,
@@ -108,6 +109,17 @@ export const STAKEHOLDERS_PAGE: ListPageConfig = {
 
 // ─── work_package ───
 
+const WORK_PACKAGE_QUICK_VIEW: QuickViewConfig = {
+    previewFields: [
+        { id: "description", label: "Description", accessorKey: "description", fullWidth: true },
+        { id: "budget", label: "Budget", accessorKey: "budget", fieldType: "currency" },
+        { id: "due_date", label: "Due Date", accessorKey: "due_date", fieldType: "date" },
+        { id: "assignee_name", label: "Assignee", accessorKey: "assignee_name" },
+        { id: "priority", label: "Priority", accessorKey: "priority", fieldType: "status" },
+    ],
+    navigable: true,
+};
+
 export const WORK_PACKAGES_PAGE: ListPageConfig = {
     entityKey: "work_package",
     description: "Deliverable work packages within projects and scopes of work",
@@ -137,6 +149,7 @@ export const WORK_PACKAGES_PAGE: ListPageConfig = {
             { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
         ],
     },
+    quickViewConfig: WORK_PACKAGE_QUICK_VIEW,
 };
 
 // ─── milestone ───

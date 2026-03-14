@@ -951,36 +951,50 @@ export function Topbar() {
     );
 
     // Build breadcrumbs from navigation SSOT with fallback formatting for non-nav routes.
+    // Prepends the nav section as a real ancestor crumb linking to the section's first item.
     const breadcrumbs = useMemo(() => {
         const baseCrumbs = getNavigationBreadcrumbs(pathname, roleScopedSections);
-        if (!activeNavContext?.parentItem || baseCrumbs.length === 0) {
-            return baseCrumbs;
+
+        // Inject parent nav item if it's missing from the crumbs
+        let crumbs = baseCrumbs;
+        if (activeNavContext?.parentItem && baseCrumbs.length > 0) {
+            const parentPath = activeNavContext.parentItem.path;
+            const hasParentCrumb = baseCrumbs.some((crumb) => crumb.path === parentPath);
+            if (!hasParentCrumb) {
+                const currentCrumb = baseCrumbs[baseCrumbs.length - 1];
+                if (currentCrumb) {
+                    const leadingCrumbs = baseCrumbs
+                        .slice(0, -1)
+                        .map((crumb) => ({ ...crumb, isLast: false }));
+                    crumbs = [
+                        ...leadingCrumbs,
+                        {
+                            label: activeNavContext.parentItem.title,
+                            path: parentPath,
+                            isLast: false,
+                        },
+                        { ...currentCrumb, isLast: true },
+                    ];
+                }
+            }
         }
 
-        const parentPath = activeNavContext.parentItem.path;
-        const hasParentCrumb = baseCrumbs.some((crumb) => crumb.path === parentPath);
-        if (hasParentCrumb) {
-            return baseCrumbs;
+        // Prepend nav section as a real breadcrumb ancestor (links to section's first item)
+        if (activeNavContext?.section && crumbs.length > 0) {
+            const sectionTitle = activeNavContext.section.title;
+            const sectionPath = activeNavContext.section.items[0]?.path;
+            const firstCrumb = crumbs[0];
+
+            // Only prepend if the section label isn't already the first crumb (e.g. Home > Dashboard)
+            if (sectionPath && firstCrumb && firstCrumb.label !== sectionTitle) {
+                crumbs = [
+                    { label: sectionTitle, path: sectionPath, isLast: false },
+                    ...crumbs.map((c) => ({ ...c, isLast: false })),
+                ].map((c, i, arr) => ({ ...c, isLast: i === arr.length - 1 }));
+            }
         }
 
-        const currentCrumb = baseCrumbs[baseCrumbs.length - 1];
-        if (!currentCrumb) {
-            return baseCrumbs;
-        }
-
-        const leadingCrumbs = baseCrumbs.slice(0, -1).map((crumb) => ({ ...crumb, isLast: false }));
-        return [
-            ...leadingCrumbs,
-            {
-                label: activeNavContext.parentItem.title,
-                path: parentPath,
-                isLast: false,
-            },
-            {
-                ...currentCrumb,
-                isLast: true,
-            },
-        ];
+        return crumbs;
     }, [pathname, activeNavContext, roleScopedSections]);
 
     // Breadcrumb overflow: collapse middle segments if > 3 levels deep
@@ -1068,15 +1082,6 @@ export function Topbar() {
                 )}
 
                 <EnvironmentBadge />
-
-                {activeNavContext?.section.title && (
-                    <Badge
-                        variant="secondary"
-                        className="hidden md:inline-flex h-5 px-1.5 text-[10px] font-medium"
-                    >
-                        {activeNavContext.section.title}
-                    </Badge>
-                )}
 
                 {/* Desktop Breadcrumbs with overflow collapse */}
                 <nav

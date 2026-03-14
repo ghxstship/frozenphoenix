@@ -9,6 +9,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TruncatedText } from "@/components/ui/truncated-text";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animated-list";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import { ProgressField } from "./field-renderers";
 
@@ -117,14 +118,14 @@ export function DataCards<T extends Record<string, unknown>>({
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-12 text-muted-foreground animate-fade-in">
+            <div className="flex items-center justify-center py-12 text-muted-foreground motion-safe:animate-fade-in">
                 {emptyState ?? "No data available"}
             </div>
         );
     }
 
     return (
-        <div
+        <AnimatedList
             className={cn("grid", gridCols[columns], gapClasses[gap], className)}
             role="list"
             aria-label="Data cards"
@@ -139,108 +140,111 @@ export function DataCards<T extends Record<string, unknown>>({
                 const progressValue = progress ? getValue(row, progress) : undefined;
 
                 return (
-                    <Card
-                        key={key}
-                        className={cn(
-                            "overflow-hidden transition-all duration-200 group",
-                            onCardClick &&
-                                "cursor-pointer hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                            cardClassName
-                        )}
-                        onClick={() => onCardClick?.(row)}
-                        onKeyDown={(e: React.KeyboardEvent) => {
-                            if ((e.key === "Enter" || e.key === " ") && onCardClick) {
-                                e.preventDefault();
-                                onCardClick(row);
-                            }
-                        }}
-                        role="listitem"
-                        tabIndex={onCardClick ? 0 : undefined}
-                        aria-label={String(titleValue)}
-                    >
-                        {/* Image Header */}
-                        {imageValue && (
-                            <div className="aspect-video bg-muted overflow-hidden">
-                                <Image
-                                    src={imageValue as string}
-                                    alt={String(titleValue)}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, 33vw"
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                            </div>
-                        )}
+                    <AnimatedListItem key={key}>
+                        <Card
+                            className={cn(
+                                "overflow-hidden transition-all duration-200 group",
+                                onCardClick &&
+                                    "cursor-pointer hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                cardClassName
+                            )}
+                            onClick={() => onCardClick?.(row)}
+                            onKeyDown={(e: React.KeyboardEvent) => {
+                                if ((e.key === "Enter" || e.key === " ") && onCardClick) {
+                                    e.preventDefault();
+                                    onCardClick(row);
+                                }
+                            }}
+                            role="listitem"
+                            tabIndex={onCardClick ? 0 : undefined}
+                            aria-label={String(titleValue)}
+                        >
+                            {/* Image Header */}
+                            {imageValue && (
+                                <div className="aspect-video bg-muted overflow-hidden">
+                                    <Image
+                                        src={imageValue as string}
+                                        alt={String(titleValue)}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                </div>
+                            )}
 
-                        <CardHeader className="pb-2">
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-base font-semibold leading-tight">
-                                        <TruncatedText maxLines={2}>
-                                            {String(titleValue)}
-                                        </TruncatedText>
-                                    </CardTitle>
-                                    {subtitleValue && (
-                                        <TruncatedText
-                                            as="p"
-                                            className="text-sm text-muted-foreground mt-1"
-                                        >
-                                            {String(subtitleValue)}
-                                        </TruncatedText>
+                            <CardHeader className="pb-2">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <CardTitle className="text-base font-semibold leading-tight">
+                                            <TruncatedText maxLines={2}>
+                                                {String(titleValue)}
+                                            </TruncatedText>
+                                        </CardTitle>
+                                        {subtitleValue && (
+                                            <TruncatedText
+                                                as="p"
+                                                className="text-sm text-muted-foreground mt-1"
+                                            >
+                                                {String(subtitleValue)}
+                                            </TruncatedText>
+                                        )}
+                                    </div>
+                                    {badgeValue && (
+                                        <div className="flex-shrink-0">{badgeValue}</div>
                                     )}
                                 </div>
-                                {badgeValue && <div className="flex-shrink-0">{badgeValue}</div>}
-                            </div>
 
-                            {/* Progress Bar */}
-                            {progressValue !== undefined && (
-                                <div className="mt-3">
-                                    <ProgressField value={progressValue as number} size="sm" />
-                                </div>
-                            )}
-                        </CardHeader>
+                                {/* Progress Bar */}
+                                {progressValue !== undefined && (
+                                    <div className="mt-3">
+                                        <ProgressField value={progressValue as number} size="sm" />
+                                    </div>
+                                )}
+                            </CardHeader>
 
-                        <CardContent className="pt-0">
-                            {/* Fields Grid */}
-                            {fields.length > 0 && (
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                    {fields.map((field) => {
-                                        const value = getFieldValue(row, field);
-                                        if (value == null && !field.render) return null;
+                            <CardContent className="pt-0">
+                                {/* Fields Grid */}
+                                {fields.length > 0 && (
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                        {fields.map((field) => {
+                                            const value = getFieldValue(row, field);
+                                            if (value == null && !field.render) return null;
 
-                                        return (
-                                            <div
-                                                key={field.id}
-                                                className={cn(
-                                                    "flex flex-col",
-                                                    field.span === 2 && "col-span-2"
-                                                )}
-                                            >
-                                                {field.label && (
-                                                    <span className="text-xs text-muted-foreground mb-0.5">
-                                                        {field.label}
-                                                    </span>
-                                                )}
-                                                {renderField(row, field)}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                            return (
+                                                <div
+                                                    key={field.id}
+                                                    className={cn(
+                                                        "flex flex-col",
+                                                        field.span === 2 && "col-span-2"
+                                                    )}
+                                                >
+                                                    {field.label && (
+                                                        <span className="text-xs text-muted-foreground mb-0.5">
+                                                            {field.label}
+                                                        </span>
+                                                    )}
+                                                    {renderField(row, field)}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
 
-                            {/* Actions */}
-                            {actions && (
-                                <div
-                                    className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    {actions(row)}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                {/* Actions */}
+                                {actions && (
+                                    <div
+                                        className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {actions(row)}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </AnimatedListItem>
                 );
             })}
-        </div>
+        </AnimatedList>
     );
 }

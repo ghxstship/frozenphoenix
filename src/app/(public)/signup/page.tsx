@@ -21,7 +21,8 @@ function SignupForm() {
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get("invite");
 
-    const [name, setName] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [orgName, setOrgName] = useState("");
@@ -35,7 +36,8 @@ function SignupForm() {
 
     const validate = useCallback((): boolean => {
         const errors: Record<string, string> = {};
-        if (!name.trim()) errors.name = "Name is required.";
+        if (!firstName.trim()) errors.firstName = "First name is required.";
+        if (!lastName.trim()) errors.lastName = "Last name is required.";
         if (!email.trim()) errors.email = "Email is required.";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             errors.email = "Please enter a valid email.";
@@ -43,7 +45,7 @@ function SignupForm() {
         if (pwError) errors.password = pwError;
         setFieldErrors(errors);
         return Object.keys(errors).length === 0;
-    }, [name, email, password]);
+    }, [firstName, lastName, email, password]);
 
     const handleSignup = useCallback(
         async (e: React.FormEvent) => {
@@ -66,7 +68,9 @@ function SignupForm() {
                     password,
                     options: {
                         data: {
-                            name,
+                            first_name: firstName.trim(),
+                            last_name: lastName.trim(),
+                            name: `${firstName.trim()} ${lastName.trim()}`,
                             org_name: orgName || undefined,
                             invite_token: inviteToken || undefined,
                         },
@@ -98,7 +102,7 @@ function SignupForm() {
                 setLoading(false);
             }
         },
-        [email, password, name, orgName, inviteToken, router, validate]
+        [email, password, firstName, lastName, orgName, inviteToken, router, validate]
     );
 
     const handleOAuthLogin = useCallback(
@@ -182,22 +186,39 @@ function SignupForm() {
                     </div>
                 )}
 
-                <AuthFormField
-                    fieldId="signup-name"
-                    label="Full Name"
-                    type="text"
-                    icon={User}
-                    placeholder="Alex Rivera"
-                    value={name}
-                    onChange={(e) => {
-                        setName(e.target.value);
-                        setFieldErrors((p) => ({ ...p, name: "" }));
-                    }}
-                    autoComplete="name"
-                    error={fieldErrors.name}
-                    required
-                    disabled={loading}
-                />
+                <div className="grid grid-cols-2 gap-3">
+                    <AuthFormField
+                        fieldId="signup-first-name"
+                        label="First Name"
+                        type="text"
+                        icon={User}
+                        placeholder="Alex"
+                        value={firstName}
+                        onChange={(e) => {
+                            setFirstName(e.target.value);
+                            setFieldErrors((p) => ({ ...p, firstName: "" }));
+                        }}
+                        autoComplete="given-name"
+                        error={fieldErrors.firstName}
+                        required
+                        disabled={loading}
+                    />
+                    <AuthFormField
+                        fieldId="signup-last-name"
+                        label="Last Name"
+                        type="text"
+                        placeholder="Rivera"
+                        value={lastName}
+                        onChange={(e) => {
+                            setLastName(e.target.value);
+                            setFieldErrors((p) => ({ ...p, lastName: "" }));
+                        }}
+                        autoComplete="family-name"
+                        error={fieldErrors.lastName}
+                        required
+                        disabled={loading}
+                    />
+                </div>
 
                 <AuthFormField
                     fieldId="signup-email"

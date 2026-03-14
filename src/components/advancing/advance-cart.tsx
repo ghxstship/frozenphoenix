@@ -169,6 +169,13 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                                 ))}
                                             </div>
                                         )}
+                                    {(item.start_date || item.end_date) && (
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {item.start_date}
+                                            {item.start_date && item.end_date && " \u2192 "}
+                                            {item.end_date}
+                                        </span>
+                                    )}
                                 </div>
                             </li>
                         ))}

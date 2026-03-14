@@ -6,6 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ListPageConfig } from "@/types/list-page-config";
+import type { QuickViewConfig } from "@/types/detail-page-config";
 import { CREATE_CONTACT_CONFIG } from "@/config/create-entity-configs";
 import {
     CREATE_GUEST_INCIDENT_CONFIG,
@@ -29,6 +30,17 @@ import {
 
 // ─── contact ───
 
+const CONTACT_QUICK_VIEW: QuickViewConfig = {
+    previewFields: [
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email" },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone" },
+        { id: "company", label: "Company", accessorKey: "company" },
+        { id: "contact_type", label: "Type", accessorKey: "contact_type", fieldType: "status" },
+        { id: "notes", label: "Notes", accessorKey: "notes", fullWidth: true },
+    ],
+    navigable: true,
+};
+
 export const CONTACTS_PAGE: ListPageConfig = {
     entityKey: "contact",
     description: "People and organization contacts across all business relationships",
@@ -50,6 +62,7 @@ export const CONTACTS_PAGE: ListPageConfig = {
         statusKey: "contact_type",
         fields: [{ id: "email", label: "Email", accessorKey: "email" }],
     },
+    quickViewConfig: CONTACT_QUICK_VIEW,
 };
 
 // ─── guest_incident ───

@@ -61,10 +61,7 @@ export function useCatalogItems(filters?: CatalogSearchFilters) {
     return useQuery({
         queryKey: ["catalog_items", filters],
         queryFn: async () => {
-            let query = getSupabase()
-                .from("catalog_items")
-                .select("*")
-                .is("deleted_at", null);
+            let query = getSupabase().from("catalog_items").select("*").is("deleted_at", null);
 
             if (filters?.category_id) query = query.eq("category_id", filters.category_id);
             if (filters?.category_type) {
@@ -73,14 +70,20 @@ export function useCatalogItems(filters?: CatalogSearchFilters) {
                     .select("id")
                     .eq("category_type", filters.category_type);
                 if (cats?.length) {
-                    query = query.in("category_id", cats.map((c: { id: string }) => c.id));
+                    query = query.in(
+                        "category_id",
+                        cats.map((c: { id: string }) => c.id)
+                    );
                 }
             }
             if (filters?.status) query = query.eq("status", filters.status);
-            if (filters?.is_critical_path !== undefined) query = query.eq("is_critical_path", filters.is_critical_path);
+            if (filters?.is_critical_path !== undefined)
+                query = query.eq("is_critical_path", filters.is_critical_path);
             if (filters?.tags?.length) query = query.overlaps("tags", filters.tags);
-            if (filters?.min_cost !== undefined) query = query.gte("default_unit_cost", filters.min_cost);
-            if (filters?.max_cost !== undefined) query = query.lte("default_unit_cost", filters.max_cost);
+            if (filters?.min_cost !== undefined)
+                query = query.gte("default_unit_cost", filters.min_cost);
+            if (filters?.max_cost !== undefined)
+                query = query.lte("default_unit_cost", filters.max_cost);
 
             const sortBy = filters?.sort_by ?? "sort_order";
             const sortOrder = filters?.sort_order ?? "asc";
@@ -202,14 +205,16 @@ export function useAdvances(filters?: AdvanceListFilters) {
         queryFn: async () => {
             let query = getSupabase()
                 .from("production_advances")
-                .select(`
+                .select(
+                    `
                     *,
                     events:event_id(name),
                     projects:project_id(name),
                     submitted_by_profile:submitted_by(name, avatar_url),
                     point_of_contact_profile:point_of_contact(name, avatar_url),
                     approved_by_profile:approved_by(name)
-                `)
+                `
+                )
                 .is("deleted_at", null);
 
             if (filters?.status) {
@@ -251,14 +256,16 @@ export function useAdvance(id: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("production_advances")
-                .select(`
+                .select(
+                    `
                     *,
                     events:event_id(name),
                     projects:project_id(name),
                     submitted_by_profile:submitted_by(name, avatar_url),
                     point_of_contact_profile:point_of_contact(name, avatar_url),
                     approved_by_profile:approved_by(name)
-                `)
+                `
+                )
                 .eq("id", id)
                 .single();
             if (error) throw error;
@@ -303,15 +310,22 @@ export function useCreateAdvance() {
                         items.map((item) => ({
                             advance_id: advance.id,
                             catalog_item_id: item.catalog_item_id,
+                            category_id: item.category_id,
                             quantity_requested: item.quantity_requested,
                             unit_cost: item.unit_cost,
                             selected_modifiers: item.selected_modifiers ?? [],
+                            item_specifications: item.item_specifications ?? {},
                             vendor_id: item.vendor_id,
                             notes: item.notes,
                             is_critical_path: item.is_critical_path ?? false,
                             delivery_zone: item.delivery_zone,
                             delivery_location: item.delivery_location,
+                            location_id: item.location_id,
                             scheduled_delivery: item.scheduled_delivery,
+                            start_date: item.start_date,
+                            end_date: item.end_date,
+                            operational_purpose: item.operational_purpose,
+                            special_requests: item.special_requests,
                         })) as Record<string, unknown>[]
                     );
                 if (itemsError) throw itemsError;
@@ -368,7 +382,15 @@ export function useDeleteAdvance() {
 export function useAdvanceStatusTransition() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
+        mutationFn: async ({
+            id,
+            status,
+            reason,
+        }: {
+            id: string;
+            status: string;
+            reason?: string;
+        }) => {
             const { data, error } = await getSupabase()
                 .from("production_advances")
                 .update({ status } as Record<string, unknown>)
@@ -408,12 +430,16 @@ export function useAdvanceItems(advanceId: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("production_advance_items")
-                .select(`
+                .select(
+                    `
                     *,
                     catalog_items:catalog_item_id(name, sku, thumbnail_url),
+                    catalog_categories:category_id(name, slug, category_type),
+                    locations:location_id(name),
                     vendors:vendor_id(name),
                     assigned_to_profile:assigned_to(name)
-                `)
+                `
+                )
                 .eq("advance_id", advanceId)
                 .is("deleted_at", null)
                 .order("created_at", { ascending: true });
@@ -433,15 +459,22 @@ export function useCreateAdvanceItem() {
                 .insert({
                     advance_id: item.advance_id,
                     catalog_item_id: item.catalog_item_id,
+                    category_id: item.category_id,
                     quantity_requested: item.quantity_requested,
                     unit_cost: item.unit_cost,
                     selected_modifiers: item.selected_modifiers ?? [],
+                    item_specifications: item.item_specifications ?? {},
                     vendor_id: item.vendor_id,
                     notes: item.notes,
                     is_critical_path: item.is_critical_path ?? false,
                     delivery_zone: item.delivery_zone,
                     delivery_location: item.delivery_location,
+                    location_id: item.location_id,
                     scheduled_delivery: item.scheduled_delivery,
+                    start_date: item.start_date,
+                    end_date: item.end_date,
+                    operational_purpose: item.operational_purpose,
+                    special_requests: item.special_requests,
                 } as Record<string, unknown>)
                 .select()
                 .single();
@@ -460,7 +493,11 @@ export function useCreateAdvanceItem() {
 export function useUpdateAdvanceItem() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, advance_id, ...updates }: Record<string, unknown> & { id: string; advance_id: string }) => {
+        mutationFn: async ({
+            id,
+            advance_id,
+            ...updates
+        }: Record<string, unknown> & { id: string; advance_id: string }) => {
             const { data, error } = await getSupabase()
                 .from("production_advance_items")
                 .update(updates as Record<string, unknown>)
@@ -491,7 +528,9 @@ export function useDeleteAdvanceItem() {
             return { advance_id };
         },
         onSuccess: (result) => {
-            queryClient.invalidateQueries({ queryKey: ["production_advance_items", result.advance_id] });
+            queryClient.invalidateQueries({
+                queryKey: ["production_advance_items", result.advance_id],
+            });
             queryClient.invalidateQueries({ queryKey: ["production_advances", result.advance_id] });
             queryClient.invalidateQueries({ queryKey: ["production_advances"] });
         },

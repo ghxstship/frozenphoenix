@@ -36,7 +36,7 @@ export function BulkActionBar({
             className={cn(
                 "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
                 "flex items-center gap-3 rounded-xl border border-border bg-background/95 backdrop-blur-sm px-4 py-2.5 shadow-lg",
-                "animate-slide-up",
+                "motion-safe:animate-slide-up",
                 className
             )}
             role="toolbar"

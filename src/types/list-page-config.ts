@@ -11,6 +11,7 @@ import type { FieldConfig, FieldType } from "@/components/data-view/field-render
 import type { CreateEntityConfig } from "@/components/create-entity-dialog";
 import type { BadgeVariant } from "@/config/ui-variants";
 import type { ViewMode } from "@/components/ui/view-switcher";
+import type { QuickViewConfig } from "@/types/detail-page-config";
 
 // ─── Column Definition ──────────────────────────────────────
 
@@ -333,6 +334,10 @@ export interface ListPageConfig {
     bulkActions?: ListBulkActionDef[];
     /** Per-row actions */
     rowActions?: ListRowActionDef[];
+
+    // ─── Quick View ───
+    /** Quick-view panel config — enables slide-panel preview on row click instead of full-page navigation */
+    quickViewConfig?: QuickViewConfig;
 
     // ─── CSV ───
     /** Enable CSV export */

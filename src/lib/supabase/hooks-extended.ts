@@ -7,7 +7,7 @@ import type { Tables } from "./database.types";
 // ─── Join-aware return types (preserved for consumers) ───
 type WithJoin<T, J extends Record<string, unknown>> = T & J;
 
-type ProfileName = { profiles: { name: string } | null };
+type ProfileName = { user_profiles: { display_name: string } | null };
 type ProjectName = { projects: { name: string } | null };
 type VendorName = { vendors: { name: string } | null };
 type LocationName = { locations: { name: string } | null };

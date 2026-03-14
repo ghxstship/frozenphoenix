@@ -31,6 +31,7 @@ export interface TimelineItem {
 interface DataTimelineProps {
     data: TimelineItem[];
     className?: string;
+    actions?: (item: TimelineItem) => React.ReactNode;
     onItemClick?: (item: TimelineItem) => void;
 }
 
@@ -74,7 +75,7 @@ const DEFAULT_COLORS = [
 
 // ─── Component ───
 
-export function DataTimeline({ data, className, onItemClick }: DataTimelineProps) {
+export function DataTimeline({ data, className, actions, onItemClick }: DataTimelineProps) {
     const [offset, setOffset] = React.useState(0);
 
     // Group items (must be before early return to satisfy hook rules)
@@ -195,19 +196,32 @@ export function DataTimeline({ data, className, onItemClick }: DataTimelineProps
                                 return (
                                     <div
                                         key={item.id}
-                                        className="flex border-b border-border/30 hover:bg-secondary/10"
+                                        className="flex border-b border-border/30 hover:bg-secondary/10 group/row"
                                     >
-                                        <div className="w-52 shrink-0 p-3 border-r sticky left-0 bg-background z-10">
-                                            <TruncatedText as="p" className="text-xs font-medium">
-                                                {item.label}
-                                            </TruncatedText>
-                                            {item.sublabel && (
+                                        <div className="w-52 shrink-0 p-3 border-r sticky left-0 bg-background z-10 flex items-center gap-1">
+                                            <div className="flex-1 min-w-0">
                                                 <TruncatedText
                                                     as="p"
-                                                    className="text-[10px] text-muted-foreground"
+                                                    className="text-xs font-medium"
                                                 >
-                                                    {item.sublabel}
+                                                    {item.label}
                                                 </TruncatedText>
+                                                {item.sublabel && (
+                                                    <TruncatedText
+                                                        as="p"
+                                                        className="text-[10px] text-muted-foreground"
+                                                    >
+                                                        {item.sublabel}
+                                                    </TruncatedText>
+                                                )}
+                                            </div>
+                                            {actions && (
+                                                <div
+                                                    className="shrink-0"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {actions(item)}
+                                                </div>
                                             )}
                                         </div>
                                         <div

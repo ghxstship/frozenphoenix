@@ -17,8 +17,8 @@
      const handlers = createCrudHandlers({
        table: "projects",
        resource: "projects",
-       selectList: "*, profiles:manager_id(name)",
-       selectDetail: "*, profiles:manager_id(name, avatar_url)",
+       selectList: "*, user_profiles:manager_id(display_name)",
+       selectDetail: "*, user_profiles:manager_id(display_name, avatar_url)",
        createSchema: createProjectSchema,
        updateSchema: updateProjectSchema,
        stateMachine: PROJECT_MACHINE,
@@ -137,12 +137,23 @@ export interface CrudHandlers {
     ) => Promise<NextResponse>;
 }
 
+// ─── Valid roles for cookie validation ───────────────────────
+const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
+
 // ─── Role Resolver ───────────────────────────────────────────
+// Reads the cached role from the middleware cookie first.
+// Falls back to a DB query only when the cookie is missing or stale.
 
 async function resolveUserRole(
     supabase: Awaited<ReturnType<typeof createClient>>,
-    userId: string
+    userId: string,
+    cachedRole?: string | null
 ): Promise<PermissionLevel> {
+    // Use the middleware-cached role if it's a valid known role
+    if (cachedRole && VALID_ROLES.has(cachedRole)) {
+        return cachedRole as PermissionLevel;
+    }
+
     if (!supabase) return "member";
 
     const { data } = await supabase
@@ -248,7 +259,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         } = await supabase.auth.getUser();
         if (!user) return ApiErrors.unauthorized();
 
-        const userRole = await resolveUserRole(supabase, user.id);
+        const cachedRole = request.cookies.get("fp-user-role")?.value;
+        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
         if (!hasPermission(userRole, resource, "read")) {
             return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
         }
@@ -312,7 +324,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         } = await supabase.auth.getUser();
         if (!user) return ApiErrors.unauthorized();
 
-        const userRole = await resolveUserRole(supabase, user.id);
+        const cachedRole = _request.cookies.get("fp-user-role")?.value;
+        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
         if (!hasPermission(userRole, resource, "read")) {
             return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
         }
@@ -346,7 +359,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         } = await supabase.auth.getUser();
         if (!user) return ApiErrors.unauthorized();
 
-        const userRole = await resolveUserRole(supabase, user.id);
+        const cachedRole = request.cookies.get("fp-user-role")?.value;
+        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
         if (!hasPermission(userRole, resource, "write")) {
             return ApiErrors.forbidden(`Role "${userRole}" cannot create ${displayName}`);
         }
@@ -416,7 +430,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         } = await supabase.auth.getUser();
         if (!user) return ApiErrors.unauthorized();
 
-        const userRole = await resolveUserRole(supabase, user.id);
+        const cachedRole = request.cookies.get("fp-user-role")?.value;
+        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
         if (!hasPermission(userRole, resource, "write")) {
             return ApiErrors.forbidden(`Role "${userRole}" cannot update ${displayName}`);
         }
@@ -513,7 +528,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         } = await supabase.auth.getUser();
         if (!user) return ApiErrors.unauthorized();
 
-        const userRole = await resolveUserRole(supabase, user.id);
+        const cachedRole = _request.cookies.get("fp-user-role")?.value;
+        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
         if (!hasPermission(userRole, resource, "delete")) {
             return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${displayName}`);
         }

@@ -267,7 +267,7 @@ const SYSTEM_COLUMN_NAMES = new Set([
 
 function generateExample(column: string, fieldType: CsvFieldType, enumValues?: string[]): string {
     if (enumValues && enumValues.length > 0) {
-        return enumValues[0];
+        return enumValues[0] ?? "";
     }
     switch (fieldType) {
         case "uuid":

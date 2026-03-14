@@ -151,7 +151,8 @@ export default function ClaimUsernamePage() {
                     <h1 className="text-2xl font-bold tracking-tight">Choose your username</h1>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
                         Pick a unique handle for your public profile
-                        {profile?.name ? `, ${profile.name}` : ""}. You can change it later.
+                        {profile?.display_name ? `, ${profile.display_name}` : ""}. You can change
+                        it later.
                     </p>
                 </div>
 

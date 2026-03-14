@@ -217,7 +217,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { profile, loading: authLoading, signOut } = useAuth();
+    const { profile, activeOrg, loading: authLoading, signOut } = useAuth();
     const isOpen = useSidebar((state) => state.isOpen);
     const isCollapsed = useSidebar((state) => state.isCollapsed);
     const isMobile = useSidebar((state) => state.isMobile);
@@ -241,7 +241,7 @@ export function Sidebar() {
     const mobileSidebarWidth = SIDEBAR_WIDTH.mobile;
     const deferredFilterQuery = useDeferredValue(filterQuery);
 
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const closeMobileSidebar = useCallback(() => {
         setOpen(false);
@@ -606,20 +606,20 @@ export function Sidebar() {
                 {/* Footer */}
                 <div className="border-t border-sidebar-border px-3 py-2.5 shrink-0">
                     {collapsed && !isMobile ? (
-                        <Tooltip content={profile?.name || "Guest"} side="right">
+                        <Tooltip content={profile?.display_name || "Guest"} side="right">
                             <div className="flex justify-center">
                                 <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 overflow-hidden">
                                     {profile?.avatar_url ? (
                                         <Image
                                             src={profile.avatar_url}
-                                            alt={profile.name ?? "Avatar"}
+                                            alt={profile.display_name ?? "Avatar"}
                                             fill
                                             sizes="32px"
                                             className="object-cover"
                                             unoptimized
                                         />
                                     ) : profile ? (
-                                        getInitials(profile.name)
+                                        getInitials(profile.display_name)
                                     ) : (
                                         "??"
                                     )}
@@ -632,24 +632,24 @@ export function Sidebar() {
                                 {profile?.avatar_url ? (
                                     <Image
                                         src={profile.avatar_url}
-                                        alt={profile.name ?? "Avatar"}
+                                        alt={profile.display_name ?? "Avatar"}
                                         fill
                                         sizes="32px"
                                         className="object-cover"
                                         unoptimized
                                     />
                                 ) : profile ? (
-                                    getInitials(profile.name)
+                                    getInitials(profile.display_name)
                                 ) : (
                                     "??"
                                 )}
                             </div>
                             <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                 <p className="text-xs font-medium truncate">
-                                    {authLoading ? "Loading..." : profile?.name || "Guest"}
+                                    {authLoading ? "Loading..." : profile?.display_name || "Guest"}
                                 </p>
                                 <p className="text-[10px] text-sidebar-foreground/40 truncate capitalize">
-                                    {profile?.role || "Not signed in"}
+                                    {activeOrg?.role || "Not signed in"}
                                 </p>
                             </div>
                             {profile && (

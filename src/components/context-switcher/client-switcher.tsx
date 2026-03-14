@@ -16,9 +16,9 @@ interface ClientSwitcherProps {
 }
 
 export function ClientSwitcher({ activeName }: ClientSwitcherProps) {
-    const { activeOrg, profile } = useAuth();
+    const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const activeTeamId = useWorkspaceContext(orgId, (s) => s.activeTeamId);
     const activeClientId = useWorkspaceContext(orgId, (s) => s.activeClientId);
@@ -27,7 +27,8 @@ export function ClientSwitcher({ activeName }: ClientSwitcherProps) {
     const { data: clients = [], isLoading } = useClientsForSwitcher(orgId, activeTeamId);
 
     const activeClient = clients.find((c) => c.id === activeClientId);
-    const displayName = activeName || activeClient?.name || CONTEXT_SWITCHER_STRINGS.client.clearLabel;
+    const displayName =
+        activeName || activeClient?.name || CONTEXT_SWITCHER_STRINGS.client.clearLabel;
 
     const canCreate = userRole ? hasPermission(userRole, "companies", "write") : false;
 

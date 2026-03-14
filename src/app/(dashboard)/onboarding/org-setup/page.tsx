@@ -205,8 +205,8 @@ export default function OrgSetupPage() {
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight">Set up your organization</h1>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Welcome{profile?.name ? `, ${profile.name}` : ""}! Let&apos;s get your
-                        workspace configured.
+                        Welcome{profile?.display_name ? `, ${profile.display_name}` : ""}!
+                        Let&apos;s get your workspace configured.
                     </p>
                 </div>
 

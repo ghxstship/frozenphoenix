@@ -152,7 +152,7 @@ export function OnboardingChecklist() {
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
                         <h3 className="font-semibold text-base">
-                            Welcome{profile?.name ? `, ${profile.name}` : ""}!
+                            Welcome{profile?.display_name ? `, ${profile.display_name}` : ""}!
                         </h3>
                         <p className="text-sm text-muted-foreground">
                             Complete these steps to get the most out of the platform.

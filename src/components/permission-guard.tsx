@@ -27,13 +27,13 @@ function resolvePermissionLevel(profile: { role?: string | null } | null): Permi
 }
 
 export function usePermissionLevel(): PermissionLevel {
-    const { profile, activeOrg } = useAuth();
+    const { activeOrg } = useAuth();
     // Canonical role comes from the active org membership (org_memberships table).
-    // Fall back to profile.role (legacy profiles table) only if no membership exists.
+    // user_profiles has no role column — without an activeOrg, fall back to DEFAULT_LEVEL.
     if (activeOrg?.role) {
         return resolvePermissionLevel({ role: activeOrg.role });
     }
-    return resolvePermissionLevel(profile);
+    return DEFAULT_LEVEL;
 }
 
 export function useHasPermission(

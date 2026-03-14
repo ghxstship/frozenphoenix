@@ -770,11 +770,11 @@ function UserMenu() {
     const { user, profile, memberships, activeOrg, switchOrg, signOut } = useAuth();
     const router = useRouter();
 
-    const displayName = profile?.name || user?.email?.split("@")[0] || "User";
+    const displayName = profile?.display_name || user?.email?.split("@")[0] || "User";
     const displayEmail = user?.email || "";
     const initials = getInitials(displayName);
     const orgName = activeOrg?.organizations?.name || "No Organization";
-    const userRole = (profile as Record<string, unknown>)?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     return (
         <DropdownMenu>
@@ -926,12 +926,10 @@ export function Topbar() {
     const isOpen = useSidebar((state) => state.isOpen);
     const setOpen = useSidebar((state) => state.setOpen);
     // Auth context (safe fallback for when not inside AuthProvider)
-    let profile: Record<string, unknown> | null = null;
     let userRole: PermissionLevel = "pm";
     try {
         const auth = useAuth();
-        profile = auth.profile as Record<string, unknown> | null;
-        userRole = ((profile?.role as string) || "pm") as PermissionLevel;
+        userRole = ((auth.activeOrg?.role as string) || "pm") as PermissionLevel;
     } catch {
         // Outside AuthProvider — use defaults
     }

@@ -26,9 +26,9 @@ export function ProjectSwitcher({
     subPath,
 }: ProjectSwitcherProps) {
     const router = useRouter();
-    const { activeOrg, profile } = useAuth();
+    const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const activeTeamId = useWorkspaceContext(orgId, (s) => s.activeTeamId);
     const activeClientId = useWorkspaceContext(orgId, (s) => s.activeClientId);

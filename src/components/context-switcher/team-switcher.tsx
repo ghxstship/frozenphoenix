@@ -17,9 +17,9 @@ interface TeamSwitcherProps {
 }
 
 export function TeamSwitcher({ collapsed = false, isMobile = false }: TeamSwitcherProps) {
-    const { activeOrg, profile } = useAuth();
+    const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const activeTeamId = useWorkspaceContext(orgId, (s) => s.activeTeamId);
     const setActiveTeam = useWorkspaceContext(orgId, (s) => s.setActiveTeam);

@@ -156,7 +156,7 @@ export default function SettingsPage() {
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
 
     // Profile form state — pre-populated from auth context
-    const [profileName, setProfileName] = useState(profile?.name ?? "");
+    const [profileName, setProfileName] = useState(profile?.display_name ?? "");
     const [profileEmail] = useState(user?.email ?? "");
     const [profileSaving, setProfileSaving] = useState(false);
 
@@ -435,8 +435,8 @@ export default function SettingsPage() {
         addToast,
     ]);
 
-    const userRole = activeOrg?.role ?? profile?.role ?? "vendor";
-    const userInitials = (profile?.name ?? "U")
+    const userRole = activeOrg?.role ?? "vendor";
+    const userInitials = (profile?.display_name ?? "U")
         .split(" ")
         .map((n: string) => n[0])
         .join("")
@@ -489,7 +489,7 @@ export default function SettingsPage() {
                                                 {profile?.avatar_url ? (
                                                     <Image
                                                         src={profile.avatar_url}
-                                                        alt={profile.name ?? "Avatar"}
+                                                        alt={profile.display_name ?? "Avatar"}
                                                         fill
                                                         sizes="80px"
                                                         className="object-cover"
@@ -1240,7 +1240,8 @@ export default function SettingsPage() {
                                                         <div>
                                                             <p className="text-sm font-medium">
                                                                 {m.user_id === user?.id
-                                                                    ? (profile?.name ?? "You")
+                                                                    ? (profile?.display_name ??
+                                                                      "You")
                                                                     : m.user_id.slice(0, 8)}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">

@@ -17,8 +17,8 @@ interface OrgSwitcherProps {
 }
 
 export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcherProps) {
-    const { memberships, activeOrg, switchOrg, profile } = useAuth();
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const { memberships, activeOrg, switchOrg } = useAuth();
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const orgItems: SwitcherItem[] = memberships.map((m) => ({
         id: m.organization_id,

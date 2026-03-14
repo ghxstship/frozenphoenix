@@ -26,9 +26,9 @@ export function ActivationSwitcher({
     subPath,
 }: ActivationSwitcherProps) {
     const router = useRouter();
-    const { activeOrg, profile } = useAuth();
+    const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
-    const userRole = profile?.role as PermissionLevel | undefined;
+    const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
     const activeProjectId = useWorkspaceContext(orgId, (s) => s.activeProjectId);
     const activeActivationId = useWorkspaceContext(orgId, (s) => s.activeActivationId);
@@ -38,9 +38,7 @@ export function ActivationSwitcher({
 
     const activeActivation = activations.find((a) => a.id === activeActivationId);
     const displayName =
-        activeName ||
-        activeActivation?.name ||
-        CONTEXT_SWITCHER_STRINGS.activation.clearLabel;
+        activeName || activeActivation?.name || CONTEXT_SWITCHER_STRINGS.activation.clearLabel;
 
     const canCreate = userRole ? hasPermission(userRole, "activations", "write") : false;
 

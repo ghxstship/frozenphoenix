@@ -32,7 +32,7 @@ export type DocumentWithOwner = WithJoin<Tables<"documents">, ProfileName & Proj
 export type RateCardWithCompany = WithJoin<Tables<"rate_cards">, CompanyName>;
 export type AutomationWithProject = WithJoin<Tables<"automations">, ProjectName>;
 export type SavedViewWithOwner = WithJoin<Tables<"saved_views">, ProfileName>;
-export type CustomField = Tables<"custom_fields">;
+export type CustomField = Tables<"custom_field_definitions">;
 export type RecurringInvoiceWithCompany = WithJoin<
     Tables<"recurring_invoices">,
     CompanyName & ProjectName

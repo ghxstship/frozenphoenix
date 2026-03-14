@@ -1201,3 +1201,27 @@ export const upsellTriggerCreateSchema = z.object({
     is_active: z.boolean().default(true),
 });
 export const upsellTriggerUpdateSchema = upsellTriggerCreateSchema.partial();
+
+// ─── Departments ────────────────────────────────────────────
+export const departmentCreateSchema = z.object({
+    name: nonEmptyString.max(200),
+    slug: nonEmptyString.max(200),
+    description: optionalString,
+    parent_department_id: z.string().uuid().nullable().optional(),
+    head_user_id: z.string().uuid().nullable().optional(),
+    is_active: z.boolean().default(true),
+    sort_order: z.number().int().default(0),
+    cost_center_code: optionalString,
+});
+export const departmentUpdateSchema = departmentCreateSchema.partial();
+
+// ─── Lead Sources ───────────────────────────────────────────
+export const leadSourceCreateSchema = z.object({
+    name: nonEmptyString.max(200),
+    description: optionalString,
+    category: z
+        .enum(["referral", "inbound", "outbound", "event", "partner", "organic", "paid", "other"])
+        .default("other"),
+    is_active: z.boolean().default(true),
+});
+export const leadSourceUpdateSchema = leadSourceCreateSchema.partial();

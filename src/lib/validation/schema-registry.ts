@@ -373,6 +373,8 @@ import {
     customFieldUpdateSchema,
     dashboardCreateSchema,
     dashboardUpdateSchema,
+    departmentCreateSchema,
+    departmentUpdateSchema,
     depreciationScheduleCreateSchema,
     depreciationScheduleUpdateSchema,
     documentVersionCreateSchema,
@@ -401,6 +403,8 @@ import {
     kitUpdateSchema,
     knowledgeArticleCreateSchema,
     knowledgeArticleUpdateSchema,
+    leadSourceCreateSchema,
+    leadSourceUpdateSchema,
     legalHoldCreateSchema,
     legalHoldUpdateSchema,
     liveEventInstanceCreateSchema,
@@ -940,6 +944,8 @@ const SCHEMA_REGISTRY: Record<string, SchemaEntry> = {
     },
     upsell_event: { create: upsellEventCreateSchema, update: upsellEventUpdateSchema },
     upsell_trigger: { create: upsellTriggerCreateSchema, update: upsellTriggerUpdateSchema },
+    department: { create: departmentCreateSchema, update: departmentUpdateSchema },
+    lead_source: { create: leadSourceCreateSchema, update: leadSourceUpdateSchema },
 };
 
 /**

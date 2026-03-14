@@ -3896,3 +3896,51 @@ export const CREATE_WORKER_REVIEW_CONFIG: CreateEntityConfig = {
         { key: "summary", label: "Summary", type: "textarea" },
     ],
 };
+
+// ═══════════════════════════════════════════════════════════════
+// DEPARTMENTS
+// ═══════════════════════════════════════════════════════════════
+
+export const CREATE_DEPARTMENT_CONFIG: CreateEntityConfig = {
+    entityName: "Department",
+    description: "Create a new department.",
+    fields: [
+        { key: "name", label: "Department Name", type: "text", required: true },
+        { key: "slug", label: "Slug", type: "text", required: true },
+        { key: "description", label: "Description", type: "textarea" },
+        { key: "cost_center_code", label: "Cost Center Code", type: "text" },
+        { key: "head_user_id", label: "Department Head (User ID)", type: "text" },
+        { key: "parent_department_id", label: "Parent Department (ID)", type: "text" },
+        { key: "sort_order", label: "Sort Order", type: "number", min: 0 },
+        { key: "is_active", label: "Active", type: "select", options: YES_NO_OPTIONS },
+    ],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// LEAD SOURCES
+// ═══════════════════════════════════════════════════════════════
+
+export const CREATE_LEAD_SOURCE_CONFIG: CreateEntityConfig = {
+    entityName: "Lead Source",
+    description: "Create a new lead source for CRM tracking.",
+    fields: [
+        { key: "name", label: "Source Name", type: "text", required: true },
+        { key: "description", label: "Description", type: "textarea" },
+        {
+            key: "category",
+            label: "Category",
+            type: "select",
+            options: [
+                { value: "referral", label: "Referral" },
+                { value: "inbound", label: "Inbound" },
+                { value: "outbound", label: "Outbound" },
+                { value: "event", label: "Event" },
+                { value: "partner", label: "Partner" },
+                { value: "organic", label: "Organic" },
+                { value: "paid", label: "Paid" },
+                { value: "other", label: "Other" },
+            ],
+        },
+        { key: "is_active", label: "Active", type: "select", options: YES_NO_OPTIONS },
+    ],
+};

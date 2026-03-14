@@ -123,7 +123,7 @@ export type MilestoneWithApprovals = WithJoin<
     Tables<"milestones">,
     { approvals: Tables<"approvals">[] | null }
 >;
-export type KBArticleWithProfile = WithJoin<Tables<"knowledge_base_articles">, ProfileName>;
+export type KBArticleWithProfile = WithJoin<Tables<"knowledge_articles">, ProfileName>;
 export type ProductionSOPWithProfile = WithJoin<Tables<"production_sops">, ProfileName>;
 export type ProductionChecklistWithJoins = WithJoin<
     Tables<"production_checklists">,
@@ -1208,8 +1208,8 @@ export function useKnowledgeBaseArticles(category?: string, department?: string)
 export function useCreateKBArticle() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (article: TablesInsert<"knowledge_base_articles">) =>
-            apiCreate<Tables<"knowledge_base_articles">>(
+        mutationFn: async (article: TablesInsert<"knowledge_articles">) =>
+            apiCreate<Tables<"knowledge_articles">>(
                 "/api/knowledge-base",
                 article as Record<string, unknown>
             ),

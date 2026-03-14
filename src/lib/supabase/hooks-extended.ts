@@ -49,7 +49,7 @@ export type InvoiceTemplateRow = Tables<"invoice_templates">;
 export type LostReasonRow = Tables<"lost_reasons">;
 export type OrganizationRow = Tables<"organizations">;
 export type ActivityRow = Tables<"activities">;
-export type AutomationLogRow = Tables<"automation_logs">;
+export type AutomationLogRow = Tables<"automation_executions">;
 export type StakeholderProjectRow = Tables<"stakeholder_projects">;
 
 // ─── Generic helpers ───

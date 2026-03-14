@@ -428,7 +428,7 @@ export function useVendorReviews(vendorId?: string) {
     return useQuery({
         queryKey: ["vendor_review", vendorId],
         queryFn: async () => {
-            const res = await apiList<Tables<"vendor_reviews">>("/api/vendor-reviews", {
+            const res = await apiList<Tables<"worker_reviews">>("/api/vendor-reviews", {
                 vendor_id: vendorId,
                 sort_by: "created_at",
                 sort_order: "desc",
@@ -438,15 +438,15 @@ export function useVendorReviews(vendorId?: string) {
     });
 }
 
-export const useVendorReview = makeDetailHook<Tables<"vendor_reviews">>(
+export const useVendorReview = makeDetailHook<Tables<"worker_reviews">>(
     "vendor_review",
     "/api/vendor-reviews"
 );
-export const useCreateVendorReview = makeCreateHook<Tables<"vendor_reviews">>(
+export const useCreateVendorReview = makeCreateHook<Tables<"worker_reviews">>(
     "vendor_review",
     "/api/vendor-reviews"
 );
-export const useUpdateVendorReview = makeUpdateHook<Tables<"vendor_reviews">>(
+export const useUpdateVendorReview = makeUpdateHook<Tables<"worker_reviews">>(
     "vendor_review",
     "/api/vendor-reviews"
 );
@@ -968,12 +968,12 @@ export function useActivityLogRecent(limit = 10) {
 // VENDOR COMPLIANCE DOCUMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export const useVendorComplianceDocuments = makeListHook<Tables<"vendor_compliance_docs">>(
+export const useVendorComplianceDocuments = makeListHook<Tables<"worker_compliance_docs">>(
     "vendor_compliance_document",
     "/api/vendor-compliance-documents",
     { sort_by: "expiry_date", sort_order: "asc" }
 );
-export const useCreateVendorComplianceDocument = makeCreateHook<Tables<"vendor_compliance_docs">>(
+export const useCreateVendorComplianceDocument = makeCreateHook<Tables<"worker_compliance_docs">>(
     "vendor_compliance_document",
     "/api/vendor-compliance-documents"
 );
@@ -1070,16 +1070,16 @@ export const useDeleteRecurringInvoice = makeDeleteHook(
 // KNOWLEDGE BASE ARTICLES
 // ═══════════════════════════════════════════════════════════════
 
-export const useKnowledgeBaseArticles = makeListHook<Tables<"knowledge_base_articles">>(
+export const useKnowledgeBaseArticles = makeListHook<Tables<"knowledge_articles">>(
     "knowledge_base_article",
     "/api/knowledge-base-articles",
     { sort_by: "updated_at", sort_order: "desc" }
 );
-export const useCreateKBArticle = makeCreateHook<Tables<"knowledge_base_articles">>(
+export const useCreateKBArticle = makeCreateHook<Tables<"knowledge_articles">>(
     "knowledge_base_article",
     "/api/knowledge-base-articles"
 );
-export const useUpdateKBArticle = makeUpdateHook<Tables<"knowledge_base_articles">>(
+export const useUpdateKBArticle = makeUpdateHook<Tables<"knowledge_articles">>(
     "knowledge_base_article",
     "/api/knowledge-base-articles"
 );
@@ -1234,7 +1234,7 @@ export const useDeleteTemplate = makeDeleteHook("template", "/api/project-templa
 // VENDOR ONBOARDING (STUB — uses vendor_compliance_documents)
 // ═══════════════════════════════════════════════════════════════
 
-export const useVendorOnboarding = makeListHook<Tables<"vendor_compliance_docs">>(
+export const useVendorOnboarding = makeListHook<Tables<"worker_compliance_docs">>(
     "vendor_onboarding",
     "/api/vendor-compliance-documents",
     { sort_by: "created_at", sort_order: "desc" }
@@ -1647,7 +1647,7 @@ export const useInsuranceRequirements = makeListHook<Tables<"insurance_requireme
 // COMPLIANCE REQUIREMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export const useComplianceRequirements = makeListHook<Tables<"compliance_requirements">>(
+export const useComplianceRequirements = makeListHook<Tables<"compliance_checklists">>(
     "compliance_requirement",
     "/api/compliance-requirements",
     { sort_by: "name", sort_order: "asc" }

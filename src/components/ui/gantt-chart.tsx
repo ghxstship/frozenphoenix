@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TruncatedText } from "@/components/ui/truncated-text";
 
 export interface GanttTask {
     id: string;
@@ -110,14 +112,21 @@ export function GanttChart({
                             <div className="w-60 shrink-0 p-3 border-r sticky left-0 bg-background z-10">
                                 <div className="flex items-center gap-2">
                                     {task.hasConflict && (
-                                        <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                                        <Tooltip content="Scheduling conflict" side="right">
+                                            <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                                        </Tooltip>
                                     )}
                                     <div className="min-w-0">
-                                        <p className="text-xs font-medium truncate">{task.label}</p>
+                                        <TruncatedText as="p" className="text-xs font-medium">
+                                            {task.label}
+                                        </TruncatedText>
                                         {task.sublabel && (
-                                            <p className="text-[10px] text-muted-foreground truncate">
+                                            <TruncatedText
+                                                as="p"
+                                                className="text-[10px] text-muted-foreground"
+                                            >
                                                 {task.sublabel}
-                                            </p>
+                                            </TruncatedText>
                                         )}
                                     </div>
                                 </div>
@@ -142,57 +151,70 @@ export function GanttChart({
                                 ))}
 
                                 {/* Task bar */}
-                                <button
-                                    type="button"
-                                    data-gantt-bar
-                                    className={cn(
-                                        "absolute top-2 h-6 rounded-md transition-all group",
-                                        task.hasConflict
-                                            ? "bg-destructive/20 border border-destructive/40"
-                                            : "bg-primary/20 border border-primary/30",
-                                        onTaskClick && "cursor-pointer hover:shadow-md"
-                                    )}
-                                    style={{
-                                        left: `${Math.max(0, leftPercent)}%`,
-                                        width: `${Math.max(1, widthPercent)}%`,
-                                    }}
-                                    onClick={() => onTaskClick?.(task)}
-                                    aria-label={`${task.label}: ${formatShortDate(task.startDate)} to ${formatShortDate(task.endDate)}, ${progress}% complete`}
-                                    onKeyDown={(e) => {
-                                        const bars = Array.from(
-                                            (e.currentTarget.closest("[data-gantt-chart]") ?? document).querySelectorAll<HTMLElement>("[data-gantt-bar]")
-                                        );
-                                        const idx = bars.indexOf(e.currentTarget);
-                                        if (idx < 0) return;
-                                        let next: number | null = null;
-                                        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-                                            e.preventDefault();
-                                            next = idx < bars.length - 1 ? idx + 1 : 0;
-                                        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-                                            e.preventDefault();
-                                            next = idx > 0 ? idx - 1 : bars.length - 1;
-                                        } else if (e.key === "Home") {
-                                            e.preventDefault();
-                                            next = 0;
-                                        } else if (e.key === "End") {
-                                            e.preventDefault();
-                                            next = bars.length - 1;
-                                        }
-                                        if (next !== null) bars[next]?.focus();
-                                    }}
+                                <Tooltip
+                                    content={`${task.label}: ${formatShortDate(task.startDate)} – ${formatShortDate(task.endDate)}, ${progress}% complete`}
+                                    side="top"
                                 >
-                                    {/* Progress fill */}
-                                    <div
+                                    <button
+                                        type="button"
+                                        data-gantt-bar
                                         className={cn(
-                                            "absolute inset-0 rounded-md",
-                                            task.hasConflict ? "bg-destructive/30" : "bg-primary/40"
+                                            "absolute top-2 h-6 rounded-md transition-all group",
+                                            task.hasConflict
+                                                ? "bg-destructive/20 border border-destructive/40"
+                                                : "bg-primary/20 border border-primary/30",
+                                            onTaskClick && "cursor-pointer hover:shadow-md"
                                         )}
-                                        style={{ width: `${progress}%` }}
-                                    />
-                                    <span className="relative z-10 text-[9px] font-medium px-1.5 truncate block leading-6">
-                                        {task.label}
-                                    </span>
-                                </button>
+                                        style={{
+                                            left: `${Math.max(0, leftPercent)}%`,
+                                            width: `${Math.max(1, widthPercent)}%`,
+                                        }}
+                                        onClick={() => onTaskClick?.(task)}
+                                        aria-label={`${task.label}: ${formatShortDate(task.startDate)} to ${formatShortDate(task.endDate)}, ${progress}% complete`}
+                                        onKeyDown={(e) => {
+                                            const bars = Array.from(
+                                                (
+                                                    e.currentTarget.closest("[data-gantt-chart]") ??
+                                                    document
+                                                ).querySelectorAll<HTMLElement>("[data-gantt-bar]")
+                                            );
+                                            const idx = bars.indexOf(e.currentTarget);
+                                            if (idx < 0) return;
+                                            let next: number | null = null;
+                                            if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                                                e.preventDefault();
+                                                next = idx < bars.length - 1 ? idx + 1 : 0;
+                                            } else if (
+                                                e.key === "ArrowUp" ||
+                                                e.key === "ArrowLeft"
+                                            ) {
+                                                e.preventDefault();
+                                                next = idx > 0 ? idx - 1 : bars.length - 1;
+                                            } else if (e.key === "Home") {
+                                                e.preventDefault();
+                                                next = 0;
+                                            } else if (e.key === "End") {
+                                                e.preventDefault();
+                                                next = bars.length - 1;
+                                            }
+                                            if (next !== null) bars[next]?.focus();
+                                        }}
+                                    >
+                                        {/* Progress fill */}
+                                        <div
+                                            className={cn(
+                                                "absolute inset-0 rounded-md",
+                                                task.hasConflict
+                                                    ? "bg-destructive/30"
+                                                    : "bg-primary/40"
+                                            )}
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                        <span className="relative z-10 text-[9px] font-medium px-1.5 truncate block leading-6">
+                                            {task.label}
+                                        </span>
+                                    </button>
+                                </Tooltip>
 
                                 {/* Today marker */}
                                 {todayOffset >= 0 && todayOffset <= totalDays && (

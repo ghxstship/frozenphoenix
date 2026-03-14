@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, Check, CheckCheck, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import {
     useMarkAllNotificationsRead,
@@ -105,22 +106,27 @@ export function NotificationBell() {
 
     return (
         <div className="relative" ref={panelRef}>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="relative"
-                onClick={() => setIsOpen(!isOpen)}
-                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
-                aria-expanded={isOpen}
-                aria-haspopup="true"
+            <Tooltip
+                content={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+                side="bottom"
             >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center px-1">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                )}
-            </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="relative"
+                    onClick={() => setIsOpen(!isOpen)}
+                    aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                >
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center px-1">
+                            {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                    )}
+                </Button>
+            </Tooltip>
 
             {isOpen && (
                 <div
@@ -142,14 +148,17 @@ export function NotificationBell() {
                                     Mark all read
                                 </Button>
                             )}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setIsOpen(false)}
-                                className="h-7 w-7 p-0"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
+                            <Tooltip content="Close" side="bottom">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsOpen(false)}
+                                    className="h-7 w-7 p-0"
+                                    aria-label="Close notifications"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
                         </div>
                     </div>
                     <div className="overflow-y-auto max-h-[400px]">
@@ -198,16 +207,18 @@ export function NotificationBell() {
                                         </div>
                                         <div className="shrink-0 flex gap-1 mt-1">
                                             {!notif.is_read && (
-                                                <button
-                                                    className="p-1 rounded hover:bg-accent"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleMarkRead(notif.id);
-                                                    }}
-                                                    aria-label="Mark as read"
-                                                >
-                                                    <Check className="h-3.5 w-3.5 text-muted-foreground" />
-                                                </button>
+                                                <Tooltip content="Mark as read" side="left">
+                                                    <button
+                                                        className="p-1 rounded hover:bg-accent"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkRead(notif.id);
+                                                        }}
+                                                        aria-label="Mark as read"
+                                                    >
+                                                        <Check className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    </button>
+                                                </Tooltip>
                                             )}
                                             {notif.action_url && (
                                                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground mt-1" />

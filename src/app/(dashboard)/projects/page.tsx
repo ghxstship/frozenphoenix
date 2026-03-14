@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ArrowRight, Calendar, DollarSign, FolderKanban, Users } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { CREATE_PROJECT_CONFIG } from "@/config/create-entity-configs";
 import {
     PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
@@ -278,20 +279,27 @@ function ProjectsContent({ projects }: { projects: Project[] }) {
                 </div>
             )}
 
-            {viewMode === "table" && (
-                <DataTable
-                    data={projects}
-                    columns={tableColumns}
-                    keyField="id"
-                    sortable
-                    searchable
-                    searchPlaceholder="Search projects..."
-                    pagination
-                    pageSize={10}
-                    hoverable
-                    stickyHeader
-                />
-            )}
+            {viewMode === "table" &&
+                (projects.length === 0 ? (
+                    <EmptyState
+                        icon={FolderKanban}
+                        title="No productions found"
+                        description="Create your first project to get started"
+                    />
+                ) : (
+                    <DataTable
+                        data={projects}
+                        columns={tableColumns}
+                        keyField="id"
+                        sortable
+                        searchable
+                        searchPlaceholder="Search projects..."
+                        pagination
+                        pageSize={10}
+                        hoverable
+                        stickyHeader
+                    />
+                ))}
 
             {viewMode === "board" && (
                 <DataBoard
@@ -302,18 +310,32 @@ function ProjectsContent({ projects }: { projects: Project[] }) {
                     cardTitle="name"
                     cardSubtitle="client"
                     columnWidth={320}
+                    emptyState={
+                        <EmptyState
+                            icon={FolderKanban}
+                            title="No productions found"
+                            description="Create your first project to get started"
+                        />
+                    }
                 />
             )}
 
-            {viewMode === "cards" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {projects.map((project, i) => (
-                        <StaggerItem key={project.id} index={i} stagger="relaxed">
-                            <ProjectCard project={project} />
-                        </StaggerItem>
-                    ))}
-                </div>
-            )}
+            {viewMode === "cards" &&
+                (projects.length === 0 ? (
+                    <EmptyState
+                        icon={FolderKanban}
+                        title="No productions found"
+                        description="Create your first project to get started"
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {projects.map((project, i) => (
+                            <StaggerItem key={project.id} index={i} stagger="relaxed">
+                                <ProjectCard project={project} />
+                            </StaggerItem>
+                        ))}
+                    </div>
+                ))}
         </>
     );
 }

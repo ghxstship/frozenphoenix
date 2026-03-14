@@ -60,7 +60,7 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
                 {state.open && (
                     <div className="fixed inset-0 z-[150] flex items-center justify-center">
                         <motion.div
-                            className="absolute inset-0 bg-black/50"
+                            className="absolute inset-0 glass-overlay backdrop-blur-sm"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -96,7 +96,7 @@ function ConfirmDialogContent({
     return (
         <motion.div
             ref={trapRef as React.RefObject<HTMLDivElement>}
-            className="relative bg-background border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
+            className="relative bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150 border border-[var(--glass-surface-border)] rounded-xl p-6 max-w-sm w-full mx-4 glass-noise glass-edge-glow"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -122,11 +122,7 @@ function ConfirmDialogContent({
                     {options.cancelLabel ?? "Cancel"}
                 </Button>
                 <Button
-                    variant={
-                        options.variant === "destructive"
-                            ? "destructive"
-                            : "default"
-                    }
+                    variant={options.variant === "destructive" ? "destructive" : "default"}
                     size="sm"
                     onClick={onConfirm}
                     autoFocus

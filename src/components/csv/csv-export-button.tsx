@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/toast";
 
 export interface CsvExportButtonProps {
@@ -50,9 +51,7 @@ export function CsvExportButton({
                 const errorData = (await response.json().catch(() => null)) as {
                     error?: { message?: string };
                 } | null;
-                throw new Error(
-                    errorData?.error?.message ?? `Export failed (${response.status})`
-                );
+                throw new Error(errorData?.error?.message ?? `Export failed (${response.status})`);
             }
 
             // Get the CSV content and trigger download
@@ -88,7 +87,7 @@ export function CsvExportButton({
         }
     }, [entity, filters, limit, addToast]);
 
-    return (
+    const button = (
         <Button
             variant={variant}
             size={size}
@@ -105,4 +104,14 @@ export function CsvExportButton({
             {size !== "icon" && (exporting ? "Exporting..." : label)}
         </Button>
     );
+
+    if (size === "icon") {
+        return (
+            <Tooltip content={exporting ? "Exporting..." : label} side="bottom">
+                {button}
+            </Tooltip>
+        );
+    }
+
+    return button;
 }

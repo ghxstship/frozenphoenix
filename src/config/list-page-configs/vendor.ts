@@ -54,6 +54,18 @@ export const COMPLIANCE_REQUIREMENTS_PAGE: ListPageConfig = {
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "requirement_type",
+    },
+    calendarConfig: {
+        titleKey: "name",
+        dateKey: "due_date",
+        colorKey: "status",
+    },
 };
 
 // ─── contract_amendment ───
@@ -81,6 +93,13 @@ export const CONTRACT_AMENDMENTS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "amendment_type",
+    },
 };
 
 // ─── e_signature ───
@@ -98,6 +117,13 @@ export const E_SIGNATURES_PAGE: ListPageConfig = {
         { id: "signed_at", header: "Signed", accessorKey: "signed_at", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "document_title",
+        cardSubtitleKey: "signer_name",
+    },
 };
 
 // ─── insurance_requirement ───
@@ -164,6 +190,12 @@ export const RFQS_PAGE: ListPageConfig = {
         { id: "response_count", header: "Responses", accessorKey: "response_count" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+    },
 };
 
 // ─── rights ───
@@ -198,6 +230,17 @@ export const RISK_ASSESSMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "chart"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "risk_level",
+    },
+    chartConfig: {
+        type: "pie",
+        categoryKey: "risk_level",
+    },
 };
 
 // ─── vendor_compliance_document ───
@@ -254,6 +297,18 @@ export const CONTRACT_OBLIGATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "contract_name", header: "Contract", accessorKey: "contract_name" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "description",
+        cardSubtitleKey: "obligation_type",
+    },
+    calendarConfig: {
+        titleKey: "description",
+        dateKey: "due_date",
+        colorKey: "status",
+    },
 };
 
 // ─── engagement_term ───

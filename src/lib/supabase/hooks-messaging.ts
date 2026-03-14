@@ -25,7 +25,8 @@ export const messagingKeys = {
     conversations: () => [...messagingKeys.all, "conversations"] as const,
     conversation: (id: string) => [...messagingKeys.conversations(), id] as const,
     conversationMembers: (id: string) => [...messagingKeys.conversation(id), "members"] as const,
-    messages: (conversationId: string) => [...messagingKeys.all, "messages", conversationId] as const,
+    messages: (conversationId: string) =>
+        [...messagingKeys.all, "messages", conversationId] as const,
     entityMessages: (entityType: string, entityId: string) =>
         [...messagingKeys.all, "entity-messages", entityType, entityId] as const,
     threadMessages: (parentId: string) => [...messagingKeys.all, "thread", parentId] as const,
@@ -47,7 +48,9 @@ export function useConversations() {
             // Get conversations the user is a member of
             const { data: memberships, error: memErr } = await supabase
                 .from("conversation_members")
-                .select("conversation_id, last_read_at, is_muted, is_pinned, notification_preference, role")
+                .select(
+                    "conversation_id, last_read_at, is_muted, is_pinned, notification_preference, role"
+                )
                 .order("joined_at", { ascending: false });
 
             if (memErr || !memberships) return [];
@@ -568,6 +571,54 @@ export function useRemoveConversationMember(conversationId: string) {
                 queryKey: messagingKeys.conversationMembers(conversationId),
             });
         },
+    });
+}
+
+// ─── Org Members (for people picker) ─────────────────────────
+
+export function useOrgMembers() {
+    return useQuery({
+        queryKey: [...messagingKeys.all, "org-members"] as const,
+        queryFn: async (): Promise<
+            Array<{ id: string; name: string; avatar_url: string | null }>
+        > => {
+            const supabase = getSupabase();
+
+            // Get current user
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return [];
+
+            // Get user's org
+            const { data: myProfile } = await supabase
+                .from("profiles")
+                .select("organization_id")
+                .eq("id", user.id)
+                .single();
+
+            const orgId = (myProfile as Record<string, unknown> | null)?.organization_id as
+                | string
+                | null;
+            if (!orgId) return [];
+
+            // Get all org members except current user
+            const { data: profiles, error } = await supabase
+                .from("profiles")
+                .select("id, name, avatar_url")
+                .eq("organization_id", orgId)
+                .neq("id", user.id)
+                .order("name", { ascending: true });
+
+            if (error || !profiles) return [];
+
+            return (profiles as Record<string, unknown>[]).map((p) => ({
+                id: p.id as string,
+                name: p.name as string,
+                avatar_url: (p.avatar_url as string | null) ?? null,
+            }));
+        },
+        staleTime: 120_000,
     });
 }
 

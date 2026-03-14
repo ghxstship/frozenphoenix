@@ -5,8 +5,18 @@ import { SlidePanel } from "@/components/ui/slide-panel";
 import { ConversationList } from "./conversation-list";
 import { ChatView } from "./chat-view";
 import { ThreadPanel } from "./thread-panel";
+import { NewConversationDialog } from "./new-conversation-dialog";
 import { useMessaging } from "@/hooks/use-messaging";
-import { useConversations, useDeleteMessage, useEditMessage, useMessages, usePinMessage, useSendMessage, useToggleReaction } from "@/lib/supabase/hooks-messaging";
+import {
+    useConversations,
+    useDeleteMessage,
+    useEditMessage,
+    useMessages,
+    useOrgMembers,
+    usePinMessage,
+    useSendMessage,
+    useToggleReaction,
+} from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
 import type { MessageWithSender } from "@/types/messaging";
 
@@ -19,6 +29,7 @@ export function MessagingPanel() {
     const setView = useMessaging((s) => s.setView);
     const searchQuery = useMessaging((s) => s.searchQuery);
     const setSearchQuery = useMessaging((s) => s.setSearchQuery);
+    const isComposing = useMessaging((s) => s.isComposing);
     const setComposing = useMessaging((s) => s.setComposing);
     const drafts = useMessaging((s) => s.drafts);
     const setDraft = useMessaging((s) => s.setDraft);
@@ -31,6 +42,7 @@ export function MessagingPanel() {
 
     // Data hooks
     const { data: conversations = [], isLoading: convLoading } = useConversations();
+    const { data: orgMembers = [] } = useOrgMembers();
     const {
         data: messagesPages,
         isLoading: msgLoading,
@@ -135,6 +147,14 @@ export function MessagingPanel() {
         setView("conversations");
     }, [setActiveConversation, setView]);
 
+    const handleConversationCreated = React.useCallback(
+        (conversationId: string) => {
+            setComposing(false);
+            setActiveConversation(conversationId);
+        },
+        [setComposing, setActiveConversation]
+    );
+
     return (
         <SlidePanel
             open={isPanelOpen}
@@ -179,12 +199,16 @@ export function MessagingPanel() {
                     />
                 )}
                 {view === "thread" && (
-                    <ThreadPanel
-                        parentMessage={threadParentMessage}
-                        className="w-full"
-                    />
+                    <ThreadPanel parentMessage={threadParentMessage} className="w-full" />
                 )}
             </div>
+
+            <NewConversationDialog
+                open={isComposing}
+                onClose={() => setComposing(false)}
+                onCreated={handleConversationCreated}
+                members={orgMembers}
+            />
         </SlidePanel>
     );
 }

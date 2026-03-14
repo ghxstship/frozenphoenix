@@ -10,6 +10,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { X } from "lucide-react";
 import type { ListBulkActionDef } from "@/types/list-page-config";
 
@@ -63,14 +64,16 @@ export function BulkActionBar({
 
             <div className="h-4 w-px bg-border" aria-hidden="true" />
 
-            <button
-                type="button"
-                onClick={onClearSelection}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Clear selection"
-            >
-                <X className="h-4 w-4" />
-            </button>
+            <Tooltip content="Clear selection" side="top">
+                <button
+                    type="button"
+                    onClick={onClearSelection}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label="Clear selection"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </Tooltip>
         </div>
     );
 }

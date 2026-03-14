@@ -27,7 +27,12 @@ export function StatCard({
     const TrendIcon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
 
     return (
-        <div role="group" aria-label={title} className={cn("spatial-card p-5 animate-fade-in", className)}>
+        <div
+            role="group"
+            aria-label={title}
+            className={cn("spatial-card animate-fade-in", className)}
+            style={{ padding: "var(--density-stat-padding)" }}
+        >
             <div className="flex items-start justify-between">
                 <div className="space-y-1">
                     <p className="text-sm font-medium text-muted-foreground">{title}</p>

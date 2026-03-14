@@ -257,7 +257,7 @@ export function CommandBar({ className }: CommandBarProps) {
                 <>
                     {/* Backdrop */}
                     <motion.div
-                        className="fixed inset-0 z-50 bg-foreground/50 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 glass-overlay backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -272,7 +272,9 @@ export function CommandBar({ className }: CommandBarProps) {
                         className={cn(
                             "fixed top-[20%] left-1/2 -translate-x-1/2 z-50",
                             "w-[calc(100vw-2rem)] max-w-lg",
-                            "bg-popover border border-border rounded-xl shadow-2xl overflow-hidden",
+                            "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150",
+                            "border border-[var(--glass-surface-border)] rounded-xl overflow-hidden",
+                            "glass-noise glass-edge-glow",
                             className
                         )}
                         initial={{ opacity: 0, scale: 0.95, x: "-50%" }}

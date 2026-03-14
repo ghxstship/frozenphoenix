@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 <div
                     id="shell-main-content"
-                    className="flex-1 transition-[margin-inline-start] duration-300"
+                    className="flex-1 min-w-0 transition-[margin-inline-start] duration-300"
                     style={{ marginInlineStart: "var(--shell-sidebar-offset)" }}
                 >
                     {/* Banner landmark */}
@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         id="main-content"
                         role="main"
                         aria-label="Main content"
-                        className="p-4 lg:p-6"
+                        className="p-4 lg:p-6 overflow-x-hidden"
                         tabIndex={-1}
                     >
                         <ErrorBoundary level="page">

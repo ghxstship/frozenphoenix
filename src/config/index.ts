@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // Multi-Tenant Brand System
-export { BRAND_REGISTRY, RILLA_BRAND, PLAYBOOK_BRAND, getBrand, getActiveBrand } from "./brands";
+export { BRAND_REGISTRY, PLAYBOOK_BRAND, getBrand, getActiveBrand } from "./brands";
 export type {
     BrandConfig,
     BrandId,

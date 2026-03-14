@@ -4,7 +4,13 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { MessageSquare, MoreHorizontal, Pencil, Pin, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { QUICK_REACTIONS } from "@/types/messaging";
 import type { MessageWithSender, ReactionAggregate } from "@/types/messaging";
 import { formatRelativeTime } from "@/lib/locale";
@@ -92,9 +98,7 @@ export function MessageBubble({
                     {message.edited_at && (
                         <span className="text-xs text-muted-foreground italic">(edited)</span>
                     )}
-                    {message.is_pinned && (
-                        <Pin className="h-3 w-3 text-amber-500 fill-amber-500" />
-                    )}
+                    {message.is_pinned && <Pin className="h-3 w-3 text-amber-500 fill-amber-500" />}
                     {message.priority !== "normal" && (
                         <span
                             className={cn(
@@ -194,30 +198,40 @@ export function MessageBubble({
             {showActions && !message.deleted_at && (
                 <div className="absolute top-0 right-3 -translate-y-1/2 flex items-center gap-0.5 rounded-lg border border-border bg-background shadow-sm px-1 py-0.5">
                     {QUICK_REACTIONS.slice(0, 4).map((emoji) => (
-                        <button
+                        <Tooltip
                             key={emoji}
-                            onClick={() => onReact?.(message.id, emoji)}
-                            className="h-6 w-6 rounded flex items-center justify-center text-sm hover:bg-secondary transition-colors"
-                            aria-label={`React with ${emoji}`}
+                            content={`React with ${emoji}`}
+                            side="top"
+                            delayDuration={200}
                         >
-                            {emoji}
-                        </button>
+                            <button
+                                onClick={() => onReact?.(message.id, emoji)}
+                                className="h-6 w-6 rounded flex items-center justify-center text-sm hover:bg-secondary transition-colors"
+                                aria-label={`React with ${emoji}`}
+                            >
+                                {emoji}
+                            </button>
+                        </Tooltip>
                     ))}
-                    <button
-                        onClick={() => onReply?.(message)}
-                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        aria-label="Reply in thread"
-                    >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                    </button>
+                    <Tooltip content="Reply in thread" side="top">
+                        <button
+                            onClick={() => onReply?.(message)}
+                            className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            aria-label="Reply in thread"
+                        >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                        </button>
+                    </Tooltip>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                                aria-label="More actions"
-                            >
-                                <MoreHorizontal className="h-3.5 w-3.5" />
-                            </button>
+                            <Tooltip content="More actions" side="top">
+                                <button
+                                    className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                    aria-label="More actions"
+                                >
+                                    <MoreHorizontal className="h-3.5 w-3.5" />
+                                </button>
+                            </Tooltip>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
                             {onPin && (

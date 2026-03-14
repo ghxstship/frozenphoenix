@@ -580,3 +580,56 @@ export function useClientInvoiceAging() {
             ),
     });
 }
+
+// ═══════════════════════════════════════════════════════════════
+// USER CERTIFICATIONS
+// ═══════════════════════════════════════════════════════════════
+
+export type UserCertification = Tables<"user_certifications">;
+
+export function useUserCertifications(userId: string | null) {
+    return useQuery({
+        queryKey: ["user_certifications", userId],
+        queryFn: () =>
+            apiList<UserCertification>("/api/user-certifications", {
+                user_id: userId!,
+            }),
+        enabled: !!userId,
+    });
+}
+
+export function useCreateUserCertification() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: Omit<UserCertification, "id" | "created_at" | "updated_at">) =>
+            apiCreate<UserCertification>("/api/user-certifications", payload),
+        onSuccess: (_data, vars) => {
+            qc.invalidateQueries({ queryKey: ["user_certifications", vars.user_id] });
+        },
+    });
+}
+
+export function useUpdateUserCertification() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            id,
+            ...updates
+        }: Partial<UserCertification> & { id: string; user_id: string }) =>
+            apiUpdate<UserCertification>("/api/user-certifications", id, updates),
+        onSuccess: (_data, vars) => {
+            qc.invalidateQueries({ queryKey: ["user_certifications", vars.user_id] });
+        },
+    });
+}
+
+export function useDeleteUserCertification() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id }: { id: string; user_id: string }) =>
+            apiDelete("/api/user-certifications", id),
+        onSuccess: (_data, vars) => {
+            qc.invalidateQueries({ queryKey: ["user_certifications", vars.user_id] });
+        },
+    });
+}

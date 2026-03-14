@@ -436,6 +436,31 @@ export const TEXT_VARIANTS = {
 
 export type TextVariantToken = keyof typeof TEXT_VARIANTS;
 
+// ─── Glass Morphism Tokens ───
+// Organic glass surface system for modals, dialogs, panels, and overlays
+export const GLASS = {
+    /** Overlay behind modals — radial gradient fades toward edges */
+    overlay: {
+        base: "bg-black/40",
+        blur: "backdrop-blur-sm",
+    },
+    /** Glass surface for dialog/modal/panel content */
+    surface: {
+        /** Light: translucent white. Dark: translucent near-black */
+        background: "bg-[var(--glass-surface-bg)]",
+        border: "border border-[var(--glass-surface-border)]",
+        /** Multi-layer depth shadow: tight + diffused + faint color bleed */
+        shadow: "shadow-[0_1px_2px_rgba(0,0,0,0.07),0_8px_24px_rgba(0,0,0,0.12),0_24px_48px_-12px_rgba(0,0,0,0.18)]",
+        /** Noise overlay for physical materiality */
+        noise: "glass-noise",
+        /** Full composite class */
+        classes:
+            "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150 border border-[var(--glass-surface-border)] shadow-[0_1px_2px_rgba(0,0,0,0.07),0_8px_24px_rgba(0,0,0,0.12),0_24px_48px_-12px_rgba(0,0,0,0.18)] glass-noise",
+    },
+    /** Spring animation config for glass entry (scale + blur settle) */
+    entrySpring: { stiffness: 400, damping: 28, mass: 1 },
+} as const;
+
 // ─── Contrast Variants ───
 export const CONTRAST_VARIANTS = {
     default: {

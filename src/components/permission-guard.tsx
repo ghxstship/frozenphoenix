@@ -27,7 +27,12 @@ function resolvePermissionLevel(profile: { role?: string | null } | null): Permi
 }
 
 export function usePermissionLevel(): PermissionLevel {
-    const { profile } = useAuth();
+    const { profile, activeOrg } = useAuth();
+    // Canonical role comes from the active org membership (org_memberships table).
+    // Fall back to profile.role (legacy profiles table) only if no membership exists.
+    if (activeOrg?.role) {
+        return resolvePermissionLevel({ role: activeOrg.role });
+    }
     return resolvePermissionLevel(profile);
 }
 
@@ -37,6 +42,11 @@ export function useHasPermission(
 ): boolean {
     const level = usePermissionLevel();
     return hasPermission(level, resource, action);
+}
+
+export function useIsOwner(): boolean {
+    const { isOwner } = useAuth();
+    return isOwner;
 }
 
 export function useFieldVisible(fieldName: string): boolean {
@@ -101,6 +111,46 @@ interface FieldGuardProps {
     children: React.ReactNode;
     field: string;
     placeholder?: string;
+}
+
+interface OwnerGateProps {
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
+    silent?: boolean;
+}
+
+export function OwnerGate({ children, fallback, silent = false }: OwnerGateProps) {
+    const owner = useIsOwner();
+
+    if (owner) return <>{children}</>;
+
+    if (fallback) return <>{fallback}</>;
+
+    if (silent) return null;
+
+    return (
+        <div className="flex items-center justify-center min-h-[40vh] p-6">
+            <Card className="max-w-md w-full border-destructive/20">
+                <CardContent className="py-8">
+                    <div className="flex flex-col items-center text-center gap-4">
+                        <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                            <ShieldX className="h-7 w-7 text-destructive" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold">Owner Access Required</h2>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                This section is restricted to the organization owner. Contact your
+                                organization owner if you need access.
+                            </p>
+                        </div>
+                        <Button variant="outline" onClick={() => window.history.back()}>
+                            Go Back
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 export function FieldGuard({ children, field, placeholder = "••••" }: FieldGuardProps) {

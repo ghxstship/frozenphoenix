@@ -11,6 +11,7 @@ import {
     ArrowDown,
     ArrowUp,
     ArrowUpDown,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
@@ -21,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 
 // ─── Column Definition ───
 export interface ColumnDef<T> {
@@ -90,6 +92,9 @@ interface DataTableProps<T> {
     loading?: boolean;
     // Accessibility
     caption?: string;
+    // Grouping
+    groupBy?: keyof T;
+    groupLabels?: Record<string, string>;
 }
 
 export function DataTable<T extends object>({
@@ -117,6 +122,8 @@ export function DataTable<T extends object>({
     emptyState,
     loading = false,
     caption,
+    groupBy,
+    groupLabels,
 }: DataTableProps<T>) {
     // ─── State ───
     const [sort, setSort] = React.useState<SortState | null>(defaultSort ?? null);
@@ -124,6 +131,7 @@ export function DataTable<T extends object>({
     const [page, setPage] = React.useState(0);
     const [pageSize, setPageSize] = React.useState(initialPageSize);
     const [internalSelectedKeys, setInternalSelectedKeys] = React.useState<Set<string>>(new Set());
+    const [collapsedGroups, setCollapsedGroups] = React.useState<Set<string>>(new Set());
 
     const selected = selectedKeys ?? internalSelectedKeys;
     const setSelected = onSelectionChange ?? setInternalSelectedKeys;
@@ -228,13 +236,17 @@ export function DataTable<T extends object>({
             <th
                 key={column.id}
                 className={cn(
-                    "px-4 py-3 text-left text-xs font-semibold text-muted-foreground",
+                    "text-left text-xs font-semibold text-muted-foreground",
                     column.sticky && "sticky left-0 bg-background z-10",
                     column.align === "center" && "text-center",
                     column.align === "right" && "text-right",
                     canSort && "cursor-pointer select-none hover:text-foreground transition-colors"
                 )}
-                style={{ width: column.width, minWidth: column.minWidth }}
+                style={{
+                    width: column.width,
+                    minWidth: column.minWidth,
+                    padding: "var(--density-table-py) var(--density-table-px)",
+                }}
                 onClick={canSort ? () => handleSort(column.id) : undefined}
                 aria-sort={
                     isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : undefined
@@ -303,13 +315,15 @@ export function DataTable<T extends object>({
                                     className="pl-9 h-9"
                                 />
                                 {search && (
-                                    <button
-                                        onClick={() => setSearch("")}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                        aria-label="Clear search"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
+                                    <Tooltip content="Clear search" side="bottom">
+                                        <button
+                                            onClick={() => setSearch("")}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            aria-label="Clear search"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </Tooltip>
                                 )}
                             </div>
                         )}
@@ -331,7 +345,12 @@ export function DataTable<T extends object>({
             {/* Table */}
             <div className="rounded-lg border border-border overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full" role="table" aria-label={caption ?? "Data table"}>
+                    <table
+                        className="w-full"
+                        role="table"
+                        aria-label={caption ?? "Data table"}
+                        style={{ fontSize: "var(--density-table-font)" }}
+                    >
                         {caption && <caption className="sr-only">{caption}</caption>}
                         <thead
                             className={cn(
@@ -341,7 +360,13 @@ export function DataTable<T extends object>({
                         >
                             <tr>
                                 {selectable && (
-                                    <th className="w-12 px-4 py-3">
+                                    <th
+                                        className="w-12"
+                                        style={{
+                                            padding:
+                                                "var(--density-table-py) var(--density-table-px)",
+                                        }}
+                                    >
                                         <input
                                             type="checkbox"
                                             checked={
@@ -354,7 +379,15 @@ export function DataTable<T extends object>({
                                     </th>
                                 )}
                                 {visibleColumns.map(renderHeaderCell)}
-                                {rowActions && <th className="w-12 px-4 py-3" />}
+                                {rowActions && (
+                                    <th
+                                        className="w-12"
+                                        style={{
+                                            padding:
+                                                "var(--density-table-py) var(--density-table-px)",
+                                        }}
+                                    />
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -391,6 +424,182 @@ export function DataTable<T extends object>({
                                         )}
                                     </td>
                                 </tr>
+                            ) : groupBy ? (
+                                (() => {
+                                    // Group rows by the groupBy key
+                                    const grouped = new Map<string, T[]>();
+                                    for (const row of paginatedData) {
+                                        const gv = String(row[groupBy] ?? "Ungrouped");
+                                        if (!grouped.has(gv)) grouped.set(gv, []);
+                                        grouped.get(gv)!.push(row);
+                                    }
+                                    return Array.from(grouped.entries()).map(
+                                        ([groupValue, groupRows]) => {
+                                            const isCollapsed = collapsedGroups.has(groupValue);
+                                            const displayLabel =
+                                                groupLabels?.[groupValue] ?? groupValue;
+                                            return (
+                                                <React.Fragment key={`group-${groupValue}`}>
+                                                    <tr
+                                                        className="bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                                                        onClick={() => {
+                                                            setCollapsedGroups((prev) => {
+                                                                const next = new Set(prev);
+                                                                if (next.has(groupValue))
+                                                                    next.delete(groupValue);
+                                                                else next.add(groupValue);
+                                                                return next;
+                                                            });
+                                                        }}
+                                                        role="button"
+                                                        aria-expanded={!isCollapsed}
+                                                    >
+                                                        <td
+                                                            colSpan={
+                                                                visibleColumns.length +
+                                                                (selectable ? 1 : 0) +
+                                                                (rowActions ? 1 : 0)
+                                                            }
+                                                            style={{
+                                                                padding:
+                                                                    "var(--density-table-py) var(--density-table-px)",
+                                                            }}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <ChevronDown
+                                                                    className={cn(
+                                                                        "h-4 w-4 transition-transform",
+                                                                        isCollapsed && "-rotate-90"
+                                                                    )}
+                                                                />
+                                                                <span className="text-xs font-semibold">
+                                                                    {displayLabel}
+                                                                </span>
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className="text-[10px] h-4 px-1.5"
+                                                                >
+                                                                    {groupRows.length}
+                                                                </Badge>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {!isCollapsed &&
+                                                        groupRows.map((row, rowIndex) => {
+                                                            const key = String(row[keyField]);
+                                                            const isSelected = selected.has(key);
+                                                            return (
+                                                                <tr
+                                                                    key={key}
+                                                                    className={cn(
+                                                                        "transition-colors",
+                                                                        striped &&
+                                                                            rowIndex % 2 === 1 &&
+                                                                            "bg-muted/30",
+                                                                        hoverable &&
+                                                                            "hover:bg-muted/50",
+                                                                        isSelected &&
+                                                                            "bg-primary/5",
+                                                                        onRowClick &&
+                                                                            "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                                                                    )}
+                                                                    onClick={() =>
+                                                                        onRowClick?.(row)
+                                                                    }
+                                                                    onKeyDown={(e) => {
+                                                                        if (
+                                                                            (e.key === "Enter" ||
+                                                                                e.key === " ") &&
+                                                                            onRowClick
+                                                                        ) {
+                                                                            e.preventDefault();
+                                                                            onRowClick(row);
+                                                                        }
+                                                                    }}
+                                                                    tabIndex={
+                                                                        onRowClick ? 0 : undefined
+                                                                    }
+                                                                    role={
+                                                                        onRowClick
+                                                                            ? "button"
+                                                                            : undefined
+                                                                    }
+                                                                >
+                                                                    {selectable && (
+                                                                        <td
+                                                                            className="w-12"
+                                                                            style={{
+                                                                                padding:
+                                                                                    "var(--density-table-py) var(--density-table-px)",
+                                                                            }}
+                                                                            onClick={(e) =>
+                                                                                e.stopPropagation()
+                                                                            }
+                                                                        >
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={isSelected}
+                                                                                onChange={() =>
+                                                                                    handleSelectRow(
+                                                                                        key
+                                                                                    )
+                                                                                }
+                                                                                className="rounded border-input"
+                                                                            />
+                                                                        </td>
+                                                                    )}
+                                                                    {visibleColumns.map(
+                                                                        (column) => (
+                                                                            <td
+                                                                                key={column.id}
+                                                                                className={cn(
+                                                                                    column.sticky &&
+                                                                                        "sticky left-0 bg-background",
+                                                                                    column.align ===
+                                                                                        "center" &&
+                                                                                        "text-center",
+                                                                                    column.align ===
+                                                                                        "right" &&
+                                                                                        "text-right"
+                                                                                )}
+                                                                                style={{
+                                                                                    width: column.width,
+                                                                                    minWidth:
+                                                                                        column.minWidth,
+                                                                                    padding: compact
+                                                                                        ? `calc(var(--density-table-py) * 0.67) var(--density-table-px)`
+                                                                                        : "var(--density-table-py) var(--density-table-px)",
+                                                                                }}
+                                                                            >
+                                                                                {renderCell(
+                                                                                    row,
+                                                                                    column
+                                                                                )}
+                                                                            </td>
+                                                                        )
+                                                                    )}
+                                                                    {rowActions && (
+                                                                        <td
+                                                                            className="w-12"
+                                                                            style={{
+                                                                                padding:
+                                                                                    "var(--density-table-py) var(--density-table-px)",
+                                                                            }}
+                                                                            onClick={(e) =>
+                                                                                e.stopPropagation()
+                                                                            }
+                                                                        >
+                                                                            {rowActions(row)}
+                                                                        </td>
+                                                                    )}
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                </React.Fragment>
+                                            );
+                                        }
+                                    );
+                                })()
                             ) : (
                                 paginatedData.map((row, rowIndex) => {
                                     const key = String(row[keyField]);
@@ -422,7 +631,11 @@ export function DataTable<T extends object>({
                                         >
                                             {selectable && (
                                                 <td
-                                                    className="w-12 px-4 py-3"
+                                                    className="w-12"
+                                                    style={{
+                                                        padding:
+                                                            "var(--density-table-py) var(--density-table-px)",
+                                                    }}
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <input
@@ -437,7 +650,6 @@ export function DataTable<T extends object>({
                                                 <td
                                                     key={column.id}
                                                     className={cn(
-                                                        compact ? "px-4 py-2" : "px-4 py-3",
                                                         column.sticky &&
                                                             "sticky left-0 bg-background",
                                                         column.align === "center" && "text-center",
@@ -446,6 +658,9 @@ export function DataTable<T extends object>({
                                                     style={{
                                                         width: column.width,
                                                         minWidth: column.minWidth,
+                                                        padding: compact
+                                                            ? `calc(var(--density-table-py) * 0.67) var(--density-table-px)`
+                                                            : "var(--density-table-py) var(--density-table-px)",
                                                     }}
                                                 >
                                                     {renderCell(row, column)}
@@ -453,7 +668,11 @@ export function DataTable<T extends object>({
                                             ))}
                                             {rowActions && (
                                                 <td
-                                                    className="w-12 px-4 py-3"
+                                                    className="w-12"
+                                                    style={{
+                                                        padding:
+                                                            "var(--density-table-py) var(--density-table-px)",
+                                                    }}
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     {rowActions(row)}
@@ -493,46 +712,54 @@ export function DataTable<T extends object>({
                             Page {page + 1} of {totalPages}
                         </span>
                         <div className="flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(0)}
-                                disabled={page === 0}
-                                className="h-8 w-8 p-0"
-                            >
-                                <ChevronsLeft className="h-4 w-4" />
-                                <span className="sr-only">First page</span>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(page - 1)}
-                                disabled={page === 0}
-                                className="h-8 w-8 p-0"
-                                aria-label="Previous page"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(page + 1)}
-                                disabled={page >= totalPages - 1}
-                                className="h-8 w-8 p-0"
-                                aria-label="Next page"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(totalPages - 1)}
-                                disabled={page >= totalPages - 1}
-                                className="h-8 w-8 p-0"
-                                aria-label="Last page"
-                            >
-                                <ChevronsRight className="h-4 w-4" />
-                            </Button>
+                            <Tooltip content="First page" side="top">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(0)}
+                                    disabled={page === 0}
+                                    className="h-8 w-8 p-0"
+                                    aria-label="First page"
+                                >
+                                    <ChevronsLeft className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
+                            <Tooltip content="Previous page" side="top">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(page - 1)}
+                                    disabled={page === 0}
+                                    className="h-8 w-8 p-0"
+                                    aria-label="Previous page"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
+                            <Tooltip content="Next page" side="top">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(page + 1)}
+                                    disabled={page >= totalPages - 1}
+                                    className="h-8 w-8 p-0"
+                                    aria-label="Next page"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
+                            <Tooltip content="Last page" side="top">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(totalPages - 1)}
+                                    disabled={page >= totalPages - 1}
+                                    className="h-8 w-8 p-0"
+                                    aria-label="Last page"
+                                >
+                                    <ChevronsRight className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
                         </div>
                     </div>
                 </div>

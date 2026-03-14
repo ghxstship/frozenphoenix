@@ -246,6 +246,7 @@ export {
     useAcknowledgeMandatoryRead,
     useAddConversationMembers,
     useRemoveConversationMember,
+    useOrgMembers,
 } from "./hooks-messaging";
 
 // ─── Messaging Realtime ───
@@ -423,6 +424,15 @@ export {
     useUpdateProductionBudgetLine,
     useDeleteProductionBudgetLine,
 } from "./hooks-remaining-entities";
+
+// ─── User Certifications ───
+export {
+    useUserCertifications,
+    useCreateUserCertification,
+    useUpdateUserCertification,
+    useDeleteUserCertification,
+} from "./hooks-extended";
+export type { UserCertification } from "./hooks-extended";
 
 // ─── Database Types ───
 export type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./database.types";

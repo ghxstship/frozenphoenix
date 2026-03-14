@@ -20,6 +20,7 @@ export interface PermissionCheckResult {
     userId: string | null;
     role: string | null;
     orgId: string | null;
+    isOwner: boolean;
     error?: string;
 }
 
@@ -42,6 +43,7 @@ export async function checkPermission(
             userId: null,
             role: null,
             orgId: null,
+            isOwner: false,
             error: "Supabase not configured",
         };
     }
@@ -70,6 +72,7 @@ export async function checkPermission(
             userId: null,
             role: null,
             orgId: null,
+            isOwner: false,
             error: "Not authenticated",
         };
     }
@@ -78,10 +81,11 @@ export async function checkPermission(
     const sb = supabase as unknown as ServerClient;
 
     let cached: CachedPermission;
+    let userIsOwner = false;
     try {
         // First fetch membership to get orgId (needed as cache key)
         const { data: membership } = await serverFromTable(sb, "org_memberships")
-            .select("organization_id, role")
+            .select("organization_id, role, is_owner")
             .eq("user_id", user.id)
             .eq("status", "active")
             .eq("is_default_org", true)
@@ -93,12 +97,14 @@ export async function checkPermission(
                 userId: user.id,
                 role: null,
                 orgId: null,
+                isOwner: false,
                 error: "No active org membership",
             };
         }
 
         const userOrgId = membership.organization_id as string;
         const userRole = membership.role as string;
+        userIsOwner = Boolean((membership as Record<string, unknown>).is_owner);
 
         cached = await cachedPermissionCheck(user.id, userOrgId, async () => {
             const { data: grants } = await serverFromTable(sb, "permission_grants")
@@ -127,6 +133,7 @@ export async function checkPermission(
             userId: user.id,
             role: null,
             orgId: null,
+            isOwner: false,
             error: "Permission resolution failed",
         };
     }
@@ -147,7 +154,13 @@ export async function checkPermission(
         if (validRoles.includes(userRole as PermissionLevel)) {
             const allowed = hasStaticPermission(userRole as PermissionLevel, resource, action);
             if (allowed) {
-                return { authorized: true, userId: user.id, role: userRole, orgId };
+                return {
+                    authorized: true,
+                    userId: user.id,
+                    role: userRole,
+                    orgId,
+                    isOwner: userIsOwner,
+                };
             }
         }
         return {
@@ -155,6 +168,7 @@ export async function checkPermission(
             userId: user.id,
             role: userRole,
             orgId,
+            isOwner: userIsOwner,
             error: "No permissions found",
         };
     }
@@ -189,11 +203,12 @@ export async function checkPermission(
             userId: user.id,
             role: userRole,
             orgId,
+            isOwner: userIsOwner,
             error: "Permission denied",
         };
     }
 
-    return { authorized: true, userId: user.id, role: userRole, orgId };
+    return { authorized: true, userId: user.id, role: userRole, orgId, isOwner: userIsOwner };
 }
 
 /**

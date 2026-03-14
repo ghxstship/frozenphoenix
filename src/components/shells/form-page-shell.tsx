@@ -248,7 +248,7 @@ function SectionFieldsGrid({
     }
 
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2" style={{ gap: "var(--density-form-field-gap)" }}>
             {visibleFields.map((field) =>
                 renderField(field, formData[field.id], onChange, errors[field.id])
             )}

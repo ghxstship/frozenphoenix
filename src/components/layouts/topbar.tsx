@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
@@ -38,26 +39,35 @@ import type { PermissionLevel } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {
     AlertTriangle,
+    Award,
     Banknote,
     Briefcase,
     Building2,
     CalendarPlus,
+    Car,
     Check,
     ChevronDown,
     ChevronRight,
     CircleDot,
     ClipboardCheck,
+    ClipboardList,
     ClipboardPlus,
     Command,
+    ContactRound,
+    CreditCard,
     ExternalLink,
     FileSignature,
     FileText,
     FolderPlus,
+    GanttChart,
     Globe,
+    HardHat,
     HelpCircle,
     Keyboard,
+    Layers,
     LifeBuoy,
     LogOut,
+    MapPin,
     Megaphone,
     Menu,
     MessageSquare,
@@ -65,18 +75,24 @@ import {
     Moon,
     MoreHorizontal,
     Package,
+    Palmtree,
     PenTool,
     Plus,
+    Presentation,
     Receipt,
+    Scale,
     ScrollText,
     Search,
     Settings,
     Shield,
+    ShieldCheck,
     ShoppingCart,
     Sparkles,
     Store,
     Sun,
+    SwatchBook,
     Target,
+    Ticket,
     Truck,
     User,
     UserPlus,
@@ -305,10 +321,28 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 href: "/scopes-of-work?action=create",
                 resource: "sow",
             },
+            {
+                label: "New Location",
+                icon: MapPin,
+                href: "/locations?action=create",
+                resource: "locations",
+            },
+            {
+                label: "New Schedule Entry",
+                icon: GanttChart,
+                href: "/scheduling?action=create",
+                resource: "schedule",
+            },
+            {
+                label: "New Scenario",
+                icon: Target,
+                href: "/scenarios?action=create",
+                resource: "scenarios",
+            },
         ],
     },
     {
-        label: "Sales & CRM",
+        label: "Business",
         actions: [
             { label: "New Deal", icon: Briefcase, href: "/pipeline/new", resource: "deals" },
             { label: "New Lead", icon: UserPlus, href: "/leads?action=create", resource: "leads" },
@@ -319,9 +353,15 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 resource: "opportunities",
             },
             {
-                label: "New Contact",
+                label: "New Company",
                 icon: Building2,
                 href: "/companies?action=create",
+                resource: "accounts",
+            },
+            {
+                label: "New Contact",
+                icon: ContactRound,
+                href: "/contacts?action=create",
                 resource: "people",
             },
             {
@@ -333,9 +373,39 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
         ],
     },
     {
+        label: "People",
+        actions: [
+            { label: "New Crew Member", icon: HardHat, href: "/crew/new", resource: "crew" },
+            {
+                label: "New Certification",
+                icon: Award,
+                href: "/certifications?action=create",
+                resource: "certifications",
+            },
+            {
+                label: "New Time Off Request",
+                icon: Palmtree,
+                href: "/time-off?action=create",
+                resource: "time_off",
+            },
+            {
+                label: "New Resource Booking",
+                icon: ClipboardList,
+                href: "/resource-planner?action=create",
+                resource: "resource_planner",
+            },
+        ],
+    },
+    {
         label: "Finance",
         actions: [
             { label: "New Invoice", icon: Banknote, href: "/invoices/new", resource: "invoices" },
+            {
+                label: "New Client Invoice",
+                icon: CreditCard,
+                href: "/client-invoices?action=create",
+                resource: "client_invoices",
+            },
             {
                 label: "New Expense",
                 icon: Receipt,
@@ -364,7 +434,7 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 label: "New Purchase Order",
                 icon: Package,
                 href: "/purchase-orders?action=create",
-                resource: "purchase_orders",
+                resource: "procurement",
             },
         ],
     },
@@ -393,12 +463,31 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 label: "New Document",
                 icon: FileText,
                 href: "/documents?action=create",
-                resource: "vault_documents",
+                resource: "documents",
+            },
+            { label: "New Deck", icon: Layers, href: "/decks?action=create", resource: "decks" },
+            {
+                label: "New Brand Guideline",
+                icon: SwatchBook,
+                href: "/brand-guidelines?action=create",
+                resource: "brand_guidelines",
+            },
+            {
+                label: "New Brand Kit",
+                icon: Presentation,
+                href: "/brand-kit?action=create",
+                resource: "brand",
+            },
+            {
+                label: "New Call Sheet",
+                icon: ClipboardCheck,
+                href: "/call-sheets?action=create",
+                resource: "call_sheets",
             },
         ],
     },
     {
-        label: "Vendor & Operations",
+        label: "Vendors & Operations",
         actions: [
             { label: "New Vendor", icon: Store, href: "/vendors/new", resource: "vendors" },
             {
@@ -425,10 +514,16 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 href: "/approvals?action=create",
                 resource: "approvals",
             },
+            {
+                label: "New Dispatch",
+                icon: Car,
+                href: "/dispatch?action=create",
+                resource: "dispatch",
+            },
         ],
     },
     {
-        label: "Assets & Logistics",
+        label: "Resources & Logistics",
         actions: [
             { label: "New Asset", icon: Package, href: "/assets/new", resource: "assets" },
             {
@@ -436,6 +531,41 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
                 icon: Truck,
                 href: "/shipments?action=create",
                 resource: "shipments",
+            },
+            {
+                label: "New Warehouse",
+                icon: Store,
+                href: "/warehouses?action=create",
+                resource: "warehouses",
+            },
+        ],
+    },
+    {
+        label: "Legal & Compliance",
+        actions: [
+            {
+                label: "New Permit",
+                icon: Scale,
+                href: "/permits?action=create",
+                resource: "permits",
+            },
+            {
+                label: "New Insurance Policy",
+                icon: Ticket,
+                href: "/insurance?action=create",
+                resource: "insurance_policies",
+            },
+            {
+                label: "New Compliance Checklist",
+                icon: ShieldCheck,
+                href: "/compliance-checklists?action=create",
+                resource: "compliance_checklists",
+            },
+            {
+                label: "New Checklist",
+                icon: ClipboardList,
+                href: "/checklists?action=create",
+                resource: "checklists",
             },
         ],
     },
@@ -657,8 +787,19 @@ function UserMenu() {
                     )}
                     aria-label="User menu"
                 >
-                    <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center ring-2 ring-background shrink-0">
-                        {initials}
+                    <div className="relative h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center ring-2 ring-background shrink-0 overflow-hidden">
+                        {(profile as Record<string, unknown>)?.avatar_url ? (
+                            <Image
+                                src={(profile as Record<string, unknown>).avatar_url as string}
+                                alt={displayName}
+                                fill
+                                sizes="28px"
+                                className="object-cover"
+                                unoptimized
+                            />
+                        ) : (
+                            initials
+                        )}
                     </div>
                     <span className="hidden lg:block text-sm font-medium text-foreground max-w-[120px] truncate">
                         {displayName}

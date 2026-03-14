@@ -85,6 +85,25 @@ export const STAKEHOLDERS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "cards", "chart"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "organization",
+        statusKey: "influence_level",
+        fields: [
+            {
+                id: "stakeholder_type",
+                label: "Type",
+                accessorKey: "stakeholder_type",
+                fieldType: "status",
+            },
+        ],
+    },
+    chartConfig: {
+        type: "pie",
+        categoryKey: "stakeholder_type",
+    },
 };
 
 // ─── work_package ───
@@ -102,6 +121,22 @@ export const WORK_PACKAGES_PAGE: ListPageConfig = {
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "cards"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "due_date",
+    },
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "description",
+        statusKey: "status",
+        fields: [
+            { id: "budget", label: "Budget", accessorKey: "budget", fieldType: "currency" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+        ],
+    },
 };
 
 // ─── milestone ───
@@ -119,6 +154,18 @@ export const MILESTONES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "completion_percent", header: "Progress", accessorKey: "completion_percent" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "project_name",
+    },
+    calendarConfig: {
+        titleKey: "name",
+        dateKey: "due_date",
+        colorKey: "status",
+    },
 };
 
 // ─── project_assignment ───
@@ -136,6 +183,22 @@ export const PROJECT_ASSIGNMENTS_PAGE: ListPageConfig = {
         { id: "assigned_at", header: "Assigned", accessorKey: "assigned_at", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "board", "cards"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "member_name",
+        cardSubtitleKey: "project_name",
+    },
+    cardConfig: {
+        titleKey: "member_name",
+        subtitleKey: "project_name",
+        statusKey: "status",
+        fields: [
+            { id: "role", label: "Role", accessorKey: "role", fieldType: "status" },
+            { id: "assigned_at", label: "Assigned", accessorKey: "assigned_at", fieldType: "date" },
+        ],
+    },
 };
 
 // ─── stakeholder_project ───

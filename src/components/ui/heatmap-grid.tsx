@@ -3,6 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TruncatedText } from "@/components/ui/truncated-text";
 
 interface HeatmapRow {
     id: string;
@@ -80,7 +82,11 @@ export function HeatmapGrid({
 }: HeatmapGridProps) {
     return (
         <div className={cn("overflow-x-auto", className)}>
-            <table className="w-full min-w-[700px]" role="grid" aria-label={`${colorScale === "heat" ? "Heat" : colorScale === "divergent" ? "Divergent" : "Utilization"} heatmap`}>
+            <table
+                className="w-full min-w-[700px]"
+                role="grid"
+                aria-label={`${colorScale === "heat" ? "Heat" : colorScale === "divergent" ? "Divergent" : "Utilization"} heatmap`}
+            >
                 <thead>
                     <tr className="border-b border-border">
                         <th className="text-left p-3 text-xs font-semibold text-muted-foreground w-48 sticky left-0 bg-background z-10">
@@ -114,11 +120,16 @@ export function HeatmapGrid({
                                         />
                                     )}
                                     <div className="min-w-0">
-                                        <p className="text-xs font-medium truncate">{row.label}</p>
+                                        <TruncatedText as="p" className="text-xs font-medium">
+                                            {row.label}
+                                        </TruncatedText>
                                         {row.sublabel && (
-                                            <p className="text-[10px] text-muted-foreground truncate">
+                                            <TruncatedText
+                                                as="p"
+                                                className="text-[10px] text-muted-foreground"
+                                            >
                                                 {row.sublabel}
-                                            </p>
+                                            </TruncatedText>
                                         )}
                                     </div>
                                 </div>
@@ -127,25 +138,35 @@ export function HeatmapGrid({
                                 const colorClass = getColor(cell.value, maxValue, colorScale);
                                 return (
                                     <td key={colIdx} className="p-1">
-                                        <button
-                                            type="button"
-                                            className={cn(
-                                                "w-full h-10 rounded-md flex items-center justify-center text-[10px] font-medium tabular-nums transition-colors",
-                                                colorClass,
-                                                onCellClick &&
-                                                    "cursor-pointer hover:ring-2 hover:ring-primary/30",
-                                                !onCellClick && "cursor-default"
-                                            )}
-                                            title={cell.tooltip ?? `${row.label}: ${cell.value}`}
-                                            aria-label={
+                                        <Tooltip
+                                            content={
                                                 cell.tooltip ??
                                                 `${row.label}, ${columnLabels[colIdx]}: ${cell.value}`
                                             }
-                                            onClick={() => onCellClick?.(row.id, colIdx)}
-                                            tabIndex={onCellClick ? 0 : -1}
+                                            side="top"
+                                            delayDuration={150}
                                         >
-                                            {cell.value > 0 ? formatValue(cell.value) : emptyLabel}
-                                        </button>
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    "w-full h-10 rounded-md flex items-center justify-center text-[10px] font-medium tabular-nums transition-colors",
+                                                    colorClass,
+                                                    onCellClick &&
+                                                        "cursor-pointer hover:ring-2 hover:ring-primary/30",
+                                                    !onCellClick && "cursor-default"
+                                                )}
+                                                aria-label={
+                                                    cell.tooltip ??
+                                                    `${row.label}, ${columnLabels[colIdx]}: ${cell.value}`
+                                                }
+                                                onClick={() => onCellClick?.(row.id, colIdx)}
+                                                tabIndex={onCellClick ? 0 : -1}
+                                            >
+                                                {cell.value > 0
+                                                    ? formatValue(cell.value)
+                                                    : emptyLabel}
+                                            </button>
+                                        </Tooltip>
                                     </td>
                                 );
                             })}

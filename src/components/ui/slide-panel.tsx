@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { SPRING_PRESETS } from "@/config/design-tokens";
 import { useFocusTrap } from "@/hooks/use-accessibility";
+import { Tooltip } from "@/components/ui/tooltip";
 import { X } from "lucide-react";
 
 interface SlidePanelProps {
@@ -44,7 +45,7 @@ export function SlidePanel({
             {open && (
                 <>
                     <motion.div
-                        className="fixed inset-0 z-[100] bg-foreground/50 backdrop-blur-sm"
+                        className="fixed inset-0 z-[100] glass-overlay backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -55,7 +56,9 @@ export function SlidePanel({
                     <motion.div
                         ref={focusTrapRef as React.Ref<HTMLDivElement>}
                         className={cn(
-                            "fixed top-0 bottom-0 z-[101] w-full bg-background border-border shadow-2xl flex flex-col",
+                            "fixed top-0 bottom-0 z-[101] w-full flex flex-col",
+                            "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150",
+                            "border-[var(--glass-surface-border)] glass-noise glass-edge-glow",
                             side === "right" ? "right-0 border-l" : "left-0 border-r",
                             width,
                             className
@@ -71,13 +74,15 @@ export function SlidePanel({
                         {title && (
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                                 <h2 className="text-base font-semibold">{title}</h2>
-                                <button
-                                    onClick={onClose}
-                                    className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                                    aria-label="Close panel"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
+                                <Tooltip content="Close panel" side="bottom">
+                                    <button
+                                        onClick={onClose}
+                                        className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                        aria-label="Close panel"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </Tooltip>
                             </div>
                         )}
                         <div className="flex-1 overflow-y-auto p-6">{children}</div>

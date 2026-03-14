@@ -10,23 +10,13 @@ interface ResponsiveContainerProps {
 
 /**
  * Responsive Container
- * 
+ *
  * Provides consistent padding and max-width across breakpoints.
  * Uses logical properties for RTL support.
  */
-export function ResponsiveContainer({
-    children,
-    className,
-}: ResponsiveContainerProps) {
+export function ResponsiveContainer({ children, className }: ResponsiveContainerProps) {
     return (
-        <div
-            className={cn(
-                "w-full mx-auto",
-                "px-4 sm:px-6 lg:px-8",
-                "max-w-[1400px]",
-                className
-            )}
-        >
+        <div className={cn("w-full mx-auto", "px-4 sm:px-6 lg:px-8", "max-w-[1400px]", className)}>
             {children}
         </div>
     );
@@ -47,7 +37,7 @@ interface ResponsiveGridProps {
 
 /**
  * Responsive Grid
- * 
+ *
  * Provides a responsive CSS grid with configurable columns per breakpoint.
  */
 export function ResponsiveGrid({
@@ -62,19 +52,58 @@ export function ResponsiveGrid({
         lg: "gap-4 sm:gap-6 lg:gap-8",
     };
 
-    const colClasses = [
-        cols.default === 1 ? "grid-cols-1" : `grid-cols-${cols.default}`,
-        cols.sm ? `sm:grid-cols-${cols.sm}` : "",
-        cols.md ? `md:grid-cols-${cols.md}` : "",
-        cols.lg ? `lg:grid-cols-${cols.lg}` : "",
-        cols.xl ? `xl:grid-cols-${cols.xl}` : "",
-    ].filter(Boolean).join(" ");
+    const gridColMap: Record<number, string> = {
+        1: "grid-cols-1",
+        2: "grid-cols-2",
+        3: "grid-cols-3",
+        4: "grid-cols-4",
+        5: "grid-cols-5",
+        6: "grid-cols-6",
+    };
+    const smGridColMap: Record<number, string> = {
+        1: "sm:grid-cols-1",
+        2: "sm:grid-cols-2",
+        3: "sm:grid-cols-3",
+        4: "sm:grid-cols-4",
+        5: "sm:grid-cols-5",
+        6: "sm:grid-cols-6",
+    };
+    const mdGridColMap: Record<number, string> = {
+        1: "md:grid-cols-1",
+        2: "md:grid-cols-2",
+        3: "md:grid-cols-3",
+        4: "md:grid-cols-4",
+        5: "md:grid-cols-5",
+        6: "md:grid-cols-6",
+    };
+    const lgGridColMap: Record<number, string> = {
+        1: "lg:grid-cols-1",
+        2: "lg:grid-cols-2",
+        3: "lg:grid-cols-3",
+        4: "lg:grid-cols-4",
+        5: "lg:grid-cols-5",
+        6: "lg:grid-cols-6",
+    };
+    const xlGridColMap: Record<number, string> = {
+        1: "xl:grid-cols-1",
+        2: "xl:grid-cols-2",
+        3: "xl:grid-cols-3",
+        4: "xl:grid-cols-4",
+        5: "xl:grid-cols-5",
+        6: "xl:grid-cols-6",
+    };
 
-    return (
-        <div className={cn("grid", colClasses, gapClasses[gap], className)}>
-            {children}
-        </div>
-    );
+    const colClasses = [
+        gridColMap[cols.default ?? 1] ?? "grid-cols-1",
+        cols.sm ? (smGridColMap[cols.sm] ?? "") : "",
+        cols.md ? (mdGridColMap[cols.md] ?? "") : "",
+        cols.lg ? (lgGridColMap[cols.lg] ?? "") : "",
+        cols.xl ? (xlGridColMap[cols.xl] ?? "") : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    return <div className={cn("grid", colClasses, gapClasses[gap], className)}>{children}</div>;
 }
 
 interface ResponsiveStackProps {
@@ -87,7 +116,7 @@ interface ResponsiveStackProps {
 
 /**
  * Responsive Stack
- * 
+ *
  * Flexbox container that stacks vertically on mobile and horizontally on desktop.
  */
 export function ResponsiveStack({
@@ -112,8 +141,8 @@ export function ResponsiveStack({
                         ? "flex-col-reverse sm:flex-row"
                         : "flex-col sm:flex-row"
                     : reverseOnMobile
-                        ? "flex-row sm:flex-col"
-                        : "flex-col",
+                      ? "flex-row sm:flex-col"
+                      : "flex-col",
                 gapClasses[gap],
                 className
             )}
@@ -131,7 +160,7 @@ interface HideOnProps {
 
 /**
  * Hide On Breakpoint
- * 
+ *
  * Conditionally hides content at specific breakpoints.
  */
 export function HideOn({ children, breakpoint, above = false }: HideOnProps) {
@@ -148,7 +177,7 @@ export function HideOn({ children, breakpoint, above = false }: HideOnProps) {
 
 /**
  * Show On Breakpoint
- * 
+ *
  * Conditionally shows content at specific breakpoints.
  */
 export function ShowOn({ children, breakpoint, above = false }: HideOnProps) {

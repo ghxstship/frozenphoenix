@@ -410,64 +410,75 @@ function CampaignsContent({
                 ))}
 
             {/* Kanban View */}
-            {view === "kanban" && (
-                <div className="flex gap-4 overflow-x-auto pb-4">
-                    {STATUS_ORDER.filter((s) => s !== "archived").map((status) => {
-                        const statusCampaigns = filtered.filter((c) => c.status === status);
-                        return (
-                            <div key={status} className="flex-shrink-0 w-72">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <Badge
-                                            variant={getStatusVariant(status) as "default"}
-                                            className="text-[9px]"
-                                        >
-                                            {getStatusLabel(status)}
-                                        </Badge>
-                                        <span className="text-xs text-muted-foreground">
-                                            {statusCampaigns.length}
-                                        </span>
+            {view === "kanban" &&
+                (filtered.length === 0 ? (
+                    <EmptyState
+                        icon={Megaphone}
+                        title="No campaigns found"
+                        description={
+                            search
+                                ? "Try adjusting your search or filters"
+                                : "Create your first campaign"
+                        }
+                    />
+                ) : (
+                    <div className="flex gap-4 overflow-x-auto pb-4">
+                        {STATUS_ORDER.filter((s) => s !== "archived").map((status) => {
+                            const statusCampaigns = filtered.filter((c) => c.status === status);
+                            return (
+                                <div key={status} className="flex-shrink-0 w-72">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Badge
+                                                variant={getStatusVariant(status) as "default"}
+                                                className="text-[9px]"
+                                            >
+                                                {getStatusLabel(status)}
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {statusCampaigns.length}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {statusCampaigns.map((c) => (
+                                            <Card
+                                                key={c.id}
+                                                className="hover:border-primary/30 transition-colors cursor-pointer"
+                                            >
+                                                <CardContent className="pt-3 pb-3">
+                                                    <p className="text-xs font-semibold truncate">
+                                                        {c.name}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                        {formatCurrency(c.total_budget)}
+                                                    </p>
+                                                    <div className="flex gap-1 mt-2 flex-wrap">
+                                                        {c.tags.slice(0, 2).map((tag) => (
+                                                            <span
+                                                                key={tag}
+                                                                className="text-[8px] px-1.5 py-0.5 rounded-full bg-secondary/50"
+                                                            >
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                        {statusCampaigns.length === 0 && (
+                                            <div className="p-4 border border-dashed border-border rounded-lg text-center">
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    No campaigns
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    {statusCampaigns.map((c) => (
-                                        <Card
-                                            key={c.id}
-                                            className="hover:border-primary/30 transition-colors cursor-pointer"
-                                        >
-                                            <CardContent className="pt-3 pb-3">
-                                                <p className="text-xs font-semibold truncate">
-                                                    {c.name}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                    {formatCurrency(c.total_budget)}
-                                                </p>
-                                                <div className="flex gap-1 mt-2 flex-wrap">
-                                                    {c.tags.slice(0, 2).map((tag) => (
-                                                        <span
-                                                            key={tag}
-                                                            className="text-[8px] px-1.5 py-0.5 rounded-full bg-secondary/50"
-                                                        >
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                    {statusCampaigns.length === 0 && (
-                                        <div className="p-4 border border-dashed border-border rounded-lg text-center">
-                                            <p className="text-[10px] text-muted-foreground">
-                                                No campaigns
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                ))}
         </>
     );
 }

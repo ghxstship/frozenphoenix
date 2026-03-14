@@ -149,34 +149,61 @@ export const PRODUCTION_CHECKLISTS_PAGE: ListPageConfig = {
 
 export const PRODUCTION_EXPENSES_PAGE: ListPageConfig = {
     entityKey: "production_expense",
-    description: "Track production-specific expenses and cost overruns",
+    description: "Track expenses incurred during production runs",
     icon: DollarSign,
     createConfig: CREATE_PRODUCTION_EXPENSE_CONFIG,
     searchKeys: ["description", "category"],
     columns: [
-        { id: "description", header: "Expense", accessorKey: "description" },
+        { id: "description", header: "Description", accessorKey: "description" },
         { id: "category", header: "Category", accessorKey: "category", fieldType: "status" },
         { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "expense_date", header: "Date", accessorKey: "expense_date", fieldType: "date" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "category",
+        valueKey: "amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── production_run ───
 
 export const PRODUCTION_RUNS_PAGE: ListPageConfig = {
     entityKey: "production_run",
-    description: "Manage production run schedules, progress, and outcomes",
+    description: "Active production runs and event execution timelines",
     icon: Play,
     createConfig: CREATE_PRODUCTION_RUN_CONFIG,
     searchKeys: ["name", "description"],
     columns: [
         { id: "name", header: "Run", accessorKey: "name" },
-        { id: "run_type", header: "Type", accessorKey: "run_type", fieldType: "status" },
+        {
+            id: "production_type",
+            header: "Type",
+            accessorKey: "production_type",
+            fieldType: "status",
+        },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
     ],
+    views: ["table", "board", "timeline"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "production_type",
+    },
+    timelineConfig: {
+        labelKey: "name",
+        sublabelKey: "production_type",
+        startDateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "status",
+    },
 };
 
 // ─── production_sop ───
@@ -227,6 +254,22 @@ export const SPACE_BOOKINGS_PAGE: ListPageConfig = {
         { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
     ],
+    views: ["table", "calendar", "timeline"],
+    defaultView: "table",
+    calendarConfig: {
+        titleKey: "space_name",
+        dateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "status",
+    },
+    timelineConfig: {
+        labelKey: "space_name",
+        sublabelKey: "event_name",
+        startDateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "status",
+        groupByKey: "space_name",
+    },
 };
 
 // ─── strike_sequence ───
@@ -379,12 +422,12 @@ export const PRODUCTION_ADVANCE_ITEMS_PAGE: ListPageConfig = {
 
 export const PRODUCTION_BUDGET_LINES_PAGE: ListPageConfig = {
     entityKey: "production_budget_line",
-    description: "Budget line items for production budgets",
+    description: "Line items within production budgets",
     icon: Calculator,
     createConfig: CREATE_PRODUCTION_BUDGET_LINE_CONFIG,
     searchKeys: ["description", "category"],
     columns: [
-        { id: "description", header: "Line Item", accessorKey: "description" },
+        { id: "description", header: "Description", accessorKey: "description" },
         { id: "category", header: "Category", accessorKey: "category", fieldType: "status" },
         {
             id: "budgeted_amount",
@@ -400,30 +443,53 @@ export const PRODUCTION_BUDGET_LINES_PAGE: ListPageConfig = {
         },
         { id: "variance", header: "Variance", accessorKey: "variance", fieldType: "currency" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "category",
+        valueKey: "budgeted_amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── production_milestone ───
 
 export const PRODUCTION_MILESTONES_PAGE: ListPageConfig = {
     entityKey: "production_milestone",
-    description: "Milestones within production timelines",
+    description: "Key milestones within production runs",
     icon: Milestone,
     createConfig: CREATE_PRODUCTION_MILESTONE_CONFIG,
-    searchKeys: ["name", "production_name"],
+    searchKeys: ["name", "production_run_name"],
     columns: [
         { id: "name", header: "Milestone", accessorKey: "name" },
-        { id: "production_name", header: "Production", accessorKey: "production_name" },
+        {
+            id: "production_run_name",
+            header: "Production",
+            accessorKey: "production_run_name",
+        },
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "production_run_name",
+    },
+    calendarConfig: {
+        titleKey: "name",
+        dateKey: "due_date",
+        colorKey: "status",
+    },
 };
 
 // ─── production_task ───
 
 export const PRODUCTION_TASKS_PAGE: ListPageConfig = {
     entityKey: "production_task",
-    description: "Tasks within production workflows",
+    description: "Individual tasks within production runs and event preparations",
     icon: ListChecks,
     createConfig: CREATE_PRODUCTION_TASK_CONFIG,
     searchKeys: ["title", "assignee_name"],
@@ -434,6 +500,18 @@ export const PRODUCTION_TASKS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "assignee_name",
+    },
+    calendarConfig: {
+        titleKey: "title",
+        dateKey: "due_date",
+        colorKey: "priority",
+    },
 };
 
 // ─── production_time_entry ───
@@ -443,31 +521,45 @@ export const PRODUCTION_TIME_ENTRIES_PAGE: ListPageConfig = {
     description: "Time entries logged against production tasks",
     icon: Timer,
     createConfig: CREATE_TIME_ENTRY_CONFIG,
-    searchKeys: ["description", "worker_name"],
+    searchKeys: ["worker_name", "task_name"],
     columns: [
-        { id: "description", header: "Entry", accessorKey: "description" },
         { id: "worker_name", header: "Worker", accessorKey: "worker_name" },
-        { id: "hours", header: "Hours", accessorKey: "hours" },
         { id: "task_name", header: "Task", accessorKey: "task_name" },
+        { id: "hours", header: "Hours", accessorKey: "hours" },
         { id: "entry_date", header: "Date", accessorKey: "entry_date", fieldType: "date" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "calendar"],
+    defaultView: "table",
+    calendarConfig: {
+        titleKey: "worker_name",
+        dateKey: "entry_date",
+        colorKey: "status",
+    },
 };
 
 // ─── readiness_gate ───
 
 export const READINESS_GATES_PAGE: ListPageConfig = {
     entityKey: "readiness_gate",
-    description: "Production readiness gates and go/no-go checkpoints",
+    description: "Go/no-go readiness gates for production launches",
     icon: ShieldAlert,
     createConfig: CREATE_READINESS_GATE_CONFIG,
-    searchKeys: ["name", "gate_type"],
+    searchKeys: ["name", "description"],
     columns: [
         { id: "name", header: "Gate", accessorKey: "name" },
         { id: "gate_type", header: "Type", accessorKey: "gate_type", fieldType: "status" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
+        { id: "approved_at", header: "Approved", accessorKey: "approved_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "gate_type",
+    },
 };
 
 // ─── ros_cue ───

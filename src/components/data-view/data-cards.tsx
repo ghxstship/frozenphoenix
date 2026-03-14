@@ -8,6 +8,7 @@ import * as React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import { ProgressField } from "./field-renderers";
 
@@ -127,6 +128,7 @@ export function DataCards<T extends Record<string, unknown>>({
             className={cn("grid", gridCols[columns], gapClasses[gap], className)}
             role="list"
             aria-label="Data cards"
+            style={{ gap: "var(--density-card-gap)" }}
         >
             {data.map((row) => {
                 const key = String(row[keyField]);
@@ -173,13 +175,18 @@ export function DataCards<T extends Record<string, unknown>>({
                         <CardHeader className="pb-2">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-base font-semibold leading-tight line-clamp-2">
-                                        {String(titleValue)}
+                                    <CardTitle className="text-base font-semibold leading-tight">
+                                        <TruncatedText maxLines={2}>
+                                            {String(titleValue)}
+                                        </TruncatedText>
                                     </CardTitle>
                                     {subtitleValue && (
-                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                        <TruncatedText
+                                            as="p"
+                                            className="text-sm text-muted-foreground mt-1"
+                                        >
                                             {String(subtitleValue)}
-                                        </p>
+                                        </TruncatedText>
                                     )}
                                 </div>
                                 {badgeValue && <div className="flex-shrink-0">{badgeValue}</div>}

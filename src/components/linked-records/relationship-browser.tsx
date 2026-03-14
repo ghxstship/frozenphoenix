@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ENTITY_RELATIONSHIP_MAP } from "@/config/production-config";
 import type { EntityType, LinkedRecord } from "@/types/production";
 import { ChevronRight, ExternalLink, Plus } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface RelationshipGroup {
     entityType: EntityType;
@@ -169,16 +170,18 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                     </Badge>
                 </div>
                 {group.canCreate && group.createHref && (
-                    <Link href={group.createHref}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5"
-                            aria-label="Create new record"
-                        >
-                            <Plus className="h-3 w-3" />
-                        </Button>
-                    </Link>
+                    <Tooltip content="Create new record" side="left">
+                        <Link href={group.createHref}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5"
+                                aria-label="Create new record"
+                            >
+                                <Plus className="h-3 w-3" />
+                            </Button>
+                        </Link>
+                    </Tooltip>
                 )}
             </div>
 

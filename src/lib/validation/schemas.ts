@@ -294,6 +294,7 @@ export const organizationCreateSchema = z.object({
     industry: z.string().max(100).optional(),
     timezone: z.string().max(50).optional(),
     currency: z.string().length(3, "Currency must be a 3-letter code").optional(),
+    role: z.enum(["exec", "director", "pm", "member"]).default("pm"),
 });
 
 // ─── Usernames ───

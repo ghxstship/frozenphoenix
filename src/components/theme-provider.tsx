@@ -370,7 +370,60 @@ function mergeTokens(...layers: (ThemeTokens | null | undefined)[]): ThemeTokens
     return merged;
 }
 
+// ─── View Transition Helper ───
+// Uses the View Transition API for a smooth crossfade screenshot overlay
+// instead of transitioning every CSS property on every DOM element.
+// Falls back to instant swap when API unavailable or motion is reduced.
+
+let isFirstPaint = true;
+
+function applyThemeWithTransition(applyFn: () => void) {
+    // Skip transition on initial hydration
+    if (isFirstPaint) {
+        isFirstPaint = false;
+        applyFn();
+        return;
+    }
+
+    // Respect reduced motion at OS level and app level
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animationOff = document.documentElement.getAttribute("data-animation") === "off";
+    if (reducedMotion || animationOff) {
+        applyFn();
+        return;
+    }
+
+    // View Transition API: composites a screenshot crossfade — single texture swap,
+    // no per-element style recalculation, no layout thrashing
+    if (document.startViewTransition) {
+        const transition = document.startViewTransition(applyFn);
+        transition.finished.catch(() => {
+            // Swallow abort errors (rapid toggles)
+        });
+    } else {
+        // Fallback: add targeted transition class on color-bearing elements only
+        const html = document.documentElement;
+        html.classList.add("theme-transition");
+        applyFn();
+        // Remove after transition settles
+        const timer = setTimeout(() => html.classList.remove("theme-transition"), 350);
+        // Allow GC if component unmounts mid-transition
+        return () => clearTimeout(timer);
+    }
+}
+
 // ─── Theme Provider Component ───
+
+function accentTint(hsl: string, resolvedMode: "light" | "dark"): string {
+    // Extract H S L from "220 70% 50%" format
+    const match = hsl.match(/(\d+)\s+(\d+)%\s+(\d+)%/);
+    if (!match) return hsl;
+    const [, h, s] = match;
+    // Light mode: very light tint; Dark mode: low-lightness tint
+    return resolvedMode === "light"
+        ? `${h} ${Math.min(Number(s), 30)}% 95%`
+        : `${h} ${Math.min(Number(s), 40)}% 16%`;
+}
 
 function applyAccentToDOM(accent: AccentColor, resolvedMode: "light" | "dark") {
     const root = document.documentElement;
@@ -382,6 +435,8 @@ function applyAccentToDOM(accent: AccentColor, resolvedMode: "light" | "dark") {
         root.style.removeProperty("--ring");
         root.style.removeProperty("--sidebar-primary");
         root.style.removeProperty("--sidebar-ring");
+        root.style.removeProperty("--accent");
+        root.style.removeProperty("--accent-foreground");
     } else {
         // Dark mode: lighten the accent slightly for better contrast
         const hsl =
@@ -393,6 +448,13 @@ function applyAccentToDOM(accent: AccentColor, resolvedMode: "light" | "dark") {
         root.style.setProperty("--ring", hsl);
         root.style.setProperty("--sidebar-primary", hsl);
         root.style.setProperty("--sidebar-ring", hsl);
+
+        // Accent token: subtle tint of the chosen color for hover/cursor highlights
+        root.style.setProperty("--accent", accentTint(preset.hsl, resolvedMode));
+        root.style.setProperty(
+            "--accent-foreground",
+            resolvedMode === "dark" ? "220 14% 96%" : "220 30% 10%"
+        );
     }
 }
 
@@ -460,67 +522,68 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Apply theme to DOM — runs only when input values change (not resolvedMode)
     useEffect(() => {
-        const html = document.documentElement;
+        const applyAll = () => {
+            const html = document.documentElement;
 
-        // Enable smooth theme transition (except on first paint)
-        html.classList.add("theme-transition");
-        const transitionTimer = setTimeout(() => html.classList.remove("theme-transition"), 300);
-
-        // Resolve color mode
-        let resolved: "light" | "dark" = "dark";
-        if (colorMode === "system") {
-            resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        } else {
-            resolved = colorMode;
-        }
-        setResolvedMode(resolved);
-
-        // Apply color mode class
-        html.classList.remove("light", "dark");
-        html.classList.add(resolved);
-
-        // Persist resolved mode as cookie for potential SSR usage
-        document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
-
-        // Apply brand attribute
-        if (brandId !== "playbook") {
-            html.setAttribute("data-brand", brandId);
-        } else {
-            html.removeAttribute("data-brand");
-        }
-
-        // Apply cascading token overrides: brand → org → project → user
-        clearCustomTokensFromDOM();
-
-        // Inject brand palette as base layer
-        let brandTokens: ThemeTokens | null = null;
-        try {
-            const brand = getBrand(brandId as BrandId);
-            if (brand && brandId !== "playbook") {
-                brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+            // Resolve color mode
+            let resolved: "light" | "dark" = "dark";
+            if (colorMode === "system") {
+                resolved = window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light";
+            } else {
+                resolved = colorMode;
             }
-        } catch {
-            // Brand not found — use platform defaults
-        }
+            setResolvedMode(resolved);
 
-        const merged = mergeTokens(brandTokens, orgTokens, projectTokens, userTokens);
-        if (Object.keys(merged).length > 0) {
-            applyTokensToDOM(merged);
-        }
+            // Apply color mode class
+            html.classList.remove("light", "dark");
+            html.classList.add(resolved);
 
-        // Apply accent color (after token merge so accent overrides brand primary)
-        applyAccentToDOM(accentColor, resolved);
+            // Persist resolved mode as cookie for potential SSR usage
+            document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
 
-        // Apply user-level appearance customizations
-        applyDensityToDOM(density);
-        applyBorderRadiusToDOM(borderRadius);
-        applyFontFamilyToDOM(fontFamily);
-        applyFontSizeScaleToDOM(fontSizeScale);
-        applyShadowIntensityToDOM(shadowIntensity);
-        applyGlassEffectToDOM(glassEffect);
-        applyAnimationSpeedToDOM(animationSpeed);
+            // Apply brand attribute
+            if (brandId !== "playbook") {
+                html.setAttribute("data-brand", brandId);
+            } else {
+                html.removeAttribute("data-brand");
+            }
 
-        return () => clearTimeout(transitionTimer);
+            // Apply cascading token overrides: brand → org → project → user
+            clearCustomTokensFromDOM();
+
+            // Inject brand palette as base layer
+            let brandTokens: ThemeTokens | null = null;
+            try {
+                const brand = getBrand(brandId as BrandId);
+                if (brand && brandId !== "playbook") {
+                    brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+                }
+            } catch {
+                // Brand not found — use platform defaults
+            }
+
+            const merged = mergeTokens(brandTokens, orgTokens, projectTokens, userTokens);
+            if (Object.keys(merged).length > 0) {
+                applyTokensToDOM(merged);
+            }
+
+            // Apply accent color (after token merge so accent overrides brand primary)
+            applyAccentToDOM(accentColor, resolved);
+
+            // Apply user-level appearance customizations
+            applyDensityToDOM(density);
+            applyBorderRadiusToDOM(borderRadius);
+            applyFontFamilyToDOM(fontFamily);
+            applyFontSizeScaleToDOM(fontSizeScale);
+            applyShadowIntensityToDOM(shadowIntensity);
+            applyGlassEffectToDOM(glassEffect);
+            applyAnimationSpeedToDOM(animationSpeed);
+        };
+
+        // Wrap DOM mutations in View Transition API for smooth crossfade
+        applyThemeWithTransition(applyAll);
         // eslint-disable-next-line react-hooks/exhaustive-deps -- setResolvedMode is a stable Zustand setter; mergeTokens/applyTokensToDOM are stable module-level functions
     }, [
         colorMode,
@@ -543,37 +606,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (colorMode !== "system") return;
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
         const handler = () => {
-            const resolved = mq.matches ? "dark" : "light";
-            setResolvedMode(resolved);
-            const html = document.documentElement;
-            html.classList.add("theme-transition");
-            html.classList.remove("light", "dark");
-            html.classList.add(resolved);
-            document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
+            applyThemeWithTransition(() => {
+                const resolved = mq.matches ? "dark" : "light";
+                setResolvedMode(resolved);
+                const html = document.documentElement;
+                html.classList.remove("light", "dark");
+                html.classList.add(resolved);
+                document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
 
-            // Re-apply brand tokens for the new resolved mode
-            clearCustomTokensFromDOM();
-            let brandTokens: ThemeTokens | null = null;
-            try {
-                const store = useThemeStore.getState();
-                const brand = getBrand(store.brandId as BrandId);
-                if (brand && store.brandId !== "playbook") {
-                    brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+                // Re-apply brand tokens for the new resolved mode
+                clearCustomTokensFromDOM();
+                let brandTokens: ThemeTokens | null = null;
+                try {
+                    const store = useThemeStore.getState();
+                    const brand = getBrand(store.brandId as BrandId);
+                    if (brand && store.brandId !== "playbook") {
+                        brandTokens = brandPaletteToTokens(brand.colors[resolved]);
+                    }
+                } catch {
+                    /* use defaults */
                 }
-            } catch {
-                /* use defaults */
-            }
-            const merged = mergeTokens(
-                brandTokens,
-                useThemeStore.getState().orgTokens,
-                useThemeStore.getState().projectTokens,
-                useThemeStore.getState().userTokens
-            );
-            if (Object.keys(merged).length > 0) {
-                applyTokensToDOM(merged);
-            }
-
-            setTimeout(() => html.classList.remove("theme-transition"), 300);
+                const merged = mergeTokens(
+                    brandTokens,
+                    useThemeStore.getState().orgTokens,
+                    useThemeStore.getState().projectTokens,
+                    useThemeStore.getState().userTokens
+                );
+                if (Object.keys(merged).length > 0) {
+                    applyTokensToDOM(merged);
+                }
+            });
         };
         mq.addEventListener("change", handler);
         return () => mq.removeEventListener("change", handler);

@@ -77,6 +77,29 @@ export const CONSUMABLES_PAGE: ListPageConfig = {
         { id: "unit_cost", header: "Unit Cost", accessorKey: "unit_cost", fieldType: "currency" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "cards", "chart"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "sku",
+        statusKey: "status",
+        fields: [
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "quantity_on_hand", label: "On Hand", accessorKey: "quantity_on_hand" },
+            {
+                id: "unit_cost",
+                label: "Unit Cost",
+                accessorKey: "unit_cost",
+                fieldType: "currency",
+            },
+        ],
+    },
+    chartConfig: {
+        type: "bar",
+        categoryKey: "category",
+        valueKey: "quantity_on_hand",
+        aggregation: "sum",
+    },
 };
 
 // ─── inventory_audit ───
@@ -133,6 +156,18 @@ export const LOAD_PLANS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "vehicle",
+    },
+    calendarConfig: {
+        titleKey: "name",
+        dateKey: "departure_date",
+        colorKey: "status",
+    },
 };
 
 // ─── maintenance_record ───
@@ -160,6 +195,18 @@ export const MAINTENANCE_RECORDS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "maintenance_type",
+    },
+    calendarConfig: {
+        titleKey: "title",
+        dateKey: "scheduled_date",
+        colorKey: "status",
+    },
 };
 
 // ─── qc_gate ───
@@ -211,6 +258,20 @@ export const RENTAL_AGREEMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
     ],
+    views: ["table", "board", "timeline"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "vendor_name",
+    },
+    timelineConfig: {
+        labelKey: "title",
+        sublabelKey: "vendor_name",
+        startDateKey: "start_date",
+        endDateKey: "start_date",
+        colorKey: "status",
+    },
 };
 
 // ─── resource_booking ───
@@ -228,6 +289,21 @@ export const RESOURCE_BOOKINGS_PAGE: ListPageConfig = {
         { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
     ],
+    views: ["table", "timeline", "calendar"],
+    defaultView: "table",
+    timelineConfig: {
+        labelKey: "resource_name",
+        sublabelKey: "booking_type",
+        startDateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "status",
+    },
+    calendarConfig: {
+        titleKey: "resource_name",
+        dateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "status",
+    },
 };
 
 // ─── consumable_usage ───

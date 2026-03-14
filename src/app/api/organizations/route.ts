@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const parsed = await parseAndValidate(request, organizationCreateSchema);
     if (!parsed.success) return parsed.response;
 
-    const { name, slug, industry, timezone, currency } = parsed.data;
+    const { name, slug, industry, timezone, currency, role } = parsed.data;
     const orgSlug =
         slug ||
         name
@@ -97,14 +97,15 @@ export async function POST(request: NextRequest) {
         { onConflict: "id" }
     );
 
-    // 3. Create exec membership for the creator
+    // 3. Create membership for the creator with self-selected role + owner flag
     const { error: memberError } = await serverFromTable(admin!, "org_memberships").upsert(
         {
             user_id: user.id,
             organization_id: org.id,
-            role: "exec",
+            role: role ?? "pm",
             status: "active",
             is_default_org: true,
+            is_owner: true,
         },
         { onConflict: "user_id,organization_id" }
     );

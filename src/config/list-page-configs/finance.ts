@@ -49,6 +49,18 @@ export const EXPENSE_REPORTS_PAGE: ListPageConfig = {
         { id: "submitted_at", header: "Submitted", accessorKey: "submitted_at", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "chart"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+    },
+    chartConfig: {
+        type: "bar",
+        categoryKey: "status",
+        valueKey: "total_amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── invoice_template ───
@@ -82,6 +94,13 @@ export const PAYROLL_BATCHES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "period",
+    },
 };
 
 // ─── revenue_schedule ───
@@ -121,6 +140,14 @@ export const JOB_COST_ENTRIES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "entry_date", header: "Date", accessorKey: "entry_date", fieldType: "date" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "cost_type",
+        valueKey: "amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── budget_line_item ───
@@ -148,6 +175,14 @@ export const BUDGET_LINE_ITEMS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "category",
+        valueKey: "budgeted_amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── pos_transaction ───
@@ -174,6 +209,14 @@ export const POS_TRANSACTIONS_PAGE: ListPageConfig = {
             fieldType: "date",
         },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "payment_method",
+        valueKey: "amount",
+        aggregation: "sum",
+    },
 };
 
 // ─── revenue_recognition_entry ───

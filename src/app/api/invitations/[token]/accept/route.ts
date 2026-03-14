@@ -40,7 +40,9 @@ export async function POST(
 
     if (new Date(invitation.expires_at) < new Date()) {
         // Mark as expired
-        await serverFromTable(supabase!, "invitations").update({ status: "expired" }).eq("id", invitation.id);
+        await serverFromTable(supabase!, "invitations")
+            .update({ status: "expired" })
+            .eq("id", invitation.id);
 
         return ApiErrors.gone("This invitation has expired");
     }
@@ -57,6 +59,7 @@ export async function POST(
                 role: invitation.role ?? "member",
                 status: "active",
                 is_default_org: false,
+                is_owner: false,
             },
             { onConflict: "user_id,organization_id" }
         );

@@ -9,6 +9,7 @@ import { TabBar } from "@/components/ui/tab-bar";
 import type { TabBarItem } from "@/components/ui/tab-bar";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { MessagingButton } from "@/components/messaging/messaging-button";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
@@ -67,7 +68,9 @@ export function DetailLayout({
 
         // Auto-focus first menu item on open
         requestAnimationFrame(() => {
-            const firstItem = menuRef.current?.querySelector('[role="menuitem"]') as HTMLElement | null;
+            const firstItem = menuRef.current?.querySelector(
+                '[role="menuitem"]'
+            ) as HTMLElement | null;
             firstItem?.focus();
         });
 
@@ -128,7 +131,10 @@ export function DetailLayout({
             </Link>
 
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-6">
+            <div
+                className="flex items-start justify-between gap-4"
+                style={{ marginBottom: "var(--density-detail-header-mb)" }}
+            >
                 <div className="flex items-start gap-4 min-w-0">
                     {avatar && <div className="shrink-0">{avatar}</div>}
                     <div className="min-w-0">
@@ -153,17 +159,19 @@ export function DetailLayout({
                     {actions}
                     {menuItems && menuItems.length > 0 && (
                         <div className="relative" ref={menuRef}>
-                            <Button
-                                ref={menuButtonRef}
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setMenuOpen(!menuOpen)}
-                                aria-expanded={menuOpen}
-                                aria-haspopup="true"
-                                aria-label="More actions"
-                            >
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
+                            <Tooltip content="More actions" side="bottom">
+                                <Button
+                                    ref={menuButtonRef}
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setMenuOpen(!menuOpen)}
+                                    aria-expanded={menuOpen}
+                                    aria-haspopup="true"
+                                    aria-label="More actions"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
                             {menuOpen && (
                                 <div
                                     className="absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-scale-in origin-top-right"
@@ -198,19 +206,24 @@ export function DetailLayout({
 
             {/* Tabs */}
             {tabs && tabs.length > 0 && resolvedActiveTab && (
-                <TabBar
-                    items={tabs}
-                    value={resolvedActiveTab}
-                    onValueChange={(id) => onTabChange?.(id)}
-                    idPrefix={tabIdPrefix}
-                    ariaLabel="Detail tabs"
-                    className="mb-6 overflow-x-auto scrollbar-hide"
-                />
+                <div style={{ marginBottom: "var(--density-detail-header-mb)" }}>
+                    <TabBar
+                        items={tabs}
+                        value={resolvedActiveTab}
+                        onValueChange={(id) => onTabChange?.(id)}
+                        idPrefix={tabIdPrefix}
+                        ariaLabel="Detail tabs"
+                        className="overflow-x-auto scrollbar-hide"
+                    />
+                </div>
             )}
 
             {/* Content — responsive sidebar */}
             {sidebar ? (
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div
+                    className="flex flex-col lg:flex-row"
+                    style={{ gap: "var(--density-page-gap)" }}
+                >
                     <div
                         className="flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         role={resolvedActiveTab ? "tabpanel" : undefined}

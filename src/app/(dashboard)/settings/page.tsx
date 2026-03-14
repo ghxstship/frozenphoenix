@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,17 +40,22 @@ import type {
 import type { ResolvedSetting, SettingCategory } from "@/types/settings";
 import {
     AtSign,
+    Award,
     Bell,
     Building2,
     CheckCircle2,
     ExternalLink,
+    Heart,
     Key,
     Loader2,
     LogOut,
     Mail,
+    MapPin,
     Monitor,
     Moon,
     Palette,
+    Phone,
+    Plane,
     Save,
     Shield,
     Smartphone,
@@ -62,12 +67,18 @@ import {
 import { TabBar } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useToast } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
+import { buildAvatarPath, STORAGE_BUCKETS, useUploadFile } from "@/lib/supabase/storage";
+import { useUpdateProfile } from "@/lib/supabase/auth-actions";
+import Image from "next/image";
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
+    director: "Director",
     pm: "Project Manager",
+    member: "Team Member",
     client: "Client",
-    vendor: "Vendor",
+    collaborator: "Collaborator",
 };
 
 type SettingsTab = "profile" | "organization" | "notifications" | "security" | "appearance";
@@ -139,14 +150,123 @@ export default function SettingsPage() {
         animationSpeed: currentAnimation,
         setAnimationSpeed,
     } = useTheme();
-    const { user, profile, memberships, activeOrg } = useAuth();
+    const { user, profile, memberships, activeOrg, isOwner, refreshProfile } = useAuth();
     const { addToast } = useToast();
+    const router = useRouter();
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
 
     // Profile form state — pre-populated from auth context
     const [profileName, setProfileName] = useState(profile?.name ?? "");
     const [profileEmail] = useState(user?.email ?? "");
     const [profileSaving, setProfileSaving] = useState(false);
+
+    // Extended profile fields
+    const [legalFirstName, setLegalFirstName] = useState("");
+    const [legalMiddleName, setLegalMiddleName] = useState("");
+    const [legalLastName, setLegalLastName] = useState("");
+    const [preferredName, setPreferredName] = useState("");
+    const [pronouns, setPronouns] = useState("");
+    const [profilePhone, setProfilePhone] = useState("");
+
+    // Mailing address
+    const [mailStreet1, setMailStreet1] = useState("");
+    const [mailStreet2, setMailStreet2] = useState("");
+    const [mailCity, setMailCity] = useState("");
+    const [mailState, setMailState] = useState("");
+    const [mailPostal, setMailPostal] = useState("");
+    const [mailCountry, setMailCountry] = useState("");
+
+    // Billing address
+    const [billStreet1, setBillStreet1] = useState("");
+    const [billStreet2, setBillStreet2] = useState("");
+    const [billCity, setBillCity] = useState("");
+    const [billState, setBillState] = useState("");
+    const [billPostal, setBillPostal] = useState("");
+    const [billCountry, setBillCountry] = useState("");
+    const [billingSameAsMailing, setBillingSameAsMailing] = useState(false);
+
+    // Emergency contact
+    const [ecName, setEcName] = useState("");
+    const [ecRelationship, setEcRelationship] = useState("");
+    const [ecPhone, setEcPhone] = useState("");
+    const [ecEmail, setEcEmail] = useState("");
+
+    // Dietary
+    const [dietaryRestrictions, setDietaryRestrictions] = useState("");
+
+    // Travel profile
+    const [tpSeatPref, setTpSeatPref] = useState("");
+    const [tpMealPref, setTpMealPref] = useState("");
+    const [tpAirlineLoyalty, setTpAirlineLoyalty] = useState("");
+    const [tpHotelLoyalty, setTpHotelLoyalty] = useState("");
+    const [tpNotes, setTpNotes] = useState("");
+
+    // Avatar upload
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const uploadFile = useUploadFile();
+    const updateProfile = useUpdateProfile();
+    const [avatarUploading, setAvatarUploading] = useState(false);
+
+    const handleAvatarUpload = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (!file || !user?.id) return;
+
+            // Validate file type and size
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+            if (!allowedTypes.includes(file.type)) {
+                addToast({
+                    title: "Invalid file type",
+                    description: "Please upload a JPG, PNG, WebP, or GIF image.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                addToast({
+                    title: "File too large",
+                    description: "Please upload an image under 2MB.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            setAvatarUploading(true);
+            try {
+                const path = buildAvatarPath(user.id, file.name);
+                const result = await uploadFile.mutateAsync({
+                    bucket: STORAGE_BUCKETS.AVATARS,
+                    path,
+                    file,
+                    upsert: true,
+                });
+
+                // Update the profile record with the new public URL
+                await updateProfile.mutateAsync({
+                    userId: user.id,
+                    updates: { avatar_url: result.publicUrl },
+                });
+
+                await refreshProfile();
+                addToast({
+                    title: "Photo updated",
+                    description: "Your profile photo has been uploaded.",
+                    variant: "default",
+                });
+            } catch (err) {
+                addToast({
+                    title: "Upload failed",
+                    description: err instanceof Error ? err.message : "Something went wrong.",
+                    variant: "destructive",
+                });
+            } finally {
+                setAvatarUploading(false);
+                // Reset file input so the same file can be re-selected
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            }
+        },
+        [user?.id, uploadFile, updateProfile, refreshProfile, addToast]
+    );
 
     // Notification preferences
     const { data: notifPrefs } = useNotificationPreferences(user?.id ?? null);
@@ -174,19 +294,146 @@ export default function SettingsPage() {
         [updateSetting]
     );
 
+    // Hydrate extended fields when profile loads
+    useEffect(() => {
+        if (!profile) return;
+        const p = profile as Record<string, unknown>;
+        setLegalFirstName((p.legal_first_name as string) ?? "");
+        setLegalMiddleName((p.legal_middle_name as string) ?? "");
+        setLegalLastName((p.legal_last_name as string) ?? "");
+        setPreferredName((p.preferred_name as string) ?? "");
+        setPronouns((p.pronouns as string) ?? "");
+        setProfilePhone((p.phone as string) ?? "");
+        setDietaryRestrictions((p.dietary_restrictions as string) ?? "");
+        setEcName((p.emergency_contact_name as string) ?? "");
+        setEcRelationship((p.emergency_contact_relationship as string) ?? "");
+        setEcPhone((p.emergency_contact_phone as string) ?? "");
+        setEcEmail((p.emergency_contact_email as string) ?? "");
+
+        const mail = (p.mailing_address ?? {}) as Record<string, string>;
+        setMailStreet1(mail.street1 ?? "");
+        setMailStreet2(mail.street2 ?? "");
+        setMailCity(mail.city ?? "");
+        setMailState(mail.state ?? "");
+        setMailPostal(mail.postal_code ?? "");
+        setMailCountry(mail.country ?? "");
+
+        const bill = (p.billing_address ?? {}) as Record<string, string>;
+        setBillStreet1(bill.street1 ?? "");
+        setBillStreet2(bill.street2 ?? "");
+        setBillCity(bill.city ?? "");
+        setBillState(bill.state ?? "");
+        setBillPostal(bill.postal_code ?? "");
+        setBillCountry(bill.country ?? "");
+
+        const tp = (p.travel_preferences ?? {}) as Record<string, string>;
+        setTpSeatPref(tp.seat_preference ?? "");
+        setTpMealPref(tp.meal_preference ?? "");
+        setTpAirlineLoyalty(tp.airline_loyalty ?? "");
+        setTpHotelLoyalty(tp.hotel_loyalty ?? "");
+        setTpNotes(tp.notes ?? "");
+    }, [profile]);
+
     const handleSaveProfile = useCallback(async () => {
         if (!user?.id) return;
         setProfileSaving(true);
         try {
-            const { createClient } = await import("@/lib/supabase/client");
-            const sb = createClient();
-            if (sb) {
-                await sb.from("profiles").update({ name: profileName }).eq("id", user.id);
-            }
+            const mailingAddr = {
+                street1: mailStreet1,
+                street2: mailStreet2,
+                city: mailCity,
+                state: mailState,
+                postal_code: mailPostal,
+                country: mailCountry,
+            };
+            const billingAddr = billingSameAsMailing
+                ? mailingAddr
+                : {
+                      street1: billStreet1,
+                      street2: billStreet2,
+                      city: billCity,
+                      state: billState,
+                      postal_code: billPostal,
+                      country: billCountry,
+                  };
+            const travelPrefs = {
+                seat_preference: tpSeatPref,
+                meal_preference: tpMealPref,
+                airline_loyalty: tpAirlineLoyalty,
+                hotel_loyalty: tpHotelLoyalty,
+                notes: tpNotes,
+            };
+
+            const updates = {
+                name: profileName,
+                legal_first_name: legalFirstName || null,
+                legal_middle_name: legalMiddleName || null,
+                legal_last_name: legalLastName || null,
+                preferred_name: preferredName || null,
+                pronouns: pronouns || null,
+                phone: profilePhone || null,
+                mailing_address: mailingAddr,
+                billing_address: billingAddr,
+                emergency_contact_name: ecName || null,
+                emergency_contact_relationship: ecRelationship || null,
+                emergency_contact_phone: ecPhone || null,
+                emergency_contact_email: ecEmail || null,
+                dietary_restrictions: dietaryRestrictions || null,
+                travel_preferences: travelPrefs,
+            };
+
+            await updateProfile.mutateAsync({ userId: user.id, updates });
+            await refreshProfile();
+            addToast({
+                title: "Profile saved",
+                description: "Your profile has been updated.",
+                variant: "default",
+            });
+        } catch (err) {
+            addToast({
+                title: "Save failed",
+                description: err instanceof Error ? err.message : "Something went wrong.",
+                variant: "destructive",
+            });
         } finally {
             setProfileSaving(false);
         }
-    }, [user?.id, profileName]);
+    }, [
+        user?.id,
+        profileName,
+        legalFirstName,
+        legalMiddleName,
+        legalLastName,
+        preferredName,
+        pronouns,
+        profilePhone,
+        mailStreet1,
+        mailStreet2,
+        mailCity,
+        mailState,
+        mailPostal,
+        mailCountry,
+        billStreet1,
+        billStreet2,
+        billCity,
+        billState,
+        billPostal,
+        billCountry,
+        billingSameAsMailing,
+        ecName,
+        ecRelationship,
+        ecPhone,
+        ecEmail,
+        dietaryRestrictions,
+        tpSeatPref,
+        tpMealPref,
+        tpAirlineLoyalty,
+        tpHotelLoyalty,
+        tpNotes,
+        updateProfile,
+        refreshProfile,
+        addToast,
+    ]);
 
     const userRole = activeOrg?.role ?? profile?.role ?? "vendor";
     const userInitials = (profile?.name ?? "U")
@@ -228,22 +475,57 @@ export default function SettingsPage() {
                         {/* ─── Profile Tab ─── */}
                         {activeTab === "profile" && (
                             <>
+                                {/* Avatar & Display Name */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Profile Information</CardTitle>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <User className="h-4 w-4" />
+                                            Profile Information
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                                                {userInitials}
+                                            <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
+                                                {profile?.avatar_url ? (
+                                                    <Image
+                                                        src={profile.avatar_url}
+                                                        alt={profile.name ?? "Avatar"}
+                                                        fill
+                                                        sizes="80px"
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    userInitials
+                                                )}
                                             </div>
                                             <div>
-                                                <Button variant="ghost" size="sm" onClick={() => addToast({ title: "Coming soon", description: "Profile photo upload is not yet available.", variant: "default" })}>
-                                                    <Upload className="h-4 w-4" />
-                                                    Upload Photo
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                                    className="sr-only"
+                                                    id="avatar-upload"
+                                                    onChange={handleAvatarUpload}
+                                                    disabled={avatarUploading}
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    disabled={avatarUploading}
+                                                >
+                                                    {avatarUploading ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="h-4 w-4" />
+                                                    )}
+                                                    {avatarUploading
+                                                        ? "Uploading…"
+                                                        : "Upload Photo"}
                                                 </Button>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    JPG, PNG up to 2MB
+                                                    JPG, PNG, WebP, GIF up to 2MB
                                                 </p>
                                             </div>
                                         </div>
@@ -254,7 +536,7 @@ export default function SettingsPage() {
                                                     htmlFor="profile-name"
                                                     className="text-sm font-medium"
                                                 >
-                                                    Full Name
+                                                    Display Name
                                                 </label>
                                                 <Input
                                                     id="profile-name"
@@ -303,22 +585,581 @@ export default function SettingsPage() {
                                                 />
                                             </div>
                                         </div>
+                                    </CardContent>
+                                </Card>
 
-                                        <div className="flex justify-end">
-                                            <Button
-                                                onClick={handleSaveProfile}
-                                                disabled={profileSaving}
-                                            >
-                                                {profileSaving ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Save className="h-4 w-4" />
-                                                )}
-                                                Save Changes
-                                            </Button>
+                                {/* Legal Name & Identity */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4" />
+                                            Legal Name &amp; Identity
+                                        </CardTitle>
+                                        <p className="text-xs text-muted-foreground">
+                                            Used for contracts, payroll, and compliance documents.
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="legal-first"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Legal First Name
+                                                </label>
+                                                <Input
+                                                    id="legal-first"
+                                                    value={legalFirstName}
+                                                    onChange={(e) =>
+                                                        setLegalFirstName(e.target.value)
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="legal-middle"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Legal Middle Name
+                                                </label>
+                                                <Input
+                                                    id="legal-middle"
+                                                    value={legalMiddleName}
+                                                    onChange={(e) =>
+                                                        setLegalMiddleName(e.target.value)
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="legal-last"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Legal Last Name
+                                                </label>
+                                                <Input
+                                                    id="legal-last"
+                                                    value={legalLastName}
+                                                    onChange={(e) =>
+                                                        setLegalLastName(e.target.value)
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="preferred-name"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Preferred Name
+                                                </label>
+                                                <Input
+                                                    id="preferred-name"
+                                                    value={preferredName}
+                                                    onChange={(e) =>
+                                                        setPreferredName(e.target.value)
+                                                    }
+                                                    placeholder="How you'd like to be addressed"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="pronouns"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Pronouns
+                                                </label>
+                                                <Input
+                                                    id="pronouns"
+                                                    value={pronouns}
+                                                    onChange={(e) => setPronouns(e.target.value)}
+                                                    placeholder="e.g. he/him, she/her, they/them"
+                                                />
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                {/* Contact */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Phone className="h-4 w-4" />
+                                            Contact
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="profile-phone"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Phone
+                                                </label>
+                                                <Input
+                                                    id="profile-phone"
+                                                    type="tel"
+                                                    value={profilePhone}
+                                                    onChange={(e) =>
+                                                        setProfilePhone(e.target.value)
+                                                    }
+                                                    placeholder="+1 (555) 123-4567"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="profile-email-ro"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Email
+                                                </label>
+                                                <Input
+                                                    id="profile-email-ro"
+                                                    value={profileEmail}
+                                                    disabled
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Mailing Address */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MapPin className="h-4 w-4" />
+                                            Mailing Address
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="mail-street1"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Street Address
+                                                </label>
+                                                <Input
+                                                    id="mail-street1"
+                                                    value={mailStreet1}
+                                                    onChange={(e) => setMailStreet1(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="mail-street2"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Apt / Suite / Unit
+                                                </label>
+                                                <Input
+                                                    id="mail-street2"
+                                                    value={mailStreet2}
+                                                    onChange={(e) => setMailStreet2(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="mail-city"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        City
+                                                    </label>
+                                                    <Input
+                                                        id="mail-city"
+                                                        value={mailCity}
+                                                        onChange={(e) =>
+                                                            setMailCity(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="mail-state"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        State / Province
+                                                    </label>
+                                                    <Input
+                                                        id="mail-state"
+                                                        value={mailState}
+                                                        onChange={(e) =>
+                                                            setMailState(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="mail-postal"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Postal Code
+                                                    </label>
+                                                    <Input
+                                                        id="mail-postal"
+                                                        value={mailPostal}
+                                                        onChange={(e) =>
+                                                            setMailPostal(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="mail-country"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Country
+                                                    </label>
+                                                    <Input
+                                                        id="mail-country"
+                                                        value={mailCountry}
+                                                        onChange={(e) =>
+                                                            setMailCountry(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Billing Address */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Building2 className="h-4 w-4" />
+                                            Billing Address
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={billingSameAsMailing}
+                                                onChange={(e) =>
+                                                    setBillingSameAsMailing(e.target.checked)
+                                                }
+                                                className="rounded border-input"
+                                            />
+                                            Same as mailing address
+                                        </label>
+                                        {!billingSameAsMailing && (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="bill-street1"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Street Address
+                                                    </label>
+                                                    <Input
+                                                        id="bill-street1"
+                                                        value={billStreet1}
+                                                        onChange={(e) =>
+                                                            setBillStreet1(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label
+                                                        htmlFor="bill-street2"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Apt / Suite / Unit
+                                                    </label>
+                                                    <Input
+                                                        id="bill-street2"
+                                                        value={billStreet2}
+                                                        onChange={(e) =>
+                                                            setBillStreet2(e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label
+                                                            htmlFor="bill-city"
+                                                            className="text-sm font-medium"
+                                                        >
+                                                            City
+                                                        </label>
+                                                        <Input
+                                                            id="bill-city"
+                                                            value={billCity}
+                                                            onChange={(e) =>
+                                                                setBillCity(e.target.value)
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label
+                                                            htmlFor="bill-state"
+                                                            className="text-sm font-medium"
+                                                        >
+                                                            State / Province
+                                                        </label>
+                                                        <Input
+                                                            id="bill-state"
+                                                            value={billState}
+                                                            onChange={(e) =>
+                                                                setBillState(e.target.value)
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label
+                                                            htmlFor="bill-postal"
+                                                            className="text-sm font-medium"
+                                                        >
+                                                            Postal Code
+                                                        </label>
+                                                        <Input
+                                                            id="bill-postal"
+                                                            value={billPostal}
+                                                            onChange={(e) =>
+                                                                setBillPostal(e.target.value)
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label
+                                                            htmlFor="bill-country"
+                                                            className="text-sm font-medium"
+                                                        >
+                                                            Country
+                                                        </label>
+                                                        <Input
+                                                            id="bill-country"
+                                                            value={billCountry}
+                                                            onChange={(e) =>
+                                                                setBillCountry(e.target.value)
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Emergency Contact */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Heart className="h-4 w-4" />
+                                            Emergency Contact
+                                        </CardTitle>
+                                        <p className="text-xs text-muted-foreground">
+                                            This information is kept confidential and only shared
+                                            with authorized personnel during emergencies.
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="ec-name"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Full Name
+                                                </label>
+                                                <Input
+                                                    id="ec-name"
+                                                    value={ecName}
+                                                    onChange={(e) => setEcName(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="ec-relationship"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Relationship
+                                                </label>
+                                                <Input
+                                                    id="ec-relationship"
+                                                    value={ecRelationship}
+                                                    onChange={(e) =>
+                                                        setEcRelationship(e.target.value)
+                                                    }
+                                                    placeholder="e.g. Spouse, Parent, Sibling"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="ec-phone"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Phone
+                                                </label>
+                                                <Input
+                                                    id="ec-phone"
+                                                    type="tel"
+                                                    value={ecPhone}
+                                                    onChange={(e) => setEcPhone(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="ec-email"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Email
+                                                </label>
+                                                <Input
+                                                    id="ec-email"
+                                                    type="email"
+                                                    value={ecEmail}
+                                                    onChange={(e) => setEcEmail(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Dietary Restrictions */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Award className="h-4 w-4" />
+                                            Dietary Restrictions
+                                        </CardTitle>
+                                        <p className="text-xs text-muted-foreground">
+                                            Used for event catering and meal planning.
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2">
+                                            <label
+                                                htmlFor="dietary"
+                                                className="text-sm font-medium"
+                                            >
+                                                Dietary Needs &amp; Allergies
+                                            </label>
+                                            <Input
+                                                id="dietary"
+                                                value={dietaryRestrictions}
+                                                onChange={(e) =>
+                                                    setDietaryRestrictions(e.target.value)
+                                                }
+                                                placeholder="e.g. Vegetarian, Gluten-free, Nut allergy"
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Travel Preferences */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Plane className="h-4 w-4" />
+                                            Travel Preferences
+                                        </CardTitle>
+                                        <p className="text-xs text-muted-foreground">
+                                            Used when booking travel for events and projects.
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="tp-seat"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Seat Preference
+                                                </label>
+                                                <Input
+                                                    id="tp-seat"
+                                                    value={tpSeatPref}
+                                                    onChange={(e) => setTpSeatPref(e.target.value)}
+                                                    placeholder="e.g. Window, Aisle"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="tp-meal"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Meal Preference
+                                                </label>
+                                                <Input
+                                                    id="tp-meal"
+                                                    value={tpMealPref}
+                                                    onChange={(e) => setTpMealPref(e.target.value)}
+                                                    placeholder="e.g. Vegetarian, Kosher"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="tp-airline"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Airline Loyalty Program
+                                                </label>
+                                                <Input
+                                                    id="tp-airline"
+                                                    value={tpAirlineLoyalty}
+                                                    onChange={(e) =>
+                                                        setTpAirlineLoyalty(e.target.value)
+                                                    }
+                                                    placeholder="e.g. Delta SkyMiles #12345"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label
+                                                    htmlFor="tp-hotel"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Hotel Loyalty Program
+                                                </label>
+                                                <Input
+                                                    id="tp-hotel"
+                                                    value={tpHotelLoyalty}
+                                                    onChange={(e) =>
+                                                        setTpHotelLoyalty(e.target.value)
+                                                    }
+                                                    placeholder="e.g. Marriott Bonvoy #67890"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 mt-4">
+                                            <label
+                                                htmlFor="tp-notes"
+                                                className="text-sm font-medium"
+                                            >
+                                                Additional Notes
+                                            </label>
+                                            <Input
+                                                id="tp-notes"
+                                                value={tpNotes}
+                                                onChange={(e) => setTpNotes(e.target.value)}
+                                                placeholder="TSA PreCheck, wheelchair assistance, etc."
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Save All Changes */}
+                                <div className="flex justify-end sticky bottom-4 z-10">
+                                    <Button
+                                        onClick={handleSaveProfile}
+                                        disabled={profileSaving}
+                                        size="lg"
+                                        className="shadow-lg"
+                                    >
+                                        {profileSaving ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Save className="h-4 w-4" />
+                                        )}
+                                        Save All Changes
+                                    </Button>
+                                </div>
 
                                 <UsernameCard />
 
@@ -426,7 +1267,13 @@ export default function SettingsPage() {
                                             action="write"
                                             silent
                                         >
-                                            <Button variant="ghost" className="w-full mt-3" onClick={() => addToast({ title: "Coming soon", description: "Team invitations will be available from the onboarding flow.", variant: "default" })}>
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full mt-3"
+                                                onClick={() =>
+                                                    router.push("/onboarding/invite-team")
+                                                }
+                                            >
                                                 <User className="h-4 w-4" />
                                                 Invite Team Member
                                             </Button>
@@ -475,6 +1322,8 @@ export default function SettingsPage() {
                                         </Card>
                                     </>
                                 )}
+
+                                {isOwner && <TransferOwnershipCard />}
                             </PermissionGate>
                         )}
 
@@ -602,7 +1451,7 @@ export default function SettingsPage() {
                                                 placeholder="••••••••"
                                             />
                                         </div>
-                                        <Button onClick={() => addToast({ title: "Coming soon", description: "Use the dedicated Security settings page to change your password.", variant: "default" })}>
+                                        <Button onClick={() => router.push("/settings/security")}>
                                             <Key className="h-4 w-4" />
                                             Update Password
                                         </Button>
@@ -623,7 +1472,11 @@ export default function SettingsPage() {
                                             </div>
                                             <Badge variant="ghost">Not Enabled</Badge>
                                         </div>
-                                        <Button variant="ghost" className="mt-3" onClick={() => addToast({ title: "Coming soon", description: "Enable 2FA from the dedicated Security settings page.", variant: "default" })}>
+                                        <Button
+                                            variant="ghost"
+                                            className="mt-3"
+                                            onClick={() => router.push("/auth/mfa-setup")}
+                                        >
                                             <Shield className="h-4 w-4" />
                                             Enable 2FA
                                         </Button>
@@ -1109,6 +1962,154 @@ export default function SettingsPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// ─── Transfer Ownership Card (used in Organization tab, owner-only) ──
+function TransferOwnershipCard() {
+    const { user, activeOrg, memberships, refreshProfile } = useAuth();
+    const { addToast } = useToast();
+    const [targetUserId, setTargetUserId] = useState("");
+    const [confirmText, setConfirmText] = useState("");
+    const [transferring, setTransferring] = useState(false);
+
+    // Only show internal-role members from the same org (excluding self)
+    const transferCandidates = memberships.filter(
+        (m) =>
+            m.organization_id === activeOrg?.organization_id &&
+            m.user_id !== user?.id &&
+            ["exec", "director", "pm", "member"].includes(m.role)
+    );
+
+    const orgName = activeOrg?.organizations?.name ?? "this organization";
+    const confirmRequired = `transfer ${orgName}`;
+    const canSubmit =
+        targetUserId &&
+        confirmText.toLowerCase().trim() === confirmRequired.toLowerCase().trim() &&
+        !transferring;
+
+    const handleTransfer = useCallback(async () => {
+        if (!canSubmit || !activeOrg) return;
+        setTransferring(true);
+        try {
+            const res = await fetch("/api/organizations/transfer-ownership", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    organization_id: activeOrg.organization_id,
+                    new_owner_user_id: targetUserId,
+                }),
+            });
+            const contentType = res.headers.get("content-type") ?? "";
+            if (!contentType.includes("application/json")) {
+                addToast({
+                    title: "Error",
+                    description: "Unexpected server response. Please try again.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            const data = await res.json();
+            if (!res.ok) {
+                addToast({
+                    title: "Transfer failed",
+                    description: data?.error?.message ?? "Something went wrong.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            addToast({
+                title: "Ownership transferred",
+                description: "You are no longer the organization owner.",
+                variant: "default",
+            });
+            setTargetUserId("");
+            setConfirmText("");
+            await refreshProfile();
+        } catch {
+            addToast({
+                title: "Error",
+                description: "Network error. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setTransferring(false);
+        }
+    }, [canSubmit, activeOrg, targetUserId, addToast, refreshProfile]);
+
+    return (
+        <Card className="border-destructive/30">
+            <CardHeader>
+                <CardTitle className="text-destructive">Transfer Ownership</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                    Transfer organization ownership to another internal team member. The new owner
+                    will gain full administrative control including billing, organization settings,
+                    and the ability to delete the organization. This action is{" "}
+                    <strong>irreversible</strong> without the new owner&apos;s consent.
+                </p>
+
+                {transferCandidates.length === 0 ? (
+                    <div className="rounded-lg bg-secondary/30 p-4 text-sm text-muted-foreground">
+                        No eligible team members found. Invite an internal team member before
+                        transferring ownership.
+                    </div>
+                ) : (
+                    <>
+                        <div className="space-y-2">
+                            <label htmlFor="transfer-target" className="text-sm font-medium">
+                                New Owner
+                            </label>
+                            <select
+                                id="transfer-target"
+                                value={targetUserId}
+                                onChange={(e) => setTargetUserId(e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                disabled={transferring}
+                            >
+                                <option value="">Select a team member…</option>
+                                {transferCandidates.map((m) => (
+                                    <option key={m.user_id} value={m.user_id}>
+                                        {m.user_id.slice(0, 8)}… ({ROLE_LABELS[m.role] ?? m.role})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="transfer-confirm" className="text-sm font-medium">
+                                Type{" "}
+                                <code className="text-xs bg-secondary px-1 py-0.5 rounded">
+                                    transfer {orgName}
+                                </code>{" "}
+                                to confirm
+                            </label>
+                            <Input
+                                id="transfer-confirm"
+                                value={confirmText}
+                                onChange={(e) => setConfirmText(e.target.value)}
+                                placeholder={`transfer ${orgName}`}
+                                disabled={transferring}
+                            />
+                        </div>
+
+                        <Button
+                            variant="destructive"
+                            onClick={handleTransfer}
+                            disabled={!canSubmit}
+                        >
+                            {transferring ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <ExternalLink className="h-4 w-4" />
+                            )}
+                            Transfer Ownership
+                        </Button>
+                    </>
+                )}
+            </CardContent>
+        </Card>
     );
 }
 

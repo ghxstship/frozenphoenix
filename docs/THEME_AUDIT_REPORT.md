@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The theming system has a **solid architectural foundation**: CSS custom properties in HSL, a Zustand-persisted store with cascading token overrides (org → project → user), a fully typed brand registry (`playbook`, `rilla`) with per-mode color palettes, and a Tailwind `@theme inline` bridge. Accessibility primitives (reduced motion, high contrast, keyboard focus rings) are present.
+The theming system has a **solid architectural foundation**: CSS custom properties in HSL, a Zustand-persisted store with cascading token overrides (org → project → user), a fully typed brand registry (`playbook`) with per-mode color palettes, and a Tailwind `@theme inline` bridge. Accessibility primitives (reduced motion, high contrast, keyboard focus rings) are present.
 
 However, **critical gaps** prevent production readiness:
 
@@ -27,31 +27,31 @@ However, **critical gaps** prevent production readiness:
 
 ### 1.1 Architecture Overview
 
-| Layer | Implementation | Status |
-|---|---|---|
-| CSS Variables | HSL triplets in `:root` / `.dark` | ✅ Correct pattern |
-| Tailwind Bridge | `@theme inline` mapping `--color-*` → `hsl(var(--*))` | ✅ Correct |
-| Theme Store | Zustand + `persist` (localStorage key `pb-theme`) | ✅ Good |
-| Cascading Overrides | `mergeTokens(org, project, user)` → `applyTokensToDOM()` | ✅ Well-designed |
-| Brand Registry | `BrandConfig` with `light` + `dark` palettes per brand | ✅ Typed |
-| SSR Hydration | ❌ **Hard-coded `className="dark"` on `<html>`** | 🔴 Critical |
-| System Preference | `matchMedia("prefers-color-scheme")` listener | ⚠️ Client-only |
-| Cross-tab Sync | None | ⚠️ Missing |
-| Cookie Persistence | None — localStorage only | ⚠️ SSR-blind |
+| Layer               | Implementation                                           | Status             |
+| ------------------- | -------------------------------------------------------- | ------------------ |
+| CSS Variables       | HSL triplets in `:root` / `.dark`                        | ✅ Correct pattern |
+| Tailwind Bridge     | `@theme inline` mapping `--color-*` → `hsl(var(--*))`    | ✅ Correct         |
+| Theme Store         | Zustand + `persist` (localStorage key `pb-theme`)        | ✅ Good            |
+| Cascading Overrides | `mergeTokens(org, project, user)` → `applyTokensToDOM()` | ✅ Well-designed   |
+| Brand Registry      | `BrandConfig` with `light` + `dark` palettes per brand   | ✅ Typed           |
+| SSR Hydration       | ❌ **Hard-coded `className="dark"` on `<html>`**         | 🔴 Critical        |
+| System Preference   | `matchMedia("prefers-color-scheme")` listener            | ⚠️ Client-only     |
+| Cross-tab Sync      | None                                                     | ⚠️ Missing         |
+| Cookie Persistence  | None — localStorage only                                 | ⚠️ SSR-blind       |
 
 ### 1.2 Risk Matrix
 
-| Risk | Severity | Impact |
-|---|---|---|
-| FOIT on first paint | **P0** | Users see dark→light flash; breaks perceived quality |
-| Settings toggle disconnected | **P0** | Theme preference UI is completely non-functional |
-| Missing dark-mode semantic tokens | **P0** | `--warning`, `--success`, `--info` inherit light values in dark mode |
-| Brand palette never injected | **P1** | Multi-tenant theming is declared but inoperative |
-| 45 hardcoded hex colors | **P1** | Colors don't respond to theme/brand switches |
-| 65+ raw Tailwind palette classes | **P1** | `text-white`, `bg-black`, etc. break in light/dark transitions |
-| No cookie-based persistence | **P2** | Server can't read theme before JS hydrates |
-| No cross-tab sync | **P2** | Theme change in one tab doesn't propagate |
-| Print styles use `!important` hardcoded colors | **P3** | Minor — print is a narrow use case |
+| Risk                                           | Severity | Impact                                                               |
+| ---------------------------------------------- | -------- | -------------------------------------------------------------------- |
+| FOIT on first paint                            | **P0**   | Users see dark→light flash; breaks perceived quality                 |
+| Settings toggle disconnected                   | **P0**   | Theme preference UI is completely non-functional                     |
+| Missing dark-mode semantic tokens              | **P0**   | `--warning`, `--success`, `--info` inherit light values in dark mode |
+| Brand palette never injected                   | **P1**   | Multi-tenant theming is declared but inoperative                     |
+| 45 hardcoded hex colors                        | **P1**   | Colors don't respond to theme/brand switches                         |
+| 65+ raw Tailwind palette classes               | **P1**   | `text-white`, `bg-black`, etc. break in light/dark transitions       |
+| No cookie-based persistence                    | **P2**   | Server can't read theme before JS hydrates                           |
+| No cross-tab sync                              | **P2**   | Theme change in one tab doesn't propagate                            |
+| Print styles use `!important` hardcoded colors | **P3**   | Minor — print is a narrow use case                                   |
 
 ---
 
@@ -74,15 +74,15 @@ These are consumed by components via `style={{ color: item.color }}` inline styl
 
 ### 2.2 Raw Tailwind Palette Classes (65+ instances across 27 files)
 
-| Pattern | Count | Files |
-|---|---|---|
-| `text-white` | ~25 | topbar, sidebar, progress-bar, calendar, fleet, settings, signup, landing, forecasting, decks, resource-planner, templates, assets, crew, deals, projects, tasks, vendors, locations |
-| `bg-black/50` | 4 | dialog, command-bar, sidebar (overlays), toast |
-| `text-yellow-500` / `fill-yellow-500` | 8 | workforce, documents, saved-views, landing, reviews |
-| `bg-blue-500`, `bg-violet-500`, `bg-rose-500`, `bg-orange-500`, `bg-emerald-500` | 5 | settings/appearance accent picker |
-| `text-red-500`, `text-blue-500`, `text-amber-500`, `text-emerald-500` | 8 | system-health |
-| `border-yellow-500` | 1 | forecasting |
-| `ring-red-500` | 1 | resource-planner |
+| Pattern                                                                          | Count | Files                                                                                                                                                                                |
+| -------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `text-white`                                                                     | ~25   | topbar, sidebar, progress-bar, calendar, fleet, settings, signup, landing, forecasting, decks, resource-planner, templates, assets, crew, deals, projects, tasks, vendors, locations |
+| `bg-black/50`                                                                    | 4     | dialog, command-bar, sidebar (overlays), toast                                                                                                                                       |
+| `text-yellow-500` / `fill-yellow-500`                                            | 8     | workforce, documents, saved-views, landing, reviews                                                                                                                                  |
+| `bg-blue-500`, `bg-violet-500`, `bg-rose-500`, `bg-orange-500`, `bg-emerald-500` | 5     | settings/appearance accent picker                                                                                                                                                    |
+| `text-red-500`, `text-blue-500`, `text-amber-500`, `text-emerald-500`            | 8     | system-health                                                                                                                                                                        |
+| `border-yellow-500`                                                              | 1     | forecasting                                                                                                                                                                          |
+| `ring-red-500`                                                                   | 1     | resource-planner                                                                                                                                                                     |
 
 ### 2.3 `text-white` Anti-Pattern Analysis
 
@@ -99,12 +99,12 @@ Most are legitimate dynamic `width`/`left` styles for progress bars and charts. 
 
 ### 2.5 Token Compliance Score
 
-| Category | Token-Compliant | Hardcoded | Score |
-|---|---|---|---|
-| Semantic colors (CSS vars) | 26 tokens | 0 | **100%** |
-| Component styling (Tailwind) | ~85% | ~15% | **85%** |
-| Config data colors | 0% | 100% (45 hex) | **0%** |
-| Overall weighted | — | — | **68%** |
+| Category                     | Token-Compliant | Hardcoded     | Score    |
+| ---------------------------- | --------------- | ------------- | -------- |
+| Semantic colors (CSS vars)   | 26 tokens       | 0             | **100%** |
+| Component styling (Tailwind) | ~85%            | ~15%          | **85%**  |
+| Config data colors           | 0%              | 100% (45 hex) | **0%**   |
+| Overall weighted             | —               | —             | **68%**  |
 
 ---
 
@@ -116,26 +116,26 @@ Computed from the HSL values in `globals.css`:
 
 #### Light Mode (`:root`)
 
-| Pair | Foreground HSL | Background HSL | Approx Ratio | WCAG AA (4.5:1) | WCAG AAA (7:1) |
-|---|---|---|---|---|---|
-| `foreground` on `background` | `220 30% 10%` | `220 20% 97%` | ~16.5:1 | ✅ | ✅ |
-| `muted-foreground` on `background` | `215 16% 47%` | `220 20% 97%` | ~5.2:1 | ✅ | ❌ |
-| `primary-foreground` on `primary` | `0 0% 100%` | `220 70% 50%` | ~5.8:1 | ✅ | ❌ |
-| `accent-foreground` on `accent` | `0 0% 100%` | `31 97% 60%` | ~2.8:1 | 🔴 **FAIL** | 🔴 |
-| `warning-foreground` on `warning` | `0 0% 100%` | `38 92% 50%` | ~2.5:1 | 🔴 **FAIL** | 🔴 |
-| `destructive-foreground` on `destructive` | `0 0% 100%` | `0 84% 60%` | ~3.8:1 | 🔴 **FAIL** | 🔴 |
-| `success-foreground` on `success` | `0 0% 100%` | `152 69% 40%` | ~3.2:1 | 🔴 **FAIL** | 🔴 |
-| `info-foreground` on `info` | `0 0% 100%` | `199 89% 48%` | ~3.1:1 | 🔴 **FAIL** | 🔴 |
+| Pair                                      | Foreground HSL | Background HSL | Approx Ratio | WCAG AA (4.5:1) | WCAG AAA (7:1) |
+| ----------------------------------------- | -------------- | -------------- | ------------ | --------------- | -------------- |
+| `foreground` on `background`              | `220 30% 10%`  | `220 20% 97%`  | ~16.5:1      | ✅              | ✅             |
+| `muted-foreground` on `background`        | `215 16% 47%`  | `220 20% 97%`  | ~5.2:1       | ✅              | ❌             |
+| `primary-foreground` on `primary`         | `0 0% 100%`    | `220 70% 50%`  | ~5.8:1       | ✅              | ❌             |
+| `accent-foreground` on `accent`           | `0 0% 100%`    | `31 97% 60%`   | ~2.8:1       | 🔴 **FAIL**     | 🔴             |
+| `warning-foreground` on `warning`         | `0 0% 100%`    | `38 92% 50%`   | ~2.5:1       | 🔴 **FAIL**     | 🔴             |
+| `destructive-foreground` on `destructive` | `0 0% 100%`    | `0 84% 60%`    | ~3.8:1       | 🔴 **FAIL**     | 🔴             |
+| `success-foreground` on `success`         | `0 0% 100%`    | `152 69% 40%`  | ~3.2:1       | 🔴 **FAIL**     | 🔴             |
+| `info-foreground` on `info`               | `0 0% 100%`    | `199 89% 48%`  | ~3.1:1       | 🔴 **FAIL**     | 🔴             |
 
 #### Dark Mode (`.dark`)
 
-| Pair | Approx Ratio | WCAG AA | Notes |
-|---|---|---|---|
-| `foreground` on `background` | ~15.2:1 | ✅ | Good |
-| `muted-foreground` on `background` | ~5.8:1 | ✅ | Marginal |
-| `primary-foreground` on `primary` | ~5.5:1 | ✅ | Adequate |
-| `accent-foreground` on `accent` | ~2.9:1 | 🔴 **FAIL** | Same issue |
-| `warning` / `success` / `info` | — | ⚠️ **Inherited from :root** | Not defined in `.dark` — see §3.2 |
+| Pair                               | Approx Ratio | WCAG AA                     | Notes                             |
+| ---------------------------------- | ------------ | --------------------------- | --------------------------------- |
+| `foreground` on `background`       | ~15.2:1      | ✅                          | Good                              |
+| `muted-foreground` on `background` | ~5.8:1       | ✅                          | Marginal                          |
+| `primary-foreground` on `primary`  | ~5.5:1       | ✅                          | Adequate                          |
+| `accent-foreground` on `accent`    | ~2.9:1       | 🔴 **FAIL**                 | Same issue                        |
+| `warning` / `success` / `info`     | —            | ⚠️ **Inherited from :root** | Not defined in `.dark` — see §3.2 |
 
 ### 3.2 Missing Dark Mode Semantic Tokens (P0)
 
@@ -152,6 +152,7 @@ The `.dark` block in `globals.css` **does not define**:
 - `--brand-accent`
 
 These inherit from `:root` (light mode), which means:
+
 - Warning badges in dark mode use `38 92% 50%` (designed for light backgrounds) — reduced contrast
 - Success/info follow the same pattern
 
@@ -196,14 +197,14 @@ These inherit from `:root` (light mode), which means:
 
 ### 3.7 WCAG Compliance Summary
 
-| Criterion | Status | Risk |
-|---|---|---|
-| 1.4.3 Contrast (Minimum) AA | 🔴 5 failures | High — accent, warning, success, info, destructive |
-| 1.4.6 Contrast (Enhanced) AAA | 🔴 7 failures | Medium — muted-foreground also fails |
-| 1.4.11 Non-Text Contrast | ✅ Pass | Focus rings at 2px with high-contrast override |
-| 2.4.7 Focus Visible | ⚠️ Partial | Not universally applied |
-| 2.3.3 Animation from Interactions | ✅ Pass | Reduced motion fully supported |
-| 1.4.1 Use of Color | ⚠️ Partial | Status dots lack text alternatives |
+| Criterion                         | Status        | Risk                                               |
+| --------------------------------- | ------------- | -------------------------------------------------- |
+| 1.4.3 Contrast (Minimum) AA       | 🔴 5 failures | High — accent, warning, success, info, destructive |
+| 1.4.6 Contrast (Enhanced) AAA     | 🔴 7 failures | Medium — muted-foreground also fails               |
+| 1.4.11 Non-Text Contrast          | ✅ Pass       | Focus rings at 2px with high-contrast override     |
+| 2.4.7 Focus Visible               | ⚠️ Partial    | Not universally applied                            |
+| 2.3.3 Animation from Interactions | ✅ Pass       | Reduced motion fully supported                     |
+| 1.4.1 Use of Color                | ⚠️ Partial    | Status dots lack text alternatives                 |
 
 ---
 
@@ -240,13 +241,13 @@ These inherit from `:root` (light mode), which means:
 
 ```html
 <script>
-  (function() {
+  (function () {
     try {
-      var s = JSON.parse(localStorage.getItem('pb-theme') || '{}');
-      var m = s.state?.colorMode || 'dark';
-      if (m === 'system') m = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      var s = JSON.parse(localStorage.getItem("pb-theme") || "{}");
+      var m = s.state?.colorMode || "dark";
+      if (m === "system") m = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       document.documentElement.className = m;
-    } catch(e) {}
+    } catch (e) {}
   })();
 </script>
 ```
@@ -256,6 +257,7 @@ These inherit from `:root` (light mode), which means:
 ### 4.3 Settings Page Disconnected (P0)
 
 `src/app/(dashboard)/settings/page.tsx` line 38:
+
 ```tsx
 const [theme, setTheme] = useState<"light" | "dark" | "system">("dark");
 ```
@@ -280,13 +282,13 @@ This is local state. It never calls `useThemeStore().setColorMode()`. The entire
 
 ### 4.7 Bug Risk Summary
 
-| Bug | Probability | Impact |
-|---|---|---|
-| Flash of wrong theme | **100%** (deterministic) | High — every light-mode user sees it |
-| Settings toggle does nothing | **100%** (deterministic) | High — broken feature |
-| Warning/success/info wrong contrast in dark | **100%** | Medium — readability degradation |
-| Brand colors not applied | **100%** | Medium — multi-tenant broken |
-| Cross-tab desync | Moderate | Low — minor annoyance |
+| Bug                                         | Probability              | Impact                               |
+| ------------------------------------------- | ------------------------ | ------------------------------------ |
+| Flash of wrong theme                        | **100%** (deterministic) | High — every light-mode user sees it |
+| Settings toggle does nothing                | **100%** (deterministic) | High — broken feature                |
+| Warning/success/info wrong contrast in dark | **100%**                 | Medium — readability degradation     |
+| Brand colors not applied                    | **100%**                 | Medium — multi-tenant broken         |
+| Cross-tab desync                            | Moderate                 | Low — minor annoyance                |
 
 ---
 
@@ -333,48 +335,48 @@ Theme switching itself is well-optimized (CSS variable injection, no component r
 
 **CSS Layer (globals.css):**
 
-| Category | Tokens | Status |
-|---|---|---|
-| Brand colors | `--brand-primary`, `--brand-secondary`, `--brand-accent` | ⚠️ Defined but unused |
-| Semantic colors | `--primary`, `--secondary`, `--accent`, `--destructive`, `--warning`, `--success`, `--info` + foregrounds | ✅ |
-| Surface colors | `--background`, `--card`, `--popover` + foregrounds | ✅ |
-| UI chrome | `--border`, `--input`, `--ring`, `--muted` + foreground | ✅ |
-| Sidebar | 8 tokens (`--sidebar-*`) | ✅ |
-| Radius | `--radius` (base) + computed sm/md/lg/xl/2xl | ✅ |
-| Shadows | `--shadow-xs` through `--shadow-xl` | ✅ |
-| Glass | `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate` | ✅ |
-| Animation | `--ease-spring`, `--ease-out-expo`, `--duration-*` | ✅ |
+| Category        | Tokens                                                                                                    | Status                |
+| --------------- | --------------------------------------------------------------------------------------------------------- | --------------------- |
+| Brand colors    | `--brand-primary`, `--brand-secondary`, `--brand-accent`                                                  | ⚠️ Defined but unused |
+| Semantic colors | `--primary`, `--secondary`, `--accent`, `--destructive`, `--warning`, `--success`, `--info` + foregrounds | ✅                    |
+| Surface colors  | `--background`, `--card`, `--popover` + foregrounds                                                       | ✅                    |
+| UI chrome       | `--border`, `--input`, `--ring`, `--muted` + foreground                                                   | ✅                    |
+| Sidebar         | 8 tokens (`--sidebar-*`)                                                                                  | ✅                    |
+| Radius          | `--radius` (base) + computed sm/md/lg/xl/2xl                                                              | ✅                    |
+| Shadows         | `--shadow-xs` through `--shadow-xl`                                                                       | ✅                    |
+| Glass           | `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate`                                        | ✅                    |
+| Animation       | `--ease-spring`, `--ease-out-expo`, `--duration-*`                                                        | ✅                    |
 
 **TypeScript Layer (design-tokens.ts):**
 
-| Category | Tokens | Status |
-|---|---|---|
-| `SEMANTIC_COLORS` | 7 color intents with bg/text/border/foreground classes | ✅ |
-| `SPACING` | 8 scale values | ✅ |
-| `RADIUS` | 7 variants | ✅ |
-| `SHADOWS` | 6 depths | ✅ |
-| `TYPOGRAPHY` | 10 scale entries | ✅ |
-| `Z_INDEX` | 10 layers | ✅ |
-| `ANIMATIONS` | Duration + easing + presets | ✅ |
-| `LAYOUT` | Sidebar + topbar + container dimensions | ✅ |
-| `COMPONENT_SIZES` | 5 scale entries (xs–xl) | ✅ |
-| `CONTRAST_VARIANTS` | Default + high | ✅ |
-| `FOCUS_RING` | Shared class string | ✅ |
-| `GRID` | Column + gap presets | ✅ |
+| Category            | Tokens                                                 | Status |
+| ------------------- | ------------------------------------------------------ | ------ |
+| `SEMANTIC_COLORS`   | 7 color intents with bg/text/border/foreground classes | ✅     |
+| `SPACING`           | 8 scale values                                         | ✅     |
+| `RADIUS`            | 7 variants                                             | ✅     |
+| `SHADOWS`           | 6 depths                                               | ✅     |
+| `TYPOGRAPHY`        | 10 scale entries                                       | ✅     |
+| `Z_INDEX`           | 10 layers                                              | ✅     |
+| `ANIMATIONS`        | Duration + easing + presets                            | ✅     |
+| `LAYOUT`            | Sidebar + topbar + container dimensions                | ✅     |
+| `COMPONENT_SIZES`   | 5 scale entries (xs–xl)                                | ✅     |
+| `CONTRAST_VARIANTS` | Default + high                                         | ✅     |
+| `FOCUS_RING`        | Shared class string                                    | ✅     |
+| `GRID`              | Column + gap presets                                   | ✅     |
 
 ### 6.2 Missing Tokens
 
-| Token | Purpose | Priority |
-|---|---|---|
-| `--surface-elevated` | Cards, popovers (distinct from `--card`) | P1 |
-| `--surface-overlay` | Modal/dialog overlays (currently `bg-black/50`) | P1 |
-| `--surface-sunken` | Inset areas, code blocks | P2 |
-| `--skeleton` | Loading skeleton color | P2 |
-| `--chart-1` through `--chart-8` | Data visualization palette | P1 |
-| `--focus-ring` | Dedicated focus ring color (currently aliases `--ring`) | P2 |
-| `--disabled-opacity` | Standard opacity for disabled elements | P2 |
-| `--overlay-opacity` | Standard backdrop opacity | P2 |
-| `--text-on-color` | Generic foreground for colored backgrounds (replaces `text-white`) | P1 |
+| Token                           | Purpose                                                            | Priority |
+| ------------------------------- | ------------------------------------------------------------------ | -------- |
+| `--surface-elevated`            | Cards, popovers (distinct from `--card`)                           | P1       |
+| `--surface-overlay`             | Modal/dialog overlays (currently `bg-black/50`)                    | P1       |
+| `--surface-sunken`              | Inset areas, code blocks                                           | P2       |
+| `--skeleton`                    | Loading skeleton color                                             | P2       |
+| `--chart-1` through `--chart-8` | Data visualization palette                                         | P1       |
+| `--focus-ring`                  | Dedicated focus ring color (currently aliases `--ring`)            | P2       |
+| `--disabled-opacity`            | Standard opacity for disabled elements                             | P2       |
+| `--overlay-opacity`             | Standard backdrop opacity                                          | P2       |
+| `--text-on-color`               | Generic foreground for colored backgrounds (replaces `text-white`) | P1       |
 
 ### 6.3 Recommended Token Naming Standard
 
@@ -395,14 +397,14 @@ Replace all 45 hardcoded hex values in `production-config.ts` with CSS variable 
 
 ```css
 :root {
-  --chart-1: 220 70% 50%;   /* Blue */
-  --chart-2: 262 83% 58%;   /* Purple */
-  --chart-3: 31 97% 60%;    /* Orange */
-  --chart-4: 152 69% 40%;   /* Green */
-  --chart-5: 0 84% 60%;     /* Red */
-  --chart-6: 199 89% 48%;   /* Cyan */
-  --chart-7: 340 75% 55%;   /* Pink */
-  --chart-8: 45 93% 47%;    /* Amber */
+  --chart-1: 220 70% 50%; /* Blue */
+  --chart-2: 262 83% 58%; /* Purple */
+  --chart-3: 31 97% 60%; /* Orange */
+  --chart-4: 152 69% 40%; /* Green */
+  --chart-5: 0 84% 60%; /* Red */
+  --chart-6: 199 89% 48%; /* Cyan */
+  --chart-7: 340 75% 55%; /* Pink */
+  --chart-8: 45 93% 47%; /* Amber */
 }
 
 .dark {
@@ -413,8 +415,9 @@ Replace all 45 hardcoded hex values in `production-config.ts` with CSS variable 
 ```
 
 Then in TypeScript:
+
 ```ts
-color: "hsl(var(--chart-1))"
+color: "hsl(var(--chart-1))";
 ```
 
 ### 6.5 Brand Accent Token Strategy
@@ -427,24 +430,24 @@ The `BRAND_REGISTRY` already defines full light/dark palettes per brand. The mis
 
 ### 6.6 White-Label Scalability Assessment
 
-| Capability | Status |
-|---|---|
-| Per-brand color palettes (light + dark) | ✅ Defined, ❌ not injected |
-| Per-brand typography | ✅ Typed, ❌ not loaded at runtime |
-| Per-brand assets (logo, favicon, OG) | ✅ Defined, ⚠️ partially wired |
-| Per-tenant runtime override | ✅ Architecture exists (org/project/user tokens) |
-| Zero brand leakage | ⚠️ `brandConfig` in `brand.ts` still used by some pages alongside new registry |
-| Feature flags per brand | ✅ `features.enableDarkMode` etc. in `BrandConfig` |
+| Capability                              | Status                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------ |
+| Per-brand color palettes (light + dark) | ✅ Defined, ❌ not injected                                                    |
+| Per-brand typography                    | ✅ Typed, ❌ not loaded at runtime                                             |
+| Per-brand assets (logo, favicon, OG)    | ✅ Defined, ⚠️ partially wired                                                 |
+| Per-tenant runtime override             | ✅ Architecture exists (org/project/user tokens)                               |
+| Zero brand leakage                      | ⚠️ `brandConfig` in `brand.ts` still used by some pages alongside new registry |
+| Feature flags per brand                 | ✅ `features.enableDarkMode` etc. in `BrandConfig`                             |
 
 ### 6.7 Governance Model
 
-| Rule | Enforcement |
-|---|---|
-| All colors via CSS variables | Lint rule: ban hex/rgb in `.tsx` files (eslint-plugin-no-hardcoded-colors) |
-| All spacing via tokens | Lint rule: ban arbitrary Tailwind values for spacing |
-| New tokens require `design-tokens.ts` entry | Code review gate |
-| Brand configs require both light + dark palettes | TypeScript enforced via `BrandColorPalette` required fields |
-| Token removals require deprecation period | Append-only registry with version tracking |
+| Rule                                             | Enforcement                                                                |
+| ------------------------------------------------ | -------------------------------------------------------------------------- |
+| All colors via CSS variables                     | Lint rule: ban hex/rgb in `.tsx` files (eslint-plugin-no-hardcoded-colors) |
+| All spacing via tokens                           | Lint rule: ban arbitrary Tailwind values for spacing                       |
+| New tokens require `design-tokens.ts` entry      | Code review gate                                                           |
+| Brand configs require both light + dark palettes | TypeScript enforced via `BrandColorPalette` required fields                |
+| Token removals require deprecation period        | Append-only registry with version tracking                                 |
 
 ---
 
@@ -457,12 +460,16 @@ The `BRAND_REGISTRY` already defines full light/dark palettes per brand. The mis
 Add to `layout.tsx` `<head>`:
 
 ```tsx
-<script dangerouslySetInnerHTML={{ __html: `
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
   (function(){try{var s=JSON.parse(localStorage.getItem('pb-theme')||'{}');
   var m=s.state?.colorMode||'dark';
   if(m==='system')m=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
   document.documentElement.className=m;}catch(e){}})();
-`}} />
+`,
+  }}
+/>
 ```
 
 Remove `className="dark"` from `<html>` (set via script).
@@ -504,6 +511,7 @@ if (brand) {
 ### 7.5 Replace `text-white` Pattern (P1)
 
 Systematically replace:
+
 - `text-white` → `text-primary-foreground` (on primary bg) or `text-destructive-foreground` (on destructive bg), etc.
 - `bg-black/50` → `bg-foreground/50` or new `--surface-overlay` token
 
@@ -518,15 +526,15 @@ Add to `ThemeProvider`:
 ```tsx
 useEffect(() => {
   const handler = (e: StorageEvent) => {
-    if (e.key === 'pb-theme' && e.newValue) {
+    if (e.key === "pb-theme" && e.newValue) {
       const parsed = JSON.parse(e.newValue);
       if (parsed.state?.colorMode) {
         useThemeStore.getState().setColorMode(parsed.state.colorMode);
       }
     }
   };
-  window.addEventListener('storage', handler);
-  return () => window.removeEventListener('storage', handler);
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
 }, []);
 ```
 
@@ -546,55 +554,55 @@ Add to `globals.css`:
 
 ## 8. Component Theme Inconsistency Matrix
 
-| Component | Dark ✅ | Light ✅ | System ✅ | Brand-Safe | Notes |
-|---|---|---|---|---|---|
-| Sidebar | ✅ | ✅ | ✅ | ✅ | Uses `--sidebar-*` tokens correctly |
-| Topbar | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` on notification badge |
-| Command Bar | ✅ | ✅ | ✅ | ⚠️ | `bg-black/50` overlay |
-| Dialog | ✅ | ✅ | ✅ | ⚠️ | `bg-black/50` overlay |
-| Toast | ✅ | ✅ | ✅ | ⚠️ | `bg-black/5` timer bar (light-only) |
-| Badge | ✅ | ✅ | ✅ | ✅ | Fully token-driven via `cva` |
-| Button | ✅ | ✅ | ✅ | ✅ | Fully token-driven |
-| Card | ✅ | ✅ | ✅ | ✅ | Uses `--card` / `--card-foreground` |
-| Input | ✅ | ✅ | ✅ | ✅ | Uses `--input`, `--border` |
-| Progress Bar | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` inside bar |
-| Calendar | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` on event chips |
-| Fleet | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` on vehicle avatars |
-| Resource Planner | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` on crew avatars + `ring-red-500` |
-| Forecasting | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` + `border-yellow-500` |
-| System Health | ❌ | ❌ | ❌ | ❌ | Raw `text-red-500`, `text-blue-500`, `text-amber-500`, `text-emerald-500` |
-| Settings/Appearance | ✅ | ✅ | ✅ | ❌ | `bg-blue-500` etc. for accent picker (decorative — acceptable) |
-| Decks | ❌ | ❌ | ❌ | ❌ | 22 `text-white`/`bg-white` instances |
-| Landing Page | ⚠️ | ⚠️ | ⚠️ | ❌ | `text-white` on logo, `text-yellow-500` on stars |
-| Data Export | ⚠️ | ⚠️ | ⚠️ | ❌ | Raw palette classes |
+| Component           | Dark ✅ | Light ✅ | System ✅ | Brand-Safe | Notes                                                                     |
+| ------------------- | ------- | -------- | --------- | ---------- | ------------------------------------------------------------------------- |
+| Sidebar             | ✅      | ✅       | ✅        | ✅         | Uses `--sidebar-*` tokens correctly                                       |
+| Topbar              | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` on notification badge                                        |
+| Command Bar         | ✅      | ✅       | ✅        | ⚠️         | `bg-black/50` overlay                                                     |
+| Dialog              | ✅      | ✅       | ✅        | ⚠️         | `bg-black/50` overlay                                                     |
+| Toast               | ✅      | ✅       | ✅        | ⚠️         | `bg-black/5` timer bar (light-only)                                       |
+| Badge               | ✅      | ✅       | ✅        | ✅         | Fully token-driven via `cva`                                              |
+| Button              | ✅      | ✅       | ✅        | ✅         | Fully token-driven                                                        |
+| Card                | ✅      | ✅       | ✅        | ✅         | Uses `--card` / `--card-foreground`                                       |
+| Input               | ✅      | ✅       | ✅        | ✅         | Uses `--input`, `--border`                                                |
+| Progress Bar        | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` inside bar                                                   |
+| Calendar            | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` on event chips                                               |
+| Fleet               | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` on vehicle avatars                                           |
+| Resource Planner    | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` on crew avatars + `ring-red-500`                             |
+| Forecasting         | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` + `border-yellow-500`                                        |
+| System Health       | ❌      | ❌       | ❌        | ❌         | Raw `text-red-500`, `text-blue-500`, `text-amber-500`, `text-emerald-500` |
+| Settings/Appearance | ✅      | ✅       | ✅        | ❌         | `bg-blue-500` etc. for accent picker (decorative — acceptable)            |
+| Decks               | ❌      | ❌       | ❌        | ❌         | 22 `text-white`/`bg-white` instances                                      |
+| Landing Page        | ⚠️      | ⚠️       | ⚠️        | ❌         | `text-white` on logo, `text-yellow-500` on stars                          |
+| Data Export         | ⚠️      | ⚠️       | ⚠️        | ❌         | Raw palette classes                                                       |
 
 ### State Coverage Gaps
 
-| State | Covered | Missing |
-|---|---|---|
-| Hover | ✅ Most components | Some page-level buttons lack hover states |
-| Focus | ⚠️ Partial | Not all custom buttons use `FOCUS_RING` |
-| Active/Pressed | ❌ | No `active:` variants defined system-wide |
-| Disabled | ⚠️ | Disabled inputs styled, but no `--disabled-opacity` token |
-| Loading/Skeleton | ⚠️ | `animate-shimmer` exists but no skeleton token color |
-| Error | ✅ | Destructive variant covers this |
-| Empty | ✅ | Muted foreground pattern used |
+| State            | Covered            | Missing                                                   |
+| ---------------- | ------------------ | --------------------------------------------------------- |
+| Hover            | ✅ Most components | Some page-level buttons lack hover states                 |
+| Focus            | ⚠️ Partial         | Not all custom buttons use `FOCUS_RING`                   |
+| Active/Pressed   | ❌                 | No `active:` variants defined system-wide                 |
+| Disabled         | ⚠️                 | Disabled inputs styled, but no `--disabled-opacity` token |
+| Loading/Skeleton | ⚠️                 | `animate-shimmer` exists but no skeleton token color      |
+| Error            | ✅                 | Destructive variant covers this                           |
+| Empty            | ✅                 | Muted foreground pattern used                             |
 
 ---
 
 ## 9. Deployment Readiness Score
 
-| Criterion | Weight | Score | Weighted |
-|---|---|---|---|
-| Token architecture | 15% | 8/10 | 1.20 |
-| Dark/Light coverage | 15% | 5/10 | 0.75 |
-| SSR/Hydration safety | 15% | 2/10 | 0.30 |
-| Accessibility (contrast) | 15% | 3/10 | 0.45 |
-| Brand/multi-tenant | 10% | 3/10 | 0.30 |
-| Hardcoded color compliance | 10% | 4/10 | 0.40 |
-| Performance | 10% | 7/10 | 0.70 |
-| Settings UI functional | 10% | 0/10 | 0.00 |
-| **Total** | **100%** | — | **4.10 / 10** |
+| Criterion                  | Weight   | Score | Weighted      |
+| -------------------------- | -------- | ----- | ------------- |
+| Token architecture         | 15%      | 8/10  | 1.20          |
+| Dark/Light coverage        | 15%      | 5/10  | 0.75          |
+| SSR/Hydration safety       | 15%      | 2/10  | 0.30          |
+| Accessibility (contrast)   | 15%      | 3/10  | 0.45          |
+| Brand/multi-tenant         | 10%      | 3/10  | 0.30          |
+| Hardcoded color compliance | 10%      | 4/10  | 0.40          |
+| Performance                | 10%      | 7/10  | 0.70          |
+| Settings UI functional     | 10%      | 0/10  | 0.00          |
+| **Total**                  | **100%** | —     | **4.10 / 10** |
 
 **Deployment Readiness: 4 / 10 — Not Ready**
 
@@ -604,81 +612,81 @@ Add to `globals.css`:
 
 ### Phase 1 — P0 Critical Fixes (Week 1)
 
-| # | Task | Effort | Files |
-|---|---|---|---|
-| 1.1 | Inject blocking theme script in `layout.tsx`, remove hardcoded `className="dark"` | 1h | `layout.tsx` |
-| 1.2 | Wire settings appearance tab to `useThemeStore` | 1h | `settings/page.tsx` |
-| 1.3 | Add `--warning`, `--success`, `--info` + foregrounds to `.dark {}` | 30m | `globals.css` |
-| 1.4 | Fix accent contrast: darken `--accent` or switch foreground to dark | 30m | `globals.css` |
-| 1.5 | Fix `--destructive` contrast in light mode (darken to `0 84% 48%`) | 15m | `globals.css` |
+| #   | Task                                                                              | Effort | Files               |
+| --- | --------------------------------------------------------------------------------- | ------ | ------------------- |
+| 1.1 | Inject blocking theme script in `layout.tsx`, remove hardcoded `className="dark"` | 1h     | `layout.tsx`        |
+| 1.2 | Wire settings appearance tab to `useThemeStore`                                   | 1h     | `settings/page.tsx` |
+| 1.3 | Add `--warning`, `--success`, `--info` + foregrounds to `.dark {}`                | 30m    | `globals.css`       |
+| 1.4 | Fix accent contrast: darken `--accent` or switch foreground to dark               | 30m    | `globals.css`       |
+| 1.5 | Fix `--destructive` contrast in light mode (darken to `0 84% 48%`)                | 15m    | `globals.css`       |
 
 ### Phase 2 — P1 Token Compliance (Week 2–3)
 
-| # | Task | Effort | Files |
-|---|---|---|---|
-| 2.1 | Replace all `text-white` with semantic `text-*-foreground` across 27 files | 4h | 27 page/component files |
-| 2.2 | Replace `bg-black/50` overlays with `bg-foreground/50` or `--surface-overlay` | 1h | dialog, command-bar, sidebar |
-| 2.3 | Add `--chart-1` through `--chart-8` to `globals.css` (both modes) | 1h | `globals.css` |
-| 2.4 | Migrate `production-config.ts` hex colors to `hsl(var(--chart-N))` | 2h | `production-config.ts` |
-| 2.5 | Wire `BRAND_REGISTRY` color injection into `ThemeProvider` | 2h | `theme-provider.tsx` |
-| 2.6 | Replace raw palette classes (`text-yellow-500`, `text-red-500`, etc.) with semantic tokens | 2h | 8 files |
-| 2.7 | Add `--surface-elevated`, `--surface-overlay`, `--skeleton` tokens | 1h | `globals.css` |
-| 2.8 | Deprecate `src/config/brand.ts` (legacy) in favor of `brands/index.ts` registry | 1h | `brand.ts` + consumers |
+| #   | Task                                                                                       | Effort | Files                        |
+| --- | ------------------------------------------------------------------------------------------ | ------ | ---------------------------- |
+| 2.1 | Replace all `text-white` with semantic `text-*-foreground` across 27 files                 | 4h     | 27 page/component files      |
+| 2.2 | Replace `bg-black/50` overlays with `bg-foreground/50` or `--surface-overlay`              | 1h     | dialog, command-bar, sidebar |
+| 2.3 | Add `--chart-1` through `--chart-8` to `globals.css` (both modes)                          | 1h     | `globals.css`                |
+| 2.4 | Migrate `production-config.ts` hex colors to `hsl(var(--chart-N))`                         | 2h     | `production-config.ts`       |
+| 2.5 | Wire `BRAND_REGISTRY` color injection into `ThemeProvider`                                 | 2h     | `theme-provider.tsx`         |
+| 2.6 | Replace raw palette classes (`text-yellow-500`, `text-red-500`, etc.) with semantic tokens | 2h     | 8 files                      |
+| 2.7 | Add `--surface-elevated`, `--surface-overlay`, `--skeleton` tokens                         | 1h     | `globals.css`                |
+| 2.8 | Deprecate `src/config/brand.ts` (legacy) in favor of `brands/index.ts` registry            | 1h     | `brand.ts` + consumers       |
 
 ### Phase 3 — P2 Enterprise Hardening (Week 4–5)
 
-| # | Task | Effort | Files |
-|---|---|---|---|
-| 3.1 | Implement cookie-based theme persistence for true SSR safety | 3h | `middleware.ts`, `layout.tsx`, `theme-provider.tsx` |
-| 3.2 | Add cross-tab theme synchronization via `storage` event | 1h | `theme-provider.tsx` |
-| 3.3 | Add no-JS fallback via `prefers-color-scheme` media query | 30m | `globals.css` |
-| 3.4 | Create ESLint rule: ban hardcoded hex/rgb in `.tsx` | 2h | ESLint config |
-| 3.5 | Add `--disabled-opacity`, `--overlay-opacity` tokens | 30m | `globals.css`, `design-tokens.ts` |
-| 3.6 | Universal `FOCUS_RING` application audit — ensure all interactive elements | 2h | All component files |
-| 3.7 | Add `active:` press state variants to button/interactive design tokens | 1h | Button + design tokens |
-| 3.8 | Load brand fonts dynamically via `next/font` per `brandId` | 2h | `layout.tsx`, `theme-provider.tsx` |
-| 3.9 | Add forced-colors mode support (`@media (forced-colors: active)`) | 1h | `globals.css` |
+| #   | Task                                                                       | Effort | Files                                               |
+| --- | -------------------------------------------------------------------------- | ------ | --------------------------------------------------- |
+| 3.1 | Implement cookie-based theme persistence for true SSR safety               | 3h     | `middleware.ts`, `layout.tsx`, `theme-provider.tsx` |
+| 3.2 | Add cross-tab theme synchronization via `storage` event                    | 1h     | `theme-provider.tsx`                                |
+| 3.3 | Add no-JS fallback via `prefers-color-scheme` media query                  | 30m    | `globals.css`                                       |
+| 3.4 | Create ESLint rule: ban hardcoded hex/rgb in `.tsx`                        | 2h     | ESLint config                                       |
+| 3.5 | Add `--disabled-opacity`, `--overlay-opacity` tokens                       | 30m    | `globals.css`, `design-tokens.ts`                   |
+| 3.6 | Universal `FOCUS_RING` application audit — ensure all interactive elements | 2h     | All component files                                 |
+| 3.7 | Add `active:` press state variants to button/interactive design tokens     | 1h     | Button + design tokens                              |
+| 3.8 | Load brand fonts dynamically via `next/font` per `brandId`                 | 2h     | `layout.tsx`, `theme-provider.tsx`                  |
+| 3.9 | Add forced-colors mode support (`@media (forced-colors: active)`)          | 1h     | `globals.css`                                       |
 
 ### Phase 4 — P3 Polish (Week 6)
 
-| # | Task | Effort | Files |
-|---|---|---|---|
-| 4.1 | Print stylesheet theme-awareness (use `--foreground` instead of `black`) | 30m | `globals.css` |
-| 4.2 | Add theme transition animation (smooth color crossfade on toggle) | 1h | `globals.css` |
-| 4.3 | Add density token system (compact/default/comfortable) per settings UI | 3h | New tokens + settings integration |
-| 4.4 | Automated visual regression testing for both themes | 3h | Playwright config |
-| 4.5 | Document token governance in `QUALITY_STANDARDS.md` | 1h | Docs |
+| #   | Task                                                                     | Effort | Files                             |
+| --- | ------------------------------------------------------------------------ | ------ | --------------------------------- |
+| 4.1 | Print stylesheet theme-awareness (use `--foreground` instead of `black`) | 30m    | `globals.css`                     |
+| 4.2 | Add theme transition animation (smooth color crossfade on toggle)        | 1h     | `globals.css`                     |
+| 4.3 | Add density token system (compact/default/comfortable) per settings UI   | 3h     | New tokens + settings integration |
+| 4.4 | Automated visual regression testing for both themes                      | 3h     | Playwright config                 |
+| 4.5 | Document token governance in `QUALITY_STANDARDS.md`                      | 1h     | Docs                              |
 
 ---
 
 ## Appendix A: File Impact Summary
 
-| File | Issues | Priority |
-|---|---|---|
-| `src/app/layout.tsx` | Hardcoded `dark` class, missing blocking script | P0 |
-| `src/app/globals.css` | Missing dark semantic tokens, contrast failures | P0 |
-| `src/app/(dashboard)/settings/page.tsx` | Disconnected theme toggle | P0 |
-| `src/components/theme-provider.tsx` | No brand injection, no cross-tab sync, full-store subscription | P1 |
-| `src/config/production-config.ts` | 45 hardcoded hex colors | P1 |
-| `src/app/(dashboard)/decks/[id]/page.tsx` | 22 raw color references | P1 |
-| `src/app/(dashboard)/system-health/page.tsx` | Raw palette classes | P1 |
-| `src/components/ui/toast.tsx` | `bg-black/5` | P2 |
-| `src/components/ui/dialog.tsx` | `bg-black/50` | P2 |
-| `src/components/command-bar.tsx` | `bg-black/50` | P2 |
-| `src/components/layouts/sidebar.tsx` | `bg-black/50` | P2 |
-| `src/config/brand.ts` | Legacy — should be deprecated | P2 |
+| File                                         | Issues                                                         | Priority |
+| -------------------------------------------- | -------------------------------------------------------------- | -------- |
+| `src/app/layout.tsx`                         | Hardcoded `dark` class, missing blocking script                | P0       |
+| `src/app/globals.css`                        | Missing dark semantic tokens, contrast failures                | P0       |
+| `src/app/(dashboard)/settings/page.tsx`      | Disconnected theme toggle                                      | P0       |
+| `src/components/theme-provider.tsx`          | No brand injection, no cross-tab sync, full-store subscription | P1       |
+| `src/config/production-config.ts`            | 45 hardcoded hex colors                                        | P1       |
+| `src/app/(dashboard)/decks/[id]/page.tsx`    | 22 raw color references                                        | P1       |
+| `src/app/(dashboard)/system-health/page.tsx` | Raw palette classes                                            | P1       |
+| `src/components/ui/toast.tsx`                | `bg-black/5`                                                   | P2       |
+| `src/components/ui/dialog.tsx`               | `bg-black/50`                                                  | P2       |
+| `src/components/command-bar.tsx`             | `bg-black/50`                                                  | P2       |
+| `src/components/layouts/sidebar.tsx`         | `bg-black/50`                                                  | P2       |
+| `src/config/brand.ts`                        | Legacy — should be deprecated                                  | P2       |
 
 ## Appendix B: Recommended Quality Gate Criteria
 
 Add to `quality-standards-registry.ts`:
 
-| ID | Description | Check Type | Threshold |
-|---|---|---|---|
-| `theme-001` | No hardcoded hex in TSX/TS files (except brand-kit preview) | Automated | 0 violations |
-| `theme-002` | No raw Tailwind palette classes (`text-white`, `bg-black`, `text-{color}-{shade}`) | Automated | 0 violations |
-| `theme-003` | All CSS variables defined in both `:root` and `.dark` | Automated | 100% parity |
-| `theme-004` | All semantic foreground/background pairs meet 4.5:1 contrast | Semi-automated | WCAG AA |
-| `theme-005` | No `className="dark"` or `className="light"` hardcoded in server components | Automated | 0 violations |
-| `theme-006` | All interactive elements include focus-visible styles | Semi-automated | 100% coverage |
-| `theme-007` | Brand registry colors injected at runtime | Manual attestation | — |
-| `theme-008` | No FOIT on first paint (lighthouse or visual test) | Semi-automated | 0ms flash |
+| ID          | Description                                                                        | Check Type         | Threshold     |
+| ----------- | ---------------------------------------------------------------------------------- | ------------------ | ------------- |
+| `theme-001` | No hardcoded hex in TSX/TS files (except brand-kit preview)                        | Automated          | 0 violations  |
+| `theme-002` | No raw Tailwind palette classes (`text-white`, `bg-black`, `text-{color}-{shade}`) | Automated          | 0 violations  |
+| `theme-003` | All CSS variables defined in both `:root` and `.dark`                              | Automated          | 100% parity   |
+| `theme-004` | All semantic foreground/background pairs meet 4.5:1 contrast                       | Semi-automated     | WCAG AA       |
+| `theme-005` | No `className="dark"` or `className="light"` hardcoded in server components        | Automated          | 0 violations  |
+| `theme-006` | All interactive elements include focus-visible styles                              | Semi-automated     | 100% coverage |
+| `theme-007` | Brand registry colors injected at runtime                                          | Manual attestation | —             |
+| `theme-008` | No FOIT on first paint (lighthouse or visual test)                                 | Semi-automated     | 0ms flash     |

@@ -17,6 +17,7 @@ interface OrgMembership {
     role: string;
     status: OrgMembershipStatus;
     is_default_org: boolean;
+    is_owner: boolean;
     organizations: {
         id: string;
         name: string;
@@ -32,6 +33,7 @@ interface AuthContextType {
     loading: boolean;
     memberships: OrgMembership[];
     activeOrg: OrgMembership | null;
+    isOwner: boolean;
     switchOrg: (orgId: string) => void;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
@@ -57,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = useMemo(() => createClient(), []);
 
-    // Derive active org from memberships + stored preference
+    // Derive active org + owner flag from memberships + stored preference
     const activeOrg = useMemo(() => {
         if (memberships.length === 0) return null;
         if (activeOrgId) {
@@ -67,6 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fallback: default org, or first membership
         return memberships.find((m) => m.is_default_org) ?? memberships[0] ?? null;
     }, [memberships, activeOrgId]);
+
+    const isOwner = useMemo(() => activeOrg?.is_owner === true, [activeOrg]);
 
     const switchOrg = useCallback((orgId: string) => {
         clearWorkspaceContext();
@@ -82,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { data } = await supabase
                 .from("org_memberships")
                 .select(
-                    "id, user_id, organization_id, role, status, is_default_org, organizations(id, name, slug)"
+                    "id, user_id, organization_id, role, status, is_default_org, is_owner, organizations(id, name, slug)"
                 )
                 .eq("user_id", userId)
                 .eq("status", "active");
@@ -109,11 +113,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             role: "member",
                             status: "active",
                             is_default_org: true,
+                            is_owner: false,
                         },
                         { onConflict: "user_id,organization_id" }
                     )
                     .select(
-                        "id, user_id, organization_id, role, status, is_default_org, organizations(id, name, slug)"
+                        "id, user_id, organization_id, role, status, is_default_org, is_owner, organizations(id, name, slug)"
                     )
                     .single();
 
@@ -271,6 +276,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 loading,
                 memberships,
                 activeOrg,
+                isOwner,
                 switchOrg,
                 signOut,
                 refreshProfile,

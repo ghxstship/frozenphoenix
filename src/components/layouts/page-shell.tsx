@@ -41,7 +41,10 @@ export function PageShell({
     const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
 
     return (
-        <div className={cn("space-y-6 animate-fade-in", className)}>
+        <div
+            className={cn("animate-fade-in", className)}
+            style={{ display: "flex", flexDirection: "column", gap: "var(--density-page-gap)" }}
+        >
             <PageHeader title={title} description={description}>
                 {actions}
             </PageHeader>

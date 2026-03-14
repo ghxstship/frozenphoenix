@@ -7,6 +7,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import type { BadgeVariant } from "@/config/ui-variants";
 
@@ -49,6 +50,8 @@ interface DataBoardProps<T> {
     className?: string;
     // Empty state
     emptyColumnState?: React.ReactNode;
+    /** Rendered when the entire data array is empty (no items across any column) */
+    emptyState?: React.ReactNode;
 }
 
 export function DataBoard<T extends object>({
@@ -63,6 +66,7 @@ export function DataBoard<T extends object>({
     cardClassName,
     className,
     emptyColumnState,
+    emptyState,
 }: DataBoardProps<T>) {
     // ─── Group Data by Column ───
     const groupedData = React.useMemo(() => {
@@ -156,11 +160,19 @@ export function DataBoard<T extends object>({
                 )}
 
                 {/* Title */}
-                <h4 className="font-medium text-sm leading-tight mb-1 line-clamp-2">{title}</h4>
+                <TruncatedText
+                    as="h4"
+                    className="font-medium text-sm leading-tight mb-1"
+                    maxLines={2}
+                >
+                    {title}
+                </TruncatedText>
 
                 {/* Subtitle */}
                 {subtitle && (
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{subtitle}</p>
+                    <TruncatedText as="p" className="text-xs text-muted-foreground mb-2">
+                        {subtitle}
+                    </TruncatedText>
                 )}
 
                 {/* Body Fields */}
@@ -199,6 +211,10 @@ export function DataBoard<T extends object>({
             </div>
         );
     };
+
+    if (data.length === 0 && emptyState) {
+        return <>{emptyState}</>;
+    }
 
     return (
         <div

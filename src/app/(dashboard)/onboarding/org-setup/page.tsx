@@ -5,7 +5,18 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthFormField } from "@/components/auth";
-import { ArrowRight, Building2, CheckCircle2, Clock, Globe, Loader2 } from "lucide-react";
+import {
+    ArrowRight,
+    Briefcase,
+    Building2,
+    CheckCircle2,
+    Clock,
+    Globe,
+    Loader2,
+    Shield,
+    UserCheck,
+    Users,
+} from "lucide-react";
 
 const TIMEZONES = [
     "America/New_York",
@@ -37,11 +48,39 @@ const INDUSTRIES = [
     "Other",
 ];
 
+const ROLE_OPTIONS = [
+    {
+        value: "exec" as const,
+        label: "Executive / C-Suite",
+        description: "Full platform access with financial oversight and org management",
+        icon: Shield,
+    },
+    {
+        value: "director" as const,
+        label: "Department Head / Director",
+        description: "Cross-project oversight with budget approval and crew management",
+        icon: Users,
+    },
+    {
+        value: "pm" as const,
+        label: "Project Manager",
+        description: "Manage projects, vendors, schedules, and team assignments",
+        icon: Briefcase,
+    },
+    {
+        value: "member" as const,
+        label: "Team Member",
+        description: "Execute tasks, track time, and complete checklists",
+        icon: UserCheck,
+    },
+];
+
 export default function OrgSetupPage() {
     const router = useRouter();
     const { user, profile, refreshProfile } = useAuth();
 
     const [orgName, setOrgName] = useState(user?.user_metadata?.org_name || "");
+    const [role, setRole] = useState<"exec" | "director" | "pm" | "member">("pm");
     const [industry, setIndustry] = useState("");
     const [timezone, setTimezone] = useState(
         Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"
@@ -68,6 +107,7 @@ export default function OrgSetupPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         name: orgName.trim(),
+                        role,
                         industry: industry || undefined,
                         timezone,
                     }),
@@ -116,7 +156,7 @@ export default function OrgSetupPage() {
                 setLoading(false);
             }
         },
-        [orgName, industry, timezone, refreshProfile, router]
+        [orgName, role, industry, timezone, refreshProfile, router]
     );
 
     const handleSkip = useCallback(() => {
@@ -192,6 +232,61 @@ export default function OrgSetupPage() {
                         required
                         disabled={loading}
                     />
+
+                    <fieldset className="space-y-2" disabled={loading}>
+                        <legend className="text-sm font-medium leading-none">
+                            What best describes your role?
+                        </legend>
+                        <div className="grid gap-2">
+                            {ROLE_OPTIONS.map((opt) => {
+                                const Icon = opt.icon;
+                                const isSelected = role === opt.value;
+                                return (
+                                    <label
+                                        key={opt.value}
+                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                                            isSelected
+                                                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                                : "border-input hover:border-muted-foreground/30"
+                                        }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            value={opt.value}
+                                            checked={isSelected}
+                                            onChange={() => setRole(opt.value)}
+                                            className="sr-only"
+                                        />
+                                        <Icon
+                                            className={`h-5 w-5 mt-0.5 shrink-0 ${
+                                                isSelected
+                                                    ? "text-primary"
+                                                    : "text-muted-foreground"
+                                            }`}
+                                            aria-hidden="true"
+                                        />
+                                        <div className="space-y-0.5">
+                                            <span
+                                                className={`text-sm font-medium ${
+                                                    isSelected ? "text-primary" : ""
+                                                }`}
+                                            >
+                                                {opt.label}
+                                            </span>
+                                            <p className="text-xs text-muted-foreground">
+                                                {opt.description}
+                                            </p>
+                                        </div>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            You can change this later. As the organization creator, you&apos;ll have
+                            full admin access regardless of role.
+                        </p>
+                    </fieldset>
 
                     <div className="space-y-2">
                         <label htmlFor="org-industry" className="text-sm font-medium leading-none">

@@ -243,9 +243,7 @@ export function DetailPageShell({
                     <div className="space-y-6">
                         {/* Stats */}
                         {statValues && statValues.length > 0 && (
-                            <div
-                                className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(statValues.length, 4)} gap-4`}
-                            >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {statValues.map((s) => (
                                     <StatCard
                                         key={s.label}

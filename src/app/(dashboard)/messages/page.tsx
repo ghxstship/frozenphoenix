@@ -6,8 +6,18 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatView } from "@/components/messaging/chat-view";
 import { ThreadPanel } from "@/components/messaging/thread-panel";
+import { NewConversationDialog } from "@/components/messaging/new-conversation-dialog";
 import { useMessaging } from "@/hooks/use-messaging";
-import { useConversations, useDeleteMessage, useEditMessage, useMessages, usePinMessage, useSendMessage, useToggleReaction } from "@/lib/supabase/hooks-messaging";
+import {
+    useConversations,
+    useDeleteMessage,
+    useEditMessage,
+    useMessages,
+    useOrgMembers,
+    usePinMessage,
+    useSendMessage,
+    useToggleReaction,
+} from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
 import type { MessageWithSender } from "@/types/messaging";
 
@@ -18,6 +28,7 @@ export default function MessagesPage() {
     const setView = useMessaging((s) => s.setView);
     const searchQuery = useMessaging((s) => s.searchQuery);
     const setSearchQuery = useMessaging((s) => s.setSearchQuery);
+    const isComposing = useMessaging((s) => s.isComposing);
     const setComposing = useMessaging((s) => s.setComposing);
     const drafts = useMessaging((s) => s.drafts);
     const setDraft = useMessaging((s) => s.setDraft);
@@ -30,6 +41,7 @@ export default function MessagesPage() {
     const currentUserId = user?.id ?? "";
 
     const { data: conversations = [], isLoading: convLoading } = useConversations();
+    const { data: orgMembers = [] } = useOrgMembers();
     const {
         data: messagesPages,
         isLoading: msgLoading,
@@ -126,6 +138,14 @@ export default function MessagesPage() {
         setView("conversations");
     }, [setActiveConversation, setView]);
 
+    const handleConversationCreated = React.useCallback(
+        (conversationId: string) => {
+            setComposing(false);
+            setActiveConversation(conversationId);
+        },
+        [setComposing, setActiveConversation]
+    );
+
     const showChatOrThread = !!activeConversationId;
 
     return (
@@ -156,12 +176,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Main content area */}
-                <div
-                    className={cn(
-                        "flex-1 flex",
-                        !showChatOrThread && "hidden lg:flex"
-                    )}
-                >
+                <div className={cn("flex-1 flex", !showChatOrThread && "hidden lg:flex")}>
                     {!activeConversationId && (
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">
                             <div className="text-center">
@@ -227,6 +242,13 @@ export default function MessagesPage() {
                     )}
                 </div>
             </div>
+
+            <NewConversationDialog
+                open={isComposing}
+                onClose={() => setComposing(false)}
+                onCreated={handleConversationCreated}
+                members={orgMembers}
+            />
         </div>
     );
 }

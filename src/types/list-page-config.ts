@@ -10,6 +10,7 @@ import type { LucideIcon } from "lucide-react";
 import type { FieldConfig, FieldType } from "@/components/data-view/field-renderers";
 import type { CreateEntityConfig } from "@/components/create-entity-dialog";
 import type { BadgeVariant } from "@/config/ui-variants";
+import type { ViewMode } from "@/components/ui/view-switcher";
 
 // ─── Column Definition ──────────────────────────────────────
 
@@ -133,6 +134,110 @@ export interface ListBoardConfig {
     cardSubtitleKey?: string;
 }
 
+// ─── Timeline Config ────────────────────────────────────────
+
+export interface ListTimelineConfig {
+    /** Record key for bar label */
+    labelKey: string;
+    /** Record key for bar sub-label */
+    sublabelKey?: string;
+    /** Record key for start date (ISO string) */
+    startDateKey: string;
+    /** Record key for end date (ISO string) */
+    endDateKey: string;
+    /** Record key for optional progress (0-100) */
+    progressKey?: string;
+    /** Record key to color-code bars */
+    colorKey?: string;
+    /** Map of colorKey values → CSS color classes */
+    colorMap?: Record<string, string>;
+    /** Record key for grouping rows (e.g. assignee, project) */
+    groupByKey?: string;
+}
+
+// ─── Calendar Config ────────────────────────────────────────
+
+export interface ListCalendarConfig {
+    /** Record key for event title */
+    titleKey: string;
+    /** Record key for event date or start date (ISO string) */
+    dateKey: string;
+    /** Record key for optional end date (multi-day events) */
+    endDateKey?: string;
+    /** Record key for dot/badge color */
+    colorKey?: string;
+    /** Map of colorKey values → CSS color classes */
+    colorMap?: Record<string, string>;
+}
+
+// ─── Gallery Config ─────────────────────────────────────────
+
+export interface ListGalleryConfig {
+    /** Record key for image URL */
+    imageKey: string;
+    /** Record key for title overlay */
+    titleKey: string;
+    /** Record key for subtitle overlay */
+    subtitleKey?: string;
+    /** Record key for status badge */
+    statusKey?: string;
+    /** Aspect ratio of thumbnails */
+    aspectRatio?: "square" | "video" | "wide";
+}
+
+// ─── Chart Config ───────────────────────────────────────────
+
+export interface ListChartConfig {
+    /** Chart type */
+    type: "bar" | "pie" | "donut";
+    /** Record key to aggregate (group-by axis / segment label) */
+    categoryKey: string;
+    /** Record key for numeric value (defaults to count if omitted) */
+    valueKey?: string;
+    /** Aggregation function when valueKey provided */
+    aggregation?: "sum" | "avg" | "count";
+    /** Map of category values → CSS color classes */
+    colorMap?: Record<string, string>;
+}
+
+// ─── Map Config ─────────────────────────────────────────────
+
+export interface ListMapConfig {
+    /** Record key for latitude */
+    latKey: string;
+    /** Record key for longitude */
+    lngKey: string;
+    /** Record key for marker popup title */
+    titleKey: string;
+    /** Record key for marker popup subtitle */
+    subtitleKey?: string;
+    /** Record key for marker color */
+    colorKey?: string;
+    /** Map of colorKey values → CSS color classes */
+    colorMap?: Record<string, string>;
+}
+
+// ─── Workload Config ────────────────────────────────────────
+
+export interface ListWorkloadConfig {
+    /** Record key for resource/person name */
+    resourceKey: string;
+    /** Record key for resource avatar URL */
+    resourceAvatarKey?: string;
+    /** Record key for start date */
+    startDateKey: string;
+    /** Record key for end date */
+    endDateKey: string;
+    /** Record key for hours per day */
+    hoursKey?: string;
+    /** Record key for booking type / category (color coding) */
+    categoryKey?: string;
+    /** Map of category values → CSS color classes */
+    colorMap?: Record<string, string>;
+    /** Max hours per day for capacity line */
+    capacityHoursPerDay?: number;
+}
+
 // ─── Card Config (Grid) ─────────────────────────────────────
 
 export interface ListCardFieldDef {
@@ -188,14 +293,28 @@ export interface ListPageConfig {
     searchKeys?: string[];
 
     // ─── Views ───
-    /** Allowed display modes (default: ["table"]) */
-    views?: ("table" | "board" | "cards")[];
+    /** Allowed display modes (default: ["table"]). Only views listed here appear in the switcher.
+     *  This is the contextual visibility mechanism — omit a view type if it isn't
+     *  meaningful for this entity's data shape. */
+    views?: ViewMode[];
     /** Default display mode */
-    defaultView?: "table" | "board" | "cards";
-    /** Board (kanban) configuration */
+    defaultView?: ViewMode;
+    /** Board (kanban) configuration — required when views includes "board" */
     boardConfig?: ListBoardConfig;
-    /** Card grid configuration */
+    /** Card grid configuration — required when views includes "cards" */
     cardConfig?: ListCardConfig;
+    /** Timeline configuration — required when views includes "timeline" */
+    timelineConfig?: ListTimelineConfig;
+    /** Calendar configuration — required when views includes "calendar" */
+    calendarConfig?: ListCalendarConfig;
+    /** Gallery configuration — required when views includes "gallery" */
+    galleryConfig?: ListGalleryConfig;
+    /** Chart configuration — required when views includes "chart" */
+    chartConfig?: ListChartConfig;
+    /** Map configuration — required when views includes "map" */
+    mapConfig?: ListMapConfig;
+    /** Workload configuration — required when views includes "workload" */
+    workloadConfig?: ListWorkloadConfig;
 
     // ─── Filters ───
     /** Declarative filter definitions */

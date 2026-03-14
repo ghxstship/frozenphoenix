@@ -81,6 +81,17 @@ export const GOALS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
     ],
+    views: ["table", "board", "chart"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "goal_type",
+    },
+    chartConfig: {
+        type: "pie",
+        categoryKey: "status",
+    },
 };
 
 // ─── review_cycle ───
@@ -132,6 +143,19 @@ export const TIME_OFF_REQUESTS_PAGE: ListPageConfig = {
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "board", "calendar"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "requester_name",
+        cardSubtitleKey: "leave_type",
+    },
+    calendarConfig: {
+        titleKey: "requester_name",
+        dateKey: "start_date",
+        endDateKey: "end_date",
+        colorKey: "leave_type",
+    },
 };
 
 // ─── timesheet ───
@@ -260,6 +284,21 @@ export const CREW_AVAILABILITY_PAGE: ListPageConfig = {
         { id: "available_to", header: "To", accessorKey: "available_to", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "timeline", "calendar"],
+    defaultView: "table",
+    timelineConfig: {
+        labelKey: "crew_member_name",
+        startDateKey: "available_from",
+        endDateKey: "available_to",
+        colorKey: "status",
+        groupByKey: "crew_member_name",
+    },
+    calendarConfig: {
+        titleKey: "crew_member_name",
+        dateKey: "available_from",
+        endDateKey: "available_to",
+        colorKey: "status",
+    },
 };
 
 // ─── crew_shift ───
@@ -277,6 +316,22 @@ export const CREW_SHIFTS_PAGE: ListPageConfig = {
         { id: "end_time", header: "End Time", accessorKey: "end_time", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "calendar", "timeline"],
+    defaultView: "table",
+    calendarConfig: {
+        titleKey: "crew_member_name",
+        dateKey: "call_time",
+        endDateKey: "end_time",
+        colorKey: "role",
+    },
+    timelineConfig: {
+        labelKey: "crew_member_name",
+        sublabelKey: "role",
+        startDateKey: "call_time",
+        endDateKey: "end_time",
+        colorKey: "status",
+        groupByKey: "crew_member_name",
+    },
 };
 
 // ─── live_crew_assignment ───
@@ -311,6 +366,22 @@ export const SCHEDULE_ENTRIES_PAGE: ListPageConfig = {
         { id: "end_time", header: "End", accessorKey: "end_time", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "calendar", "timeline"],
+    defaultView: "table",
+    calendarConfig: {
+        titleKey: "title",
+        dateKey: "start_time",
+        endDateKey: "end_time",
+        colorKey: "status",
+    },
+    timelineConfig: {
+        labelKey: "title",
+        sublabelKey: "assignee_name",
+        startDateKey: "start_time",
+        endDateKey: "end_time",
+        colorKey: "status",
+        groupByKey: "assignee_name",
+    },
 };
 
 // ─── shift ───
@@ -440,6 +511,26 @@ export const WORKER_PROFILES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "hire_date", header: "Hired", accessorKey: "hire_date", fieldType: "date" },
     ],
+    views: ["table", "cards", "chart"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "department",
+        statusKey: "status",
+        fields: [
+            {
+                id: "classification",
+                label: "Classification",
+                accessorKey: "classification",
+                fieldType: "status",
+            },
+            { id: "hire_date", label: "Hired", accessorKey: "hire_date", fieldType: "date" },
+        ],
+    },
+    chartConfig: {
+        type: "pie",
+        categoryKey: "department",
+    },
 };
 
 // ─── worker_review ───

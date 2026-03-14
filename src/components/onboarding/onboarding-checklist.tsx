@@ -22,6 +22,7 @@ import {
     X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { LucideIcon } from "lucide-react";
 
 interface OnboardingStep {
@@ -157,18 +158,20 @@ export function OnboardingChecklist() {
                             Complete these steps to get the most out of the platform.
                         </p>
                     </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                            setDismissed(true);
-                            localStorage.setItem(DISMISSED_KEY, "true");
-                        }}
-                        aria-label="Dismiss onboarding checklist"
-                        className="shrink-0 -mt-1 -mr-1"
-                    >
-                        <X className="h-4 w-4" aria-hidden="true" />
-                    </Button>
+                    <Tooltip content="Dismiss" side="bottom">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setDismissed(true);
+                                localStorage.setItem(DISMISSED_KEY, "true");
+                            }}
+                            aria-label="Dismiss onboarding checklist"
+                            className="shrink-0 -mt-1 -mr-1"
+                        >
+                            <X className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                    </Tooltip>
                 </div>
 
                 <div className="flex items-center gap-3">

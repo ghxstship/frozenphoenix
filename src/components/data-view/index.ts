@@ -33,3 +33,21 @@ export { DataBoard, type BoardColumn, type CardField } from "./data-board";
 
 // Data Cards (Grid)
 export { DataCards, type CardFieldDef } from "./data-cards";
+
+// Data Timeline
+export { DataTimeline, type TimelineItem } from "./data-timeline";
+
+// Data Calendar
+export { DataCalendar, type CalendarItem } from "./data-calendar";
+
+// Data Gallery
+export { DataGallery, type GalleryItem } from "./data-gallery";
+
+// Data Chart
+export { DataChart, type ChartSegment, getChartColor } from "./data-chart";
+
+// Data Map
+export { DataMap, type MapItem } from "./data-map";
+
+// Data Workload
+export { DataWorkload, type WorkloadAllocation } from "./data-workload";

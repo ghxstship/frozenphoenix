@@ -80,6 +80,13 @@ export const CREATIVE_REVIEWS_PAGE: ListPageConfig = {
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "review_type",
+    },
 };
 
 // ─── survey_template ───
@@ -146,6 +153,19 @@ export const CAMPAIGN_ASSETS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board", "gallery"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "name",
+        cardSubtitleKey: "campaign_name",
+    },
+    galleryConfig: {
+        imageKey: "thumbnail_url",
+        titleKey: "name",
+        subtitleKey: "campaign_name",
+        statusKey: "status",
+    },
 };
 
 // ─── campaign_channel ───
@@ -180,6 +200,14 @@ export const CAMPAIGN_KPIS_PAGE: ListPageConfig = {
         { id: "current_value", header: "Current", accessorKey: "current_value" },
         { id: "campaign_name", header: "Campaign", accessorKey: "campaign_name" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "metric_type",
+        valueKey: "current_value",
+        aggregation: "sum",
+    },
 };
 
 // ─── catalog_category ───
@@ -219,6 +247,28 @@ export const CATALOG_ITEMS_PAGE: ListPageConfig = {
         },
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
     ],
+    views: ["table", "cards", "gallery"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "sku",
+        statusKey: "is_active",
+        fields: [
+            { id: "price", label: "Price", accessorKey: "price", fieldType: "currency" },
+            {
+                id: "category_name",
+                label: "Category",
+                accessorKey: "category_name",
+                fieldType: "status",
+            },
+        ],
+    },
+    galleryConfig: {
+        imageKey: "image_url",
+        titleKey: "name",
+        subtitleKey: "category_name",
+        statusKey: "is_active",
+    },
 };
 
 // ─── survey_response ───
@@ -235,4 +285,12 @@ export const SURVEY_RESPONSES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "submitted_at", header: "Submitted", accessorKey: "submitted_at", fieldType: "date" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "bar",
+        categoryKey: "survey_name",
+        valueKey: "score",
+        aggregation: "avg",
+    },
 };

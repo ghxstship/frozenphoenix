@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Hash, Lock, Megaphone, Plus, Search, Users } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { ConversationListItem } from "@/types/messaging";
 import { formatRelativeTime } from "@/lib/locale";
 
@@ -46,13 +47,15 @@ export function ConversationList({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                 <h2 className="text-sm font-semibold">Messages</h2>
-                <button
-                    onClick={onCompose}
-                    className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                    aria-label="New conversation"
-                >
-                    <Plus className="h-4 w-4" />
-                </button>
+                <Tooltip content="New conversation" side="bottom">
+                    <button
+                        onClick={onCompose}
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        aria-label="New conversation"
+                    >
+                        <Plus className="h-4 w-4" />
+                    </button>
+                </Tooltip>
             </div>
 
             {/* Search */}
@@ -75,7 +78,10 @@ export function ConversationList({
                 {isLoading ? (
                     <div className="space-y-1 p-2">
                         {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="h-16 rounded-lg bg-secondary/30 animate-pulse" />
+                            <div
+                                key={i}
+                                className="h-16 rounded-lg bg-secondary/30 animate-pulse"
+                            />
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
@@ -147,9 +153,7 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
     const lastMessage = conversation.last_message;
     const hasUnread = conversation.unread_count > 0;
 
-    const timeLabel = lastMessage
-        ? formatRelativeTime(lastMessage.created_at)
-        : null;
+    const timeLabel = lastMessage ? formatRelativeTime(lastMessage.created_at) : null;
 
     return (
         <button
@@ -186,7 +190,9 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
                     <span
                         className={cn(
                             "text-sm truncate",
-                            hasUnread ? "font-semibold text-foreground" : "font-medium text-foreground/80"
+                            hasUnread
+                                ? "font-semibold text-foreground"
+                                : "font-medium text-foreground/80"
                         )}
                     >
                         {displayName}
@@ -226,7 +232,8 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
 // ─── Helpers ─────────────────────────────────────────────────
 
 function ConversationIcon({ conversation }: { conversation: ConversationListItem }) {
-    if (conversation.is_announcement_only) return <Megaphone className="h-4 w-4 text-muted-foreground" />;
+    if (conversation.is_announcement_only)
+        return <Megaphone className="h-4 w-4 text-muted-foreground" />;
     if (!conversation.is_public) return <Lock className="h-3.5 w-3.5 text-muted-foreground" />;
     return <Hash className="h-4 w-4 text-muted-foreground" />;
 }

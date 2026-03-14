@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import { formatAdvanceCost } from "@/config/advancing-config";
 import { Badge } from "@/components/ui/badge";
@@ -39,9 +41,7 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                 <div className="flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5" />
                     <h2 className="text-lg font-semibold">Cart</h2>
-                    {totalItems > 0 && (
-                        <Badge variant="secondary">{totalItems}</Badge>
-                    )}
+                    {totalItems > 0 && <Badge variant="secondary">{totalItems}</Badge>}
                 </div>
                 <div className="flex items-center gap-2">
                     {items.length > 0 && (
@@ -53,13 +53,15 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                             Clear all
                         </button>
                     )}
-                    <button
-                        onClick={onClose}
-                        className="rounded-md p-1.5 hover:bg-accent"
-                        aria-label="Close cart"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
+                    <Tooltip content="Close cart" side="bottom">
+                        <button
+                            onClick={onClose}
+                            className="rounded-md p-1.5 hover:bg-accent"
+                            aria-label="Close cart"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 
@@ -94,16 +96,18 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                 {/* Details */}
                                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                                     <div className="flex items-start justify-between gap-2">
-                                        <span className="truncate text-sm font-medium">
+                                        <TruncatedText className="text-sm font-medium">
                                             {item.name}
-                                        </span>
-                                        <button
-                                            onClick={() => removeItem(item.catalog_item_id)}
-                                            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
-                                            aria-label={`Remove ${item.name}`}
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
+                                        </TruncatedText>
+                                        <Tooltip content={`Remove ${item.name}`} side="left">
+                                            <button
+                                                onClick={() => removeItem(item.catalog_item_id)}
+                                                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
+                                                aria-label={`Remove ${item.name}`}
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </Tooltip>
                                     </div>
                                     <span className="text-xs text-muted-foreground">
                                         {formatAdvanceCost(item.unit_cost)} each
@@ -112,34 +116,38 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                     {/* Quantity controls */}
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-1">
-                                            <button
-                                                onClick={() =>
-                                                    updateQuantity(
-                                                        item.catalog_item_id,
-                                                        item.quantity - 1
-                                                    )
-                                                }
-                                                disabled={item.quantity <= 1}
-                                                className="rounded border p-1 hover:bg-accent disabled:opacity-40"
-                                                aria-label="Decrease quantity"
-                                            >
-                                                <Minus className="h-3 w-3" />
-                                            </button>
+                                            <Tooltip content="Decrease quantity" side="bottom">
+                                                <button
+                                                    onClick={() =>
+                                                        updateQuantity(
+                                                            item.catalog_item_id,
+                                                            item.quantity - 1
+                                                        )
+                                                    }
+                                                    disabled={item.quantity <= 1}
+                                                    className="rounded border p-1 hover:bg-accent disabled:opacity-40"
+                                                    aria-label="Decrease quantity"
+                                                >
+                                                    <Minus className="h-3 w-3" />
+                                                </button>
+                                            </Tooltip>
                                             <span className="w-8 text-center text-sm font-medium">
                                                 {item.quantity}
                                             </span>
-                                            <button
-                                                onClick={() =>
-                                                    updateQuantity(
-                                                        item.catalog_item_id,
-                                                        item.quantity + 1
-                                                    )
-                                                }
-                                                className="rounded border p-1 hover:bg-accent"
-                                                aria-label="Increase quantity"
-                                            >
-                                                <Plus className="h-3 w-3" />
-                                            </button>
+                                            <Tooltip content="Increase quantity" side="bottom">
+                                                <button
+                                                    onClick={() =>
+                                                        updateQuantity(
+                                                            item.catalog_item_id,
+                                                            item.quantity + 1
+                                                        )
+                                                    }
+                                                    className="rounded border p-1 hover:bg-accent"
+                                                    aria-label="Increase quantity"
+                                                >
+                                                    <Plus className="h-3 w-3" />
+                                                </button>
+                                            </Tooltip>
                                         </div>
                                         <span className="text-sm font-semibold">
                                             {formatAdvanceCost(item.unit_cost * item.quantity)}
@@ -147,19 +155,20 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                     </div>
 
                                     {/* Modifiers summary */}
-                                    {item.selected_modifiers && item.selected_modifiers.length > 0 && (
-                                        <div className="flex flex-wrap gap-1">
-                                            {item.selected_modifiers.map((mod) => (
-                                                <Badge
-                                                    key={mod.modifier_id}
-                                                    variant="outline"
-                                                    className="text-[10px]"
-                                                >
-                                                    {mod.option_label}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {item.selected_modifiers &&
+                                        item.selected_modifiers.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.selected_modifiers.map((mod) => (
+                                                    <Badge
+                                                        key={mod.modifier_id}
+                                                        variant="outline"
+                                                        className="text-[10px]"
+                                                    >
+                                                        {mod.option_label}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        )}
                                 </div>
                             </li>
                         ))}
@@ -174,9 +183,7 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                         <span className="text-sm text-muted-foreground">
                             Estimated Total ({totalItems} items)
                         </span>
-                        <span className="text-lg font-bold">
-                            {formatAdvanceCost(totalCost)}
-                        </span>
+                        <span className="text-lg font-bold">{formatAdvanceCost(totalCost)}</span>
                     </div>
                     <button
                         onClick={onCheckout}

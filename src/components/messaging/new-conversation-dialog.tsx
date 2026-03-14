@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Hash, MessageSquare, Users, X } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useCreateConversation } from "@/lib/supabase/hooks-messaging";
 import type { ConversationType } from "@/types/messaging";
 
@@ -98,24 +99,42 @@ export function NewConversationDialog({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-label="New conversation">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-label="New conversation"
+        >
             <div className="fixed inset-0 bg-black/40" onClick={handleClose} aria-hidden="true" />
-            <div className={cn("relative z-50 w-full max-w-md rounded-xl border border-border bg-background shadow-xl", className)}>
+            <div
+                className={cn(
+                    "relative z-50 w-full max-w-md rounded-xl border border-border bg-background shadow-xl",
+                    className
+                )}
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <h2 className="text-base font-semibold">New Conversation</h2>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClose} aria-label="Close">
-                        <X className="h-4 w-4" />
-                    </Button>
+                    <Tooltip content="Close" side="bottom">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={handleClose}
+                            aria-label="Close"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </Tooltip>
                 </div>
 
                 {/* Tabs */}
                 <div className="flex border-b border-border" role="tablist">
-                    {([
+                    {[
                         { value: "dm" as const, label: "Direct Message", icon: MessageSquare },
                         { value: "group" as const, label: "Group", icon: Users },
                         { value: "channel" as const, label: "Channel", icon: Hash },
-                    ]).map(({ value, label, icon: Icon }) => (
+                    ].map(({ value, label, icon: Icon }) => (
                         <button
                             key={value}
                             role="tab"
@@ -209,20 +228,26 @@ export function NewConversationDialog({
                                             key={member.id}
                                             className={cn(
                                                 "w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors",
-                                                isSelected ? "bg-primary/10 text-primary" : "hover:bg-secondary"
+                                                isSelected
+                                                    ? "bg-primary/10 text-primary"
+                                                    : "hover:bg-secondary"
                                             )}
                                             onClick={() => toggleUser(member.id)}
                                         >
                                             <Avatar name={member.name} size="sm" />
                                             <span className="truncate">{member.name}</span>
                                             {isSelected && (
-                                                <span className="ml-auto text-xs text-primary">✓</span>
+                                                <span className="ml-auto text-xs text-primary">
+                                                    ✓
+                                                </span>
                                             )}
                                         </button>
                                     );
                                 })}
                                 {filteredMembers.length === 0 && (
-                                    <p className="text-xs text-muted-foreground text-center py-4">No members found</p>
+                                    <p className="text-xs text-muted-foreground text-center py-4">
+                                        No members found
+                                    </p>
                                 )}
                             </div>
                         </>

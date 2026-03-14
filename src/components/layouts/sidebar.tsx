@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn, getInitials } from "@/lib/utils";
@@ -74,10 +75,8 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                 <Link
                     href={item.path}
                     className={cn(
-                        "group relative flex flex-1 items-center gap-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                        collapsed && !isMobile ? "justify-center px-2 py-2.5" : "py-2",
-                        depth === 0 && (!collapsed || isMobile) && "px-2.5",
-                        depth === 1 && (!collapsed || isMobile) && "pl-8 pr-2.5",
+                        "group relative flex flex-1 items-center gap-2.5 rounded-lg text-[length:inherit] font-medium transition-all duration-200",
+                        collapsed && !isMobile && "justify-center px-2 py-2.5",
                         isActive
                             ? "bg-sidebar-primary/12 text-sidebar-primary"
                             : isChildActive
@@ -85,6 +84,17 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                               : "text-sidebar-foreground/65 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
                     )}
                     aria-current={isActive ? "page" : undefined}
+                    style={
+                        collapsed && !isMobile
+                            ? undefined
+                            : {
+                                  paddingTop: "var(--density-sidebar-item-py)",
+                                  paddingBottom: "var(--density-sidebar-item-py)",
+                                  paddingLeft:
+                                      depth === 1 ? "2rem" : "var(--density-sidebar-item-px)",
+                                  paddingRight: "var(--density-sidebar-item-px)",
+                              }
+                    }
                 >
                     {isActive && (
                         <span
@@ -409,9 +419,7 @@ export function Sidebar() {
                 aria-modal={isMobile && isOpen ? "true" : undefined}
             >
                 {/* Org + Team Switcher Header */}
-                <div
-                    className="flex flex-col border-b border-sidebar-border shrink-0"
-                >
+                <div className="flex flex-col border-b border-sidebar-border shrink-0">
                     <div
                         className="flex items-center justify-between px-3"
                         style={{ height: LAYOUT.topbar.height }}
@@ -480,7 +488,11 @@ export function Sidebar() {
                 </div>
 
                 {/* Nav Sections */}
-                <nav ref={navRef} className="flex-1 overflow-y-auto py-2 px-2 scrollbar-hide">
+                <nav
+                    ref={navRef}
+                    className="flex-1 overflow-y-auto py-2 px-2 scrollbar-hide"
+                    style={{ fontSize: "var(--density-sidebar-font)" }}
+                >
                     {/* Pinned / Favorites Section */}
                     {pinnedItems.length > 0 && !isFiltering && (
                         <div className="mb-2">
@@ -596,15 +608,41 @@ export function Sidebar() {
                     {collapsed && !isMobile ? (
                         <Tooltip content={profile?.name || "Guest"} side="right">
                             <div className="flex justify-center">
-                                <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80">
-                                    {profile ? getInitials(profile.name) : "??"}
+                                <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 overflow-hidden">
+                                    {profile?.avatar_url ? (
+                                        <Image
+                                            src={profile.avatar_url}
+                                            alt={profile.name ?? "Avatar"}
+                                            fill
+                                            sizes="32px"
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                    ) : profile ? (
+                                        getInitials(profile.name)
+                                    ) : (
+                                        "??"
+                                    )}
                                 </div>
                             </div>
                         </Tooltip>
                     ) : (
                         <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 shrink-0">
-                                {profile ? getInitials(profile.name) : "??"}
+                            <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 shrink-0 overflow-hidden">
+                                {profile?.avatar_url ? (
+                                    <Image
+                                        src={profile.avatar_url}
+                                        alt={profile.name ?? "Avatar"}
+                                        fill
+                                        sizes="32px"
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                ) : profile ? (
+                                    getInitials(profile.name)
+                                ) : (
+                                    "??"
+                                )}
                             </div>
                             <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                 <p className="text-xs font-medium truncate">

@@ -406,6 +406,20 @@ export const ASSET_ASSIGNMENTS_PAGE: ListPageConfig = {
         },
         { id: "return_date", header: "Return", accessorKey: "return_date", fieldType: "date" },
     ],
+    views: ["table", "board", "timeline"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "asset_name",
+        cardSubtitleKey: "assignee_name",
+    },
+    timelineConfig: {
+        labelKey: "asset_name",
+        sublabelKey: "assignee_name",
+        startDateKey: "assigned_date",
+        endDateKey: "return_date",
+        colorKey: "status",
+    },
 };
 
 // ─── asset_tag ───
@@ -487,6 +501,21 @@ export const CALENDAR_EVENTS_PAGE: ListPageConfig = {
         { id: "end_time", header: "End", accessorKey: "end_time", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    views: ["table", "calendar", "timeline"],
+    defaultView: "calendar",
+    calendarConfig: {
+        titleKey: "title",
+        dateKey: "start_time",
+        endDateKey: "end_time",
+        colorKey: "event_type",
+    },
+    timelineConfig: {
+        labelKey: "title",
+        sublabelKey: "event_type",
+        startDateKey: "start_time",
+        endDateKey: "end_time",
+        colorKey: "status",
+    },
 };
 
 // ─── channel_template ───
@@ -655,6 +684,14 @@ export const KNOWLEDGE_ARTICLES_PAGE: ListPageConfig = {
         { id: "views_count", header: "Views", accessorKey: "views_count" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    views: ["table", "cards"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "title",
+        subtitleKey: "category",
+        statusKey: "status",
+        fields: [{ id: "views_count", label: "Views", accessorKey: "views_count" }],
+    },
 };
 
 // ─── login_audit_log ───
@@ -730,6 +767,14 @@ export const PROFILES_PAGE: ListPageConfig = {
             fieldType: "date",
         },
     ],
+    views: ["table", "cards"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "email",
+        statusKey: "role",
+        fields: [{ id: "status", label: "Status", accessorKey: "status", fieldType: "status" }],
+    },
 };
 
 // ─── role_change_log ───
@@ -816,6 +861,12 @@ export const SLA_TRACKING_PAGE: ListPageConfig = {
         { id: "breach_count", header: "Breaches", accessorKey: "breach_count" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    views: ["table", "chart"],
+    defaultView: "table",
+    chartConfig: {
+        type: "pie",
+        categoryKey: "compliance_status",
+    },
 };
 
 // ─── storage_object ───

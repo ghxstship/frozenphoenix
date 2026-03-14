@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "./search-input";
 import { X } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export interface FilterOption {
     value: string;
@@ -79,22 +80,22 @@ export function FilterBar({
                             </select>
                         ))}
                         {activeCount > 0 && onClearAll && (
-                            <button
-                                type="button"
-                                onClick={onClearAll}
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                aria-label="Clear all filters"
-                            >
-                                <X className="h-3 w-3" />
-                                Clear ({activeCount})
-                            </button>
+                            <Tooltip content="Clear all filters" side="bottom">
+                                <button
+                                    type="button"
+                                    onClick={onClearAll}
+                                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                    aria-label="Clear all filters"
+                                >
+                                    <X className="h-3 w-3" />
+                                    Clear ({activeCount})
+                                </button>
+                            </Tooltip>
                         )}
                     </div>
                 )}
             </div>
-            {actions && (
-                <div className="flex items-center gap-2 shrink-0">{actions}</div>
-            )}
+            {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
         </div>
     );
 }

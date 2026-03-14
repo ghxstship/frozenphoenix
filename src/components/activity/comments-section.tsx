@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/form/textarea";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { MoreHorizontal, Pencil, Send, Trash2 } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export interface CommentItem {
     id: string;
@@ -210,23 +211,27 @@ export function CommentsSection({
                                                             : undefined
                                                     }
                                                 >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-                                                        onClick={() =>
-                                                            setMenuOpenId(
+                                                    <Tooltip content="Comment actions" side="top">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                                            onClick={() =>
+                                                                setMenuOpenId(
+                                                                    menuOpenId === comment.id
+                                                                        ? null
+                                                                        : comment.id
+                                                                )
+                                                            }
+                                                            aria-expanded={
                                                                 menuOpenId === comment.id
-                                                                    ? null
-                                                                    : comment.id
-                                                            )
-                                                        }
-                                                        aria-expanded={menuOpenId === comment.id}
-                                                        aria-haspopup="true"
-                                                        aria-label="Comment actions"
-                                                    >
-                                                        <MoreHorizontal className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                            }
+                                                            aria-haspopup="true"
+                                                            aria-label="Comment actions"
+                                                        >
+                                                            <MoreHorizontal className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </Tooltip>
                                                     {menuOpenId === comment.id && (
                                                         <div
                                                             className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-scale-in origin-top-right"

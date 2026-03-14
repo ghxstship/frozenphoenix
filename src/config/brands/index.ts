@@ -27,16 +27,13 @@ export type {
 import type { BrandConfig, BrandId } from "./types";
 
 // Re-export individual brand configs
-export { RILLA_BRAND } from "./rilla";
 export { PLAYBOOK_BRAND } from "./playbook";
 
 // Brand registry for runtime lookup
-import { RILLA_BRAND } from "./rilla";
 import { PLAYBOOK_BRAND } from "./playbook";
 
 export const BRAND_REGISTRY: Record<BrandId, BrandConfig> = {
-    "playbook": PLAYBOOK_BRAND,
-    "rilla": RILLA_BRAND,
+    playbook: PLAYBOOK_BRAND,
 };
 
 /**

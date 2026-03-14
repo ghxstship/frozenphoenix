@@ -3,10 +3,18 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { MessageBubble } from "./message-bubble";
 import { MessageComposer } from "./message-composer";
 import { useMessaging } from "@/hooks/use-messaging";
-import { useDeleteMessage, useEditMessage, usePinMessage, useSendMessage, useThreadMessages, useToggleReaction } from "@/lib/supabase/hooks-messaging";
+import {
+    useDeleteMessage,
+    useEditMessage,
+    usePinMessage,
+    useSendMessage,
+    useThreadMessages,
+    useToggleReaction,
+} from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
 import type { MessageWithSender } from "@/types/messaging";
 import { formatRelativeTime } from "@/lib/locale";
@@ -89,13 +97,15 @@ export function ThreadPanel({ parentMessage, className }: ThreadPanelProps) {
         <div className={cn("flex flex-col h-full", className)}>
             {/* Thread header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
-                <button
-                    onClick={() => setActiveThread(null)}
-                    className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                    aria-label="Back to conversation"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                </button>
+                <Tooltip content="Back to conversation" side="bottom">
+                    <button
+                        onClick={() => setActiveThread(null)}
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        aria-label="Back to conversation"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                    </button>
+                </Tooltip>
                 <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold">Thread</h3>
                     <p className="text-xs text-muted-foreground truncate">

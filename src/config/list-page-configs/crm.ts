@@ -42,6 +42,14 @@ export const CONTACTS_PAGE: ListPageConfig = {
         { id: "contact_type", header: "Type", accessorKey: "contact_type", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "cards"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "company",
+        statusKey: "contact_type",
+        fields: [{ id: "email", label: "Email", accessorKey: "email" }],
+    },
 };
 
 // ─── guest_incident ───
@@ -59,6 +67,13 @@ export const GUEST_INCIDENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "reported_at", header: "Reported", accessorKey: "reported_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "description",
+    },
 };
 
 // ─── lost_reason ───
@@ -109,6 +124,13 @@ export const VIP_GUESTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "cards"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "organization",
+        statusKey: "vip_tier",
+    },
 };
 
 // ─── vip_service_request ───
@@ -126,6 +148,13 @@ export const VIP_SERVICE_REQUESTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "guest_name",
+    },
 };
 
 // ─── account_health_score ───
@@ -141,6 +170,17 @@ export const ACCOUNT_HEALTH_SCORES_PAGE: ListPageConfig = {
         { id: "trend", header: "Trend", accessorKey: "trend", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    views: ["table", "cards", "chart"],
+    defaultView: "table",
+    cardConfig: {
+        titleKey: "account_name",
+        statusKey: "trend",
+        fields: [{ id: "score", label: "Score", accessorKey: "score" }],
+    },
+    chartConfig: {
+        type: "pie",
+        categoryKey: "trend",
+    },
 };
 
 // ─── upsell_event ───

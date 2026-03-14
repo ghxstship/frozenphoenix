@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Hash, Lock, Megaphone, Settings, Users } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Avatar } from "@/components/ui/avatar";
 import { MessageBubble } from "./message-bubble";
 import { MessageComposer } from "./message-composer";
@@ -74,7 +75,12 @@ export function ChatView({
 
     if (!conversation) {
         return (
-            <div className={cn("flex flex-col items-center justify-center h-full text-center px-6", className)}>
+            <div
+                className={cn(
+                    "flex flex-col items-center justify-center h-full text-center px-6",
+                    className
+                )}
+            >
                 <Hash className="h-10 w-10 text-muted-foreground/30 mb-3" />
                 <p className="text-sm text-muted-foreground">
                     Select a conversation to start messaging
@@ -83,8 +89,9 @@ export function ChatView({
         );
     }
 
-    const displayName = conversation.name
-        ?? (conversation.type === "dm" && conversation.members.length > 0
+    const displayName =
+        conversation.name ??
+        (conversation.type === "dm" && conversation.members.length > 0
             ? conversation.members.map((m) => m.name).join(", ")
             : "Unnamed");
 
@@ -92,13 +99,15 @@ export function ChatView({
         <div className={cn("flex flex-col h-full", className)}>
             {/* Chat header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
-                <button
-                    onClick={onBack}
-                    className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors lg:hidden"
-                    aria-label="Back to conversations"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                </button>
+                <Tooltip content="Back to conversations" side="bottom">
+                    <button
+                        onClick={onBack}
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors lg:hidden"
+                        aria-label="Back to conversations"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                    </button>
+                </Tooltip>
 
                 {conversation.type === "channel" ? (
                     <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
@@ -133,18 +142,22 @@ export function ChatView({
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <button
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        aria-label="View members"
-                    >
-                        <Users className="h-4 w-4" />
-                    </button>
-                    <button
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        aria-label="Conversation settings"
-                    >
-                        <Settings className="h-4 w-4" />
-                    </button>
+                    <Tooltip content="View members" side="bottom">
+                        <button
+                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            aria-label="View members"
+                        >
+                            <Users className="h-4 w-4" />
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Conversation settings" side="bottom">
+                        <button
+                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            aria-label="Conversation settings"
+                        >
+                            <Settings className="h-4 w-4" />
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 

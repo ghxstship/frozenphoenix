@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useProjects, useTasks } from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CheckSquare } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { CREATE_TASK_CONFIG } from "@/config/create-entity-configs";
 import {
     FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
@@ -207,20 +208,27 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                 />
             </div>
 
-            {view === "table" && (
-                <DataTable
-                    data={filteredTasks}
-                    columns={createTableColumns(projects)}
-                    keyField="id"
-                    sortable
-                    searchable
-                    searchPlaceholder="Search tasks..."
-                    pagination
-                    pageSize={15}
-                    hoverable
-                    stickyHeader
-                />
-            )}
+            {view === "table" &&
+                (filteredTasks.length === 0 ? (
+                    <EmptyState
+                        icon={CheckSquare}
+                        title="No tasks found"
+                        description="Try adjusting your filters or create a new task"
+                    />
+                ) : (
+                    <DataTable
+                        data={filteredTasks}
+                        columns={createTableColumns(projects)}
+                        keyField="id"
+                        sortable
+                        searchable
+                        searchPlaceholder="Search tasks..."
+                        pagination
+                        pageSize={15}
+                        hoverable
+                        stickyHeader
+                    />
+                ))}
 
             {view === "board" && (
                 <DataBoard
@@ -230,112 +238,130 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                     cardFields={boardCardFields}
                     cardTitle="title"
                     columnWidth={280}
+                    emptyState={
+                        <EmptyState
+                            icon={CheckSquare}
+                            title="No tasks found"
+                            description="Try adjusting your filters or create a new task"
+                        />
+                    }
                 />
             )}
 
-            {view === "list" && (
-                <div className="spatial-card overflow-hidden">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-border text-left">
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                    Task
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                    Status
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
-                                    Priority
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                                    Fab Status
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                                    Material Cost
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                                    Due Date
-                                </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden xl:table-cell">
-                                    Dependencies
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredTasks.map((task) => {
-                                const project = projects.find((p) => p.id === task.projectId);
-                                return (
-                                    <tr
-                                        key={task.id}
-                                        className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
-                                    >
-                                        <td className="px-4 py-3">
-                                            <div>
-                                                <p className="text-sm font-medium">{task.title}</p>
-                                                <p className="text-[11px] text-muted-foreground">
-                                                    {project?.name}
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <Badge
-                                                variant={TASK_STATUS_CONFIG[task.status].variant}
-                                                className="text-[10px]"
-                                            >
-                                                {TASK_STATUS_CONFIG[task.status].label}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <Badge
-                                                variant={
-                                                    TASK_PRIORITY_CONFIG[task.priority].variant
-                                                }
-                                                className="text-[10px]"
-                                            >
-                                                {TASK_PRIORITY_CONFIG[task.priority].label}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-4 py-3 hidden md:table-cell">
-                                            {task.fabricationStatus ? (
-                                                <span className="text-xs font-medium">
-                                                    {
-                                                        FABRICATION_STATUS_CONFIG[
-                                                            task.fabricationStatus
-                                                        ].label
+            {view === "list" &&
+                (filteredTasks.length === 0 ? (
+                    <EmptyState
+                        icon={CheckSquare}
+                        title="No tasks found"
+                        description="Try adjusting your filters or create a new task"
+                    />
+                ) : (
+                    <div className="spatial-card overflow-hidden">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-border text-left">
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                        Task
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                        Status
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                        Priority
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                                        Fab Status
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                                        Material Cost
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                                        Due Date
+                                    </th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden xl:table-cell">
+                                        Dependencies
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredTasks.map((task) => {
+                                    const project = projects.find((p) => p.id === task.projectId);
+                                    return (
+                                        <tr
+                                            key={task.id}
+                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                                        >
+                                            <td className="px-4 py-3">
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        {task.title}
+                                                    </p>
+                                                    <p className="text-[11px] text-muted-foreground">
+                                                        {project?.name}
+                                                    </p>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Badge
+                                                    variant={
+                                                        TASK_STATUS_CONFIG[task.status].variant
                                                     }
+                                                    className="text-[10px]"
+                                                >
+                                                    {TASK_STATUS_CONFIG[task.status].label}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Badge
+                                                    variant={
+                                                        TASK_PRIORITY_CONFIG[task.priority].variant
+                                                    }
+                                                    className="text-[10px]"
+                                                >
+                                                    {TASK_PRIORITY_CONFIG[task.priority].label}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-4 py-3 hidden md:table-cell">
+                                                {task.fabricationStatus ? (
+                                                    <span className="text-xs font-medium">
+                                                        {
+                                                            FABRICATION_STATUS_CONFIG[
+                                                                task.fabricationStatus
+                                                            ].label
+                                                        }
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 hidden lg:table-cell">
+                                                <span className="text-xs font-medium">
+                                                    {task.materialCost
+                                                        ? formatCurrency(task.materialCost)
+                                                        : "—"}
                                                 </span>
-                                            ) : (
+                                            </td>
+                                            <td className="px-4 py-3 hidden lg:table-cell">
                                                 <span className="text-xs text-muted-foreground">
-                                                    —
+                                                    {task.dueDate ? formatDate(task.dueDate) : "—"}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 hidden lg:table-cell">
-                                            <span className="text-xs font-medium">
-                                                {task.materialCost
-                                                    ? formatCurrency(task.materialCost)
-                                                    : "—"}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 hidden lg:table-cell">
-                                            <span className="text-xs text-muted-foreground">
-                                                {task.dueDate ? formatDate(task.dueDate) : "—"}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 hidden xl:table-cell">
-                                            <span className="text-[10px] text-muted-foreground">
-                                                {task.dependencies.length > 0
-                                                    ? `${task.dependencies.length} deps`
-                                                    : "none"}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                                            </td>
+                                            <td className="px-4 py-3 hidden xl:table-cell">
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {task.dependencies.length > 0
+                                                        ? `${task.dependencies.length} deps`
+                                                        : "none"}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                ))}
         </>
     );
 }

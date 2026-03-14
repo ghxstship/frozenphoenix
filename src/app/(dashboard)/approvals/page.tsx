@@ -34,6 +34,7 @@ import { DateField } from "@/components/data-view/field-renderers";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar } from "@/components/ui/tab-bar";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 const approvalColumns: ColumnDef<Approval>[] = [
     {
@@ -490,196 +491,219 @@ export default function ApprovalsPage() {
                             />
                         )}
 
-                        {approvalView === "list" && (
-                            <div className="space-y-4">
-                                {approvals.map((approval, i) => {
-                                    const deadlineDate = new Date(approval.deadline);
-                                    const now = new Date();
-                                    const hoursRemaining = Math.round(
-                                        (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60)
-                                    );
-                                    const isOverdue = hoursRemaining < 0;
+                        {approvalView === "list" &&
+                            (approvals.length === 0 ? (
+                                <EmptyState
+                                    icon={Shield}
+                                    title="No approvals found"
+                                    description="No approvals match your current filters"
+                                />
+                            ) : (
+                                <div className="space-y-4">
+                                    {approvals.map((approval, i) => {
+                                        const deadlineDate = new Date(approval.deadline);
+                                        const now = new Date();
+                                        const hoursRemaining = Math.round(
+                                            (deadlineDate.getTime() - now.getTime()) /
+                                                (1000 * 60 * 60)
+                                        );
+                                        const isOverdue = hoursRemaining < 0;
 
-                                    return (
-                                        <StaggerItem key={approval.id} index={i} stagger="relaxed">
-                                            <Card
-                                                className={`${
-                                                    approval.status === "overdue"
-                                                        ? "border-destructive/30 bg-destructive/3"
-                                                        : approval.status === "pending"
-                                                          ? "border-warning/20"
-                                                          : ""
-                                                }`}
+                                        return (
+                                            <StaggerItem
+                                                key={approval.id}
+                                                index={i}
+                                                stagger="relaxed"
                                             >
-                                                <CardContent>
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex items-start gap-3">
-                                                            <div
-                                                                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                                <Card
+                                                    className={`${
+                                                        approval.status === "overdue"
+                                                            ? "border-destructive/30 bg-destructive/3"
+                                                            : approval.status === "pending"
+                                                              ? "border-warning/20"
+                                                              : ""
+                                                    }`}
+                                                >
+                                                    <CardContent>
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex items-start gap-3">
+                                                                <div
+                                                                    className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                                                        approval.status ===
+                                                                        "approved"
+                                                                            ? "bg-success/10"
+                                                                            : approval.status ===
+                                                                                "overdue"
+                                                                              ? "bg-destructive/10"
+                                                                              : approval.status ===
+                                                                                  "pending"
+                                                                                ? "bg-warning/10"
+                                                                                : "bg-muted"
+                                                                    }`}
+                                                                >
+                                                                    {approval.status ===
+                                                                    "approved" ? (
+                                                                        <CheckCircle2 className="h-5 w-5 text-success" />
+                                                                    ) : approval.status ===
+                                                                      "overdue" ? (
+                                                                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                                                                    ) : approval.status ===
+                                                                      "pending" ? (
+                                                                        <Clock className="h-5 w-5 text-warning" />
+                                                                    ) : (
+                                                                        <XCircle className="h-5 w-5 text-muted-foreground" />
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="text-sm font-bold">
+                                                                        {approval.milestoneName}
+                                                                    </h3>
+                                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                                        Approver:{" "}
+                                                                        {approval.approverName}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <Badge
+                                                                variant={
                                                                     approval.status === "approved"
-                                                                        ? "bg-success/10"
+                                                                        ? "success"
                                                                         : approval.status ===
                                                                             "overdue"
-                                                                          ? "bg-destructive/10"
+                                                                          ? "destructive"
                                                                           : approval.status ===
                                                                               "pending"
-                                                                            ? "bg-warning/10"
-                                                                            : "bg-muted"
-                                                                }`}
+                                                                            ? "warning"
+                                                                            : "ghost"
+                                                                }
                                                             >
-                                                                {approval.status === "approved" ? (
-                                                                    <CheckCircle2 className="h-5 w-5 text-success" />
-                                                                ) : approval.status ===
-                                                                  "overdue" ? (
-                                                                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                                                                ) : approval.status ===
-                                                                  "pending" ? (
-                                                                    <Clock className="h-5 w-5 text-warning" />
-                                                                ) : (
-                                                                    <XCircle className="h-5 w-5 text-muted-foreground" />
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <h3 className="text-sm font-bold">
-                                                                    {approval.milestoneName}
-                                                                </h3>
-                                                                <p className="text-xs text-muted-foreground mt-0.5">
-                                                                    Approver:{" "}
-                                                                    {approval.approverName}
-                                                                </p>
-                                                            </div>
+                                                                {approval.status}
+                                                            </Badge>
                                                         </div>
-                                                        <Badge
-                                                            variant={
-                                                                approval.status === "approved"
-                                                                    ? "success"
-                                                                    : approval.status === "overdue"
-                                                                      ? "destructive"
-                                                                      : approval.status ===
-                                                                          "pending"
-                                                                        ? "warning"
-                                                                        : "ghost"
-                                                            }
-                                                        >
-                                                            {approval.status}
-                                                        </Badge>
-                                                    </div>
 
-                                                    {/* Timeline Impact Notification */}
-                                                    {approval.status === "overdue" &&
-                                                        approval.timelineImpactDays && (
-                                                            <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
-                                                                <div className="flex items-center gap-2 mb-2">
-                                                                    <AlertTriangle className="h-4 w-4 text-destructive" />
-                                                                    <span className="text-xs font-bold text-destructive">
-                                                                        Timeline Impact Notification
-                                                                    </span>
+                                                        {/* Timeline Impact Notification */}
+                                                        {approval.status === "overdue" &&
+                                                            approval.timelineImpactDays && (
+                                                                <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                                                                        <span className="text-xs font-bold text-destructive">
+                                                                            Timeline Impact
+                                                                            Notification
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        This approval is{" "}
+                                                                        <strong className="text-destructive">
+                                                                            {Math.abs(
+                                                                                hoursRemaining
+                                                                            )}
+                                                                            h overdue
+                                                                        </strong>
+                                                                        . The final delivery date
+                                                                        will shift by{" "}
+                                                                        <strong className="text-destructive">
+                                                                            +
+                                                                            {
+                                                                                approval.timelineImpactDays
+                                                                            }{" "}
+                                                                            days
+                                                                        </strong>{" "}
+                                                                        unless approved immediately.
+                                                                    </p>
+                                                                    <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        <span>
+                                                                            Deadline was:{" "}
+                                                                            {formatDate(
+                                                                                deadlineDate,
+                                                                                "medium"
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    This approval is{" "}
-                                                                    <strong className="text-destructive">
-                                                                        {Math.abs(hoursRemaining)}h
-                                                                        overdue
-                                                                    </strong>
-                                                                    . The final delivery date will
-                                                                    shift by{" "}
-                                                                    <strong className="text-destructive">
-                                                                        +
-                                                                        {
-                                                                            approval.timelineImpactDays
-                                                                        }{" "}
-                                                                        days
-                                                                    </strong>{" "}
-                                                                    unless approved immediately.
-                                                                </p>
-                                                                <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                                                                    <Calendar className="h-3 w-3" />
+                                                            )}
+
+                                                        {/* Pending countdown */}
+                                                        {approval.status === "pending" &&
+                                                            !isOverdue && (
+                                                                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                                                                    <Clock className="h-3.5 w-3.5" />
                                                                     <span>
-                                                                        Deadline was:{" "}
-                                                                        {formatDate(
-                                                                            deadlineDate,
-                                                                            "medium"
-                                                                        )}
+                                                                        {hoursRemaining}h remaining
                                                                     </span>
+                                                                    <ProgressBar
+                                                                        value={Math.max(
+                                                                            0,
+                                                                            Math.min(
+                                                                                100,
+                                                                                ((72 -
+                                                                                    hoursRemaining) /
+                                                                                    72) *
+                                                                                    100
+                                                                            )
+                                                                        )}
+                                                                        size="xs"
+                                                                        className="flex-1"
+                                                                    />
                                                                 </div>
-                                                            </div>
-                                                        )}
+                                                            )}
 
-                                                    {/* Pending countdown */}
-                                                    {approval.status === "pending" &&
-                                                        !isOverdue && (
-                                                            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                                                                <Clock className="h-3.5 w-3.5" />
-                                                                <span>
-                                                                    {hoursRemaining}h remaining
-                                                                </span>
-                                                                <ProgressBar
-                                                                    value={Math.max(
-                                                                        0,
-                                                                        Math.min(
-                                                                            100,
-                                                                            ((72 - hoursRemaining) /
-                                                                                72) *
-                                                                                100
-                                                                        )
+                                                        {/* Approve / Reject Actions */}
+                                                        {(approval.status === "pending" ||
+                                                            approval.status === "overdue") && (
+                                                            <div className="mt-4 flex items-center gap-2 justify-end">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    onClick={() =>
+                                                                        handleReject(approval.id)
+                                                                    }
+                                                                    disabled={
+                                                                        updateApproval.isPending
+                                                                    }
+                                                                >
+                                                                    <XCircle className="h-3.5 w-3.5" />
+                                                                    Reject
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleApprove(approval.id)
+                                                                    }
+                                                                    disabled={
+                                                                        updateApproval.isPending
+                                                                    }
+                                                                >
+                                                                    {updateApproval.isPending ? (
+                                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                    ) : (
+                                                                        <CheckCircle2 className="h-3.5 w-3.5" />
                                                                     )}
-                                                                    size="xs"
-                                                                    className="flex-1"
-                                                                />
+                                                                    Approve
+                                                                </Button>
                                                             </div>
                                                         )}
 
-                                                    {/* Approve / Reject Actions */}
-                                                    {(approval.status === "pending" ||
-                                                        approval.status === "overdue") && (
-                                                        <div className="mt-4 flex items-center gap-2 justify-end">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    handleReject(approval.id)
-                                                                }
-                                                                disabled={updateApproval.isPending}
-                                                            >
-                                                                <XCircle className="h-3.5 w-3.5" />
-                                                                Reject
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleApprove(approval.id)
-                                                                }
-                                                                disabled={updateApproval.isPending}
-                                                            >
-                                                                {updateApproval.isPending ? (
-                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                                ) : (
+                                                        {/* Approved date */}
+                                                        {approval.status === "approved" &&
+                                                            approval.approvedAt && (
+                                                                <div className="mt-3 flex items-center gap-2 text-xs text-success">
                                                                     <CheckCircle2 className="h-3.5 w-3.5" />
-                                                                )}
-                                                                Approve
-                                                            </Button>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Approved date */}
-                                                    {approval.status === "approved" &&
-                                                        approval.approvedAt && (
-                                                            <div className="mt-3 flex items-center gap-2 text-xs text-success">
-                                                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                                                Approved on{" "}
-                                                                {formatDate(
-                                                                    approval.approvedAt,
-                                                                    "compact"
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                </CardContent>
-                                            </Card>
-                                        </StaggerItem>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                                                    Approved on{" "}
+                                                                    {formatDate(
+                                                                        approval.approvedAt,
+                                                                        "compact"
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                    </CardContent>
+                                                </Card>
+                                            </StaggerItem>
+                                        );
+                                    })}
+                                </div>
+                            ))}
                     </>
                 )}
             </div>

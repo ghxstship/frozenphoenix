@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 export interface BrandColorPalette {
-    primary: string;        // HSL format: "H S% L%"
+    primary: string; // HSL format: "H S% L%"
     primaryForeground: string;
     secondary: string;
     secondaryForeground: string;
@@ -55,17 +55,17 @@ export interface BrandConfig {
     shortName: string;
     tagline: string;
     description?: string;
-    
+
     colors: {
         light: BrandColorPalette;
         dark: BrandColorPalette;
     };
-    
+
     typography: BrandTypography;
     assets: BrandAssets;
     support: BrandContact;
     social?: BrandSocial;
-    
+
     features?: {
         enableDarkMode?: boolean;
         enableAnimations?: boolean;
@@ -73,4 +73,4 @@ export interface BrandConfig {
     };
 }
 
-export type BrandId = "playbook" | "rilla";
+export type BrandId = "playbook";

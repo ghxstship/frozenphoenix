@@ -21,6 +21,7 @@ import {
     TagsField,
 } from "@/components/data-view/field-renderers";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { EmptyState } from "@/components/layouts/empty-state";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
 
@@ -262,16 +263,23 @@ function CrewContent({ crew }: { crew: CrewMember[] }) {
                 />
             </div>
 
-            {viewMode === "table" && (
-                <DataTable<CrewMember>
-                    data={crew}
-                    columns={tableColumns}
-                    keyField="id"
-                    searchable
-                    searchPlaceholder="Search crew..."
-                    pageSize={20}
-                />
-            )}
+            {viewMode === "table" &&
+                (crew.length === 0 ? (
+                    <EmptyState
+                        icon={Users}
+                        title="No crew members found"
+                        description="Add your first crew member to get started"
+                    />
+                ) : (
+                    <DataTable<CrewMember>
+                        data={crew}
+                        columns={tableColumns}
+                        keyField="id"
+                        searchable
+                        searchPlaceholder="Search crew..."
+                        pageSize={20}
+                    />
+                ))}
 
             {viewMode === "board" && (
                 <DataBoard<CrewMember>
@@ -281,18 +289,32 @@ function CrewContent({ crew }: { crew: CrewMember[] }) {
                     cardTitle="name"
                     cardFields={boardCardFields}
                     onCardClick={(member) => router.push(`/crew/${member.id}`)}
+                    emptyState={
+                        <EmptyState
+                            icon={Users}
+                            title="No crew members found"
+                            description="Add your first crew member to get started"
+                        />
+                    }
                 />
             )}
 
-            {viewMode === "cards" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {crew.map((member, i) => (
-                        <StaggerItem key={member.id} index={i} stagger="relaxed">
-                            <CrewCard member={member} />
-                        </StaggerItem>
-                    ))}
-                </div>
-            )}
+            {viewMode === "cards" &&
+                (crew.length === 0 ? (
+                    <EmptyState
+                        icon={Users}
+                        title="No crew members found"
+                        description="Add your first crew member to get started"
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {crew.map((member, i) => (
+                            <StaggerItem key={member.id} index={i} stagger="relaxed">
+                                <CrewCard member={member} />
+                            </StaggerItem>
+                        ))}
+                    </div>
+                ))}
         </>
     );
 }

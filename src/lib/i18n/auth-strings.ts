@@ -189,6 +189,43 @@ export const AUTH_STRINGS = {
         lastSignInLabel: "Last sign in",
     },
 
+    // ─── Ownership ────────────────────────────────────────────────
+    ownership: {
+        transferTitle: "Transfer Ownership",
+        transferDescription:
+            "Transfer organization ownership to another internal team member. The new owner will gain full administrative control including billing, organization settings, and the ability to delete the organization.",
+        transferIrreversible: "This action is irreversible without the new owner's consent.",
+        newOwnerLabel: "New Owner",
+        newOwnerPlaceholder: "Select a team member…",
+        confirmLabel: 'Type "{confirmText}" to confirm',
+        confirmPlaceholder: "transfer {orgName}",
+        transferButton: "Transfer Ownership",
+        transferringButton: "Transferring…",
+        transferSuccess: "Ownership transferred",
+        transferSuccessMessage: "You are no longer the organization owner.",
+        transferFailed: "Transfer failed",
+        noEligibleMembers:
+            "No eligible team members found. Invite an internal team member before transferring ownership.",
+        ownerBadge: "Owner",
+        ownerGateTitle: "Owner Access Required",
+        ownerGateMessage:
+            "This section is restricted to the organization owner. Contact your organization owner if you need access.",
+    },
+
+    // ─── Role Selection (Onboarding) ──────────────────────────────
+    roleSelection: {
+        title: "Your Role",
+        subtitle: "How would you describe your role?",
+        execLabel: "Executive / Producer",
+        execDescription: "I oversee the overall strategy and operations",
+        directorLabel: "Director / Department Head",
+        directorDescription: "I manage a department or major workstream",
+        pmLabel: "Project Manager / Coordinator",
+        pmDescription: "I coordinate tasks, timelines, and deliverables",
+        memberLabel: "Team Member",
+        memberDescription: "I contribute to projects and tasks",
+    },
+
     // ─── Shared / Common ────────────────────────────────────────
     common: {
         required: "*",

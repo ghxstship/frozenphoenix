@@ -18839,6 +18839,7 @@ export type Database = {
                     invited_at: string | null;
                     invited_by: string | null;
                     is_default_org: boolean;
+                    is_owner: boolean;
                     joined_at: string | null;
                     organization_id: string;
                     role: string;
@@ -18855,6 +18856,7 @@ export type Database = {
                     invited_at?: string | null;
                     invited_by?: string | null;
                     is_default_org?: boolean;
+                    is_owner?: boolean;
                     joined_at?: string | null;
                     organization_id: string;
                     role?: string;
@@ -18871,6 +18873,7 @@ export type Database = {
                     invited_at?: string | null;
                     invited_by?: string | null;
                     is_default_org?: boolean;
+                    is_owner?: boolean;
                     joined_at?: string | null;
                     organization_id?: string;
                     role?: string;
@@ -21698,32 +21701,77 @@ export type Database = {
             profiles: {
                 Row: {
                     avatar_url: string | null;
+                    billing_address: Record<string, unknown> | null;
                     created_at: string | null;
+                    dietary_restrictions: string | null;
                     email: string;
+                    emergency_contact_email: string | null;
+                    emergency_contact_name: string | null;
+                    emergency_contact_phone: string | null;
+                    emergency_contact_relationship: string | null;
                     id: string;
+                    legal_first_name: string | null;
+                    legal_last_name: string | null;
+                    legal_middle_name: string | null;
+                    mailing_address: Record<string, unknown> | null;
                     name: string;
                     organization_id: string | null;
+                    phone: string | null;
+                    preferred_name: string | null;
+                    pronouns: string | null;
                     role: string;
+                    travel_preferences: Record<string, unknown> | null;
+                    travel_profile: Record<string, unknown> | null;
                     updated_at: string | null;
                 };
                 Insert: {
                     avatar_url?: string | null;
+                    billing_address?: Record<string, unknown> | null;
                     created_at?: string | null;
+                    dietary_restrictions?: string | null;
                     email: string;
+                    emergency_contact_email?: string | null;
+                    emergency_contact_name?: string | null;
+                    emergency_contact_phone?: string | null;
+                    emergency_contact_relationship?: string | null;
                     id: string;
+                    legal_first_name?: string | null;
+                    legal_last_name?: string | null;
+                    legal_middle_name?: string | null;
+                    mailing_address?: Record<string, unknown> | null;
                     name: string;
                     organization_id?: string | null;
+                    phone?: string | null;
+                    preferred_name?: string | null;
+                    pronouns?: string | null;
                     role?: string;
+                    travel_preferences?: Record<string, unknown> | null;
+                    travel_profile?: Record<string, unknown> | null;
                     updated_at?: string | null;
                 };
                 Update: {
                     avatar_url?: string | null;
+                    billing_address?: Record<string, unknown> | null;
                     created_at?: string | null;
+                    dietary_restrictions?: string | null;
                     email?: string;
+                    emergency_contact_email?: string | null;
+                    emergency_contact_name?: string | null;
+                    emergency_contact_phone?: string | null;
+                    emergency_contact_relationship?: string | null;
                     id?: string;
+                    legal_first_name?: string | null;
+                    legal_last_name?: string | null;
+                    legal_middle_name?: string | null;
+                    mailing_address?: Record<string, unknown> | null;
                     name?: string;
                     organization_id?: string | null;
+                    phone?: string | null;
+                    preferred_name?: string | null;
+                    pronouns?: string | null;
                     role?: string;
+                    travel_preferences?: Record<string, unknown> | null;
+                    travel_profile?: Record<string, unknown> | null;
                     updated_at?: string | null;
                 };
                 Relationships: [
@@ -29974,6 +30022,69 @@ export type Database = {
                     },
                 ];
             };
+            user_certifications: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    cert_type: Database["public"]["Enums"]["user_certification_type"];
+                    label: string;
+                    issuing_authority: string | null;
+                    certificate_number: string | null;
+                    issued_date: string | null;
+                    expiry_date: string | null;
+                    document_url: string | null;
+                    notes: string | null;
+                    organization_id: string | null;
+                    created_at: string | null;
+                    updated_at: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    cert_type: Database["public"]["Enums"]["user_certification_type"];
+                    label: string;
+                    issuing_authority?: string | null;
+                    certificate_number?: string | null;
+                    issued_date?: string | null;
+                    expiry_date?: string | null;
+                    document_url?: string | null;
+                    notes?: string | null;
+                    organization_id?: string | null;
+                    created_at?: string | null;
+                    updated_at?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    cert_type?: Database["public"]["Enums"]["user_certification_type"];
+                    label?: string;
+                    issuing_authority?: string | null;
+                    certificate_number?: string | null;
+                    issued_date?: string | null;
+                    expiry_date?: string | null;
+                    document_url?: string | null;
+                    notes?: string | null;
+                    organization_id?: string | null;
+                    created_at?: string | null;
+                    updated_at?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "user_certifications_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "user_certifications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             user_onboarding_progress: {
                 Row: {
                     completed_at: string | null;
@@ -36164,6 +36275,25 @@ export type Database = {
                 | "deactivated"
                 | "pending_deletion"
                 | "anonymized";
+            user_certification_type:
+                | "first_aid"
+                | "cpr"
+                | "aed"
+                | "cdl_a"
+                | "cdl_b"
+                | "cdl_c"
+                | "osha_10"
+                | "osha_30"
+                | "forklift"
+                | "rigging"
+                | "electrical"
+                | "fire_safety"
+                | "food_handler"
+                | "hazmat"
+                | "fall_protection"
+                | "confined_space"
+                | "union_card"
+                | "other";
             vehicle_ownership: "owned" | "leased" | "rental";
             vehicle_status: "available" | "in_use" | "maintenance" | "out_of_service";
             vehicle_type:
@@ -38031,6 +38161,26 @@ export const Constants = {
                 "deactivated",
                 "pending_deletion",
                 "anonymized",
+            ],
+            user_certification_type: [
+                "first_aid",
+                "cpr",
+                "aed",
+                "cdl_a",
+                "cdl_b",
+                "cdl_c",
+                "osha_10",
+                "osha_30",
+                "forklift",
+                "rigging",
+                "electrical",
+                "fire_safety",
+                "food_handler",
+                "hazmat",
+                "fall_protection",
+                "confined_space",
+                "union_card",
+                "other",
             ],
             vehicle_ownership: ["owned", "leased", "rental"],
             vehicle_status: ["available", "in_use", "maintenance", "out_of_service"],

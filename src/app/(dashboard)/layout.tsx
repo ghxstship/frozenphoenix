@@ -11,9 +11,12 @@ import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { PageTransition } from "@/components/ui/page-transition";
 import { MessagingPanel } from "@/components/messaging/messaging-panel";
+import { CopilotPanel } from "@/components/copilot/copilot-panel";
+import { useCopilotContext } from "@/hooks/use-copilot-context";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    useCopilotContext();
     const { messagingEnabled } = useMessagingEnabled();
     const isCollapsed = useSidebar((state) => state.isCollapsed);
     const setMobile = useSidebar((state) => state.setMobile);
@@ -79,6 +82,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Messaging slide-over panel */}
                 {messagingEnabled && <MessagingPanel />}
+
+                {/* AI Copilot slide-over panel */}
+                <CopilotPanel />
             </div>
         </>
     );

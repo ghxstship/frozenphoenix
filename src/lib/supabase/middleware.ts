@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./config";
 
 const PUBLIC_EXACT_PATHS = ["/", "/login", "/signup", "/forgot-password"];
-const PUBLIC_PREFIX_PATHS = ["/auth/", "/api/", "/_next/", "/invite/", "/u/", "/org/"];
+const PUBLIC_PREFIX_PATHS = ["/auth/", "/api/", "/_next/", "/invite/", "/u/", "/org/", "/legal/"];
 
 function isPublicRoute(pathname: string): boolean {
     return (

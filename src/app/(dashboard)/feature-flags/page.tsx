@@ -1,6 +1,7 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
+import { PermissionGate } from "@/components/permission-guard";
 import { useFeatureFlags } from "@/lib/settings/hooks";
 import { Flag } from "lucide-react";
 import type { ListPageConfig } from "@/types/list-page-config";
@@ -22,5 +23,9 @@ export default function FeatureFlagsPage() {
     const { data: rawData, isLoading } = useFeatureFlags();
     const data = (rawData ?? []) as unknown as Record<string, unknown>[];
 
-    return <ListPageShell config={config} data={data} isLoading={isLoading} />;
+    return (
+        <PermissionGate resource="settings" action="manage">
+            <ListPageShell config={config} data={data} isLoading={isLoading} />
+        </PermissionGate>
+    );
 }

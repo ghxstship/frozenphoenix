@@ -7,6 +7,7 @@ import {
     Banknote,
     BarChart3,
     BarChartHorizontal,
+    Bell,
     Blocks,
     BookLock,
     BookOpen,
@@ -276,6 +277,12 @@ export const navigationConfig: NavSection[] = [
                 permission: "messaging_dm.read",
             },
             {
+                title: "Notifications",
+                path: "/notifications",
+                icon: Bell,
+                permission: "dashboard.read",
+            },
+            {
                 title: "Insights",
                 path: "/reports",
                 icon: BarChart3,
@@ -311,6 +318,12 @@ export const navigationConfig: NavSection[] = [
                         icon: GanttChart,
                         permission: "dashboards.read",
                     },
+                    {
+                        title: "Report Builder",
+                        path: "/report-definitions",
+                        icon: FilePenLine,
+                        permission: "reports.manage",
+                    },
                 ],
             },
         ],
@@ -337,6 +350,12 @@ export const navigationConfig: NavSection[] = [
                 permission: "people.read",
             },
             {
+                title: "Stakeholders",
+                path: "/stakeholders",
+                icon: UsersRound,
+                permission: "people.read",
+            },
+            {
                 title: "Deals",
                 path: "/deals",
                 icon: Handshake,
@@ -359,6 +378,24 @@ export const navigationConfig: NavSection[] = [
                         path: "/change-orders",
                         icon: ArrowRightLeft,
                         permission: "change_orders.read",
+                    },
+                    {
+                        title: "Lost Reasons",
+                        path: "/lost-reasons",
+                        icon: AlertTriangle,
+                        permission: "deals.manage",
+                    },
+                    {
+                        title: "Upsell Events",
+                        path: "/upsell-events",
+                        icon: Sparkles,
+                        permission: "deals.read",
+                    },
+                    {
+                        title: "Upsell Triggers",
+                        path: "/upsell-triggers",
+                        icon: Zap,
+                        permission: "deals.manage",
                     },
                 ],
             },
@@ -387,6 +424,12 @@ export const navigationConfig: NavSection[] = [
                 path: "/scopes-of-work",
                 icon: ScrollText,
                 permission: "sow.read",
+            },
+            {
+                title: "Bills of Materials",
+                path: "/boms",
+                icon: Layers,
+                permission: "projects.read",
             },
             {
                 title: "Schedule",
@@ -443,6 +486,12 @@ export const navigationConfig: NavSection[] = [
                         icon: FileBarChart,
                         permission: "advancing.manage",
                     },
+                    {
+                        title: "Status History",
+                        path: "/advance-status-history",
+                        icon: ClipboardList,
+                        permission: "advancing.read",
+                    },
                 ],
             },
         ],
@@ -456,12 +505,28 @@ export const navigationConfig: NavSection[] = [
                 path: "/approvals",
                 icon: ShieldCheck,
                 permission: "approvals.read",
+                children: [
+                    {
+                        title: "Workflows",
+                        path: "/approval-workflows",
+                        icon: Workflow,
+                        permission: "approvals.manage",
+                    },
+                ],
             },
             {
                 title: "Checklists",
                 path: "/checklists",
                 icon: ListChecks,
                 permission: "checklists.read",
+                children: [
+                    {
+                        title: "Templates",
+                        path: "/checklist-templates",
+                        icon: LayoutTemplate,
+                        permission: "checklists.manage",
+                    },
+                ],
             },
             {
                 title: "Automations",
@@ -474,12 +539,40 @@ export const navigationConfig: NavSection[] = [
                 path: "/quality-checks",
                 icon: SearchCheck,
                 permission: "approvals.read",
+                children: [
+                    {
+                        title: "Templates",
+                        path: "/quality-check-templates",
+                        icon: LayoutTemplate,
+                        permission: "approvals.manage",
+                    },
+                    {
+                        title: "Gates",
+                        path: "/qc-gates",
+                        icon: Gauge,
+                        permission: "approvals.manage",
+                    },
+                ],
             },
             {
                 title: "Service Requests",
                 path: "/service-requests",
                 icon: Inbox,
                 permission: "service_requests.read",
+                children: [
+                    {
+                        title: "SLA Dashboard",
+                        path: "/service-requests/sla",
+                        icon: Gauge,
+                        permission: "service_requests.read",
+                    },
+                    {
+                        title: "SLA Definitions",
+                        path: "/sla-definitions",
+                        icon: ScrollText,
+                        permission: "service_requests.manage",
+                    },
+                ],
             },
             {
                 title: "Workflows",
@@ -513,6 +606,18 @@ export const navigationConfig: NavSection[] = [
                     },
                 ],
             },
+            {
+                title: "Email",
+                path: "/email-messages",
+                icon: Mail,
+                permission: "documents.read",
+            },
+            {
+                title: "Resilience",
+                path: "/resilience-targets",
+                icon: Target,
+                permission: "service_requests.read",
+            },
         ],
     },
     {
@@ -525,13 +630,58 @@ export const navigationConfig: NavSection[] = [
                 path: "/time-tracking",
                 icon: Timer,
                 permission: "time_tracking.read",
+                children: [
+                    {
+                        title: "Compliance",
+                        path: "/time-tracking/compliance",
+                        icon: ShieldCheck,
+                        permission: "time_tracking.read",
+                    },
+                    {
+                        title: "Time Entries",
+                        path: "/time-entries",
+                        icon: Timer,
+                        permission: "time_tracking.read",
+                    },
+                    {
+                        title: "Timesheets",
+                        path: "/timesheets",
+                        icon: FileSpreadsheet,
+                        permission: "time_tracking.read",
+                    },
+                ],
             },
-            { title: "Time Off", path: "/time-off", icon: Palmtree, permission: "time_off.read" },
+            {
+                title: "Time Off",
+                path: "/time-off",
+                icon: Palmtree,
+                permission: "time_off.read",
+                children: [
+                    {
+                        title: "Requests",
+                        path: "/time-off-requests",
+                        icon: ClipboardList,
+                        permission: "time_off.read",
+                    },
+                ],
+            },
             {
                 title: "Resource Planner",
                 path: "/resource-planner",
                 icon: BarChartHorizontal,
                 permission: "resource_planner.read",
+            },
+            {
+                title: "Shifts",
+                path: "/shifts",
+                icon: CalendarDays,
+                permission: "crew.read",
+            },
+            {
+                title: "Availability",
+                path: "/crew-availability",
+                icon: CalendarDays,
+                permission: "crew.read",
             },
             {
                 title: "Certifications",
@@ -614,6 +764,18 @@ export const navigationConfig: NavSection[] = [
                         icon: Layers,
                         permission: "assets.read",
                     },
+                    {
+                        title: "Maintenance",
+                        path: "/maintenance-schedules",
+                        icon: Wrench,
+                        permission: "assets.manage",
+                    },
+                    {
+                        title: "Transfer Orders",
+                        path: "/transfer-orders",
+                        icon: ArrowRightLeft,
+                        permission: "assets.manage",
+                    },
                 ],
             },
             { title: "Inventory", path: "/inventory", icon: Boxes, permission: "inventory.read" },
@@ -626,6 +788,18 @@ export const navigationConfig: NavSection[] = [
             { title: "Shipments", path: "/shipments", icon: Truck, permission: "shipments.read" },
             { title: "Fleet", path: "/fleet", icon: Car, permission: "fleet.read" },
             { title: "Dispatch", path: "/dispatch", icon: Navigation, permission: "dispatch.read" },
+            {
+                title: "Purchase Orders",
+                path: "/purchase-orders",
+                icon: ShoppingCart,
+                permission: "procurement.read",
+            },
+            {
+                title: "Expense Reports",
+                path: "/expense-reports",
+                icon: Receipt,
+                permission: "expenses.read",
+            },
         ],
     },
     {
@@ -653,6 +827,12 @@ export const navigationConfig: NavSection[] = [
             },
             { title: "Brand Kit", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
             { title: "Decks", path: "/decks", icon: Presentation, permission: "decks.read" },
+            {
+                title: "Creative Reviews",
+                path: "/creative-reviews",
+                icon: Star,
+                permission: "creative_reviews.read",
+            },
             {
                 title: "Campaigns",
                 path: "/campaigns",
@@ -693,7 +873,26 @@ export const navigationConfig: NavSection[] = [
                 icon: TrendingUp,
                 permission: "finance.read",
             },
-            { title: "Expenses", path: "/expenses", icon: Receipt, permission: "expenses.read" },
+            {
+                title: "Expenses",
+                path: "/expenses",
+                icon: Receipt,
+                permission: "expenses.read",
+                children: [
+                    {
+                        title: "Tax Rates",
+                        path: "/tax-rates",
+                        icon: Calculator,
+                        permission: "finance.manage",
+                    },
+                    {
+                        title: "Expense Categories",
+                        path: "/expense-categories",
+                        icon: Layers,
+                        permission: "expenses.manage",
+                    },
+                ],
+            },
             {
                 title: "Billing",
                 path: "/invoices",
@@ -744,7 +943,25 @@ export const navigationConfig: NavSection[] = [
                         icon: CreditCard,
                         permission: "rate_cards.read",
                     },
+                    {
+                        title: "Milestones",
+                        path: "/milestones",
+                        icon: Target,
+                        permission: "budgets.read",
+                    },
                 ],
+            },
+            {
+                title: "Payroll Runs",
+                path: "/payroll-runs",
+                icon: Banknote,
+                permission: "finance.read",
+            },
+            {
+                title: "Financial Periods",
+                path: "/financial-periods",
+                icon: CalendarDays,
+                permission: "finance.manage",
             },
             {
                 title: "Governance",
@@ -906,17 +1123,48 @@ export const navigationConfig: NavSection[] = [
             },
             { title: "SOPs", path: "/sops", icon: Layers, permission: "sops.read" },
             { title: "Vault", path: "/vault", icon: Lock, permission: "vault.read" },
-            { title: "Settings", path: "/settings", icon: Settings, permission: "settings.manage" },
             {
-                title: "Custom Fields",
-                path: "/settings/custom-fields",
-                icon: Blocks,
+                title: "Settings",
+                path: "/settings",
+                icon: Settings,
                 permission: "settings.manage",
+                children: [
+                    {
+                        title: "Security",
+                        path: "/settings/security",
+                        icon: ShieldAlert,
+                        permission: "settings.manage",
+                    },
+                    {
+                        title: "Custom Fields",
+                        path: "/settings/custom-fields",
+                        icon: Blocks,
+                        permission: "settings.manage",
+                    },
+                    {
+                        title: "Email Integration",
+                        path: "/settings/email-integration",
+                        icon: Mail,
+                        permission: "settings.manage",
+                    },
+                    {
+                        title: "Notification Preferences",
+                        path: "/settings/notifications",
+                        icon: Bell,
+                        permission: "settings.manage",
+                    },
+                    {
+                        title: "AI Copilot",
+                        path: "/settings/ai",
+                        icon: Brain,
+                        permission: "settings.manage",
+                    },
+                ],
             },
             {
-                title: "Email Integration",
-                path: "/settings/email-integration",
-                icon: Mail,
+                title: "Tags",
+                path: "/tags",
+                icon: Layers,
                 permission: "settings.manage",
             },
             {

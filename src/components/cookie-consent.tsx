@@ -92,7 +92,10 @@ export function CookieConsent() {
                 <p className="text-sm text-muted-foreground mb-4">
                     We use essential cookies for authentication and security. Analytics cookies help
                     us improve your experience and are only enabled with your consent.{" "}
-                    <a href="/privacy" className="underline text-primary hover:text-primary/80">
+                    <a
+                        href="/legal/privacy"
+                        className="underline text-primary hover:text-primary/80"
+                    >
                         Privacy Policy
                     </a>
                 </p>

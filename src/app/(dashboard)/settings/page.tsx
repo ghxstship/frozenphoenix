@@ -71,6 +71,7 @@ import { useRouter } from "next/navigation";
 import { buildAvatarPath, STORAGE_BUCKETS, useUploadFile } from "@/lib/supabase/storage";
 import { useUpdateProfile } from "@/lib/supabase/auth-actions";
 import Image from "next/image";
+import { AvatarCropDialog } from "@/components/ui/avatar-crop-dialog";
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
@@ -206,9 +207,11 @@ export default function SettingsPage() {
     const uploadFile = useUploadFile();
     const updateProfile = useUpdateProfile();
     const [avatarUploading, setAvatarUploading] = useState(false);
+    const [cropDialogOpen, setCropDialogOpen] = useState(false);
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
-    const handleAvatarUpload = useCallback(
-        async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarFileSelect = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
             const file = e.target.files?.[0];
             if (!file || !user?.id) return;
 
@@ -222,22 +225,40 @@ export default function SettingsPage() {
                 });
                 return;
             }
-            if (file.size > 2 * 1024 * 1024) {
+            if (file.size > 5 * 1024 * 1024) {
                 addToast({
                     title: "File too large",
-                    description: "Please upload an image under 2MB.",
+                    description: "Please upload an image under 5MB.",
                     variant: "destructive",
                 });
                 return;
             }
 
+            // Open crop dialog with preview
+            const objectUrl = URL.createObjectURL(file);
+            setCropImageSrc(objectUrl);
+            setCropDialogOpen(true);
+
+            // Reset file input so the same file can be re-selected
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        },
+        [user?.id, addToast]
+    );
+
+    const handleCropComplete = useCallback(
+        async (croppedBlob: Blob) => {
+            if (!user?.id) return;
+
             setAvatarUploading(true);
             try {
-                const path = buildAvatarPath(user.id, file.name);
+                const croppedFile = new File([croppedBlob], "avatar.jpg", {
+                    type: "image/jpeg",
+                });
+                const path = buildAvatarPath(user.id, croppedFile.name);
                 const result = await uploadFile.mutateAsync({
                     bucket: STORAGE_BUCKETS.AVATARS,
                     path,
-                    file,
+                    file: croppedFile,
                     upsert: true,
                 });
 
@@ -248,6 +269,7 @@ export default function SettingsPage() {
                 });
 
                 await refreshProfile();
+                setCropDialogOpen(false);
                 addToast({
                     title: "Photo updated",
                     description: "Your profile photo has been uploaded.",
@@ -261,11 +283,11 @@ export default function SettingsPage() {
                 });
             } finally {
                 setAvatarUploading(false);
-                // Reset file input so the same file can be re-selected
-                if (fileInputRef.current) fileInputRef.current.value = "";
+                // Revoke object URL to free memory
+                if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
             }
         },
-        [user?.id, uploadFile, updateProfile, refreshProfile, addToast]
+        [user?.id, uploadFile, updateProfile, refreshProfile, addToast, cropImageSrc]
     );
 
     // Notification preferences
@@ -506,7 +528,7 @@ export default function SettingsPage() {
                                                     accept="image/jpeg,image/png,image/webp,image/gif"
                                                     className="sr-only"
                                                     id="avatar-upload"
-                                                    onChange={handleAvatarUpload}
+                                                    onChange={handleAvatarFileSelect}
                                                     disabled={avatarUploading}
                                                 />
                                                 <Button
@@ -525,10 +547,21 @@ export default function SettingsPage() {
                                                         : "Upload Photo"}
                                                 </Button>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    JPG, PNG, WebP, GIF up to 2MB
+                                                    JPG, PNG, WebP, GIF up to 5MB
                                                 </p>
                                             </div>
                                         </div>
+
+                                        {/* Avatar crop dialog */}
+                                        {cropImageSrc && (
+                                            <AvatarCropDialog
+                                                open={cropDialogOpen}
+                                                onOpenChange={setCropDialogOpen}
+                                                imageSrc={cropImageSrc}
+                                                onCropComplete={handleCropComplete}
+                                                loading={avatarUploading}
+                                            />
+                                        )}
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">

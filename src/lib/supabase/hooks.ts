@@ -741,6 +741,7 @@ export function useCreateMilestone() {
 }
 
 // ─── Comments ───
+/** @deprecated Use useEntityMessages from hooks-messaging.ts when messaging_enabled flag is on. Legacy fallback only. */
 export function useComments(
     entityType: "project" | "task" | "approval" | "deal",
     entityId: string
@@ -760,6 +761,7 @@ export function useComments(
     });
 }
 
+/** @deprecated Use useSendMessage from hooks-messaging.ts when messaging_enabled flag is on. Legacy fallback only. */
 export function useCreateComment() {
     const queryClient = useQueryClient();
     return useMutation({

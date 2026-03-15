@@ -2,12 +2,20 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Hash, Lock, Megaphone, Settings, Users } from "lucide-react";
+import { ArrowLeft, Download, Hash, Lock, Megaphone, Users } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Avatar } from "@/components/ui/avatar";
 import { MessageBubble } from "./message-bubble";
 import { MessageComposer } from "./message-composer";
+import { ConversationMembersPanel } from "./conversation-members-panel";
 import type { ConversationListItem, MessagePriority, MessageWithSender } from "@/types/messaging";
+import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface ChatViewProps {
     conversation: ConversationListItem | null;
@@ -56,6 +64,9 @@ export function ChatView({
     onDraftChange,
     className,
 }: ChatViewProps) {
+    const ms = useMessagingStrings();
+    const [showMembers, setShowMembers] = React.useState(false);
+    const [isExporting, setIsExporting] = React.useState(false);
     const messagesEndRef = React.useRef<HTMLDivElement>(null);
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -82,9 +93,7 @@ export function ChatView({
                 )}
             >
                 <Hash className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground">
-                    Select a conversation to start messaging
-                </p>
+                <p className="text-sm text-muted-foreground">{ms("conversations_empty")}</p>
             </div>
         );
     }
@@ -136,83 +145,151 @@ export function ChatView({
                     )}
                     {conversation.type === "group" && conversation.members.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                            {conversation.members.length} members
+                            {ms("chat_members_count", { count: conversation.members.length })}
                         </p>
                     )}
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <Tooltip content="View members" side="bottom">
+                    <Tooltip content={ms("members_title")} side="bottom">
                         <button
-                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                            aria-label="View members"
+                            onClick={() => setShowMembers((v) => !v)}
+                            className={cn(
+                                "h-7 w-7 rounded-lg flex items-center justify-center transition-colors",
+                                showMembers
+                                    ? "bg-primary/10 text-primary"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                            )}
+                            aria-label={ms("members_title")}
+                            aria-pressed={showMembers}
                         >
                             <Users className="h-4 w-4" />
                         </button>
                     </Tooltip>
-                    <Tooltip content="Conversation settings" side="bottom">
-                        <button
-                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                            aria-label="Conversation settings"
-                        >
-                            <Settings className="h-4 w-4" />
-                        </button>
-                    </Tooltip>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                aria-label={ms("export_title")}
+                            >
+                                <Download className="h-4 w-4" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[140px]">
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    if (!conversation || isExporting) return;
+                                    setIsExporting(true);
+                                    fetch(`/api/conversations/${conversation.id}/export?format=csv`)
+                                        .then((r) => r.blob())
+                                        .then((blob) => {
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement("a");
+                                            a.href = url;
+                                            a.download = `${(conversation.name ?? "conversation").replace(/[^a-zA-Z0-9-_]/g, "_")}-export.csv`;
+                                            a.click();
+                                            URL.revokeObjectURL(url);
+                                        })
+                                        .finally(() => setIsExporting(false));
+                                }}
+                            >
+                                {ms("export_csv")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    if (!conversation || isExporting) return;
+                                    setIsExporting(true);
+                                    fetch(
+                                        `/api/conversations/${conversation.id}/export?format=json`
+                                    )
+                                        .then((r) => r.blob())
+                                        .then((blob) => {
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement("a");
+                                            a.href = url;
+                                            a.download = `${(conversation.name ?? "conversation").replace(/[^a-zA-Z0-9-_]/g, "_")}-export.json`;
+                                            a.click();
+                                            URL.revokeObjectURL(url);
+                                        })
+                                        .finally(() => setIsExporting(false));
+                                }}
+                            >
+                                {ms("export_json")}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
-            {/* Messages area */}
-            <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto"
-                onScroll={handleScroll}
-                role="log"
-                aria-label="Messages"
-                aria-live="polite"
-            >
-                {isLoading && (
-                    <div className="flex justify-center py-4">
-                        <div className="h-5 w-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                    </div>
-                )}
+            {/* Content row: messages + optional members sidebar */}
+            <div className="flex-1 flex min-h-0">
+                {/* Messages column */}
+                <div className="flex-1 flex flex-col min-w-0">
+                    <div
+                        ref={scrollContainerRef}
+                        className="flex-1 overflow-y-auto"
+                        onScroll={handleScroll}
+                        role="log"
+                        aria-label={ms("a11y_message_list")}
+                        aria-live="polite"
+                    >
+                        {isLoading && (
+                            <div className="flex justify-center py-4">
+                                <div className="h-5 w-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                            </div>
+                        )}
 
-                {!isLoading && messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                        <p className="text-sm text-muted-foreground">
-                            No messages yet. Start the conversation!
-                        </p>
-                    </div>
-                )}
+                        {!isLoading && messages.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                                <p className="text-sm text-muted-foreground">
+                                    {ms("chat_no_messages")}
+                                </p>
+                            </div>
+                        )}
 
-                <div className="py-2">
-                    {/* Messages rendered oldest-first (API returns desc, so reversed) */}
-                    {[...messages].reverse().map((message) => (
-                        <MessageBubble
-                            key={message.id}
-                            message={message}
-                            isOwn={message.sender_id === currentUserId}
-                            onReply={() => onReply(message)}
-                            onReact={onReact}
-                            onPin={onPin}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            onThreadOpen={onThreadOpen}
+                        <div className="py-2">
+                            {/* Messages rendered oldest-first (API returns desc, so reversed) */}
+                            {[...messages].reverse().map((message) => (
+                                <MessageBubble
+                                    key={message.id}
+                                    message={message}
+                                    isOwn={message.sender_id === currentUserId}
+                                    onReply={() => onReply(message)}
+                                    onReact={onReact}
+                                    onPin={onPin}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onThreadOpen={onThreadOpen}
+                                />
+                            ))}
+                        </div>
+
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Composer */}
+                    <MessageComposer
+                        onSend={onSend}
+                        replyTo={replyTo}
+                        onCancelReply={onCancelReply}
+                        draft={draft}
+                        onDraftChange={onDraftChange}
+                        placeholder={`Message ${conversation.type === "channel" ? "#" : ""}${displayName}`}
+                    />
+                </div>
+
+                {/* Members sidebar */}
+                {showMembers && conversation && (
+                    <div className="w-64 border-l border-border shrink-0 hidden md:block">
+                        <ConversationMembersPanel
+                            conversationId={conversation.id}
+                            conversationType={conversation.type}
+                            onClose={() => setShowMembers(false)}
+                            className="h-full"
                         />
-                    ))}
-                </div>
-
-                <div ref={messagesEndRef} />
+                    </div>
+                )}
             </div>
-
-            {/* Composer */}
-            <MessageComposer
-                onSend={onSend}
-                replyTo={replyTo}
-                onCancelReply={onCancelReply}
-                draft={draft}
-                onDraftChange={onDraftChange}
-                placeholder={`Message ${conversation.type === "channel" ? "#" : ""}${displayName}`}
-            />
         </div>
     );
 }

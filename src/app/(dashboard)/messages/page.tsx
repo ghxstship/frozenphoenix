@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatView } from "@/components/messaging/chat-view";
 import { ThreadPanel } from "@/components/messaging/thread-panel";
 import { NewConversationDialog } from "@/components/messaging/new-conversation-dialog";
+import { MessageSearch } from "@/components/messaging/message-search";
 import { useMessaging } from "@/hooks/use-messaging";
 import {
     useConversations,
@@ -19,9 +21,22 @@ import {
     useToggleReaction,
 } from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
+import {
+    useConversationsRealtime,
+    useMessagesRealtime,
+} from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
 
 export default function MessagesPage() {
+    const searchParams = useSearchParams();
+    const urlQuery = searchParams.get("q");
+    const [showSearch, setShowSearch] = React.useState(!!urlQuery);
+
+    // Activate search view when ?q= param is present
+    React.useEffect(() => {
+        if (urlQuery) setShowSearch(true);
+    }, [urlQuery]);
+
     const activeConversationId = useMessaging((s) => s.activeConversationId);
     const setActiveConversation = useMessaging((s) => s.setActiveConversation);
     const view = useMessaging((s) => s.view);
@@ -39,6 +54,10 @@ export default function MessagesPage() {
 
     const { user } = useAuth();
     const currentUserId = user?.id ?? "";
+
+    // Realtime subscriptions
+    useConversationsRealtime();
+    useMessagesRealtime(activeConversationId ?? undefined);
 
     const { data: conversations = [], isLoading: convLoading } = useConversations();
     const { data: orgMembers = [] } = useOrgMembers();
@@ -148,6 +167,14 @@ export default function MessagesPage() {
 
     const showChatOrThread = !!activeConversationId;
 
+    const handleSearchResultSelect = React.useCallback(
+        (result: { conversation_id: string }) => {
+            setShowSearch(false);
+            setActiveConversation(result.conversation_id);
+        },
+        [setActiveConversation]
+    );
+
     return (
         <div className="flex flex-col h-[calc(100vh-theme(spacing.20))]">
             <PageHeader
@@ -176,8 +203,20 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Main content area */}
-                <div className={cn("flex-1 flex", !showChatOrThread && "hidden lg:flex")}>
-                    {!activeConversationId && (
+                <div
+                    className={cn(
+                        "flex-1 flex",
+                        !showChatOrThread && !showSearch && "hidden lg:flex"
+                    )}
+                >
+                    {showSearch && (
+                        <MessageSearch
+                            onSelectResult={handleSearchResultSelect}
+                            className="flex-1"
+                        />
+                    )}
+
+                    {!showSearch && !activeConversationId && (
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">
                             <div className="text-center">
                                 <p className="text-sm">Select a conversation to start messaging</p>

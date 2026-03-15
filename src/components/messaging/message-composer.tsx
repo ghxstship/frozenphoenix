@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { AtSign, Paperclip, Send, X } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { MessagePriority } from "@/types/messaging";
+import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface MessageComposerProps {
     onSend: (payload: {
@@ -31,6 +32,7 @@ export function MessageComposer({
     onDraftChange,
     className,
 }: MessageComposerProps) {
+    const ms = useMessagingStrings();
     const [text, setText] = React.useState(draft);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -89,11 +91,11 @@ export function MessageComposer({
                         <span className="font-medium text-foreground">{replyTo.senderName}</span>
                         <p className="truncate text-muted-foreground">{replyTo.body}</p>
                     </div>
-                    <Tooltip content="Cancel reply" side="top">
+                    <Tooltip content={ms("composer_cancel_reply")} side="top">
                         <button
                             onClick={onCancelReply}
                             className="shrink-0 h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label="Cancel reply"
+                            aria-label={ms("composer_cancel_reply")}
                         >
                             <X className="h-3.5 w-3.5" />
                         </button>
@@ -137,7 +139,7 @@ export function MessageComposer({
                     )}
                     aria-label="Message input"
                 />
-                <Tooltip content="Send message" side="top">
+                <Tooltip content={ms("composer_send")} side="top">
                     <button
                         onClick={handleSend}
                         disabled={disabled || !text.trim()}
@@ -147,7 +149,7 @@ export function MessageComposer({
                                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                 : "bg-secondary text-muted-foreground cursor-not-allowed"
                         )}
-                        aria-label="Send message"
+                        aria-label={ms("composer_send")}
                     >
                         <Send className="h-4 w-4" />
                     </button>

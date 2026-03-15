@@ -4,7 +4,7 @@ import React from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { hasPermission, isFieldVisible, maskSensitiveFields } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
-import { Lock, ShieldX } from "lucide-react";
+import { Loader2, Lock, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -27,7 +27,11 @@ function resolvePermissionLevel(profile: { role?: string | null } | null): Permi
 }
 
 export function usePermissionLevel(): PermissionLevel {
-    const { activeOrg } = useAuth();
+    const { activeOrg, loading } = useAuth();
+    // While auth is still hydrating, return DEFAULT_LEVEL.
+    // Callers that need to distinguish "loading" from "resolved" should
+    // check useAuth().loading directly (e.g. PermissionGate does this).
+    if (loading) return DEFAULT_LEVEL;
     // Canonical role comes from the active org membership (org_memberships table).
     // user_profiles has no role column — without an activeOrg, fall back to DEFAULT_LEVEL.
     if (activeOrg?.role) {
@@ -40,7 +44,11 @@ export function useHasPermission(
     resource: string,
     action: "read" | "write" | "delete" | "manage"
 ): boolean {
+    const { loading } = useAuth();
     const level = usePermissionLevel();
+    // While auth is hydrating, optimistically allow — PermissionGate
+    // handles the loading state visually so Access Denied never flashes.
+    if (loading) return true;
     return hasPermission(level, resource, action);
 }
 
@@ -74,7 +82,21 @@ export function PermissionGate({
     fallback,
     silent = false,
 }: PermissionGateProps) {
+    const { loading } = useAuth();
     const allowed = useHasPermission(resource, action);
+
+    // While auth is hydrating (session + memberships loading), show a
+    // non-destructive loading state instead of flashing Access Denied.
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[40vh] p-6">
+                <Loader2
+                    className="h-6 w-6 animate-spin text-muted-foreground"
+                    aria-label="Loading"
+                />
+            </div>
+        );
+    }
 
     if (allowed) return <>{children}</>;
 

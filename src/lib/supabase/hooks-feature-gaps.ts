@@ -145,6 +145,7 @@ export interface RecordCommentRow {
     user_profiles?: { display_name: string; avatar_url: string | null } | null;
 }
 
+/** @deprecated Use useEntityMessages from hooks-messaging.ts when messaging_enabled flag is on. Legacy fallback only. */
 export function useRecordComments(entityType: string, entityId: string) {
     return useQuery({
         queryKey: ["record_comments", entityType, entityId],
@@ -161,6 +162,7 @@ export function useRecordComments(entityType: string, entityId: string) {
     });
 }
 
+/** @deprecated Use useSendMessage from hooks-messaging.ts when messaging_enabled flag is on. Legacy fallback only. */
 export function useCreateRecordComment() {
     const qc = useQueryClient();
     return useMutation({

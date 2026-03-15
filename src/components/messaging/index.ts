@@ -1,6 +1,7 @@
 export { ChannelBrowser } from "./channel-browser";
 export { ChatView } from "./chat-view";
 export { ConversationList } from "./conversation-list";
+export { ConversationMembersPanel } from "./conversation-members-panel";
 export { MandatoryReadBanner } from "./mandatory-read-banner";
 export { MentionAutocomplete } from "./mention-autocomplete";
 export { MessageBubble } from "./message-bubble";

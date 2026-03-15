@@ -30,7 +30,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
                             <Play className="h-5 w-5 text-primary-foreground fill-primary-foreground" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                             {brandConfig.name}
                         </span>
                     </div>
@@ -70,7 +70,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                         <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-4">
                             <Play className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
                         </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                             {brandConfig.name}
                         </h1>
                         <p className="text-sm text-muted-foreground mt-1">{brandConfig.tagline}</p>

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Legacy comments table route. The unified messaging system
+ * uses /api/messages/entity for entity-scoped comments via the messages table.
+ * This route remains for backward compatibility when messaging_enabled feature flag is off.
+ */
 import { getEntityCrudConfig } from "@/lib/api/entity-config";
 import { createCollectionRoute } from "@/lib/api/crud-factory";
 

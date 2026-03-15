@@ -10,6 +10,7 @@ import { Hash, MessageSquare, Users, X } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useCreateConversation } from "@/lib/supabase/hooks-messaging";
 import type { ConversationType } from "@/types/messaging";
+import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface NewConversationDialogProps {
     open: boolean;
@@ -35,6 +36,7 @@ export function NewConversationDialog({
     const [description, setDescription] = React.useState("");
     const [isPublic, setIsPublic] = React.useState(false);
 
+    const ms = useMessagingStrings();
     const createConversation = useCreateConversation();
 
     const filteredMembers = React.useMemo(() => {
@@ -114,7 +116,7 @@ export function NewConversationDialog({
             >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                    <h2 className="text-base font-semibold">New Conversation</h2>
+                    <h2 className="text-base font-semibold">{ms("conversations_new")}</h2>
                     <Tooltip content="Close" side="bottom">
                         <Button
                             variant="ghost"
@@ -131,9 +133,9 @@ export function NewConversationDialog({
                 {/* Tabs */}
                 <div className="flex border-b border-border" role="tablist">
                     {[
-                        { value: "dm" as const, label: "Direct Message", icon: MessageSquare },
-                        { value: "group" as const, label: "Group", icon: Users },
-                        { value: "channel" as const, label: "Channel", icon: Hash },
+                        { value: "dm" as const, label: ms("new_dm"), icon: MessageSquare },
+                        { value: "group" as const, label: ms("new_group"), icon: Users },
+                        { value: "channel" as const, label: ms("new_channel"), icon: Hash },
                     ].map(({ value, label, icon: Icon }) => (
                         <button
                             key={value}
@@ -162,11 +164,15 @@ export function NewConversationDialog({
                     {(tab === "group" || tab === "channel") && (
                         <input
                             type="text"
-                            placeholder={tab === "group" ? "Group name" : "Channel name"}
+                            placeholder={
+                                tab === "group" ? ms("new_group_name") : ms("new_channel_name")
+                            }
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            aria-label={tab === "group" ? "Group name" : "Channel name"}
+                            aria-label={
+                                tab === "group" ? ms("new_group_name") : ms("new_channel_name")
+                            }
                         />
                     )}
 
@@ -175,7 +181,7 @@ export function NewConversationDialog({
                         <>
                             <input
                                 type="text"
-                                placeholder="Description (optional)"
+                                placeholder={ms("new_channel_description")}
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -188,7 +194,7 @@ export function NewConversationDialog({
                                     onChange={(e) => setIsPublic(e.target.checked)}
                                     className="rounded border-border"
                                 />
-                                Public channel (anyone in the org can join)
+                                {ms("new_channel_public")}
                             </label>
                         </>
                     )}
@@ -217,7 +223,7 @@ export function NewConversationDialog({
                             <SearchInput
                                 value={searchQuery}
                                 onValueChange={setSearchQuery}
-                                placeholder="Search people..."
+                                placeholder={ms("new_search_people")}
                                 className="h-9"
                             />
                             <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -257,14 +263,14 @@ export function NewConversationDialog({
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
                     <Button variant="ghost" size="sm" onClick={handleClose}>
-                        Cancel
+                        {ms("new_cancel")}
                     </Button>
                     <Button
                         size="sm"
                         onClick={handleCreate}
                         disabled={!canCreate || createConversation.isPending}
                     >
-                        {createConversation.isPending ? "Creating..." : "Create"}
+                        {createConversation.isPending ? ms("new_creating") : ms("new_create")}
                     </Button>
                 </div>
             </div>

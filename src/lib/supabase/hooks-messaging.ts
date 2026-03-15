@@ -226,34 +226,16 @@ export function useUnreadCounts() {
         queryKey: messagingKeys.unreadCounts(),
         queryFn: async (): Promise<number> => {
             const supabase = getSupabase();
-            // Count conversations with unread messages
-            const { data: memberships, error } = await supabase
-                .from("conversation_members")
-                .select("conversation_id, last_read_at");
-            if (error || !memberships) return 0;
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return 0;
 
-            let total = 0;
-            for (const m of memberships as Record<string, unknown>[]) {
-                const lastRead = m.last_read_at as string | null;
-                if (!lastRead) {
-                    // Never read — check if conversation has messages
-                    const { count } = await supabase
-                        .from("messages")
-                        .select("id", { count: "exact", head: true })
-                        .eq("conversation_id", m.conversation_id as string)
-                        .is("deleted_at", null);
-                    if (count && count > 0) total++;
-                } else {
-                    const { count } = await supabase
-                        .from("messages")
-                        .select("id", { count: "exact", head: true })
-                        .eq("conversation_id", m.conversation_id as string)
-                        .gt("created_at", lastRead)
-                        .is("deleted_at", null);
-                    if (count && count > 0) total++;
-                }
-            }
-            return total;
+            const { data, error } = await supabase.rpc("get_messaging_unread_count", {
+                p_user_id: user.id,
+            });
+            if (error) return 0;
+            return (data as number) ?? 0;
         },
         staleTime: 60_000,
         refetchInterval: 60_000,

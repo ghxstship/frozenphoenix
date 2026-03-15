@@ -332,7 +332,7 @@ export const navigationConfig: NavSection[] = [
     // ── Tier 2: Primary Domains ──
     {
         title: "Business",
-        defaultExpanded: true,
+        defaultExpanded: false,
         items: [
             { title: "Pipeline", path: "/pipeline", icon: Filter, permission: "pipeline.read" },
             { title: "Leads", path: "/leads", icon: UserPlus, permission: "leads.read" },
@@ -403,7 +403,7 @@ export const navigationConfig: NavSection[] = [
     },
     {
         title: "Production",
-        defaultExpanded: true,
+        defaultExpanded: false,
         items: [
             {
                 title: "Projects",
@@ -498,7 +498,7 @@ export const navigationConfig: NavSection[] = [
     },
     {
         title: "Operations",
-        defaultExpanded: true,
+        defaultExpanded: false,
         items: [
             {
                 title: "Approvals",

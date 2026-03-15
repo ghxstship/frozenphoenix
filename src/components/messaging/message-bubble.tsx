@@ -14,6 +14,7 @@ import {
 import { QUICK_REACTIONS } from "@/types/messaging";
 import type { MessageWithSender, ReactionAggregate } from "@/types/messaging";
 import { formatRelativeTime } from "@/lib/locale";
+import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface MessageBubbleProps {
     message: MessageWithSender;
@@ -38,6 +39,7 @@ export function MessageBubble({
     onThreadOpen,
     className,
 }: MessageBubbleProps) {
+    const ms = useMessagingStrings();
     const [showActions, setShowActions] = React.useState(false);
     const [isEditing, setIsEditing] = React.useState(false);
     const [editText, setEditText] = React.useState(message.body);
@@ -96,7 +98,9 @@ export function MessageBubble({
                         {timeAgo}
                     </span>
                     {message.edited_at && (
-                        <span className="text-xs text-muted-foreground italic">(edited)</span>
+                        <span className="text-xs text-muted-foreground italic">
+                            ({ms("message_edited")})
+                        </span>
                     )}
                     {message.is_pinned && <Pin className="h-3 w-3 text-amber-500 fill-amber-500" />}
                     {message.priority !== "normal" && (
@@ -149,7 +153,7 @@ export function MessageBubble({
                     <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words mt-0.5">
                         {message.deleted_at ? (
                             <span className="italic text-muted-foreground">
-                                This message was deleted
+                                {ms("message_deleted")}
                             </span>
                         ) : (
                             message.body
@@ -213,11 +217,11 @@ export function MessageBubble({
                             </button>
                         </Tooltip>
                     ))}
-                    <Tooltip content="Reply in thread" side="top">
+                    <Tooltip content={ms("message_thread")} side="top">
                         <button
                             onClick={() => onReply?.(message)}
                             className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                            aria-label="Reply in thread"
+                            aria-label={ms("message_thread")}
                         >
                             <MessageSquare className="h-3.5 w-3.5" />
                         </button>
@@ -239,13 +243,13 @@ export function MessageBubble({
                                     onClick={() => onPin(message.id, !message.is_pinned)}
                                 >
                                     <Pin className="h-3.5 w-3.5 mr-2" />
-                                    {message.is_pinned ? "Unpin" : "Pin Message"}
+                                    {message.is_pinned ? ms("message_unpin") : ms("message_pin")}
                                 </DropdownMenuItem>
                             )}
                             {isOwn && onEdit && (
                                 <DropdownMenuItem onClick={() => setIsEditing(true)}>
                                     <Pencil className="h-3.5 w-3.5 mr-2" />
-                                    Edit
+                                    {ms("message_edit")}
                                 </DropdownMenuItem>
                             )}
                             {isOwn && onDelete && (
@@ -254,7 +258,7 @@ export function MessageBubble({
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <Trash2 className="h-3.5 w-3.5 mr-2" />
-                                    Delete
+                                    {ms("message_delete")}
                                 </DropdownMenuItem>
                             )}
                         </DropdownMenuContent>

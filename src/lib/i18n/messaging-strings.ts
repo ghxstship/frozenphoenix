@@ -94,6 +94,21 @@ export const MESSAGING_STRINGS = {
     scheduled_send_at: "Send at",
     scheduled_cancel: "Cancel scheduled message",
 
+    // Member Management
+    members_title: "Members",
+    members_add: "Add members",
+    members_remove: "Remove member",
+    members_no_results: "No members found",
+
+    // Export
+    export_title: "Export conversation",
+    export_csv: "Export as CSV",
+    export_json: "Export as JSON",
+    export_downloading: "Downloading...",
+
+    // General
+    new_no_members: "No members found",
+
     // Errors
     error_send_failed: "Failed to send message",
     error_load_failed: "Failed to load messages",

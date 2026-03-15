@@ -7,6 +7,7 @@ import { Hash, Lock, Megaphone, Plus, Search, Users } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { ConversationListItem } from "@/types/messaging";
 import { formatRelativeTime } from "@/lib/locale";
+import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface ConversationListProps {
     conversations: ConversationListItem[];
@@ -29,6 +30,8 @@ export function ConversationList({
     isLoading = false,
     className,
 }: ConversationListProps) {
+    const ms = useMessagingStrings();
+
     const filtered = React.useMemo(() => {
         if (!searchQuery.trim()) return conversations;
         const q = searchQuery.toLowerCase();
@@ -46,12 +49,12 @@ export function ConversationList({
         <div className={cn("flex flex-col h-full", className)}>
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <h2 className="text-sm font-semibold">Messages</h2>
-                <Tooltip content="New conversation" side="bottom">
+                <h2 className="text-sm font-semibold">{ms("panel_title")}</h2>
+                <Tooltip content={ms("conversations_new")} side="bottom">
                     <button
                         onClick={onCompose}
                         className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        aria-label="New conversation"
+                        aria-label={ms("conversations_new")}
                     >
                         <Plus className="h-4 w-4" />
                     </button>
@@ -66,15 +69,19 @@ export function ConversationList({
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search conversations..."
+                        placeholder={ms("conversations_search")}
                         className="w-full rounded-md border border-border bg-secondary/30 pl-8 pr-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
-                        aria-label="Search conversations"
+                        aria-label={ms("conversations_search")}
                     />
                 </div>
             </div>
 
             {/* Conversation list */}
-            <div className="flex-1 overflow-y-auto" role="listbox" aria-label="Conversations">
+            <div
+                className="flex-1 overflow-y-auto"
+                role="listbox"
+                aria-label={ms("conversations_title")}
+            >
                 {isLoading ? (
                     <div className="space-y-1 p-2">
                         {Array.from({ length: 5 }).map((_, i) => (
@@ -88,14 +95,14 @@ export function ConversationList({
                     <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                         <Users className="h-8 w-8 text-muted-foreground/50 mb-2" />
                         <p className="text-sm text-muted-foreground">
-                            {searchQuery ? "No matching conversations" : "No conversations yet"}
+                            {searchQuery ? ms("conversations_empty") : ms("conversations_empty")}
                         </p>
                         {!searchQuery && (
                             <button
                                 onClick={onCompose}
                                 className="mt-2 text-xs text-primary hover:underline"
                             >
-                                Start a conversation
+                                {ms("conversations_new")}
                             </button>
                         )}
                     </div>
@@ -104,7 +111,7 @@ export function ConversationList({
                         {pinned.length > 0 && (
                             <div>
                                 <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Pinned
+                                    {ms("conversations_pinned")}
                                 </div>
                                 {pinned.map((conv) => (
                                     <ConversationItem

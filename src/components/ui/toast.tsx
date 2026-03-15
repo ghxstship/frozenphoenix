@@ -13,10 +13,10 @@ const toastVariants = cva(
         variants: {
             variant: {
                 default: "bg-background border-border text-foreground",
-                success: "bg-success/10 border-success/30 text-success",
-                warning: "bg-warning/10 border-warning/30 text-warning",
-                destructive: "bg-destructive/10 border-destructive/30 text-destructive",
-                info: "bg-info/10 border-info/30 text-info",
+                success: "bg-background border-success/30 text-success",
+                warning: "bg-background border-warning/30 text-warning",
+                destructive: "bg-background border-destructive/30 text-destructive",
+                info: "bg-background border-info/30 text-info",
             },
         },
         defaultVariants: { variant: "default" },

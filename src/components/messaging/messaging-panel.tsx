@@ -18,6 +18,10 @@ import {
     useToggleReaction,
 } from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
+import {
+    useConversationsRealtime,
+    useMessagesRealtime,
+} from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
 
 export function MessagingPanel() {
@@ -39,6 +43,10 @@ export function MessagingPanel() {
 
     const { user } = useAuth();
     const currentUserId = user?.id ?? "";
+
+    // Realtime subscriptions
+    useConversationsRealtime();
+    useMessagesRealtime(activeConversationId ?? undefined);
 
     // Data hooks
     const { data: conversations = [], isLoading: convLoading } = useConversations();

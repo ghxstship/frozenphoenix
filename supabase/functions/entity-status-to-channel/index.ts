@@ -107,13 +107,13 @@ Deno.serve(async (req) => {
         // Get changer name if available
         if (changed_by) {
             const { data: profile } = await supabase
-                .from("profiles")
-                .select("name")
+                .from("user_profiles")
+                .select("display_name")
                 .eq("id", changed_by)
                 .single();
 
-            if (profile?.name) {
-                messageBody += `\nChanged by: ${profile.name}`;
+            if (profile?.display_name) {
+                messageBody += `\nChanged by: ${profile.display_name}`;
             }
         }
 
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
                 .insert({
                     conversation_id: channelId,
                     body: messageBody,
-                    message_type: "system",
+                    is_system_message: true,
                 })
                 .select("id")
                 .single();

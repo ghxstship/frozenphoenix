@@ -116,8 +116,9 @@ Deno.serve(async (req) => {
             .insert({
                 conversation_id: targetChannel.id,
                 body: messageBody,
-                message_type: "system",
-                cue_id,
+                is_system_message: true,
+                entity_type: "ros_cue",
+                entity_id: cue_id,
             })
             .select("id")
             .single();

@@ -175,9 +175,10 @@ export interface AIMessage {
     role: ChatRole;
     content: string;
     attachments?: MessageAttachment[];
+    tool_calls?: ToolCall[];
     token_count_input: number;
     token_count_output: number;
-    model_id: string;
+    model_id: string | null;
     latency_ms: number;
     created_at: string;
 }

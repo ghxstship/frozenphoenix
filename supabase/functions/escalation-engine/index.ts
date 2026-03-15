@@ -63,17 +63,27 @@ Deno.serve(async (req) => {
                                 escalatedCount++;
                             } else if (applicableLevel.action === "notify_manager") {
                                 // Find user's manager and notify them
+                                // user_profiles has display_name; manager relationship is on crew_members
                                 const { data: profile } = await supabase
-                                    .from("profiles")
-                                    .select("name, manager_id")
+                                    .from("user_profiles")
+                                    .select("display_name")
                                     .eq("id", ack.user_id)
                                     .single();
 
-                                if (profile?.manager_id) {
+                                const { data: crewRecord } = await supabase
+                                    .from("crew_members")
+                                    .select("reports_to")
+                                    .eq("user_id", ack.user_id)
+                                    .limit(1)
+                                    .single();
+
+                                const managerId = crewRecord?.reports_to as string | undefined;
+
+                                if (managerId) {
                                     await sendReminderDm(
                                         supabase,
-                                        profile.manager_id,
-                                        `⚠️ ${profile.name ?? "A team member"} has not acknowledged a mandatory message:\n\n"${msgData.body.slice(0, 200)}"`,
+                                        managerId,
+                                        `⚠️ ${profile?.display_name ?? "A team member"} has not acknowledged a mandatory message:\n\n"${msgData.body.slice(0, 200)}"`,
                                         msgData.conversation_id
                                     );
                                     escalatedCount++;
@@ -92,7 +102,7 @@ Deno.serve(async (req) => {
                     .from("messages")
                     .select("id, conversation_id, body, sender_id, created_at, conversations!inner(category)")
                     .in("conversations.category", ["safety"])
-                    .eq("message_type", "user")
+                    .eq("is_system_message", false)
                     .lt("created_at", cutoff)
                     .is("deleted_at", null)
                     .limit(50);
@@ -184,7 +194,7 @@ async function sendReminderDm(
         conversation_id: dmId,
         sender_id: systemUserId,
         body,
-        message_type: "system",
+        is_system_message: true,
         metadata: { source_conversation_id: sourceConversationId },
     });
 }

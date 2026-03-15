@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
             await supabase.from("messages").insert({
                 conversation_id: channelId,
                 body: "📦 This channel has been automatically archived.",
-                message_type: "system",
+                is_system_message: true,
             });
         }
 

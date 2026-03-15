@@ -80,12 +80,10 @@ export async function ingestDocument(params: IngestionParams): Promise<Ingestion
             org_id: params.orgId,
             title: params.fileName,
             source_type: params.sourceType,
-            file_name: params.fileName,
-            file_size: params.fileBuffer.length,
+            original_filename: params.fileName,
             mime_type: params.mimeType,
             storage_path: params.storagePath ?? "",
-            processing_status: "processing",
-            uploaded_by: params.uploadedBy,
+            processing_status: "pending" as const,
         })
         .select()
         .single();
@@ -269,15 +267,15 @@ export async function reIngestDocument(
     await supabase.from("ai_document_chunks").delete().eq("document_id", documentId);
 
     // Update status to processing
-    await updateDocumentStatus(supabase, documentId, "processing");
+    await updateDocumentStatus(supabase, documentId, "pending");
 
     // Re-run ingestion
     return ingestDocument({
         fileBuffer,
         mimeType,
-        fileName: doc.file_name,
+        fileName: doc.original_filename,
         orgId: doc.org_id,
-        uploadedBy: doc.uploaded_by,
+        uploadedBy: "",
         sourceType: doc.source_type,
         storagePath: doc.storage_path,
     });
@@ -288,7 +286,7 @@ export async function reIngestDocument(
 async function updateDocumentStatus(
     supabase: NonNullable<ReturnType<typeof createAdminClient>>,
     documentId: string,
-    status: string
+    status: "pending" | "chunking" | "embedding" | "ready" | "failed"
 ): Promise<void> {
     await supabase.from("ai_documents").update({ processing_status: status }).eq("id", documentId);
 }

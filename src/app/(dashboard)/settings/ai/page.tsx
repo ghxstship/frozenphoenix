@@ -10,7 +10,6 @@ import { TabBar } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useToast } from "@/components/ui/toast";
 import { PermissionGate } from "@/components/permission-guard";
-import { SettingRow } from "@/components/settings/setting-row";
 import {
     Bot,
     Brain,
@@ -107,10 +106,35 @@ interface LimitRow {
     active: boolean;
 }
 
+// ─── Inline Setting Row (label + description + children) ─────
+
+function AISettingRow({
+    label,
+    description,
+    children,
+}: {
+    label: string;
+    description: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="flex items-start justify-between gap-4 py-2">
+            <div className="space-y-0.5">
+                <p className="text-sm font-medium">{label}</p>
+                <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+            <div className="flex-shrink-0">{children}</div>
+        </div>
+    );
+}
+
 // ─── Main Page ───────────────────────────────────────────────
 
 export default function AISettingsPage() {
-    const [activeTab, setActiveTab] = useQueryTabState("providers");
+    const [activeTab, setActiveTab] = useQueryTabState({
+        defaultValue: "providers" as const,
+        validValues: ["providers", "models", "prompts", "usage", "knowledge", "limits"] as const,
+    });
 
     return (
         <PermissionGate resource="settings" action="manage" fallback={<AccessDenied />}>
@@ -128,7 +152,7 @@ export default function AISettingsPage() {
                 <TabBar
                     items={TABS}
                     value={activeTab}
-                    onValueChange={setActiveTab}
+                    onValueChange={setActiveTab as (value: string) => void}
                     ariaLabel="AI Settings Tabs"
                 />
 
@@ -156,7 +180,7 @@ function ProvidersPanel() {
     const [keyInput, setKeyInput] = useState("");
     const [keyVisible, setKeyVisible] = useState(false);
     const [saving, setSaving] = useState(false);
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     const fetchProviders = useCallback(async () => {
         setLoading(true);
@@ -167,11 +191,11 @@ function ProvidersPanel() {
                 setProviders(data.providers ?? []);
             }
         } catch {
-            toast({ title: "Failed to load providers", variant: "destructive" });
+            addToast({ title: "Failed to load providers", variant: "destructive" });
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, [addToast]);
 
     useEffect(() => {
         fetchProviders();
@@ -188,12 +212,12 @@ function ProvidersPanel() {
                 setProviders((prev) =>
                     prev.map((p) => (p.id === id ? { ...p, is_active: active } : p))
                 );
-                toast({ title: `Provider ${active ? "enabled" : "disabled"}` });
+                addToast({ title: `Provider ${active ? "enabled" : "disabled"}` });
             } catch {
-                toast({ title: "Failed to update provider", variant: "destructive" });
+                addToast({ title: "Failed to update provider", variant: "destructive" });
             }
         },
-        [toast]
+        [addToast]
     );
 
     const saveApiKey = useCallback(
@@ -207,20 +231,20 @@ function ProvidersPanel() {
                     body: JSON.stringify({ api_key: keyInput }),
                 });
                 if (res.ok) {
-                    toast({ title: "API key saved and encrypted" });
+                    addToast({ title: "API key saved and encrypted" });
                     setEditingKey(null);
                     setKeyInput("");
                     fetchProviders();
                 } else {
-                    toast({ title: "Failed to save API key", variant: "destructive" });
+                    addToast({ title: "Failed to save API key", variant: "destructive" });
                 }
             } catch {
-                toast({ title: "Failed to save API key", variant: "destructive" });
+                addToast({ title: "Failed to save API key", variant: "destructive" });
             } finally {
                 setSaving(false);
             }
         },
-        [keyInput, toast, fetchProviders]
+        [keyInput, addToast, fetchProviders]
     );
 
     if (loading) return <LoadingState />;
@@ -265,7 +289,7 @@ function ProvidersPanel() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <SettingRow
+                        <AISettingRow
                             label="API Key"
                             description={
                                 provider.has_api_key
@@ -330,14 +354,14 @@ function ProvidersPanel() {
                                     {provider.has_api_key ? "Update Key" : "Add Key"}
                                 </Button>
                             )}
-                        </SettingRow>
+                        </AISettingRow>
 
                         {provider.base_url && (
-                            <SettingRow label="Base URL" description="Custom endpoint URL">
+                            <AISettingRow label="Base URL" description="Custom endpoint URL">
                                 <code className="text-xs bg-muted px-2 py-1 rounded">
                                     {provider.base_url}
                                 </code>
-                            </SettingRow>
+                            </AISettingRow>
                         )}
                     </CardContent>
                 </Card>
@@ -362,7 +386,7 @@ function ModelsPanel() {
     const [models, setModels] = useState<ModelRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("");
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     useEffect(() => {
         (async () => {
@@ -374,12 +398,12 @@ function ModelsPanel() {
                     setModels(data.models ?? []);
                 }
             } catch {
-                toast({ title: "Failed to load models", variant: "destructive" });
+                addToast({ title: "Failed to load models", variant: "destructive" });
             } finally {
                 setLoading(false);
             }
         })();
-    }, [toast]);
+    }, [addToast]);
 
     const toggleModel = useCallback(
         async (id: string, active: boolean) => {
@@ -392,12 +416,12 @@ function ModelsPanel() {
                 setModels((prev) =>
                     prev.map((m) => (m.id === id ? { ...m, is_active: active } : m))
                 );
-                toast({ title: `Model ${active ? "enabled" : "disabled"}` });
+                addToast({ title: `Model ${active ? "enabled" : "disabled"}` });
             } catch {
-                toast({ title: "Failed to update model", variant: "destructive" });
+                addToast({ title: "Failed to update model", variant: "destructive" });
             }
         },
-        [toast]
+        [addToast]
     );
 
     const filtered = useMemo(() => {
@@ -498,7 +522,7 @@ function SystemPromptsPanel() {
     const [editing, setEditing] = useState<string | null>(null);
     const [editText, setEditText] = useState("");
     const [saving, setSaving] = useState(false);
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     const fetchPrompts = useCallback(async () => {
         setLoading(true);
@@ -509,11 +533,11 @@ function SystemPromptsPanel() {
                 setPrompts(data.prompts ?? []);
             }
         } catch {
-            toast({ title: "Failed to load prompts", variant: "destructive" });
+            addToast({ title: "Failed to load prompts", variant: "destructive" });
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, [addToast]);
 
     useEffect(() => {
         fetchPrompts();
@@ -529,17 +553,17 @@ function SystemPromptsPanel() {
                     body: JSON.stringify({ prompt_text: editText }),
                 });
                 if (res.ok) {
-                    toast({ title: "Prompt saved" });
+                    addToast({ title: "Prompt saved" });
                     setEditing(null);
                     fetchPrompts();
                 }
             } catch {
-                toast({ title: "Failed to save prompt", variant: "destructive" });
+                addToast({ title: "Failed to save prompt", variant: "destructive" });
             } finally {
                 setSaving(false);
             }
         },
-        [editText, toast, fetchPrompts]
+        [editText, addToast, fetchPrompts]
     );
 
     if (loading) return <LoadingState />;
@@ -641,7 +665,7 @@ function UsagePanel() {
     const [usage, setUsage] = useState<UsageRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     useEffect(() => {
         (async () => {
@@ -653,12 +677,12 @@ function UsagePanel() {
                     setUsage(data.usage ?? []);
                 }
             } catch {
-                toast({ title: "Failed to load usage data", variant: "destructive" });
+                addToast({ title: "Failed to load usage data", variant: "destructive" });
             } finally {
                 setLoading(false);
             }
         })();
-    }, [period, toast]);
+    }, [period, addToast]);
 
     const totals = useMemo(() => {
         return usage.reduce(
@@ -751,7 +775,7 @@ function KnowledgeBasePanel() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     const fetchDocs = useCallback(async () => {
         setLoading(true);
@@ -762,11 +786,11 @@ function KnowledgeBasePanel() {
                 setDocuments(data.documents ?? []);
             }
         } catch {
-            toast({ title: "Failed to load documents", variant: "destructive" });
+            addToast({ title: "Failed to load documents", variant: "destructive" });
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, [addToast]);
 
     useEffect(() => {
         fetchDocs();
@@ -789,20 +813,20 @@ function KnowledgeBasePanel() {
                 });
 
                 if (res.ok) {
-                    toast({ title: "Document uploaded and processing started" });
+                    addToast({ title: "Document uploaded and processing started" });
                     fetchDocs();
                 } else {
                     const err = await res.json();
-                    toast({ title: err.error ?? "Upload failed", variant: "destructive" });
+                    addToast({ title: err.error ?? "Upload failed", variant: "destructive" });
                 }
             } catch {
-                toast({ title: "Upload failed", variant: "destructive" });
+                addToast({ title: "Upload failed", variant: "destructive" });
             } finally {
                 setUploading(false);
                 if (fileInputRef.current) fileInputRef.current.value = "";
             }
         },
-        [toast, fetchDocs]
+        [addToast, fetchDocs]
     );
 
     const deleteDoc = useCallback(
@@ -810,12 +834,12 @@ function KnowledgeBasePanel() {
             try {
                 await fetch(`/api/ai/documents/${id}`, { method: "DELETE" });
                 setDocuments((prev) => prev.filter((d) => d.id !== id));
-                toast({ title: "Document deleted" });
+                addToast({ title: "Document deleted" });
             } catch {
-                toast({ title: "Failed to delete document", variant: "destructive" });
+                addToast({ title: "Failed to delete document", variant: "destructive" });
             }
         },
-        [toast]
+        [addToast]
     );
 
     if (loading) return <LoadingState />;
@@ -898,7 +922,7 @@ function KnowledgeBasePanel() {
 function LimitsPanel() {
     const [limits, setLimits] = useState<LimitRow[]>([]);
     const [loading, setLoading] = useState(true);
-    const { toast } = useToast();
+    const { addToast } = useToast();
 
     useEffect(() => {
         (async () => {
@@ -910,12 +934,12 @@ function LimitsPanel() {
                     setLimits(data.limits ?? []);
                 }
             } catch {
-                toast({ title: "Failed to load limits", variant: "destructive" });
+                addToast({ title: "Failed to load limits", variant: "destructive" });
             } finally {
                 setLoading(false);
             }
         })();
-    }, [toast]);
+    }, [addToast]);
 
     if (loading) return <LoadingState />;
 

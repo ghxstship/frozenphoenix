@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
     const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -19,7 +21,7 @@ export async function GET(req: NextRequest) {
     if (!admin) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
 
     const { data: membership } = await supabase
-        .from("organization_members")
+        .from("org_memberships")
         .select("organization_id, role")
         .eq("user_id", user.id)
         .limit(1)

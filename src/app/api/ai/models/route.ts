@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
     const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+
     const {
         data: { user },
     } = await supabase.auth.getUser();

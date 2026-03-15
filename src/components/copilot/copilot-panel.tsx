@@ -78,6 +78,7 @@ export function CopilotPanel() {
             const controller = new AbortController();
             abortRef.current = controller;
 
+            let accumulated = "";
             try {
                 const res = await fetch("/api/ai/chat", {
                     method: "POST",
@@ -112,7 +113,6 @@ export function CopilotPanel() {
                 }
 
                 const decoder = new TextDecoder();
-                let accumulated = "";
                 const toolCalls: CopilotMessageType["toolCalls"] = [];
 
                 while (true) {

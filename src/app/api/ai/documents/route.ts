@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
     const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -19,7 +21,7 @@ export async function GET() {
     if (!admin) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
 
     const { data: membership } = await supabase
-        .from("organization_members")
+        .from("org_memberships")
         .select("organization_id, role")
         .eq("user_id", user.id)
         .limit(1)
@@ -32,7 +34,7 @@ export async function GET() {
     const { data: documents, error } = await admin
         .from("ai_documents")
         .select(
-            "id, title, source_type, file_name, file_size, processing_status, chunk_count, total_tokens, created_at"
+            "id, title, source_type, original_filename, processing_status, chunk_count, total_tokens, created_at"
         )
         .eq("org_id", membership.organization_id)
         .order("created_at", { ascending: false });

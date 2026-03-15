@@ -104,8 +104,9 @@ async function createIncidentThread(
         .insert({
             conversation_id: channelId,
             body: `${emoji} **Incident Report: ${incident.title}**\nSeverity: ${incident.severity ?? "Unknown"}\nStatus: ${incident.status ?? "Open"}\n\n${incident.description ?? "No description provided."}`,
-            message_type: "system",
-            incident_id: incident.id,
+            is_system_message: true,
+            entity_type: "incident",
+            entity_id: incident.id,
             is_mandatory_read: incident.severity === "critical" || incident.severity === "high",
         })
         .select("id")

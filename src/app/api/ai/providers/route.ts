@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
     const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -20,7 +22,7 @@ export async function GET() {
 
     // Get org
     const { data: membership } = await supabase
-        .from("organization_members")
+        .from("org_memberships")
         .select("organization_id, role")
         .eq("user_id", user.id)
         .limit(1)
@@ -32,7 +34,7 @@ export async function GET() {
 
     const { data: providers, error } = await admin
         .from("ai_providers")
-        .select("id, provider_key, display_name, is_active, base_url")
+        .select("id, provider_key, display_name, is_active, api_base_url")
         .order("display_name");
 
     if (error) {
@@ -44,7 +46,7 @@ export async function GET() {
         .from("ai_api_keys")
         .select("provider_id")
         .eq("org_id", membership.organization_id)
-        .eq("active", true);
+        .eq("is_valid", true);
 
     const keyProviderIds = new Set((keys ?? []).map((k) => k.provider_id));
 

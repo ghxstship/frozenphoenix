@@ -38,22 +38,37 @@ Deno.serve(async (req: Request) => {
         return errorResponse("No active Eventbrite connection found", 404);
     }
 
-    const connection = connections[0] as Record<string, unknown>;
-    const connectionId = connection.id as string;
-    const webhookSecret = (connection.webhook_secret as string) ?? "";
-
     // -----------------------------------------------------------------------
-    // 2. Validate signature (if secret configured)
+    // 2. Disambiguate connection + validate signature
+    //    If multiple active connections exist, match by webhook secret.
     // -----------------------------------------------------------------------
-    if (webhookSecret) {
-        const headers: Record<string, string> = {};
-        req.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
+    const headers: Record<string, string> = {};
+    req.headers.forEach((v: string, k: string) => { headers[k.toLowerCase()] = v; });
 
-        const valid = await eventbriteAdapter.validateSignature(rawBody, headers, webhookSecret);
-        if (!valid) {
-            return errorResponse("Invalid webhook signature", 401);
+    let connection: Record<string, unknown> | null = null;
+
+    if (connections.length === 1) {
+        connection = connections[0] as Record<string, unknown>;
+        const secret = (connection.webhook_secret as string) ?? "";
+        if (secret) {
+            const valid = await eventbriteAdapter.validateSignature(rawBody, headers, secret);
+            if (!valid) return errorResponse("Invalid webhook signature", 401);
+        }
+    } else {
+        // Multiple connections — find the one whose secret validates
+        for (const conn of connections) {
+            const c = conn as Record<string, unknown>;
+            const secret = (c.webhook_secret as string) ?? "";
+            if (!secret) continue;
+            const valid = await eventbriteAdapter.validateSignature(rawBody, headers, secret);
+            if (valid) { connection = c; break; }
+        }
+        if (!connection) {
+            return errorResponse("No matching connection for webhook signature", 401);
         }
     }
+
+    const connectionId = connection.id as string;
 
     // -----------------------------------------------------------------------
     // 3. Deduplication

@@ -13,6 +13,7 @@
 
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/database.types";
 import type { AIConversation, AIMessage, ChatRole } from "../types";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -70,7 +71,7 @@ export async function createConversation(
         return null;
     }
 
-    return data as AIConversation;
+    return data as unknown as AIConversation;
 }
 
 export async function getConversation(conversationId: string): Promise<AIConversation | null> {
@@ -84,7 +85,7 @@ export async function getConversation(conversationId: string): Promise<AIConvers
         .single();
 
     if (error) return null;
-    return data as AIConversation;
+    return data as unknown as AIConversation;
 }
 
 export async function listConversations(
@@ -110,7 +111,7 @@ export async function listConversations(
         return [];
     }
 
-    return (data ?? []) as AIConversation[];
+    return (data ?? []) as unknown as AIConversation[];
 }
 
 export async function archiveConversation(conversationId: string): Promise<boolean> {
@@ -162,14 +163,14 @@ export async function appendMessage(params: AppendMessageParams): Promise<AIMess
         .from("ai_messages")
         .insert({
             conversation_id: params.conversationId,
-            role: params.role,
+            role: params.role as "user" | "assistant" | "system" | "tool_call" | "tool_result",
             content: params.content,
             token_count_input: params.tokenCountInput ?? 0,
             token_count_output: params.tokenCountOutput ?? 0,
             model_id: params.modelId,
             latency_ms: params.latencyMs ?? 0,
-            tool_calls: params.toolCalls ?? [],
-            attachments: params.attachments ?? [],
+            tool_calls: (params.toolCalls ?? []) as unknown as Json,
+            attachments: (params.attachments ?? []) as unknown as Json,
         })
         .select()
         .single();
@@ -179,7 +180,7 @@ export async function appendMessage(params: AppendMessageParams): Promise<AIMess
         return null;
     }
 
-    return data as AIMessage;
+    return data as unknown as AIMessage;
 }
 
 export async function getConversationMessages(
@@ -202,7 +203,7 @@ export async function getConversationMessages(
         return [];
     }
 
-    return (data ?? []) as AIMessage[];
+    return (data ?? []) as unknown as AIMessage[];
 }
 
 /**
@@ -212,7 +213,7 @@ export function messagesToChatHistory(
     messages: AIMessage[]
 ): Array<{ role: ChatRole; content: string; tool_calls?: unknown[] }> {
     return messages.map((m) => ({
-        role: m.role as ChatRole,
+        role: m.role,
         content: m.content,
         ...(Array.isArray(m.tool_calls) && m.tool_calls.length > 0
             ? { tool_calls: m.tool_calls as unknown[] }

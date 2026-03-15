@@ -17,7 +17,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { buildContext } from "@/lib/ai/copilot/context-builder";
+import { buildCopilotContext } from "@/lib/ai/copilot/context-builder";
+import type { PermissionLevel } from "@/types";
 import {
     appendMessage,
     createConversation,
@@ -35,6 +36,8 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
     // 1. Auth
     const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -45,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // Get org context
     const { data: membership } = await supabase
-        .from("organization_members")
+        .from("org_memberships")
         .select("organization_id, role")
         .eq("user_id", user.id)
         .limit(1)
@@ -132,40 +135,59 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    // Get provider API key
+    // Resolve provider DB ID for API key lookup
     const adminClient = createAdminClient();
     let apiKey: string | undefined;
+    let providerDbId: string | undefined;
 
     if (adminClient) {
-        const { data: keyRow } = await adminClient
-            .from("ai_api_keys")
-            .select("encrypted_key")
-            .eq("org_id", orgId)
-            .eq("provider_id", provider.id)
-            .eq("active", true)
+        const { data: provRow } = await adminClient
+            .from("ai_providers")
+            .select("id")
+            .eq("provider_key", provider.providerKey)
             .limit(1)
             .single();
+        providerDbId = provRow?.id;
 
-        if (keyRow?.encrypted_key) {
-            // Decrypt key
-            const { decrypt } = await import("@/lib/ai/encryption");
-            try {
-                apiKey = decrypt(keyRow.encrypted_key);
-            } catch {
-                logger.error("Failed to decrypt API key", { providerId: provider.id });
+        // Get provider API key
+        if (providerDbId) {
+            const { data: keyRow } = await adminClient
+                .from("ai_api_keys")
+                .select("encrypted_key")
+                .eq("org_id", orgId)
+                .eq("provider_id", providerDbId)
+                .eq("is_valid", true)
+                .limit(1)
+                .single();
+
+            if (keyRow?.encrypted_key) {
+                const { decryptApiKey } = await import("@/lib/ai/encryption");
+                try {
+                    apiKey = decryptApiKey(keyRow.encrypted_key);
+                } catch {
+                    logger.error("Failed to decrypt API key", { providerKey: provider.providerKey });
+                }
             }
         }
     }
 
     // Build full context
-    const context = await buildContext({
-        userRole,
-        orgId,
-        userId: user.id,
-        conversationHistory: chatHistory,
-        pageContext: body.page_context ?? undefined,
-        query: body.message,
-    });
+    const defaultModel = provider.getModels()[0];
+    if (!defaultModel) {
+        return NextResponse.json({ error: "No models available for provider" }, { status: 503 });
+    }
+    const context = buildCopilotContext(
+        {
+            role: userRole as PermissionLevel,
+            orgId,
+            userId: user.id,
+            workspaceContext: body.page_context?.entityType ?? "global",
+            pageContext: body.page_context ?? undefined,
+            permissions: [],
+        },
+        chatHistory.map((m) => ({ role: m.role, content: m.content })),
+        defaultModel,
+    );
 
     // 7. Stream response via SSE
     const startTime = Date.now();
@@ -186,33 +208,23 @@ export async function POST(req: NextRequest) {
             let outputTokens = 0;
 
             try {
-                const response = await provider.chat(context.messages, {
-                    stream: true,
-                    tools: context.tools,
+                const stream = provider.chat(context.messages, {
+                    ...context.options,
                     ...(apiKey ? { apiKey } : {}),
                 });
 
-                // Handle streaming response
-                if (Symbol.asyncIterator in Object(response)) {
-                    for await (const chunk of response as AsyncIterable<{
-                        delta?: string;
-                        finish_reason?: string;
-                    }>) {
-                        if (chunk.delta) {
-                            fullContent += chunk.delta;
-                            sendEvent({ delta: chunk.delta });
-                        }
+                for await (const chunk of stream) {
+                    if (chunk.delta) {
+                        fullContent += chunk.delta;
+                        sendEvent({ delta: chunk.delta });
                     }
-                } else {
-                    // Non-streaming fallback
-                    const result = response as {
-                        content: string;
-                        usage?: { prompt_tokens: number; completion_tokens: number };
-                    };
-                    fullContent = result.content;
-                    inputTokens = result.usage?.prompt_tokens ?? 0;
-                    outputTokens = result.usage?.completion_tokens ?? 0;
-                    sendEvent({ delta: fullContent });
+                    if (chunk.tool_call) {
+                        sendEvent({ tool_call: chunk.tool_call });
+                    }
+                    if (chunk.usage) {
+                        inputTokens = chunk.usage.input_tokens;
+                        outputTokens = chunk.usage.output_tokens;
+                    }
                 }
 
                 // Estimate tokens if not provided
@@ -252,7 +264,7 @@ export async function POST(req: NextRequest) {
             await logUsage({
                 userId: user.id,
                 orgId,
-                providerId: provider.id,
+                providerId: providerDbId ?? provider.providerKey,
                 tokenCountInput: inputTokens,
                 tokenCountOutput: outputTokens,
                 estimatedCost: cost,
@@ -262,5 +274,5 @@ export async function POST(req: NextRequest) {
         },
     });
 
-    return new Response(stream, { headers: sseHeaders });
+    return new Response(stream, { headers: sseHeaders() });
 }

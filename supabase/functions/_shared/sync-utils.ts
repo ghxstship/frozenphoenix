@@ -143,7 +143,17 @@ export async function incrementConnectionErrorCount(
     supabase: ReturnType<typeof createClient>,
     connectionId: string,
 ): Promise<void> {
-    // Read current count and increment
+    // Attempt atomic increment via RPC (requires increment_connection_error_count function in DB).
+    // Falls back to read-then-write if RPC is not available.
+    const { error: rpcError } = await supabase.rpc("increment_connection_error_count", {
+        p_connection_id: connectionId,
+        p_error_threshold: 10,
+    });
+
+    if (!rpcError) return;
+
+    // Fallback: non-atomic read-then-write (acceptable for low-concurrency webhooks)
+    console.warn("increment_connection_error_count RPC not available, using fallback:", rpcError.message);
     const { data } = await supabase
         .from("provider_connections")
         .select("error_count")
@@ -151,12 +161,13 @@ export async function incrementConnectionErrorCount(
         .single();
 
     const currentCount = (data?.error_count as number) ?? 0;
+    const newCount = currentCount + 1;
 
     await supabase
         .from("provider_connections")
         .update({
-            error_count: currentCount + 1,
-            status: currentCount + 1 >= 10 ? "error" : undefined,
+            error_count: newCount,
+            ...(newCount >= 10 ? { status: "error" } : {}),
         })
         .eq("id", connectionId);
 }

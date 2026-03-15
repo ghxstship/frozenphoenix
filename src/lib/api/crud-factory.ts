@@ -40,8 +40,17 @@ import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
+import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import type { StateMachineDefinition } from "@/lib/state-machine";
 import { validateTransition } from "@/lib/state-machine";
+
+// ─── Shared Mutation Rate Limiter ────────────────────────────
+// 30 mutations per minute per client across all CRUD endpoints
+const mutationLimiter = rateLimit({ windowMs: 60_000, max: 30 });
+
+function generateRequestId(): string {
+    return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -351,6 +360,17 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
 
     // ─── CREATE ──────────────────────────────────────────────
     async function create(request: NextRequest): Promise<NextResponse> {
+        const requestId = generateRequestId();
+        const log = logger.child({ requestId, method: "POST", route: `/${resource}` });
+
+        // Rate limit mutations
+        const rlCheck = mutationLimiter.check(getClientId(request));
+        if (!rlCheck.allowed) {
+            log.warn("Rate limit exceeded");
+            return rateLimitResponse(rlCheck.retryAfterSeconds);
+        }
+
+        try {
         const supabase = await createClient();
         if (!supabase) return ApiErrors.serviceUnavailable();
 
@@ -406,15 +426,23 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (error.code === "23505") {
                 return ApiErrors.conflict(`${displayName} already exists (duplicate key)`);
             }
-            logger.error(`${logPrefix} CREATE failed`, { error: error.message, code: error.code });
+            log.error(`${logPrefix} CREATE failed`, { error: error.message, code: error.code });
             return ApiErrors.internalError(`Failed to create ${displayName}`);
         }
 
-        logger.info(`${logPrefix} created`, {
+        log.info(`${logPrefix} created`, {
             id: (data as Record<string, unknown>).id,
             userId: user.id,
         });
-        return NextResponse.json({ data }, { status: 201 });
+        const response = NextResponse.json({ data }, { status: 201 });
+        response.headers.set("X-Request-Id", requestId);
+        return response;
+        } catch (err) {
+            log.error("Unhandled error in CREATE", {
+                error: err instanceof Error ? err.message : String(err),
+            });
+            return ApiErrors.internalError();
+        }
     }
 
     // ─── UPDATE ──────────────────────────────────────────────
@@ -422,6 +450,16 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
+        const requestId = generateRequestId();
+        const log = logger.child({ requestId, method: "PATCH", route: `/${resource}` });
+
+        const rlCheck = mutationLimiter.check(getClientId(request));
+        if (!rlCheck.allowed) {
+            log.warn("Rate limit exceeded");
+            return rateLimitResponse(rlCheck.retryAfterSeconds);
+        }
+
+        try {
         const supabase = await createClient();
         if (!supabase) return ApiErrors.serviceUnavailable();
 
@@ -474,7 +512,7 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
 
             if (fetchError) {
                 if (fetchError.code === "PGRST116") return ApiErrors.notFound(displayName);
-                logger.error(`${logPrefix} UPDATE fetch-current failed`, {
+                log.error(`${logPrefix} UPDATE fetch-current failed`, {
                     id,
                     error: fetchError.message,
                 });
@@ -507,12 +545,20 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
 
         if (error) {
             if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
-            logger.error(`${logPrefix} UPDATE failed`, { id, error: error.message });
+            log.error(`${logPrefix} UPDATE failed`, { id, error: error.message });
             return ApiErrors.internalError(`Failed to update ${displayName}`);
         }
 
-        logger.info(`${logPrefix} updated`, { id, userId: user.id });
-        return NextResponse.json({ data });
+        log.info(`${logPrefix} updated`, { id, userId: user.id });
+        const response = NextResponse.json({ data });
+        response.headers.set("X-Request-Id", requestId);
+        return response;
+        } catch (err) {
+            log.error("Unhandled error in UPDATE", {
+                error: err instanceof Error ? err.message : String(err),
+            });
+            return ApiErrors.internalError();
+        }
     }
 
     // ─── DELETE ──────────────────────────────────────────────
@@ -520,6 +566,16 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         _request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
+        const requestId = generateRequestId();
+        const log = logger.child({ requestId, method: "DELETE", route: `/${resource}` });
+
+        const rlCheck = mutationLimiter.check(getClientId(_request));
+        if (!rlCheck.allowed) {
+            log.warn("Rate limit exceeded");
+            return rateLimitResponse(rlCheck.retryAfterSeconds);
+        }
+
+        try {
         const supabase = await createClient();
         if (!supabase) return ApiErrors.serviceUnavailable();
 
@@ -549,20 +605,28 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
                 .eq("id", id);
 
             if (error) {
-                logger.error(`${logPrefix} SOFT DELETE failed`, { id, error: error.message });
+                log.error(`${logPrefix} SOFT DELETE failed`, { id, error: error.message });
                 return ApiErrors.internalError(`Failed to delete ${displayName}`);
             }
         } else {
             const { error } = await serverFromTable(supabase, table).delete().eq("id", id);
 
             if (error) {
-                logger.error(`${logPrefix} HARD DELETE failed`, { id, error: error.message });
+                log.error(`${logPrefix} HARD DELETE failed`, { id, error: error.message });
                 return ApiErrors.internalError(`Failed to delete ${displayName}`);
             }
         }
 
-        logger.info(`${logPrefix} deleted`, { id, userId: user.id, soft: softDelete });
-        return NextResponse.json({ success: true });
+        log.info(`${logPrefix} deleted`, { id, userId: user.id, soft: softDelete });
+        const response = NextResponse.json({ success: true });
+        response.headers.set("X-Request-Id", requestId);
+        return response;
+        } catch (err) {
+            log.error("Unhandled error in DELETE", {
+                error: err instanceof Error ? err.message : String(err),
+            });
+            return ApiErrors.internalError();
+        }
     }
 
     return { list, getById, create, update, remove };

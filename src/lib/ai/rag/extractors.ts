@@ -71,7 +71,8 @@ export async function extractText(buffer: Buffer, mimeType: string): Promise<Ext
 
 async function extractPdf(buffer: Buffer): Promise<ExtractionResult> {
     // Dynamic import to avoid bundling in client
-    const pdfParse = (await import("pdf-parse")).default;
+    const pdfParseModule = await import("pdf-parse");
+    const pdfParse = (pdfParseModule as unknown as { default: (buf: Buffer) => Promise<{ text: string; numpages: number; info?: Record<string, string> }> }).default;
 
     const result = await pdfParse(buffer);
 

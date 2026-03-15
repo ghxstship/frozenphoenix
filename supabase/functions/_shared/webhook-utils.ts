@@ -44,14 +44,26 @@ export async function validateHmacSignature(
             ["sign"],
         );
         const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-        const computed = Array.from(new Uint8Array(sig))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
+        const computed = new Uint8Array(sig);
 
         // Strip prefix like "sha256=" if present
         const cleanSig = signature.replace(/^sha\d+=/, "");
 
-        if (computed !== cleanSig) {
+        // Decode hex signature to bytes for constant-time comparison
+        const expectedBytes = new Uint8Array(cleanSig.length / 2);
+        for (let i = 0; i < expectedBytes.length; i++) {
+            expectedBytes[i] = parseInt(cleanSig.slice(i * 2, i * 2 + 2), 16);
+        }
+
+        // Constant-time comparison to prevent timing attacks
+        if (computed.length !== expectedBytes.length) {
+            return { valid: false, error: "Signature mismatch" };
+        }
+        let diff = 0;
+        for (let i = 0; i < computed.length; i++) {
+            diff |= computed[i]! ^ expectedBytes[i]!;
+        }
+        if (diff !== 0) {
             return { valid: false, error: "Signature mismatch" };
         }
         return { valid: true };

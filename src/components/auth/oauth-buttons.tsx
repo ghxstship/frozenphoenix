@@ -1,16 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Github, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface OAuthButtonsProps {
-    onOAuth: (provider: "google" | "github") => void;
+    onOAuth: (provider: "google") => void;
+    onBluesky: (handle: string) => void;
     loading: string | null;
     disabled?: boolean;
 }
 
-export function OAuthButtons({ onOAuth, loading, disabled }: OAuthButtonsProps) {
+function BlueskyIcon({ className }: { className?: string }) {
+    return (
+        <svg className={className} viewBox="0 0 600 530" aria-hidden="true">
+            <path
+                fill="currentColor"
+                d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"
+            />
+        </svg>
+    );
+}
+
+export function OAuthButtons({ onOAuth, onBluesky, loading, disabled }: OAuthButtonsProps) {
+    const [showHandleInput, setShowHandleInput] = useState(false);
+    const [handle, setHandle] = useState("");
+
+    const handleBlueskySubmit = useCallback(() => {
+        if (handle.trim()) {
+            onBluesky(handle.trim());
+        }
+    }, [handle, onBluesky]);
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                handleBlueskySubmit();
+            }
+        },
+        [handleBlueskySubmit]
+    );
+
     return (
         <>
             <div className="relative my-6">
@@ -59,18 +90,55 @@ export function OAuthButtons({ onOAuth, loading, disabled }: OAuthButtonsProps) 
                 <Button
                     type="button"
                     variant="outline"
-                    onClick={() => onOAuth("github")}
+                    onClick={() => {
+                        if (showHandleInput && handle.trim()) {
+                            handleBlueskySubmit();
+                        } else {
+                            setShowHandleInput(true);
+                        }
+                    }}
                     disabled={disabled || !!loading}
-                    aria-label="Sign in with GitHub"
+                    aria-label="Sign in with Bluesky"
                 >
-                    {loading === "github" ? (
+                    {loading === "bluesky" ? (
                         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     ) : (
-                        <Github className="h-4 w-4" aria-hidden="true" />
+                        <BlueskyIcon className="h-4 w-4" />
                     )}
-                    GitHub
+                    Bluesky
                 </Button>
             </div>
+
+            {showHandleInput && (
+                <div className="mt-3 flex gap-2" role="group" aria-label="Bluesky handle entry">
+                    <input
+                        type="text"
+                        value={handle}
+                        onChange={(e) => setHandle(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="user.bsky.social"
+                        className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+                        disabled={disabled || loading === "bluesky"}
+                        autoFocus
+                        aria-label="Bluesky handle"
+                        autoComplete="off"
+                        spellCheck={false}
+                    />
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleBlueskySubmit}
+                        disabled={disabled || loading === "bluesky" || !handle.trim()}
+                        aria-label="Continue with Bluesky"
+                    >
+                        {loading === "bluesky" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                        ) : (
+                            "Go"
+                        )}
+                    </Button>
+                </div>
+            )}
         </>
     );
 }

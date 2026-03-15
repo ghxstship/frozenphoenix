@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TruncatedText } from "@/components/ui/truncated-text";
+import { useBreakpoint } from "@/hooks/use-media-query";
 
 export interface GanttTask {
     id: string;
@@ -58,6 +60,7 @@ export function GanttChart({
     className,
     onTaskClick,
 }: GanttChartProps) {
+    const { isMobile } = useBreakpoint();
     const columns = generateDateColumns(startDate, endDate, granularity);
     const totalDays = daysBetween(startDate, endDate) || 1;
     const colWidth = granularity === "week" ? 80 : 40;
@@ -66,6 +69,64 @@ export function GanttChart({
 
     const todayStr = new Date().toISOString().split("T")[0]!;
     const todayOffset = daysBetween(startDate, todayStr);
+
+    if (isMobile) {
+        return (
+            <div className={cn("space-y-2", className)}>
+                {tasks.map((task) => {
+                    const progress = task.progress ?? 0;
+                    const durationDays = daysBetween(task.startDate, task.endDate);
+                    return (
+                        <button
+                            key={task.id}
+                            type="button"
+                            className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors space-y-2"
+                            onClick={() => onTaskClick?.(task)}
+                        >
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                    {task.hasConflict && (
+                                        <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                                    )}
+                                    <p className="text-sm font-medium truncate">{task.label}</p>
+                                </div>
+                                <Badge
+                                    variant={task.hasConflict ? "destructive" : "secondary"}
+                                    className="text-[9px] shrink-0"
+                                >
+                                    {durationDays}d
+                                </Badge>
+                            </div>
+                            {task.sublabel && (
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                    {task.sublabel}
+                                </p>
+                            )}
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                <span>{formatShortDate(task.startDate)}</span>
+                                <span>\u2013</span>
+                                <span>{formatShortDate(task.endDate)}</span>
+                                {progress > 0 && (
+                                    <span className="ml-auto font-medium">{progress}%</span>
+                                )}
+                            </div>
+                            {progress > 0 && (
+                                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                                    <div
+                                        className={cn(
+                                            "h-full rounded-full",
+                                            task.hasConflict ? "bg-destructive/50" : "bg-primary/50"
+                                        )}
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
 
     return (
         <div className={cn("overflow-x-auto border rounded-lg", className)} data-gantt-chart>

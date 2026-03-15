@@ -205,7 +205,7 @@ export default function TimeTrackingCompliancePage() {
                                                 Active
                                             </Badge>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                             <div>
                                                 <p className="text-muted-foreground">Max Daily</p>
                                                 <p className="font-semibold">

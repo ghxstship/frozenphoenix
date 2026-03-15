@@ -10,8 +10,10 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TruncatedText } from "@/components/ui/truncated-text";
+import { useBreakpoint } from "@/hooks/use-media-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -76,6 +78,7 @@ const DEFAULT_COLORS = [
 // ─── Component ───
 
 export function DataTimeline({ data, className, actions, onItemClick }: DataTimelineProps) {
+    const { isMobile } = useBreakpoint();
     const [offset, setOffset] = React.useState(0);
 
     // Group items (must be before early return to satisfy hook rules)
@@ -146,8 +149,74 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                 </span>
             </div>
 
-            {/* Timeline Grid */}
-            <div className="overflow-x-auto border rounded-lg" data-timeline>
+            {/* Mobile List View */}
+            {isMobile && (
+                <div className="space-y-2">
+                    {groups.map(([groupLabel, items]) => (
+                        <React.Fragment key={groupLabel}>
+                            {groupLabel && (
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide pt-2">
+                                    {groupLabel}
+                                </p>
+                            )}
+                            {items.map((item, idx) => {
+                                const progress = item.progress ?? 0;
+                                const durationDays = daysBetween(item.startDate, item.endDate);
+                                return (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors space-y-2"
+                                        onClick={() => onItemClick?.(item)}
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="text-sm font-medium truncate flex-1">
+                                                {item.label}
+                                            </p>
+                                            <Badge
+                                                variant="secondary"
+                                                className="text-[9px] shrink-0"
+                                            >
+                                                {durationDays}d
+                                            </Badge>
+                                        </div>
+                                        {item.sublabel && (
+                                            <p className="text-[10px] text-muted-foreground truncate">
+                                                {item.sublabel}
+                                            </p>
+                                        )}
+                                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                            <span>{formatShort(item.startDate)}</span>
+                                            <span>\u2013</span>
+                                            <span>{formatShort(item.endDate)}</span>
+                                        </div>
+                                        {progress > 0 && (
+                                            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                                                <div
+                                                    className={cn(
+                                                        "h-full rounded-full",
+                                                        item.color ??
+                                                            DEFAULT_COLORS[
+                                                                idx % DEFAULT_COLORS.length
+                                                            ]
+                                                    )}
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </React.Fragment>
+                    ))}
+                </div>
+            )}
+
+            {/* Desktop Timeline Grid */}
+            <div
+                className={cn("overflow-x-auto border rounded-lg", isMobile && "hidden")}
+                data-timeline
+            >
                 <div style={{ minWidth: 200 + gridWidth }}>
                     {/* Header */}
                     <div className="flex border-b bg-muted/30 sticky top-0 z-10">

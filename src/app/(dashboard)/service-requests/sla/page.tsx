@@ -268,7 +268,7 @@ export default function SlaPage() {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4 mb-3 text-xs">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 text-xs">
                                                     <div>
                                                         <p className="text-muted-foreground">
                                                             Response Deadline
@@ -318,7 +318,7 @@ export default function SlaPage() {
                                                 {policy.isActive ? "Active" : "Disabled"}
                                             </Badge>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                             <div className="p-2 rounded-lg bg-secondary/30 text-center">
                                                 <p className="text-sm font-bold">
                                                     {formatMinutes(policy.responseTimeMinutes)}

@@ -168,7 +168,7 @@ export default function LandingPage() {
                             </div>
                         ) : (
                             <div className="spatial-card p-6 space-y-4">
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <Input
                                         placeholder="Your name"
                                         value={formData.name}

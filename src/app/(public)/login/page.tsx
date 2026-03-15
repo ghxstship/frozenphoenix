@@ -101,7 +101,7 @@ function LoginForm() {
     );
 
     const handleOAuthLogin = useCallback(
-        async (provider: "google" | "github") => {
+        async (provider: "google") => {
             setError(null);
             setOauthLoading(provider);
 
@@ -131,6 +131,33 @@ function LoginForm() {
         },
         [redirectTo]
     );
+
+    const handleBlueskyLogin = useCallback(async (handle: string) => {
+        setError(null);
+        setOauthLoading("bluesky");
+
+        try {
+            const res = await fetch("/api/auth/bluesky/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ handle }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.error || "Failed to initiate Bluesky login.");
+                return;
+            }
+
+            // Redirect to the AT Protocol authorization server
+            window.location.href = data.redirectUrl;
+        } catch {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setOauthLoading(null);
+        }
+    }, []);
 
     const isLocked = lockoutMs > 0;
     const isDisabled = loading || isLocked;
@@ -200,7 +227,12 @@ function LoginForm() {
                 </Button>
             </form>
 
-            <OAuthButtons onOAuth={handleOAuthLogin} loading={oauthLoading} disabled={isDisabled} />
+            <OAuthButtons
+                onOAuth={handleOAuthLogin}
+                onBluesky={handleBlueskyLogin}
+                loading={oauthLoading}
+                disabled={isDisabled}
+            />
 
             <div className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}

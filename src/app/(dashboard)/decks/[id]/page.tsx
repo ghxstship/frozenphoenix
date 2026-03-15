@@ -326,7 +326,7 @@ export default function DeckEditorPage() {
                             <h2 className="text-xl font-bold mb-4 text-center">
                                 {current.title || "Two Column"}
                             </h2>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="bg-sidebar-foreground/5 rounded-lg p-3 min-h-[100px]">
                                     <p className="text-xs text-sidebar-foreground/60">
                                         Left column

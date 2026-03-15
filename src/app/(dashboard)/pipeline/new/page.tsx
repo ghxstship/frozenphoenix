@@ -148,7 +148,7 @@ export default function NewDealPage() {
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-1.5 block">
                                     Project Type
@@ -202,7 +202,7 @@ export default function NewDealPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-1.5 block">Company</label>
                                 <div className="relative">
@@ -226,7 +226,7 @@ export default function NewDealPage() {
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-1.5 block">Email</label>
                                 <Input

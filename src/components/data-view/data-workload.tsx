@@ -11,8 +11,10 @@
 import * as React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { useBreakpoint } from "@/hooks/use-media-query";
 import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Types ───
@@ -67,6 +69,7 @@ export function DataWorkload({
     actions,
     onItemClick: _onItemClick,
 }: DataWorkloadProps) {
+    const { isMobile } = useBreakpoint();
     const [weekOffset, setWeekOffset] = React.useState(0);
 
     // Compute 4-week window
@@ -146,8 +149,77 @@ export function DataWorkload({
                 </span>
             </div>
 
-            {/* Workload Grid */}
-            <div className="border rounded-lg overflow-x-auto">
+            {/* Mobile Card View */}
+            {isMobile && (
+                <div className="space-y-3">
+                    {resources.map(([resourceName, allocations]) => {
+                        const totalHours = weeks.reduce(
+                            (sum, w) => sum + computeWeekHours(allocations, w),
+                            0
+                        );
+                        const totalCapacity = weeklyCapacity * 4;
+                        const utilPct = Math.round((totalHours / totalCapacity) * 100);
+                        const isOver = totalHours > totalCapacity;
+                        return (
+                            <div
+                                key={resourceName}
+                                className="rounded-lg border border-border p-3 space-y-2"
+                            >
+                                <div className="flex items-center gap-2">
+                                    {allocations[0]?.resourceAvatar ? (
+                                        <Image
+                                            src={allocations[0].resourceAvatar}
+                                            alt=""
+                                            width={24}
+                                            height={24}
+                                            className="h-6 w-6 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                                            {resourceName.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="text-sm font-medium flex-1 truncate">
+                                        {resourceName}
+                                    </span>
+                                    <Badge
+                                        variant={
+                                            isOver
+                                                ? "destructive"
+                                                : utilPct > 80
+                                                  ? "warning"
+                                                  : "secondary"
+                                        }
+                                        className="text-[10px]"
+                                    >
+                                        {utilPct}%
+                                    </Badge>
+                                </div>
+                                <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                                    <div
+                                        className={cn(
+                                            "h-full rounded-full transition-all",
+                                            isOver
+                                                ? "bg-destructive/60"
+                                                : utilPct > 80
+                                                  ? "bg-warning/60"
+                                                  : "bg-primary/40"
+                                        )}
+                                        style={{ width: `${Math.min(100, utilPct)}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] text-muted-foreground">
+                                    <span>{totalHours}h allocated</span>
+                                    <span>{totalCapacity}h capacity</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Desktop Workload Grid */}
+            <div className={cn("border rounded-lg overflow-x-auto", isMobile && "hidden")}>
                 <table className="w-full text-sm" role="table">
                     <thead>
                         <tr className="border-b bg-muted/30">

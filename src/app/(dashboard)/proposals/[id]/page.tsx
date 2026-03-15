@@ -558,7 +558,7 @@ export default function ProposalDetailPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-8 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
                                 <div>
                                     <p className="font-semibold mb-1">Prepared For</p>
                                     <p>{contactName}</p>
@@ -644,7 +644,7 @@ export default function ProposalDetailPage() {
                                     </p>
                                 </div>
                             )}
-                            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-border">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-border">
                                 <div className="space-y-8">
                                     <p className="text-sm font-semibold">Client Acceptance</p>
                                     <div className="border-b border-border" />

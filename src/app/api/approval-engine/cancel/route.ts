@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { cancelWorkflow } from "@/lib/approval-engine";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const uuidField = z.string().min(36).max(36);
 
@@ -11,35 +11,35 @@ const cancelSchema = z.object({
     reason: z.string().optional(),
 });
 
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/approval-engine/cancel",
+        mutation: true,
+        rbac: { resource: "approvals", action: "write" },
+    },
+    async (request, { supabase, user }) => {
+        const parsed = await parseAndValidate(request, cancelSchema);
+        if (!parsed.success) return parsed.response;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const result = await cancelWorkflow(
+            supabase,
+            parsed.data.instanceId,
+            user.id,
+            parsed.data.reason
+        );
 
-    const parsed = await parseAndValidate(request, cancelSchema);
-    if (!parsed.success) return parsed.response;
-
-    const result = await cancelWorkflow(
-        supabase,
-        parsed.data.instanceId,
-        user.id,
-        parsed.data.reason
-    );
-
-    if (!result.success) {
-        switch (result.code) {
-            case "NOT_FOUND":
-                return ApiErrors.notFound("Workflow instance");
-            case "INVALID_STATE":
-                return ApiErrors.badRequest(result.error!);
-            default:
-                return ApiErrors.internalError(result.error);
+        if (!result.success) {
+            switch (result.code) {
+                case "NOT_FOUND":
+                    return ApiErrors.notFound("Workflow instance");
+                case "INVALID_STATE":
+                    return ApiErrors.badRequest(result.error!);
+                default:
+                    return ApiErrors.internalError(result.error);
+            }
         }
-    }
 
-    return NextResponse.json({ success: true });
-}
+        return NextResponse.json({ success: true });
+    }
+);

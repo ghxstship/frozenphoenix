@@ -1,14 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
-export async function POST() {
-    const supabase = await createClient();
-
-    if (supabase) {
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/auth/signout",
+        authRoute: true,
+    },
+    async (_request, { supabase }) => {
         await supabase.auth.signOut();
-    }
 
-    // Redirect to login — this runs server-side so cookies are properly cleared
-    // before the redirect response reaches the browser.
-    return NextResponse.json({ success: true });
-}
+        // Redirect to login — this runs server-side so cookies are properly cleared
+        // before the redirect response reaches the browser.
+        return NextResponse.json({ success: true });
+    }
+);

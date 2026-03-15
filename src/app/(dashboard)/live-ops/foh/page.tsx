@@ -64,7 +64,9 @@ export default function FohPage() {
 
     const credRows = (credentialAssignments ?? []) as Record<string, unknown>[];
     const credCheckedIn = credRows.filter((r) => r.status === "checked_in").length;
-    const credIssued = credRows.filter((r) => ["approved", "issued"].includes(r.status as string)).length;
+    const credIssued = credRows.filter((r) =>
+        ["approved", "issued"].includes(r.status as string)
+    ).length;
 
     const totalOccupancy = zoneViews.reduce((s, z) => s + z.occupancy, 0);
     const totalCapacity = zoneViews.reduce((s, z) => s + z.capacity, 0);
@@ -86,7 +88,11 @@ export default function FohPage() {
                 />
                 <StatCard
                     title="Occupancy"
-                    value={totalCapacity > 0 ? `${Math.round((totalOccupancy / totalCapacity) * 100)}%` : "0%"}
+                    value={
+                        totalCapacity > 0
+                            ? `${Math.round((totalOccupancy / totalCapacity) * 100)}%`
+                            : "0%"
+                    }
                     icon={TrendingUp}
                 />
                 <StatCard
@@ -107,15 +113,23 @@ export default function FohPage() {
                 <CardContent>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
-                            <Badge variant="success" className="text-[10px]">{credCheckedIn}</Badge>
+                            <Badge variant="success" className="text-[10px]">
+                                {credCheckedIn}
+                            </Badge>
                             <span className="text-xs text-muted-foreground">Checked In</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="info" className="text-[10px]">{credIssued}</Badge>
-                            <span className="text-xs text-muted-foreground">Issued / Pending Entry</span>
+                            <Badge variant="info" className="text-[10px]">
+                                {credIssued}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                                Issued / Pending Entry
+                            </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-[10px]">{credRows.length}</Badge>
+                            <Badge variant="secondary" className="text-[10px]">
+                                {credRows.length}
+                            </Badge>
                             <span className="text-xs text-muted-foreground">Total Active</span>
                         </div>
                     </div>
@@ -145,7 +159,7 @@ export default function FohPage() {
                                         </div>
                                         <ProgressBar value={utilPct} size="sm" />
                                     </div>
-                                    <div className="grid grid-cols-3 gap-2 text-[11px]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
                                         <div>
                                             <p className="text-muted-foreground">Queue</p>
                                             <p className="font-medium">{zone.queueLength}</p>

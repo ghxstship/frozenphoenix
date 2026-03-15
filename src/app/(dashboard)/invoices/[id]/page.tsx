@@ -187,7 +187,7 @@ export default function InvoiceDetailPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <p className="text-xs text-muted-foreground font-medium mb-1">
                                 Bill To

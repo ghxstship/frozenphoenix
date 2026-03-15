@@ -730,7 +730,7 @@ function UsagePanel() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground pb-2 border-b">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 text-xs font-medium text-muted-foreground pb-2 border-b">
                                 <span>Date</span>
                                 <span className="text-right">Requests</span>
                                 <span className="text-right">Input Tokens</span>
@@ -738,7 +738,10 @@ function UsagePanel() {
                                 <span className="text-right">Cost</span>
                             </div>
                             {usage.slice(0, 30).map((row) => (
-                                <div key={row.date} className="grid grid-cols-5 text-sm py-1">
+                                <div
+                                    key={row.date}
+                                    className="grid grid-cols-2 sm:grid-cols-5 text-sm py-1"
+                                >
                                     <span className="text-muted-foreground">
                                         {new Date(row.date).toLocaleDateString()}
                                     </span>
@@ -971,7 +974,7 @@ function LimitsPanel() {
                                 {limit.active ? "Active" : "Inactive"}
                             </Badge>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                                 <p className="text-muted-foreground">Daily Limit</p>
                                 <p className="font-medium">

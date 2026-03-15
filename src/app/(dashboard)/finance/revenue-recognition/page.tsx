@@ -216,7 +216,7 @@ export default function RevenueRecognitionPage() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-4 mb-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
                                             <div>
                                                 <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                                                     <ArrowUpRight className="h-3 w-3 text-success" />

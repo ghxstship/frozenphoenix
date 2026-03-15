@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { buildTransactionalEmail, sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
  * POST /api/notifications/dispatch
@@ -17,63 +18,73 @@ import { logger } from "@/lib/logger";
  *   OR: { user_id, title, body, type?, entity_type?, entity_id?, action_url?, organization_id? }
  *       (creates the notification row AND dispatches)
  */
-export async function POST(request: NextRequest) {
-    const admin = createAdminClient();
-    if (!admin) {
-        return ApiErrors.serviceUnavailable("Admin client not configured");
-    }
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/notifications/dispatch",
+        mutation: true,
+    },
+    async (request, { log }) => {
+        const admin = createAdminClient();
+        if (!admin) {
+            return ApiErrors.serviceUnavailable("Admin client not configured");
+        }
 
-    let body: Record<string, unknown>;
-    try {
-        body = await request.json();
-    } catch {
-        return ApiErrors.badRequest("Invalid JSON body");
-    }
+        let body: Record<string, unknown>;
+        try {
+            body = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
 
-    // ── Path A: Dispatch an existing notification by ID ──
-    if (body.notification_id && typeof body.notification_id === "string") {
-        const { data: notification, error } = await serverFromTable(admin!, "notifications")
+        // ── Path A: Dispatch an existing notification by ID ──
+        if (body.notification_id && typeof body.notification_id === "string") {
+            const { data: notification, error } = await serverFromTable(admin!, "notifications")
+                .select("*")
+                .eq("id", body.notification_id)
+                .single();
+
+            if (error || !notification) {
+                return ApiErrors.notFound("Notification");
+            }
+
+            const result = await dispatchToEmail(admin, notification as unknown as NotificationRow);
+            return NextResponse.json(result);
+        }
+
+        // ── Path B: Create + dispatch in one call ──
+        const userId = body.user_id as string | undefined;
+        const title = body.title as string | undefined;
+
+        if (!userId || !title) {
+            return ApiErrors.badRequest("user_id and title are required");
+        }
+
+        const messageText = (body.body as string) || title;
+
+        const { data: notification, error: insertErr } = await serverFromTable(
+            admin!,
+            "notifications"
+        )
+            .insert({
+                user_id: userId,
+                title,
+                message: messageText,
+                type: (body.type as string) || "info",
+                action_url: (body.action_url as string) || null,
+            })
             .select("*")
-            .eq("id", body.notification_id)
             .single();
 
-        if (error || !notification) {
-            return ApiErrors.notFound("Notification");
+        if (insertErr || !notification) {
+            log.error("Failed to insert notification", { error: insertErr });
+            return ApiErrors.internalError("Failed to create notification");
         }
 
         const result = await dispatchToEmail(admin, notification as unknown as NotificationRow);
-        return NextResponse.json(result);
+        return NextResponse.json(result, { status: 201 });
     }
-
-    // ── Path B: Create + dispatch in one call ──
-    const userId = body.user_id as string | undefined;
-    const title = body.title as string | undefined;
-
-    if (!userId || !title) {
-        return ApiErrors.badRequest("user_id and title are required");
-    }
-
-    const messageText = (body.body as string) || title;
-
-    const { data: notification, error: insertErr } = await serverFromTable(admin!, "notifications")
-        .insert({
-            user_id: userId,
-            title,
-            message: messageText,
-            type: (body.type as string) || "info",
-            action_url: (body.action_url as string) || null,
-        })
-        .select("*")
-        .single();
-
-    if (insertErr || !notification) {
-        logger.error("Failed to insert notification", { error: insertErr });
-        return ApiErrors.internalError("Failed to create notification");
-    }
-
-    const result = await dispatchToEmail(admin, notification as unknown as NotificationRow);
-    return NextResponse.json(result, { status: 201 });
-}
+);
 
 // ─── Types ──────────────────────────────────────────────────────
 

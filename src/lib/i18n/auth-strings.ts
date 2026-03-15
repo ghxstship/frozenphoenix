@@ -117,6 +117,19 @@ export const AUTH_STRINGS = {
         divider: "or",
     },
 
+    // ─── Bluesky ─────────────────────────────────────────────────
+    bluesky: {
+        buttonLabel: "Bluesky",
+        handlePlaceholder: "user.bsky.social",
+        handleLabel: "Bluesky handle",
+        goButton: "Go",
+        signingIn: "Signing in via Bluesky…",
+        loginFailed: "Failed to initiate Bluesky login.",
+        accountCreationFailed: "Could not create an account from your Bluesky identity.",
+        sessionFailed: "Could not establish a session. Please try again.",
+        callbackFailed: "Bluesky authentication failed. Please try again.",
+    },
+
     // ─── Invite ─────────────────────────────────────────────────
     invite: {
         loadingTitle: "Loading invitation…",

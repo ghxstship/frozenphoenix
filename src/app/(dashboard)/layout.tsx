@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         id="main-content"
                         role="main"
                         aria-label="Main content"
-                        className="p-4 lg:p-6 overflow-x-hidden"
+                        className="p-4 lg:p-6 xl:p-8 overflow-x-hidden"
                         tabIndex={-1}
                     >
                         <ErrorBoundary level="page">

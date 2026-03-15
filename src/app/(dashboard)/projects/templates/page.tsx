@@ -169,7 +169,7 @@ export default function ProjectTemplatesPage() {
                                             </p>
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                             <div className="text-center p-2 rounded-lg bg-secondary/30">
                                                 <div className="flex items-center justify-center gap-1">
                                                     <CheckSquare className="h-3 w-3 text-muted-foreground" />

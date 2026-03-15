@@ -122,7 +122,7 @@ export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps
                         <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                             {S.scanDetails}
                         </h3>
-                        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                             {typeof assignment?.barcode_value === "string" && (
                                 <>
                                     <dt className="text-muted-foreground">{S.barcode}</dt>

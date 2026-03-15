@@ -11,6 +11,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
     DropdownMenu,
@@ -19,6 +20,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useBreakpoint } from "@/hooks/use-media-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Types ───
@@ -75,6 +77,7 @@ const DEFAULT_DOT_COLORS = ["bg-primary", "bg-info", "bg-success", "bg-warning",
 // ─── Component ───
 
 export function DataCalendar({ data, className, actions, onItemClick }: DataCalendarProps) {
+    const { isMobile } = useBreakpoint();
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -133,8 +136,13 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                 <h3 className="text-sm font-semibold">{monthLabel}</h3>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="border rounded-lg overflow-hidden">
+            {/* Mobile Agenda View */}
+            {isMobile && (
+                <MobileAgendaView data={data} year={year} month={month} onItemClick={onItemClick} />
+            )}
+
+            {/* Desktop Calendar Grid */}
+            <div className={cn("border rounded-lg overflow-hidden", isMobile && "hidden")}>
                 {/* Weekday headers */}
                 <div className="grid grid-cols-7 border-b bg-muted/30">
                     {WEEKDAYS.map((day) => (
@@ -253,3 +261,102 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
 }
 
 DataCalendar.displayName = "DataCalendar";
+
+// ─── Mobile Agenda View ───
+
+function MobileAgendaView({
+    data,
+    year,
+    month,
+    onItemClick,
+}: {
+    data: CalendarItem[];
+    year: number;
+    month: number;
+    onItemClick?: (item: CalendarItem) => void;
+}) {
+    // Filter items for current month and sort by date
+    const monthItems = React.useMemo(() => {
+        return data
+            .filter((item) => {
+                const d = new Date(item.date);
+                return d.getFullYear() === year && d.getMonth() === month;
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [data, year, month]);
+
+    // Group by date
+    const grouped = React.useMemo(() => {
+        const map = new Map<string, CalendarItem[]>();
+        for (const item of monthItems) {
+            const key = new Date(item.date).toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+            });
+            if (!map.has(key)) map.set(key, []);
+            map.get(key)!.push(item);
+        }
+        return map;
+    }, [monthItems]);
+
+    if (monthItems.length === 0) {
+        return (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+                No events this month
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            {Array.from(grouped.entries()).map(([dateLabel, items]) => (
+                <div key={dateLabel}>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">
+                        {dateLabel}
+                    </p>
+                    <div className="space-y-1.5">
+                        {items.map((item, i) => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors flex items-center gap-3"
+                                onClick={() => onItemClick?.(item)}
+                            >
+                                <div
+                                    className={cn(
+                                        "h-2 w-2 rounded-full shrink-0",
+                                        item.color ??
+                                            DEFAULT_DOT_COLORS[i % DEFAULT_DOT_COLORS.length]
+                                    )}
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{item.title}</p>
+                                    {item.endDate && (
+                                        <p className="text-[10px] text-muted-foreground">
+                                            {new Date(item.date).toLocaleDateString(undefined, {
+                                                month: "short",
+                                                day: "numeric",
+                                            })}
+                                            {" \u2013 "}
+                                            {new Date(item.endDate).toLocaleDateString(undefined, {
+                                                month: "short",
+                                                day: "numeric",
+                                            })}
+                                        </p>
+                                    )}
+                                </div>
+                                <Badge variant="secondary" className="text-[9px] shrink-0">
+                                    {new Date(item.date).toLocaleTimeString(undefined, {
+                                        hour: "numeric",
+                                        minute: "2-digit",
+                                    })}
+                                </Badge>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}

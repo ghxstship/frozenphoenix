@@ -5,6 +5,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TruncatedText } from "@/components/ui/truncated-text";
+import { useBreakpoint } from "@/hooks/use-media-query";
 
 interface HeatmapRow {
     id: string;
@@ -80,10 +81,70 @@ export function HeatmapGrid({
     className,
     onCellClick,
 }: HeatmapGridProps) {
+    const { isMobile } = useBreakpoint();
+
     return (
         <div className={cn("overflow-x-auto", className)}>
+            {/* Mobile Summary View */}
+            {isMobile && (
+                <div className="space-y-2">
+                    {rows.map((row) => {
+                        const avg =
+                            row.cells.length > 0
+                                ? Math.round(
+                                      row.cells.reduce((s, c) => s + c.value, 0) / row.cells.length
+                                  )
+                                : 0;
+                        const peak = Math.max(...row.cells.map((c) => c.value), 0);
+                        const avgColor = getColor(avg, maxValue, colorScale);
+                        return (
+                            <div
+                                key={row.id}
+                                className="rounded-lg border border-border p-3 space-y-2"
+                            >
+                                <div className="flex items-center gap-2">
+                                    {row.avatar && (
+                                        <Image
+                                            src={row.avatar}
+                                            alt=""
+                                            width={24}
+                                            height={24}
+                                            className="h-6 w-6 rounded-full object-cover"
+                                        />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium truncate">{row.label}</p>
+                                        {row.sublabel && (
+                                            <p className="text-[10px] text-muted-foreground truncate">
+                                                {row.sublabel}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                                    <div
+                                        className={cn(
+                                            "h-full rounded-full transition-all",
+                                            avgColor
+                                        )}
+                                        style={{
+                                            width: `${Math.min(100, maxValue > 0 ? (avg / maxValue) * 100 : 0)}%`,
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] text-muted-foreground">
+                                    <span>Avg: {formatValue(avg)}</span>
+                                    <span>Peak: {formatValue(peak)}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Desktop Table View */}
             <table
-                className="w-full min-w-[700px]"
+                className={cn("w-full min-w-[700px]", isMobile && "hidden")}
                 role="grid"
                 aria-label={`${colorScale === "heat" ? "Heat" : colorScale === "divergent" ? "Divergent" : "Utilization"} heatmap`}
             >

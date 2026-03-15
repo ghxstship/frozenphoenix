@@ -250,7 +250,7 @@ export default function NewInvoicePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-1 block">
                                     Payment Terms
@@ -307,7 +307,7 @@ export default function NewInvoicePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-3 rounded-lg bg-secondary/30">
                                 <p className="text-[10px] text-muted-foreground">Client</p>
                                 <p className="text-sm font-semibold">{client.companyName || "—"}</p>

@@ -106,7 +106,7 @@ function SignupForm() {
     );
 
     const handleOAuthLogin = useCallback(
-        async (provider: "google" | "github") => {
+        async (provider: "google") => {
             setError(null);
             setOauthLoading(provider);
 
@@ -137,6 +137,33 @@ function SignupForm() {
         },
         [inviteToken]
     );
+
+    const handleBlueskyLogin = useCallback(async (handle: string) => {
+        setError(null);
+        setOauthLoading("bluesky");
+
+        try {
+            const res = await fetch("/api/auth/bluesky/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ handle }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.error || "Failed to initiate Bluesky login.");
+                return;
+            }
+
+            // Redirect to the AT Protocol authorization server
+            window.location.href = data.redirectUrl;
+        } catch {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setOauthLoading(null);
+        }
+    }, []);
 
     if (success) {
         return (
@@ -186,7 +213,7 @@ function SignupForm() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <AuthFormField
                         fieldId="signup-first-name"
                         label="First Name"
@@ -298,7 +325,12 @@ function SignupForm() {
                 </Button>
             </form>
 
-            <OAuthButtons onOAuth={handleOAuthLogin} loading={oauthLoading} disabled={loading} />
+            <OAuthButtons
+                onOAuth={handleOAuthLogin}
+                onBluesky={handleBlueskyLogin}
+                loading={oauthLoading}
+                disabled={loading}
+            />
 
             <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{" "}

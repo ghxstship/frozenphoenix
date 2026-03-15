@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { useMotion } from "@/hooks/use-motion";
+import { useBreakpoint } from "@/hooks/use-media-query";
 import { Badge } from "@/components/ui/badge";
 import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
@@ -142,7 +143,9 @@ export function DataBoard<T extends object>({
     emptyState,
 }: DataBoardProps<T>) {
     const { shouldAnimate, getSpring } = useMotion();
+    const { isMobile } = useBreakpoint();
     const [activeId, setActiveId] = React.useState<string | null>(null);
+    const [mobileColumnIdx, setMobileColumnIdx] = React.useState(0);
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
     // ─── Group Data by Column ───
@@ -377,11 +380,52 @@ export function DataBoard<T extends object>({
         return <>{emptyState}</>;
     }
 
+    const mobileColumn = columns[mobileColumnIdx];
+    const mobileItems = mobileColumn ? (groupedData[mobileColumn.id] ?? []) : [];
+
+    const mobileContent = (
+        <div className={cn("space-y-3", className)}>
+            {/* Column tabs */}
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                {columns.map((col, idx) => {
+                    const count = (groupedData[col.id] ?? []).length;
+                    return (
+                        <button
+                            key={col.id}
+                            type="button"
+                            onClick={() => setMobileColumnIdx(idx)}
+                            className={cn(
+                                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                                idx === mobileColumnIdx
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {col.title}
+                            <span className="ml-1 opacity-70">{count}</span>
+                        </button>
+                    );
+                })}
+            </div>
+            {/* Cards for active column */}
+            <div className="space-y-2">
+                {mobileItems.length === 0 ? (
+                    <div className="py-12 text-center text-sm text-muted-foreground">
+                        {emptyColumnState ?? "No items"}
+                    </div>
+                ) : (
+                    mobileItems.map(renderCard)
+                )}
+            </div>
+        </div>
+    );
+
     const boardContent = (
         <div
             className={cn(
                 "flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth",
                 "scrollbar-thin",
+                isMobile && "hidden",
                 className
             )}
             role="region"
@@ -443,7 +487,12 @@ export function DataBoard<T extends object>({
     );
 
     if (!onDragEnd) {
-        return boardContent;
+        return (
+            <>
+                {isMobile && mobileContent}
+                {boardContent}
+            </>
+        );
     }
 
     return (
@@ -454,6 +503,7 @@ export function DataBoard<T extends object>({
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
         >
+            {isMobile && mobileContent}
             {boardContent}
             <DragOverlay dropAnimation={shouldAnimate ? undefined : null}>
                 {activeItem ? (

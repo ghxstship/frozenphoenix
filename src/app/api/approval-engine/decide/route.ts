@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { recordDecision } from "@/lib/approval-engine";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const uuidField = z.string().min(36).max(36);
 
@@ -14,45 +14,45 @@ const decideSchema = z.object({
     delegateTo: uuidField.optional(),
 });
 
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/approval-engine/decide",
+        mutation: true,
+        rbac: { resource: "approvals", action: "write" },
+    },
+    async (request, { supabase, user }) => {
+        const parsed = await parseAndValidate(request, decideSchema);
+        if (!parsed.success) return parsed.response;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const result = await recordDecision(supabase, {
+            instanceId: parsed.data.instanceId,
+            stepId: parsed.data.stepId,
+            approverId: user.id,
+            decision: parsed.data.decision,
+            comments: parsed.data.comments,
+            delegateTo: parsed.data.delegateTo,
+        });
 
-    const parsed = await parseAndValidate(request, decideSchema);
-    if (!parsed.success) return parsed.response;
-
-    const result = await recordDecision(supabase, {
-        instanceId: parsed.data.instanceId,
-        stepId: parsed.data.stepId,
-        approverId: user.id,
-        decision: parsed.data.decision,
-        comments: parsed.data.comments,
-        delegateTo: parsed.data.delegateTo,
-    });
-
-    if (!result.success) {
-        switch (result.code) {
-            case "NOT_FOUND":
-                return ApiErrors.notFound("Workflow instance");
-            case "INVALID_STATE":
-                return ApiErrors.badRequest(result.error!);
-            case "STEP_MISMATCH":
-                return ApiErrors.badRequest(result.error!);
-            case "NOT_ASSIGNED":
-                return ApiErrors.forbidden(result.error!);
-            case "ALREADY_DECIDED":
-                return ApiErrors.conflict(result.error!);
-            case "VALIDATION":
-                return ApiErrors.badRequest(result.error!);
-            default:
-                return ApiErrors.internalError(result.error);
+        if (!result.success) {
+            switch (result.code) {
+                case "NOT_FOUND":
+                    return ApiErrors.notFound("Workflow instance");
+                case "INVALID_STATE":
+                    return ApiErrors.badRequest(result.error!);
+                case "STEP_MISMATCH":
+                    return ApiErrors.badRequest(result.error!);
+                case "NOT_ASSIGNED":
+                    return ApiErrors.forbidden(result.error!);
+                case "ALREADY_DECIDED":
+                    return ApiErrors.conflict(result.error!);
+                case "VALIDATION":
+                    return ApiErrors.badRequest(result.error!);
+                default:
+                    return ApiErrors.internalError(result.error);
+            }
         }
-    }
 
-    return NextResponse.json({ data: result.data });
-}
+        return NextResponse.json({ data: result.data });
+    }
+);

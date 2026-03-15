@@ -132,14 +132,14 @@ export function DetailLayout({
 
             {/* Header */}
             <div
-                className="flex items-start justify-between gap-4"
+                className="flex flex-col sm:flex-row sm:items-start justify-between gap-4"
                 style={{ marginBottom: "var(--density-detail-header-mb)" }}
             >
                 <div className="flex items-start gap-4 min-w-0">
                     {avatar && <div className="shrink-0">{avatar}</div>}
                     <div className="min-w-0">
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h1 className="text-2xl font-bold truncate">{title}</h1>
+                            <h1 className="text-xl sm:text-2xl font-bold truncate">{title}</h1>
                             {status && (
                                 <Badge variant={getStatusVariant(status)}>
                                     {getStatusLabel(status)}
@@ -152,7 +152,7 @@ export function DetailLayout({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     {messagingEnabled && entityType && entityId && (
                         <MessagingButton entityType={entityType} entityId={entityId} />
                     )}

@@ -350,7 +350,7 @@ export default function LocationDetailPage() {
                 </Card>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {location.amenities && location.amenities.length > 0 && (
                     <Card>
                         <CardHeader>
@@ -397,7 +397,7 @@ export default function LocationDetailPage() {
                         <CardTitle className="text-base">Load In/Out Schedule</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {location.loadInWindows && location.loadInWindows.length > 0 && (
                                 <div>
                                     <h4 className="text-sm font-medium mb-2 text-success">

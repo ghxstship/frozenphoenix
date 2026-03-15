@@ -109,22 +109,22 @@ export type ShadowToken = keyof typeof SHADOWS;
 // ─── Typography Scale ───
 export const TYPOGRAPHY = {
     display: {
-        size: "text-4xl",
+        size: "text-2xl sm:text-3xl lg:text-4xl",
         weight: "font-bold",
         leading: "leading-tight",
     },
     h1: {
-        size: "text-3xl",
+        size: "text-xl sm:text-2xl lg:text-3xl",
         weight: "font-bold",
         leading: "leading-tight",
     },
     h2: {
-        size: "text-2xl",
+        size: "text-lg sm:text-xl lg:text-2xl",
         weight: "font-semibold",
         leading: "leading-snug",
     },
     h3: {
-        size: "text-xl",
+        size: "text-base sm:text-lg lg:text-xl",
         weight: "font-semibold",
         leading: "leading-snug",
     },

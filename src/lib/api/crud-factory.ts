@@ -260,64 +260,79 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
 
     // ─── LIST ────────────────────────────────────────────────
     async function list(request: NextRequest): Promise<NextResponse> {
-        const supabase = await createClient();
-        if (!supabase) return ApiErrors.serviceUnavailable();
+        const requestId = generateRequestId();
+        const log = logger.child({ requestId, method: "GET", route: `/${resource}` });
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return ApiErrors.unauthorized();
+        try {
+            const supabase = await createClient();
+            if (!supabase) return ApiErrors.serviceUnavailable();
 
-        const cachedRole = request.cookies.get("fp-user-role")?.value;
-        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
-        if (!hasPermission(userRole, resource, "read")) {
-            return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return ApiErrors.unauthorized();
+
+            const cachedRole = request.cookies.get("fp-user-role")?.value;
+            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            if (!hasPermission(userRole, resource, "read")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            }
+
+            const url = new URL(request.url);
+            const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+            const perPage = Math.min(
+                Math.max(
+                    1,
+                    parseInt(url.searchParams.get("per_page") ?? String(defaultPerPage), 10)
+                ),
+                maxPerPage
+            );
+            const sortBy = url.searchParams.get("sort_by") ?? defaultSort.column;
+            const sortOrder =
+                url.searchParams.get("sort_order") ?? (defaultSort.ascending ? "asc" : "desc");
+            const search = url.searchParams.get("search");
+
+            let query = serverFromTable(supabase, table).select(selectList, { count: "exact" });
+
+            if (softDelete) {
+                query = query.is("deleted_at", null);
+            }
+
+            query = applyFilters(query, url, filters);
+
+            if (search && searchColumns.length > 0) {
+                const orClauses = searchColumns.map((col) => `${col}.ilike.%${search}%`).join(",");
+                query = query.or(orClauses);
+            }
+
+            const from = (page - 1) * perPage;
+            const to = from + perPage - 1;
+            query = query.order(sortBy, { ascending: sortOrder === "asc" }).range(from, to);
+
+            const { data, error, count } = await query;
+
+            if (error) {
+                log.error(`${logPrefix} LIST failed`, { error: error.message, code: error.code });
+                return ApiErrors.internalError(`Failed to fetch ${displayName}`);
+            }
+
+            const response = NextResponse.json({
+                data,
+                pagination: {
+                    page,
+                    per_page: perPage,
+                    total: count ?? 0,
+                    total_pages: count ? Math.ceil(count / perPage) : 0,
+                },
+            });
+            response.headers.set("X-Request-Id", requestId);
+            return response;
+        } catch (err) {
+            log.error("Unhandled error in LIST", {
+                error: err instanceof Error ? err.message : String(err),
+            });
+            return ApiErrors.internalError();
         }
-
-        const url = new URL(request.url);
-        const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
-        const perPage = Math.min(
-            Math.max(1, parseInt(url.searchParams.get("per_page") ?? String(defaultPerPage), 10)),
-            maxPerPage
-        );
-        const sortBy = url.searchParams.get("sort_by") ?? defaultSort.column;
-        const sortOrder =
-            url.searchParams.get("sort_order") ?? (defaultSort.ascending ? "asc" : "desc");
-        const search = url.searchParams.get("search");
-
-        let query = serverFromTable(supabase, table).select(selectList, { count: "exact" });
-
-        if (softDelete) {
-            query = query.is("deleted_at", null);
-        }
-
-        query = applyFilters(query, url, filters);
-
-        if (search && searchColumns.length > 0) {
-            const orClauses = searchColumns.map((col) => `${col}.ilike.%${search}%`).join(",");
-            query = query.or(orClauses);
-        }
-
-        const from = (page - 1) * perPage;
-        const to = from + perPage - 1;
-        query = query.order(sortBy, { ascending: sortOrder === "asc" }).range(from, to);
-
-        const { data, error, count } = await query;
-
-        if (error) {
-            logger.error(`${logPrefix} LIST failed`, { error: error.message, code: error.code });
-            return ApiErrors.internalError(`Failed to fetch ${displayName}`);
-        }
-
-        return NextResponse.json({
-            data,
-            pagination: {
-                page,
-                per_page: perPage,
-                total: count ?? 0,
-                total_pages: count ? Math.ceil(count / perPage) : 0,
-            },
-        });
     }
 
     // ─── GET BY ID ───────────────────────────────────────────
@@ -325,37 +340,49 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         _request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
-        const supabase = await createClient();
-        if (!supabase) return ApiErrors.serviceUnavailable();
+        const requestId = generateRequestId();
+        const log = logger.child({ requestId, method: "GET", route: `/${resource}/:id` });
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return ApiErrors.unauthorized();
+        try {
+            const supabase = await createClient();
+            if (!supabase) return ApiErrors.serviceUnavailable();
 
-        const cachedRole = _request.cookies.get("fp-user-role")?.value;
-        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
-        if (!hasPermission(userRole, resource, "read")) {
-            return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return ApiErrors.unauthorized();
+
+            const cachedRole = _request.cookies.get("fp-user-role")?.value;
+            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            if (!hasPermission(userRole, resource, "read")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            }
+
+            const { id } = await params;
+
+            let query = serverFromTable(supabase, table).select(selectDetail).eq("id", id);
+
+            if (softDelete) {
+                query = query.is("deleted_at", null);
+            }
+
+            const { data, error } = await query.single();
+
+            if (error) {
+                if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
+                log.error(`${logPrefix} GET failed`, { id, error: error.message });
+                return ApiErrors.internalError(`Failed to fetch ${displayName}`);
+            }
+
+            const response = NextResponse.json({ data });
+            response.headers.set("X-Request-Id", requestId);
+            return response;
+        } catch (err) {
+            log.error("Unhandled error in GET", {
+                error: err instanceof Error ? err.message : String(err),
+            });
+            return ApiErrors.internalError();
         }
-
-        const { id } = await params;
-
-        let query = serverFromTable(supabase, table).select(selectDetail).eq("id", id);
-
-        if (softDelete) {
-            query = query.is("deleted_at", null);
-        }
-
-        const { data, error } = await query.single();
-
-        if (error) {
-            if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
-            logger.error(`${logPrefix} GET failed`, { id, error: error.message });
-            return ApiErrors.internalError(`Failed to fetch ${displayName}`);
-        }
-
-        return NextResponse.json({ data });
     }
 
     // ─── CREATE ──────────────────────────────────────────────
@@ -371,72 +398,72 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         }
 
         try {
-        const supabase = await createClient();
-        if (!supabase) return ApiErrors.serviceUnavailable();
+            const supabase = await createClient();
+            if (!supabase) return ApiErrors.serviceUnavailable();
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return ApiErrors.unauthorized();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return ApiErrors.unauthorized();
 
-        const cachedRole = request.cookies.get("fp-user-role")?.value;
-        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
-        if (!hasPermission(userRole, resource, "write")) {
-            return ApiErrors.forbidden(`Role "${userRole}" cannot create ${displayName}`);
-        }
-
-        let payload: Record<string, unknown>;
-
-        if (createSchema) {
-            const parsed = await parseAndValidate(request, createSchema);
-            if (!parsed.success) return parsed.response;
-            payload = parsed.data as Record<string, unknown>;
-        } else {
-            try {
-                payload = await request.json();
-            } catch {
-                return ApiErrors.badRequest("Request body must be valid JSON");
+            const cachedRole = request.cookies.get("fp-user-role")?.value;
+            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            if (!hasPermission(userRole, resource, "write")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot create ${displayName}`);
             }
-        }
 
-        if (trackAuthor) {
-            payload.created_by = user.id;
-        }
+            let payload: Record<string, unknown>;
 
-        if (stateMachine && !payload[statusColumn]) {
-            payload[statusColumn] = stateMachine.initialState;
-        }
-
-        if (beforeCreate) {
-            payload = await beforeCreate(payload, user.id);
-        }
-
-        // Check idempotency key
-        const idempotencyKey = request.headers.get("x-idempotency-key");
-        if (idempotencyKey) {
-            payload._idempotency_key = idempotencyKey;
-        }
-
-        const { data, error } = await serverFromTable(supabase, table)
-            .insert(payload as Record<string, unknown>)
-            .select(selectDetail)
-            .single();
-
-        if (error) {
-            if (error.code === "23505") {
-                return ApiErrors.conflict(`${displayName} already exists (duplicate key)`);
+            if (createSchema) {
+                const parsed = await parseAndValidate(request, createSchema);
+                if (!parsed.success) return parsed.response;
+                payload = parsed.data as Record<string, unknown>;
+            } else {
+                try {
+                    payload = await request.json();
+                } catch {
+                    return ApiErrors.badRequest("Request body must be valid JSON");
+                }
             }
-            log.error(`${logPrefix} CREATE failed`, { error: error.message, code: error.code });
-            return ApiErrors.internalError(`Failed to create ${displayName}`);
-        }
 
-        log.info(`${logPrefix} created`, {
-            id: (data as Record<string, unknown>).id,
-            userId: user.id,
-        });
-        const response = NextResponse.json({ data }, { status: 201 });
-        response.headers.set("X-Request-Id", requestId);
-        return response;
+            if (trackAuthor) {
+                payload.created_by = user.id;
+            }
+
+            if (stateMachine && !payload[statusColumn]) {
+                payload[statusColumn] = stateMachine.initialState;
+            }
+
+            if (beforeCreate) {
+                payload = await beforeCreate(payload, user.id);
+            }
+
+            // Check idempotency key
+            const idempotencyKey = request.headers.get("x-idempotency-key");
+            if (idempotencyKey) {
+                payload._idempotency_key = idempotencyKey;
+            }
+
+            const { data, error } = await serverFromTable(supabase, table)
+                .insert(payload as Record<string, unknown>)
+                .select(selectDetail)
+                .single();
+
+            if (error) {
+                if (error.code === "23505") {
+                    return ApiErrors.conflict(`${displayName} already exists (duplicate key)`);
+                }
+                log.error(`${logPrefix} CREATE failed`, { error: error.message, code: error.code });
+                return ApiErrors.internalError(`Failed to create ${displayName}`);
+            }
+
+            log.info(`${logPrefix} created`, {
+                id: (data as Record<string, unknown>).id,
+                userId: user.id,
+            });
+            const response = NextResponse.json({ data }, { status: 201 });
+            response.headers.set("X-Request-Id", requestId);
+            return response;
         } catch (err) {
             log.error("Unhandled error in CREATE", {
                 error: err instanceof Error ? err.message : String(err),
@@ -460,99 +487,99 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         }
 
         try {
-        const supabase = await createClient();
-        if (!supabase) return ApiErrors.serviceUnavailable();
+            const supabase = await createClient();
+            if (!supabase) return ApiErrors.serviceUnavailable();
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return ApiErrors.unauthorized();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return ApiErrors.unauthorized();
 
-        const cachedRole = request.cookies.get("fp-user-role")?.value;
-        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
-        if (!hasPermission(userRole, resource, "write")) {
-            return ApiErrors.forbidden(`Role "${userRole}" cannot update ${displayName}`);
-        }
-
-        const { id } = await params;
-
-        let payload: Record<string, unknown>;
-
-        if (updateSchema) {
-            const parsed = await parseAndValidate(request, updateSchema);
-            if (!parsed.success) return parsed.response;
-            payload = parsed.data as Record<string, unknown>;
-        } else {
-            try {
-                payload = await request.json();
-            } catch {
-                return ApiErrors.badRequest("Request body must be valid JSON");
+            const cachedRole = request.cookies.get("fp-user-role")?.value;
+            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            if (!hasPermission(userRole, resource, "write")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot update ${displayName}`);
             }
-        }
 
-        // Strip immutable columns from update payload
-        for (const col of immutableColumns) {
-            delete payload[col];
-        }
+            const { id } = await params;
 
-        if (trackAuthor) {
-            payload.updated_by = user.id;
-            payload.updated_at = new Date().toISOString();
-        }
+            let payload: Record<string, unknown>;
 
-        // State machine transition validation
-        if (stateMachine && payload[statusColumn]) {
-            const targetStatus = payload[statusColumn] as string;
+            if (updateSchema) {
+                const parsed = await parseAndValidate(request, updateSchema);
+                if (!parsed.success) return parsed.response;
+                payload = parsed.data as Record<string, unknown>;
+            } else {
+                try {
+                    payload = await request.json();
+                } catch {
+                    return ApiErrors.badRequest("Request body must be valid JSON");
+                }
+            }
 
-            // Fetch current record to get current status
-            const { data: current, error: fetchError } = await serverFromTable(supabase, table)
-                .select(statusColumn)
+            // Strip immutable columns from update payload
+            for (const col of immutableColumns) {
+                delete payload[col];
+            }
+
+            if (trackAuthor) {
+                payload.updated_by = user.id;
+                payload.updated_at = new Date().toISOString();
+            }
+
+            // State machine transition validation
+            if (stateMachine && payload[statusColumn]) {
+                const targetStatus = payload[statusColumn] as string;
+
+                // Fetch current record to get current status
+                const { data: current, error: fetchError } = await serverFromTable(supabase, table)
+                    .select(statusColumn)
+                    .eq("id", id)
+                    .single();
+
+                if (fetchError) {
+                    if (fetchError.code === "PGRST116") return ApiErrors.notFound(displayName);
+                    log.error(`${logPrefix} UPDATE fetch-current failed`, {
+                        id,
+                        error: fetchError.message,
+                    });
+                    return ApiErrors.internalError(`Failed to update ${displayName}`);
+                }
+
+                const currentStatus = (current as Record<string, unknown>)[statusColumn] as string;
+
+                if (currentStatus !== targetStatus) {
+                    const result = validateTransition(stateMachine, currentStatus, targetStatus, {
+                        userRole,
+                        entity: current as Record<string, unknown>,
+                    });
+
+                    if (!result.allowed) {
+                        return ApiErrors.forbidden(result.reason ?? "Transition not allowed");
+                    }
+                }
+            }
+
+            if (beforeUpdate) {
+                payload = await beforeUpdate(payload, user.id);
+            }
+
+            const { data, error } = await serverFromTable(supabase, table)
+                .update(payload as Record<string, unknown>)
                 .eq("id", id)
+                .select(selectDetail)
                 .single();
 
-            if (fetchError) {
-                if (fetchError.code === "PGRST116") return ApiErrors.notFound(displayName);
-                log.error(`${logPrefix} UPDATE fetch-current failed`, {
-                    id,
-                    error: fetchError.message,
-                });
+            if (error) {
+                if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
+                log.error(`${logPrefix} UPDATE failed`, { id, error: error.message });
                 return ApiErrors.internalError(`Failed to update ${displayName}`);
             }
 
-            const currentStatus = (current as Record<string, unknown>)[statusColumn] as string;
-
-            if (currentStatus !== targetStatus) {
-                const result = validateTransition(stateMachine, currentStatus, targetStatus, {
-                    userRole,
-                    entity: current as Record<string, unknown>,
-                });
-
-                if (!result.allowed) {
-                    return ApiErrors.forbidden(result.reason ?? "Transition not allowed");
-                }
-            }
-        }
-
-        if (beforeUpdate) {
-            payload = await beforeUpdate(payload, user.id);
-        }
-
-        const { data, error } = await serverFromTable(supabase, table)
-            .update(payload as Record<string, unknown>)
-            .eq("id", id)
-            .select(selectDetail)
-            .single();
-
-        if (error) {
-            if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
-            log.error(`${logPrefix} UPDATE failed`, { id, error: error.message });
-            return ApiErrors.internalError(`Failed to update ${displayName}`);
-        }
-
-        log.info(`${logPrefix} updated`, { id, userId: user.id });
-        const response = NextResponse.json({ data });
-        response.headers.set("X-Request-Id", requestId);
-        return response;
+            log.info(`${logPrefix} updated`, { id, userId: user.id });
+            const response = NextResponse.json({ data });
+            response.headers.set("X-Request-Id", requestId);
+            return response;
         } catch (err) {
             log.error("Unhandled error in UPDATE", {
                 error: err instanceof Error ? err.message : String(err),
@@ -576,51 +603,51 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         }
 
         try {
-        const supabase = await createClient();
-        if (!supabase) return ApiErrors.serviceUnavailable();
+            const supabase = await createClient();
+            if (!supabase) return ApiErrors.serviceUnavailable();
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return ApiErrors.unauthorized();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return ApiErrors.unauthorized();
 
-        const cachedRole = _request.cookies.get("fp-user-role")?.value;
-        const userRole = await resolveUserRole(supabase, user.id, cachedRole);
-        if (!hasPermission(userRole, resource, "delete")) {
-            return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${displayName}`);
-        }
-
-        const { id } = await params;
-
-        if (softDelete) {
-            const updatePayload: Record<string, unknown> = {
-                deleted_at: new Date().toISOString(),
-            };
-            if (trackAuthor) {
-                updatePayload.deleted_by = user.id;
+            const cachedRole = _request.cookies.get("fp-user-role")?.value;
+            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            if (!hasPermission(userRole, resource, "delete")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${displayName}`);
             }
 
-            const { error } = await serverFromTable(supabase, table)
-                .update(updatePayload as Record<string, unknown>)
-                .eq("id", id);
+            const { id } = await params;
 
-            if (error) {
-                log.error(`${logPrefix} SOFT DELETE failed`, { id, error: error.message });
-                return ApiErrors.internalError(`Failed to delete ${displayName}`);
+            if (softDelete) {
+                const updatePayload: Record<string, unknown> = {
+                    deleted_at: new Date().toISOString(),
+                };
+                if (trackAuthor) {
+                    updatePayload.deleted_by = user.id;
+                }
+
+                const { error } = await serverFromTable(supabase, table)
+                    .update(updatePayload as Record<string, unknown>)
+                    .eq("id", id);
+
+                if (error) {
+                    log.error(`${logPrefix} SOFT DELETE failed`, { id, error: error.message });
+                    return ApiErrors.internalError(`Failed to delete ${displayName}`);
+                }
+            } else {
+                const { error } = await serverFromTable(supabase, table).delete().eq("id", id);
+
+                if (error) {
+                    log.error(`${logPrefix} HARD DELETE failed`, { id, error: error.message });
+                    return ApiErrors.internalError(`Failed to delete ${displayName}`);
+                }
             }
-        } else {
-            const { error } = await serverFromTable(supabase, table).delete().eq("id", id);
 
-            if (error) {
-                log.error(`${logPrefix} HARD DELETE failed`, { id, error: error.message });
-                return ApiErrors.internalError(`Failed to delete ${displayName}`);
-            }
-        }
-
-        log.info(`${logPrefix} deleted`, { id, userId: user.id, soft: softDelete });
-        const response = NextResponse.json({ success: true });
-        response.headers.set("X-Request-Id", requestId);
-        return response;
+            log.info(`${logPrefix} deleted`, { id, userId: user.id, soft: softDelete });
+            const response = NextResponse.json({ success: true });
+            response.headers.set("X-Request-Id", requestId);
+            return response;
         } catch (err) {
             log.error("Unhandled error in DELETE", {
                 error: err instanceof Error ? err.message : String(err),

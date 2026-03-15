@@ -233,7 +233,7 @@ function AssetCard({ asset }: { asset: Asset }) {
                         {asset.condition.replace("_", " ")}
                     </Badge>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div>
                         <p className="text-muted-foreground">Category</p>
                         <p className="font-medium">{asset.category}</p>

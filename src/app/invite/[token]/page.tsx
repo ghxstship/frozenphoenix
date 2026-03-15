@@ -239,7 +239,7 @@ export default function InviteAcceptPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <div className="flex items-center gap-2 text-sm">
                             <Shield className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             <span className="text-muted-foreground">Role:</span>

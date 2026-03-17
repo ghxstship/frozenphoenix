@@ -224,7 +224,7 @@ export default function ChangeOrderDetailPage() {
                 label: "Value Impact",
                 icon: DollarSign,
                 compute: () =>
-                    `${co?.value_impact >= 0 ? "+" : ""}${formatCurrency(co?.value_impact ?? 0)}`,
+                    `${(co?.value_impact ?? 0) >= 0 ? "+" : ""}${formatCurrency(co?.value_impact ?? 0)}`,
             },
             {
                 label: "Schedule Impact",

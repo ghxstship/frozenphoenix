@@ -97,7 +97,7 @@ export const POST = withApiHandler(
                     .single();
 
                 if (pool) {
-                    poolId = (pool as unknown as Record<string, unknown>).id;
+                    poolId = (pool as unknown as Record<string, unknown>).id as string | undefined;
                 } else {
                     errorDetails.push({
                         row: i + 1,

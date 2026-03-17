@@ -88,7 +88,7 @@ export async function GET(
             scopes: tokenResult.scopes || [],
             oauth_state: null,
             is_active: true,
-            metadata: tokenResult.rawResponse || {},
+            metadata: (tokenResult.rawResponse || {}) as unknown as Record<string, never>,
             last_sync_at: new Date().toISOString(),
         })
         .eq("id", connection.id);

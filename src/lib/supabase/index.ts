@@ -25,7 +25,8 @@ export { supabaseUrl, supabaseAnonKey } from "./config";
 
 // ─── Clients ───
 export { createClient } from "./client";
-export { createClient as createServerClient } from "./server";
+// NOTE: createServerClient is NOT re-exported here because server.ts imports
+// next/headers which is server-only. Import directly from "@/lib/supabase/server".
 
 // ─── Auth Actions ───
 export {

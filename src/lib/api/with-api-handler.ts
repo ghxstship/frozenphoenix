@@ -72,6 +72,7 @@ export interface HandlerContext {
     supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>;
     user: { id: string; email?: string };
     role: PermissionLevel;
+    orgId: string;
 }
 
 export interface HandlerOptions {
@@ -139,6 +140,7 @@ export function withApiHandler(
                     supabase: null as unknown as HandlerContext["supabase"],
                     user: { id: "anonymous" },
                     role: "member" as PermissionLevel,
+                    orgId: "",
                 });
                 result.headers.set("X-Request-Id", requestId);
                 return result;
@@ -155,6 +157,15 @@ export function withApiHandler(
             const cachedRole = request.cookies.get("fp-user-role")?.value;
             const role = await resolveUserRole(supabase, user.id, cachedRole);
 
+            // Resolve orgId from default org membership
+            const { data: orgMembership } = await supabase
+                .from("org_memberships")
+                .select("organization_id")
+                .eq("user_id", user.id)
+                .eq("is_default_org", true)
+                .single();
+            const orgId = orgMembership?.organization_id ?? "";
+
             // RBAC
             if (options.rbac) {
                 if (!hasPermission(role, options.rbac.resource, options.rbac.action)) {
@@ -170,6 +181,7 @@ export function withApiHandler(
                 supabase,
                 user: { id: user.id, email: user.email },
                 role,
+                orgId,
             });
             result.headers.set("X-Request-Id", requestId);
             return result;
@@ -231,6 +243,15 @@ export function withApiHandlerParams(
             const cachedRole = request.cookies.get("fp-user-role")?.value;
             const role = await resolveUserRole(supabase, user.id, cachedRole);
 
+            // Resolve orgId from default org membership
+            const { data: orgMembership } = await supabase
+                .from("org_memberships")
+                .select("organization_id")
+                .eq("user_id", user.id)
+                .eq("is_default_org", true)
+                .single();
+            const orgId = orgMembership?.organization_id ?? "";
+
             // RBAC
             if (options.rbac) {
                 if (!hasPermission(role, options.rbac.resource, options.rbac.action)) {
@@ -248,6 +269,7 @@ export function withApiHandlerParams(
                     supabase,
                     user: { id: user.id, email: user.email },
                     role,
+                    orgId,
                 },
                 routeContext
             );

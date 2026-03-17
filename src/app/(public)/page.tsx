@@ -368,15 +368,18 @@ export default function LandingPage() {
                                             {[...Array(5)].map((_, i) => (
                                                 <Star
                                                     key={i}
-                                                    className={`h-5 w-5 ${i < Math.round(reviewStats.average_rating || 4.8) ? "text-star-rating fill-star-rating" : "text-muted"}`}
+                                                    className={`h-5 w-5 ${i < Math.round(Number(reviewStats.average_rating) || 4.8) ? "text-star-rating fill-star-rating" : "text-muted"}`}
                                                 />
                                             ))}
                                         </div>
                                         <span className="text-lg font-bold">
-                                            {reviewStats.average_rating || "4.8"}
+                                            {String(reviewStats.average_rating ?? "4.8")}
                                         </span>
                                         <span className="text-muted-foreground">
-                                            ({reviewStats.total_reviews || testimonials.length}{" "}
+                                            (
+                                            {String(
+                                                reviewStats.total_reviews ?? testimonials.length
+                                            )}{" "}
                                             reviews)
                                         </span>
                                     </>

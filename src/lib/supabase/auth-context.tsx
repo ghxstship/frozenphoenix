@@ -46,7 +46,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [username, setUsername] = useState<string | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [memberships, setMemberships] = useState<OrgMembership[]>([]);
     const [activeOrgId, setActiveOrgId] = useState<string | null>(() => {
@@ -175,28 +174,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         [supabase]
     );
 
-    const fetchUsername = useCallback(
-        async (userId: string) => {
-            if (!supabase) return;
-            const { data } = await supabase
-                .from("user_profiles")
-                .select("username")
-                .eq("id", userId)
-                .single();
-            setUsername(data?.username ?? null);
-        },
-        [supabase]
-    );
+    // Performance: username derived from profile (SELECT * already fetches it).
+    // Eliminates 1 redundant Supabase round-trip per page load.
+    const username = useMemo(() => {
+        if (!profile) return null;
+        return ((profile as Record<string, unknown>).username as string | null) ?? null;
+    }, [profile]);
 
     const refreshProfile = useCallback(async () => {
         if (user) {
-            await Promise.all([
-                fetchProfile(user.id),
-                fetchMemberships(user.id),
-                fetchUsername(user.id),
-            ]);
+            await Promise.all([fetchProfile(user.id), fetchMemberships(user.id)]);
         }
-    }, [user, fetchProfile, fetchMemberships, fetchUsername]);
+    }, [user, fetchProfile, fetchMemberships]);
 
     const signOut = useCallback(async () => {
         // Clear persisted preferences
@@ -243,7 +232,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 await Promise.all([
                     fetchProfile(session.user.id),
                     fetchMemberships(session.user.id),
-                    fetchUsername(session.user.id),
                 ]);
             }
 
@@ -262,11 +250,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 await Promise.all([
                     fetchProfile(session.user.id),
                     fetchMemberships(session.user.id),
-                    fetchUsername(session.user.id),
                 ]);
             } else {
                 setProfile(null);
-                setUsername(null);
                 setMemberships([]);
             }
 
@@ -274,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => subscription.unsubscribe();
-    }, [supabase, fetchProfile, fetchMemberships, fetchUsername]);
+    }, [supabase, fetchProfile, fetchMemberships]);
 
     return (
         <AuthContext.Provider

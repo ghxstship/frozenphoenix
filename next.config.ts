@@ -4,6 +4,29 @@ const nextConfig: NextConfig = {
     // H-008: Required for Docker standalone build (Dockerfile copies .next/standalone)
     output: "standalone",
     reactCompiler: true,
+    compress: true,
+
+    // Performance: Keep server-only packages out of client bundles.
+    // AI SDKs (~175KB combined), tiktoken (1.2MB WASM), doc parsers (~90KB).
+    serverExternalPackages: [
+        "@anthropic-ai/sdk",
+        "openai",
+        "@google/generative-ai",
+        "@mistralai/mistralai",
+        "groq-sdk",
+        "ollama",
+        "tiktoken",
+        "pdf-parse",
+        "mammoth",
+    ],
+
+    // Image optimization: prefer AVIF (smaller) with WebP fallback
+    images: {
+        formats: ["image/avif", "image/webp"],
+        minimumCacheTTL: 86400,
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    },
+
     // FIND-023: CSP is authoritatively defined in src/lib/supabase/middleware.ts
     // to allow dynamic Supabase domain injection. Only non-CSP headers here.
     headers: async () => [

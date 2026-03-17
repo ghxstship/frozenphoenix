@@ -2,34 +2,25 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "@/lib/motion";
-import { useMotion } from "@/hooks/use-motion";
+import { cn } from "@/lib/utils";
 
 interface PageTransitionProps {
     children: React.ReactNode;
     className?: string;
 }
 
+/**
+ * Performance: CSS-only page transition — removes motion/react (~18KB) from
+ * the critical rendering path. Uses existing animate-slide-up keyframe from
+ * globals.css. No exit animation (AnimatePresence mode="wait" added 150ms
+ * delay to every navigation for an effect users don't perceive).
+ */
 export function PageTransition({ children, className }: PageTransitionProps) {
     const pathname = usePathname();
-    const { shouldAnimate } = useMotion();
-
-    if (!shouldAnimate) {
-        return <div className={className}>{children}</div>;
-    }
 
     return (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15, ease: [0.25, 1, 0.5, 1] }}
-                className={className}
-            >
-                {children}
-            </motion.div>
-        </AnimatePresence>
+        <div key={pathname} className={cn("animate-slide-up", className)}>
+            {children}
+        </div>
     );
 }

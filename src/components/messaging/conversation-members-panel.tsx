@@ -13,7 +13,10 @@ import {
     useConversationMembers,
     useOrgMembers,
     useRemoveConversationMember,
+    useUpdateSMSFallback,
 } from "@/lib/supabase/hooks-messaging";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
+import { SMSFallbackToggle } from "./sms-fallback-toggle";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 import type { ConversationMemberRole } from "@/types/messaging";
@@ -39,9 +42,13 @@ export function ConversationMembersPanel({
     const { data: orgMembers = [] } = useOrgMembers();
     const addMembers = useAddConversationMembers(conversationId);
     const removeMember = useRemoveConversationMember(conversationId);
+    const updateSMSFallback = useUpdateSMSFallback(conversationId);
+    const { messagingEnabled: _msgEnabled, ...featureFlags } = useMessagingEnabled();
+    const smsFallbackVisible = featureFlags.voiceEnabled; // SMS fallback shown alongside voice features
 
     const [showAddForm, setShowAddForm] = React.useState(false);
     const [addQuery, setAddQuery] = React.useState("");
+    const [smsFallbackEnabled, setSMSFallbackEnabled] = React.useState(false);
 
     const myRole = members.find((m) => m.user_id === currentUserId)?.role;
     const canManage = myRole === "owner" || myRole === "admin";
@@ -157,6 +164,20 @@ export function ConversationMembersPanel({
                     </div>
                 )}
             </div>
+
+            {/* SMS Fallback Toggle */}
+            {smsFallbackVisible && canManage && (
+                <div className="border-t border-border shrink-0 px-4 py-3">
+                    <SMSFallbackToggle
+                        enabled={smsFallbackEnabled}
+                        onToggle={(enabled) => {
+                            setSMSFallbackEnabled(enabled);
+                            updateSMSFallback.mutate(enabled);
+                        }}
+                        isPending={updateSMSFallback.isPending}
+                    />
+                </div>
+            )}
 
             {/* Add members section */}
             {canManage && conversationType !== "dm" && (

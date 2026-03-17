@@ -1708,6 +1708,44 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         trackAuthor: true,
     }),
 
+    transfer_order: defineEntity({
+        entityName: "transfer_order",
+        displayName: "Transfer Order",
+        displayNamePlural: "Transfer Orders",
+        table: "transfer_orders",
+        resource: "assets",
+        slug: "transfer-orders",
+        searchColumns: ["transfer_number", "notes"],
+        icon: "ArrowRightLeft",
+        statusColumn: "status",
+        trackAuthor: true,
+    }),
+
+    tag: defineEntity({
+        entityName: "tag",
+        displayName: "Tag",
+        displayNamePlural: "Tags",
+        table: "tags",
+        resource: "settings",
+        slug: "tags",
+        searchColumns: ["name", "description"],
+        icon: "Tag",
+        trackAuthor: true,
+    }),
+
+    financial_period: defineEntity({
+        entityName: "financial_period",
+        displayName: "Financial Period",
+        displayNamePlural: "Financial Periods",
+        table: "financial_periods",
+        resource: "finance",
+        slug: "financial-periods",
+        searchColumns: ["name"],
+        icon: "CalendarRange",
+        statusColumn: "status",
+        trackAuthor: true,
+    }),
+
     revenue_schedule: defineEntity({
         entityName: "revenue_schedule",
         displayName: "Revenue Schedule",

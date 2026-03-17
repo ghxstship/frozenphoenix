@@ -615,6 +615,131 @@ export function useOrgMembers() {
     });
 }
 
+// ─── Phase 3: Voice Messages, AI Summaries, Translation, PTT, SMS ────
+
+export type VoiceMessagePayload = {
+    conversation_id: string;
+    audio_blob: Blob;
+    duration_seconds: number;
+};
+
+export type AISummaryResult = {
+    summary: string;
+    action_items: string[];
+    key_decisions: string[];
+    message_count: number;
+    since: string;
+};
+
+export type TranslationResult = {
+    translated_text: string;
+    source_language: string;
+    target_language: string;
+};
+
+export function useSendVoiceMessage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (payload: VoiceMessagePayload): Promise<Message | null> => {
+            const formData = new FormData();
+            formData.append("audio", payload.audio_blob, "voice.webm");
+            formData.append("conversation_id", payload.conversation_id);
+            formData.append("duration_seconds", String(payload.duration_seconds));
+
+            const res = await fetch(`/api/conversations/${payload.conversation_id}/messages`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    conversation_id: payload.conversation_id,
+                    body: `🎤 Voice message (${Math.round(payload.duration_seconds)}s)`,
+                    attachments: [
+                        {
+                            type: "voice",
+                            duration_seconds: payload.duration_seconds,
+                            mime_type: "audio/webm",
+                        },
+                    ],
+                }),
+            });
+            if (!res.ok) return null;
+            const json = await res.json();
+            return json.data ?? json;
+        },
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: messagingKeys.messages(variables.conversation_id),
+            });
+            queryClient.invalidateQueries({ queryKey: messagingKeys.conversations() });
+        },
+    });
+}
+
+export function useAISummary(conversationId: string | undefined) {
+    return useMutation({
+        mutationFn: async (): Promise<AISummaryResult | null> => {
+            if (!conversationId) return null;
+            const res = await fetch(`/api/ai/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "summarize_conversation",
+                    conversation_id: conversationId,
+                }),
+            });
+            if (!res.ok) return null;
+            const json = await res.json();
+            return (json.data as AISummaryResult) ?? null;
+        },
+    });
+}
+
+export function useTranslateMessage() {
+    return useMutation({
+        mutationFn: async ({
+            messageId,
+            targetLanguage,
+        }: {
+            messageId: string;
+            body: string;
+            targetLanguage: string;
+        }): Promise<TranslationResult | null> => {
+            const res = await fetch(`/api/ai/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "translate_message",
+                    message_id: messageId,
+                    target_language: targetLanguage,
+                }),
+            });
+            if (!res.ok) return null;
+            const json = await res.json();
+            return (json.data as TranslationResult) ?? null;
+        },
+    });
+}
+
+export function useUpdateSMSFallback(conversationId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (enabled: boolean): Promise<boolean> => {
+            const res = await fetch(`/api/conversations/${conversationId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sms_fallback_enabled: enabled }),
+            });
+            return res.ok;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: messagingKeys.conversation(conversationId),
+            });
+        },
+    });
+}
+
 // ─── Helper: Map raw DB record → MessageWithSender ──────────
 
 function mapMessageWithSender(raw: Record<string, unknown>): MessageWithSender {

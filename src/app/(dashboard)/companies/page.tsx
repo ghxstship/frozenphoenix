@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Building2, Eye, Globe, MapPin, Pencil, Star, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCompanies } from "@/lib/supabase";
+import { useCompanies, useDeleteCompany } from "@/lib/supabase";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import { COMPANIES_PAGE } from "@/config/list-page-configs";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -15,7 +16,6 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { RowActionsMenu } from "@/components/data-view/row-actions-menu";
 import type { ListPageConfig, ListRowActionDef } from "@/types/list-page-config";
-import { apiDelete } from "@/lib/api/client";
 
 type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
 type CompanyStatus = "prospect" | "active" | "inactive" | "churned";
@@ -130,43 +130,45 @@ const tableColumns: ColumnDef<Company>[] = [
     },
 ];
 
-const companyRowActions: ListRowActionDef[] = [
-    {
-        id: "view",
-        label: "View Details",
-        icon: Eye,
-        onExecute: (record) => {
-            if (record.id) window.location.href = `/companies/${String(record.id)}`;
-        },
-    },
-    {
-        id: "edit",
-        label: "Edit",
-        icon: Pencil,
-        onExecute: (record) => {
-            if (record.id) window.location.href = `/companies/${String(record.id)}/edit`;
-        },
-    },
-    {
-        id: "delete",
-        label: "Delete",
-        icon: Trash2,
-        variant: "destructive",
-        onExecute: async (record) => {
-            if (!record.id) return;
-            if (!window.confirm("Delete this company?")) return;
-            try {
-                await apiDelete("/api/companies", String(record.id));
-                window.location.reload();
-            } catch {
-                // API errors surface via toast in production
-            }
-        },
-    },
-];
+function useCompanyRowActions(
+    onRequestDelete: (id: string, name: string) => void
+): ListRowActionDef[] {
+    const router = useRouter();
+    return useMemo<ListRowActionDef[]>(
+        () => [
+            {
+                id: "view",
+                label: "View Details",
+                icon: Eye,
+                onExecute: (record) => {
+                    if (record.id) router.push(`/companies/${String(record.id)}`);
+                },
+            },
+            {
+                id: "edit",
+                label: "Edit",
+                icon: Pencil,
+                onExecute: (record) => {
+                    if (record.id) router.push(`/companies/${String(record.id)}/edit`);
+                },
+            },
+            {
+                id: "delete",
+                label: "Delete",
+                icon: Trash2,
+                variant: "destructive",
+                onExecute: (record) => {
+                    if (record.id)
+                        onRequestDelete(String(record.id), String(record.name ?? "this company"));
+                },
+            },
+        ],
+        [router, onRequestDelete]
+    );
+}
 
 // ─── Company Card ────────────────────────────────────────────
-function CompanyCard({ company }: { company: Company }) {
+function CompanyCard({ company, actions }: { company: Company; actions: ListRowActionDef[] }) {
     return (
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
@@ -185,7 +187,7 @@ function CompanyCard({ company }: { company: Company }) {
                     </div>
                     <RowActionsMenu
                         record={company as unknown as Record<string, unknown>}
-                        actions={companyRowActions}
+                        actions={actions}
                         ariaLabel="Company actions"
                     />
                 </div>
@@ -224,7 +226,13 @@ function CompanyCard({ company }: { company: Company }) {
 }
 
 // ─── Content Component (table + cards with view toggle) ─────
-function CompaniesContent({ companies }: { companies: Company[] }) {
+function CompaniesContent({
+    companies,
+    actions,
+}: {
+    companies: Company[];
+    actions: ListRowActionDef[];
+}) {
     const VIEW_MODES = ["table", "cards"] as const;
     const [view, setView] = useQueryTabState({
         key: "view",
@@ -266,7 +274,7 @@ function CompaniesContent({ companies }: { companies: Company[] }) {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {companies.map((company) => (
-                        <CompanyCard key={company.id} company={company} />
+                        <CompanyCard key={company.id} company={company} actions={actions} />
                     ))}
                 </div>
             )}
@@ -277,6 +285,20 @@ function CompaniesContent({ companies }: { companies: Company[] }) {
 // ─── Page ────────────────────────────────────────────────────
 export default function CompaniesPage() {
     const { data: sbCompanies, isLoading } = useCompanies();
+    const deleteMutation = useDeleteCompany();
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+    const handleRequestDelete = useCallback((id: string, name: string) => {
+        setDeleteTarget({ id, name });
+    }, []);
+
+    const handleConfirmDelete = useCallback(() => {
+        if (!deleteTarget) return;
+        deleteMutation.mutate(deleteTarget.id);
+        setDeleteTarget(null);
+    }, [deleteTarget, deleteMutation]);
+
+    const rowActions = useCompanyRowActions(handleRequestDelete);
 
     const companies: Company[] = useMemo(
         () =>
@@ -354,16 +376,45 @@ export default function CompaniesPage() {
                     ],
                 },
             ],
-            contentSlot: <CompaniesContent companies={companies} />,
+            contentSlot: <CompaniesContent companies={companies} actions={rowActions} />,
         }),
-        [companies]
+        [companies, rowActions]
     );
 
     return (
-        <ListPageShell
-            config={config}
-            data={companies as unknown as Record<string, unknown>[]}
-            isLoading={isLoading}
-        />
+        <>
+            {deleteTarget && (
+                <div
+                    role="alert"
+                    className="mx-4 mt-2 flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm"
+                >
+                    <p>
+                        Are you sure you want to delete <strong>{deleteTarget.name}</strong>? This
+                        action cannot be undone.
+                    </p>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            type="button"
+                            className="rounded-md px-3 py-1.5 text-sm font-medium hover:bg-secondary transition-colors"
+                            onClick={() => setDeleteTarget(null)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                            onClick={handleConfirmDelete}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            )}
+            <ListPageShell
+                config={config}
+                data={companies as unknown as Record<string, unknown>[]}
+                isLoading={isLoading}
+            />
+        </>
     );
 }

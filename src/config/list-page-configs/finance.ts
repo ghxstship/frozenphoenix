@@ -15,7 +15,15 @@ import {
     CREATE_PAYROLL_BATCH_CONFIG,
     CREATE_REVENUE_SCHEDULE_CONFIG,
 } from "@/config/phase-h-create-entity-configs";
-import { Banknote, Calculator, CreditCard, DollarSign, FileText, Receipt } from "lucide-react";
+import {
+    Banknote,
+    Calculator,
+    CalendarRange,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Receipt,
+} from "lucide-react";
 
 // ─── depreciation_schedule ───
 
@@ -246,5 +254,23 @@ export const REVENUE_RECOGNITION_ENTRIES_PAGE: ListPageConfig = {
         },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
+};
+
+// ─── financial_period ───
+
+export const FINANCIAL_PERIODS_PAGE: ListPageConfig = {
+    entityKey: "financial_period",
+    description: "Fiscal periods for financial close and reporting cycles",
+    icon: CalendarRange,
+    searchKeys: ["name"],
+    columns: [
+        { id: "name", header: "Period", accessorKey: "name" },
+        { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+    ],
+    views: ["table"],
+    defaultView: "table",
     exportable: true,
 };

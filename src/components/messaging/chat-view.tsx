@@ -40,6 +40,12 @@ interface ChatViewProps {
     onCancelReply?: () => void;
     draft?: string;
     onDraftChange?: (text: string) => void;
+    composerExtraActions?: React.ReactNode;
+    headerExtraContent?: React.ReactNode;
+    onTranslate?: (messageId: string, body: string, targetLanguage: string) => void;
+    translatingMessageId?: string | null;
+    translatedTexts?: Record<string, string>;
+    onClearTranslation?: (messageId: string) => void;
     className?: string;
 }
 
@@ -62,6 +68,12 @@ export function ChatView({
     onCancelReply,
     draft,
     onDraftChange,
+    composerExtraActions,
+    headerExtraContent,
+    onTranslate,
+    translatingMessageId,
+    translatedTexts,
+    onClearTranslation,
     className,
 }: ChatViewProps) {
     const ms = useMessagingStrings();
@@ -221,6 +233,9 @@ export function ChatView({
                 </div>
             </div>
 
+            {/* Phase 3: AI Summary / extra header content */}
+            {headerExtraContent}
+
             {/* Content row: messages + optional members sidebar */}
             <div className="flex-1 flex min-h-0">
                 {/* Messages column */}
@@ -260,6 +275,10 @@ export function ChatView({
                                     onEdit={onEdit}
                                     onDelete={onDelete}
                                     onThreadOpen={onThreadOpen}
+                                    onTranslate={onTranslate}
+                                    translatingMessageId={translatingMessageId}
+                                    translatedTexts={translatedTexts}
+                                    onClearTranslation={onClearTranslation}
                                 />
                             ))}
                         </div>
@@ -275,6 +294,7 @@ export function ChatView({
                         draft={draft}
                         onDraftChange={onDraftChange}
                         placeholder={`Message ${conversation.type === "channel" ? "#" : ""}${displayName}`}
+                        extraActions={composerExtraActions}
                     />
                 </div>
 

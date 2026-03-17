@@ -115,12 +115,68 @@ export const MESSAGING_STRINGS = {
     error_connection: "Connection lost. Reconnecting...",
     error_rate_limit: "You are sending messages too quickly",
 
+    // Voice Messages
+    voice_record: "Record voice message",
+    voice_recording: "Recording...",
+    voice_stop: "Stop recording",
+    voice_cancel: "Cancel recording",
+    voice_send: "Send voice message",
+    voice_play: "Play voice message",
+    voice_pause: "Pause voice message",
+    voice_duration: "{duration}",
+    voice_unsupported: "Voice messages are not supported in this browser",
+    voice_permission_denied: "Microphone access denied",
+    voice_too_short: "Recording too short",
+    voice_too_long: "Recording limit reached",
+
+    // AI Summaries
+    ai_summary_title: "AI Summary",
+    ai_summary_generate: "Summarize conversation",
+    ai_summary_generating: "Generating summary...",
+    ai_summary_empty: "Not enough messages to summarize",
+    ai_summary_error: "Failed to generate summary",
+    ai_summary_since: "Summary of messages since {date}",
+    ai_summary_action_items: "Action Items",
+    ai_summary_key_decisions: "Key Decisions",
+    ai_summary_dismiss: "Dismiss summary",
+
+    // Translation
+    translate_button: "Translate",
+    translate_translating: "Translating...",
+    translate_show_original: "Show original",
+    translate_error: "Translation failed",
+    translate_powered_by: "Powered by AI translation",
+    translate_target_language: "Translate to",
+
+    // Push-to-Talk
+    ptt_hold_to_talk: "Hold to talk",
+    ptt_release_to_send: "Release to send",
+    ptt_listening: "Listening...",
+    ptt_channel: "PTT Channel",
+    ptt_join_channel: "Join channel",
+    ptt_leave_channel: "Leave channel",
+    ptt_active_speakers: "{count} active",
+    ptt_no_channel: "No PTT channel active",
+    ptt_connecting: "Connecting...",
+    ptt_unsupported: "Push-to-talk is not supported in this browser",
+
+    // SMS Fallback
+    sms_fallback_label: "SMS fallback",
+    sms_fallback_description: "Send messages via SMS when recipients are offline",
+    sms_fallback_enabled: "SMS fallback enabled",
+    sms_fallback_disabled: "SMS fallback disabled",
+    sms_fallback_no_phone: "No phone number on file",
+
     // Accessibility
     a11y_message_list: "Message history",
     a11y_unread_badge: "{count} unread messages",
     a11y_reaction_picker: "Choose a reaction",
     a11y_mention_suggestions: "Mention suggestions",
     a11y_typing_indicator: "Typing indicator",
+    a11y_voice_recorder: "Voice message recorder",
+    a11y_voice_player: "Voice message player",
+    a11y_ptt_button: "Push to talk button",
+    a11y_ai_summary: "AI conversation summary",
 } as const;
 
 export type MessagingStringKey = keyof typeof MESSAGING_STRINGS;

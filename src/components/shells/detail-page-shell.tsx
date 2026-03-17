@@ -98,7 +98,11 @@ export function DetailPageShell({
     const useExternalData = externalRecord !== undefined;
 
     // Self-fetch single record (skipped when external data provided)
-    const { data: rawData, isLoading: selfLoading } = useQuery({
+    const {
+        data: rawData,
+        isLoading: selfLoading,
+        isError: selfError,
+    } = useQuery({
         queryKey: [config.entityKey, "detail", id],
         queryFn: async () => {
             return apiGet<EntityRecord>(basePath, id);
@@ -110,6 +114,7 @@ export function DetailPageShell({
         ? (externalRecord as EntityRecord | null)
         : ((rawData as EntityRecord | undefined) ?? null);
     const isLoading = useExternalData ? (externalLoading ?? false) : selfLoading;
+    const isError = useExternalData ? false : selfError;
 
     // Chatter state (auto-managed when config.chatter is true)
     const [chatterComments, setChatterComments] = useState<
@@ -190,6 +195,20 @@ export function DetailPageShell({
             <SkeletonCrossfade isLoading skeleton={<LoadingState />}>
                 {null}
             </SkeletonCrossfade>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="py-16 text-center text-muted-foreground">
+                <Icon className="h-12 w-12 mx-auto mb-4 opacity-50 text-destructive" />
+                <p className="text-lg font-medium">Failed to load record</p>
+                <p className="text-sm mt-1">
+                    Something went wrong loading this{" "}
+                    {entityConfig?.displayName?.toLowerCase() ?? "record"}. Please try again or
+                    contact support if the problem persists.
+                </p>
+            </div>
         );
     }
 

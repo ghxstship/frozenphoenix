@@ -15,6 +15,8 @@ export function useMessagingEnabled() {
     const reactionsEnabled = useFeatureFlag(MESSAGING_FEATURE_FLAGS.MESSAGING_REACTIONS);
     const mandatoryReadEnabled = useFeatureFlag(MESSAGING_FEATURE_FLAGS.MESSAGING_MANDATORY_READ);
     const scheduledEnabled = useFeatureFlag(MESSAGING_FEATURE_FLAGS.MESSAGING_SCHEDULED);
+    const aiSummaryEnabled = useFeatureFlag(MESSAGING_FEATURE_FLAGS.MESSAGING_AI_SUMMARY);
+    const voiceEnabled = useFeatureFlag(MESSAGING_FEATURE_FLAGS.MESSAGING_VOICE);
 
     return {
         messagingEnabled,
@@ -23,5 +25,7 @@ export function useMessagingEnabled() {
         reactionsEnabled: messagingEnabled && reactionsEnabled,
         mandatoryReadEnabled: messagingEnabled && mandatoryReadEnabled,
         scheduledEnabled: messagingEnabled && scheduledEnabled,
+        aiSummaryEnabled: messagingEnabled && aiSummaryEnabled,
+        voiceEnabled: messagingEnabled && voiceEnabled,
     };
 }

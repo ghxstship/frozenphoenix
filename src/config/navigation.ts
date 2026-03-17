@@ -879,20 +879,7 @@ export const navigationConfig: NavSection[] = [
                 path: "/expenses",
                 icon: Receipt,
                 permission: "expenses.read",
-                children: [
-                    {
-                        title: "Tax Rates",
-                        path: "/tax-rates",
-                        icon: Calculator,
-                        permission: "finance.manage",
-                    },
-                    {
-                        title: "Expense Categories",
-                        path: "/expense-categories",
-                        icon: Layers,
-                        permission: "expenses.manage",
-                    },
-                ],
+                children: [],
             },
             {
                 title: "Billing",
@@ -954,7 +941,7 @@ export const navigationConfig: NavSection[] = [
             },
             {
                 title: "Payroll Runs",
-                path: "/payroll-runs",
+                path: "/payroll-batches",
                 icon: Banknote,
                 permission: "finance.read",
             },

@@ -43,23 +43,35 @@ function generateRequestId(): string {
 // ─── Valid roles for cookie validation ───────────────────────
 const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
 
-async function resolveUserRole(
+// Performance: resolves role + orgId from cookies first (set by middleware).
+// Falls back to a SINGLE combined query instead of two separate queries.
+async function resolveRoleAndOrg(
     supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
     userId: string,
-    cachedRole?: string | null
-): Promise<PermissionLevel> {
-    if (cachedRole && VALID_ROLES.has(cachedRole)) {
-        return cachedRole as PermissionLevel;
+    cachedRole?: string | null,
+    cachedOrgId?: string | null
+): Promise<{ role: PermissionLevel; orgId: string }> {
+    const roleFromCookie =
+        cachedRole && VALID_ROLES.has(cachedRole) ? (cachedRole as PermissionLevel) : null;
+    const orgIdFromCookie = cachedOrgId || null;
+
+    // Fast path: both cached
+    if (roleFromCookie && orgIdFromCookie) {
+        return { role: roleFromCookie, orgId: orgIdFromCookie };
     }
 
+    // Slow path: single query for both role + orgId
     const { data } = await supabase
         .from("org_memberships")
-        .select("role")
+        .select("role, organization_id")
         .eq("user_id", userId)
         .eq("is_default_org", true)
         .single();
 
-    return (data?.role as PermissionLevel) ?? "member";
+    return {
+        role: roleFromCookie ?? (data?.role as PermissionLevel) ?? "member",
+        orgId: orgIdFromCookie ?? data?.organization_id ?? "",
+    };
 }
 
 // ─── Types ───────────────────────────────────────────────────
@@ -155,16 +167,13 @@ export function withApiHandler(
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const role = await resolveUserRole(supabase, user.id, cachedRole);
-
-            // Resolve orgId from default org membership
-            const { data: orgMembership } = await supabase
-                .from("org_memberships")
-                .select("organization_id")
-                .eq("user_id", user.id)
-                .eq("is_default_org", true)
-                .single();
-            const orgId = orgMembership?.organization_id ?? "";
+            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+            const { role, orgId } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
 
             // RBAC
             if (options.rbac) {
@@ -241,16 +250,13 @@ export function withApiHandlerParams(
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const role = await resolveUserRole(supabase, user.id, cachedRole);
-
-            // Resolve orgId from default org membership
-            const { data: orgMembership } = await supabase
-                .from("org_memberships")
-                .select("organization_id")
-                .eq("user_id", user.id)
-                .eq("is_default_org", true)
-                .single();
-            const orgId = orgMembership?.organization_id ?? "";
+            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+            const { role, orgId } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
 
             // RBAC
             if (options.rbac) {

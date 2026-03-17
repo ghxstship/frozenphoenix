@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { Suspense, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/layouts/sidebar";
 import { Topbar } from "@/components/layouts/topbar";
 import { SkipLinks } from "@/components/accessibility";
@@ -10,10 +11,18 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { PageTransition } from "@/components/ui/page-transition";
-import { MessagingPanel } from "@/components/messaging/messaging-panel";
-import { CopilotPanel } from "@/components/copilot/copilot-panel";
 import { useCopilotContext } from "@/hooks/use-copilot-context";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
+
+// Performance: Dynamic imports for slide-over panels — only loaded when opened.
+const MessagingPanel = dynamic(
+    () => import("@/components/messaging/messaging-panel").then((m) => m.MessagingPanel),
+    { ssr: false }
+);
+const CopilotPanel = dynamic(
+    () => import("@/components/copilot/copilot-panel").then((m) => m.CopilotPanel),
+    { ssr: false }
+);
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     useCopilotContext();

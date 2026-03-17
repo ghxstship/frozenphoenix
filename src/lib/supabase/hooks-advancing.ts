@@ -670,6 +670,46 @@ export function useUpdateAdvanceTemplate() {
     });
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FULFILLMENT — Item Status Transitions
+// ═══════════════════════════════════════════════════════════════
+
+export function useUpdateAdvanceItemStatus() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({
+            advanceId,
+            itemId,
+            status,
+            quantity_confirmed,
+        }: {
+            advanceId: string;
+            itemId: string;
+            status: string;
+            quantity_confirmed?: number;
+        }) => {
+            const res = await fetch(`/api/advancing/${advanceId}/items/${itemId}/status`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status, quantity_confirmed }),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(
+                    (err as Record<string, Record<string, string>>)?.error?.message ??
+                        "Failed to update item status"
+                );
+            }
+            return res.json();
+        },
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["advances"] });
+            queryClient.invalidateQueries({ queryKey: ["advances", variables.advanceId] });
+            queryClient.invalidateQueries({ queryKey: ["advance_items", variables.advanceId] });
+        },
+    });
+}
+
 export function useDeleteAdvanceTemplate() {
     const queryClient = useQueryClient();
     return useMutation({

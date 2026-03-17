@@ -3,7 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { MessageSquare, MoreHorizontal, Pencil, Pin, Trash2 } from "lucide-react";
+import { Globe, MessageSquare, MoreHorizontal, Pencil, Pin, Trash2 } from "lucide-react";
+import { VoiceMessagePlayer } from "./voice-message-player";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
     DropdownMenu,
@@ -25,6 +26,10 @@ interface MessageBubbleProps {
     onEdit?: (messageId: string) => void;
     onDelete?: (messageId: string) => void;
     onThreadOpen?: (messageId: string) => void;
+    onTranslate?: (messageId: string, body: string, targetLanguage: string) => void;
+    translatingMessageId?: string | null;
+    translatedTexts?: Record<string, string>;
+    onClearTranslation?: (messageId: string) => void;
     className?: string;
 }
 
@@ -37,6 +42,10 @@ export function MessageBubble({
     onEdit,
     onDelete,
     onThreadOpen,
+    onTranslate,
+    translatingMessageId,
+    translatedTexts,
+    onClearTranslation,
     className,
 }: MessageBubbleProps) {
     const ms = useMessagingStrings();
@@ -182,6 +191,50 @@ export function MessageBubble({
                         ))}
                     </div>
                 )}
+
+                {/* Voice attachment player */}
+                {message.attachments?.some(
+                    (a) => a.file_type === "audio/webm" || a.file_type?.startsWith("audio/")
+                ) &&
+                    (() => {
+                        const voiceAttachment = message.attachments.find(
+                            (a) => a.file_type === "audio/webm" || a.file_type?.startsWith("audio/")
+                        );
+                        return voiceAttachment ? (
+                            <VoiceMessagePlayer
+                                src={voiceAttachment.url}
+                                durationSeconds={0}
+                                className="mt-1.5 max-w-[240px]"
+                            />
+                        ) : null;
+                    })()}
+
+                {/* Translation */}
+                {translatedTexts?.[message.id] ? (
+                    <div className="mt-1.5 space-y-1">
+                        <p className="text-xs text-foreground/80 italic bg-secondary/30 rounded px-2 py-1">
+                            {translatedTexts[message.id]}
+                        </p>
+                        <button
+                            onClick={() => onClearTranslation?.(message.id)}
+                            className="text-[10px] text-primary hover:underline"
+                        >
+                            {ms("translate_show_original")}
+                        </button>
+                    </div>
+                ) : onTranslate && !message.deleted_at ? (
+                    <button
+                        onClick={() => onTranslate(message.id, message.body, "es")}
+                        disabled={translatingMessageId === message.id}
+                        className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={ms("translate_button")}
+                    >
+                        <Globe className="h-3 w-3" />
+                        {translatingMessageId === message.id
+                            ? ms("translate_translating")
+                            : ms("translate_button")}
+                    </button>
+                ) : null}
 
                 {/* Thread indicator */}
                 {message.thread_message_count > 0 && (

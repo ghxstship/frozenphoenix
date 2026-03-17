@@ -23,6 +23,7 @@ import type { ActivityItem, CommentItem } from "@/components/activity";
 import { PROJECT_PHASE_MAP } from "@/config/domain-config";
 import {
     useApprovals,
+    useBudgetLineItems,
     useCreateTask,
     useDeleteProject,
     useProject,
@@ -30,6 +31,7 @@ import {
     useTasks,
     useUpdateProject,
 } from "@/lib/supabase";
+import { useProjectCollaborators } from "@/lib/supabase/hooks-collaborators";
 import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -41,6 +43,7 @@ import {
     DollarSign,
     Edit,
     FolderKanban,
+    Handshake,
     Loader2,
     TrendingUp,
     Users,
@@ -136,6 +139,9 @@ export default function ProjectDetailPage() {
         }
     };
     const { data: sbTasks } = useTasks({ project_id: projectId });
+    const { data: sbCollaborators } = useProjectCollaborators(projectId);
+    const projectCollaborators = (sbCollaborators ?? []) as Record<string, unknown>[];
+    const { data: sbBudgetLines } = useBudgetLineItems({ project_id: projectId });
     const { data: sbApprovals } = useApprovals();
     const { data: sbStakeholders } = useStakeholders();
     const projectTasks = sbTasks ?? [];
@@ -448,6 +454,87 @@ export default function ProjectDetailPage() {
                 ),
             },
             {
+                id: "collaborators",
+                label: "Collaborators",
+                count: projectCollaborators.length,
+                content: (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Handshake className="h-4 w-4" />
+                                Collaborators
+                            </CardTitle>
+                            <Button
+                                size="sm"
+                                onClick={() => router.push(`/advancing?projectId=${projectId}`)}
+                            >
+                                Invite Collaborator
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {projectCollaborators.length === 0 ? (
+                                <EmptyState
+                                    icon={Handshake}
+                                    title="No collaborators"
+                                    description="Invite vendors and partners to collaborate on this project"
+                                    action={{
+                                        label: "Invite Collaborator",
+                                        onClick: () =>
+                                            router.push(`/advancing?projectId=${projectId}`),
+                                    }}
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {projectCollaborators.map((collab) => {
+                                        const vendor = collab.vendors as Record<
+                                            string,
+                                            unknown
+                                        > | null;
+                                        const reqs = (collab.collaborator_requirements ??
+                                            []) as Record<string, unknown>[];
+                                        const totalReqs = reqs.length;
+                                        const completedReqs = reqs.filter(
+                                            (r) => r.status === "approved" || r.status === "waived"
+                                        ).length;
+                                        return (
+                                            <div
+                                                key={String(collab.id)}
+                                                className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors"
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        {String(vendor?.name ?? "Vendor")}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {String(collab.engagement_type ?? "vendor")}
+                                                        {totalReqs > 0 &&
+                                                            ` · ${completedReqs}/${totalReqs} requirements complete`}
+                                                    </p>
+                                                </div>
+                                                <Badge
+                                                    variant={
+                                                        collab.status === "active"
+                                                            ? "success"
+                                                            : collab.status === "onboarding"
+                                                              ? "info"
+                                                              : collab.status === "suspended" ||
+                                                                  collab.status === "terminated"
+                                                                ? "destructive"
+                                                                : "warning"
+                                                    }
+                                                >
+                                                    {String(collab.status ?? "invited")}
+                                                </Badge>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                ),
+            },
+            {
                 id: "budget",
                 label: "Budget",
                 content: project ? (
@@ -474,10 +561,51 @@ export default function ProjectDetailPage() {
                                 <CardTitle className="text-base">Budget Breakdown</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground text-center py-8">
-                                    Budget line items will be displayed here when connected to
-                                    Supabase
-                                </p>
+                                {(sbBudgetLines ?? []).length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-8">
+                                        No budget line items yet
+                                    </p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {(sbBudgetLines ?? []).map(
+                                            (line: Record<string, unknown>) => (
+                                                <div
+                                                    key={String(line.id)}
+                                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                                                >
+                                                    <div>
+                                                        <p className="text-sm font-medium">
+                                                            {String(
+                                                                line.description ??
+                                                                    line.category ??
+                                                                    "Line Item"
+                                                            )}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {String(line.category ?? "")}
+                                                            {line.vendor_id
+                                                                ? " · Vendor assigned"
+                                                                : ""}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-bold">
+                                                            {formatCurrency(
+                                                                Number(line.estimated_amount ?? 0)
+                                                            )}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Actual:{" "}
+                                                            {formatCurrency(
+                                                                Number(line.actual_amount ?? 0)
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

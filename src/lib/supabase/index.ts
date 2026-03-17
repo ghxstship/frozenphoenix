@@ -243,7 +243,13 @@ export {
     useAcknowledgeMandatoryRead,
     useAddConversationMembers,
     useRemoveConversationMember,
+    useOrgMembers,
+    useSendVoiceMessage,
+    useAISummary,
+    useTranslateMessage,
+    useUpdateSMSFallback,
 } from "./hooks-messaging";
+export type { VoiceMessagePayload, AISummaryResult, TranslationResult } from "./hooks-messaging";
 
 // ─── Messaging Realtime ───
 export {
@@ -276,6 +282,22 @@ export * from "./hooks-sow";
 
 // ─── Workflows & Approval (join-aware) ───
 export * from "./hooks-workflows";
+
+// ─── Collaborator Lifecycle ───
+export {
+    useProjectCommTemplates,
+    useGenerateCommTemplates,
+    useUpdateCommTemplate,
+    useProjectCollaborators,
+    useProjectCollaborator,
+    useInviteCollaborator,
+    useUpdateCollaborator,
+    useCollaboratorRequirements,
+    useIssueContract,
+    useRequestCoi,
+    useCrewSubmissions,
+} from "./hooks-collaborators";
+export type { InviteCollaboratorPayload } from "./hooks-collaborators";
 
 // ─── Scanning ───
 export { useAssetLookup, useAssetScan, useAssetScanHistory } from "./hooks-scanning";

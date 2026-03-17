@@ -1,17 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/lib/supabase/auth-context";
 import { SettingsProvider } from "@/lib/settings/settings-provider";
 import { AccessibilityProvider } from "@/components/accessibility";
 import { ThemeProvider } from "@/components/theme-provider";
-import { CommandBar } from "@/components/command-bar";
 import { ToastProvider } from "@/components/ui/toast";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { NetworkStatusProvider } from "@/components/network-status";
 import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
-import { CookieConsent } from "@/components/cookie-consent";
+
+// Performance: Dynamic imports for overlay components that aren't needed at initial render.
+// CommandBar only opens on Cmd+K; CookieConsent shows once per visitor.
+const CommandBar = dynamic(() => import("@/components/command-bar").then((m) => m.CommandBar), {
+    ssr: false,
+});
+const CookieConsent = dynamic(
+    () => import("@/components/cookie-consent").then((m) => m.CookieConsent),
+    { ssr: false }
+);
 
 /**
  * FIND-029: QueryClient staleTime trade-off documentation.
@@ -70,7 +79,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                         <ConfirmDialogProvider>
                                             {children}
                                             <CommandBar />
-                                            <CookieConsent />
+                                            <React.Suspense fallback={null}>
+                                                <CookieConsent />
+                                            </React.Suspense>
                                         </ConfirmDialogProvider>
                                     </ToastProvider>
                                 </NetworkStatusProvider>

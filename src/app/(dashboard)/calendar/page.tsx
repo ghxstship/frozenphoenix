@@ -10,7 +10,7 @@ import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useApprovals, useProjects, useTasks } from "@/lib/supabase";
+import { useApprovals, useCalendarEvents, useProjects, useTasks } from "@/lib/supabase";
 import { formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type {
@@ -29,13 +29,15 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
+    Download,
     FolderKanban,
     Plus,
     ShieldCheck,
+    Star,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 
-type EventType = "project" | "task" | "approval" | "milestone";
+type EventType = "project" | "task" | "approval" | "milestone" | "event";
 
 interface CalendarEvent {
     id: string;
@@ -51,6 +53,7 @@ const eventTypeConfig: Record<EventType, { color: string; icon: typeof CalendarI
     task: { color: "bg-info", icon: CheckSquare },
     approval: { color: "bg-warning", icon: ShieldCheck },
     milestone: { color: "bg-success", icon: CalendarIcon },
+    event: { color: "bg-accent", icon: Star },
 };
 
 export default function CalendarPage() {
@@ -66,6 +69,7 @@ export default function CalendarPage() {
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
     const { data: sbTasks, isLoading: loadingTasks } = useTasks();
     const { data: sbApprovals, isLoading: loadingApprovals } = useApprovals();
+    const { data: sbCalendarEvents, isLoading: loadingCalEvents } = useCalendarEvents();
 
     const projects: Project[] = (sbProjects ?? []).map((p) => ({
         id: p.id,
@@ -119,7 +123,7 @@ export default function CalendarPage() {
         timelineImpactDays: a.timeline_impact_days ?? undefined,
     }));
 
-    const isLoading = loadingProjects || loadingTasks || loadingApprovals;
+    const isLoading = loadingProjects || loadingTasks || loadingApprovals || loadingCalEvents;
 
     if (isLoading) {
         return <LoadingState />;
@@ -133,7 +137,18 @@ export default function CalendarPage() {
     const startDay = firstDayOfMonth.getDay();
     const daysInMonth = lastDayOfMonth.getDate();
 
+    const calendarDbEvents: CalendarEvent[] = (sbCalendarEvents ?? []).map(
+        (ce: Record<string, unknown>) => ({
+            id: `cal-${ce.id as string}`,
+            title: (ce.title as string) ?? "Untitled Event",
+            date: ((ce.start_date as string) ?? "").split("T")[0] ?? "",
+            type: "event" as EventType,
+            status: (ce.status as string) ?? undefined,
+        })
+    );
+
     const events: CalendarEvent[] = [
+        ...calendarDbEvents,
         ...projects.map((p) => ({
             id: `proj-start-${p.id}`,
             title: `${p.name} — Start`,
@@ -211,6 +226,40 @@ export default function CalendarPage() {
                             ]}
                             ariaLabel="Calendar view"
                         />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                const lines = [
+                                    "BEGIN:VCALENDAR",
+                                    "VERSION:2.0",
+                                    "PRODID:-//FrozenPhoenix//Calendar//EN",
+                                    ...events
+                                        .map((e) => [
+                                            "BEGIN:VEVENT",
+                                            `UID:${e.id}@frozenphoenix`,
+                                            `DTSTART;VALUE=DATE:${e.date.replace(/-/g, "")}`,
+                                            `SUMMARY:${e.title.replace(/,/g, "\\,")}`,
+                                            `CATEGORIES:${e.type}`,
+                                            "END:VEVENT",
+                                        ])
+                                        .flat(),
+                                    "END:VCALENDAR",
+                                ];
+                                const blob = new Blob([lines.join("\r\n")], {
+                                    type: "text/calendar",
+                                });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = "calendar.ics";
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                        >
+                            <Download className="h-4 w-4" />
+                            iCal Export
+                        </Button>
                         <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             Add Event
@@ -275,6 +324,7 @@ export default function CalendarPage() {
                                                 task: "Task",
                                                 approval: "Approval",
                                                 milestone: "Milestone",
+                                                event: "Event",
                                             }[type]
                                         }
                                     </span>

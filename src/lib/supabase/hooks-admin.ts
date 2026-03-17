@@ -641,3 +641,15 @@ export const useLiveCrewAssignmentsPage = makeListHook<Tables<"live_crew_assignm
     "/api/live-crew-assignments",
     { sort_by: "role", sort_order: "asc" }
 );
+
+// ═══════════════════════════════════════════════════════════════
+// TAGS (cross-entity tagging — Module 10)
+// ═══════════════════════════════════════════════════════════════
+export const useTags = makeListHook<Tables<"tags">>("tag", "/api/tags", {
+    sort_by: "name",
+    sort_order: "asc",
+});
+export const useTag = makeDetailHook<Tables<"tags">>("tag", "/api/tags");
+export const useCreateTag = makeCreateHook<Tables<"tags">>("tag", "/api/tags");
+export const useUpdateTag = makeUpdateHook<Tables<"tags">>("tag", "/api/tags");
+export const useDeleteTag = makeDeleteHook("tag", "/api/tags");

@@ -7988,6 +7988,140 @@ export type Database = {
                     },
                 ];
             };
+            collaborator_requirements: {
+                Row: {
+                    approved_at: string | null;
+                    created_at: string;
+                    custom_instructions: string | null;
+                    deadline: string | null;
+                    deleted_at: string | null;
+                    description: string | null;
+                    entity_id: string | null;
+                    entity_type: string | null;
+                    escalation_sent_at: string | null;
+                    id: string;
+                    is_blocking: boolean;
+                    label: string;
+                    organization_id: string;
+                    project_collaborator_id: string;
+                    project_id: string;
+                    rejection_reason: string | null;
+                    reminder_sent_at: string | null;
+                    requirement_type: Database["public"]["Enums"]["requirement_type"];
+                    reviewed_at: string | null;
+                    reviewed_by: string | null;
+                    sort_order: number;
+                    status: Database["public"]["Enums"]["requirement_status"];
+                    submitted_at: string | null;
+                    updated_at: string;
+                    upload_url: string | null;
+                };
+                Insert: {
+                    approved_at?: string | null;
+                    created_at?: string;
+                    custom_instructions?: string | null;
+                    deadline?: string | null;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    entity_id?: string | null;
+                    entity_type?: string | null;
+                    escalation_sent_at?: string | null;
+                    id?: string;
+                    is_blocking?: boolean;
+                    label: string;
+                    organization_id: string;
+                    project_collaborator_id: string;
+                    project_id: string;
+                    rejection_reason?: string | null;
+                    reminder_sent_at?: string | null;
+                    requirement_type: Database["public"]["Enums"]["requirement_type"];
+                    reviewed_at?: string | null;
+                    reviewed_by?: string | null;
+                    sort_order?: number;
+                    status?: Database["public"]["Enums"]["requirement_status"];
+                    submitted_at?: string | null;
+                    updated_at?: string;
+                    upload_url?: string | null;
+                };
+                Update: {
+                    approved_at?: string | null;
+                    created_at?: string;
+                    custom_instructions?: string | null;
+                    deadline?: string | null;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    entity_id?: string | null;
+                    entity_type?: string | null;
+                    escalation_sent_at?: string | null;
+                    id?: string;
+                    is_blocking?: boolean;
+                    label?: string;
+                    organization_id?: string;
+                    project_collaborator_id?: string;
+                    project_id?: string;
+                    rejection_reason?: string | null;
+                    reminder_sent_at?: string | null;
+                    requirement_type?: Database["public"]["Enums"]["requirement_type"];
+                    reviewed_at?: string | null;
+                    reviewed_by?: string | null;
+                    sort_order?: number;
+                    status?: Database["public"]["Enums"]["requirement_status"];
+                    submitted_at?: string | null;
+                    updated_at?: string;
+                    upload_url?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "collaborator_requirements_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_project_collaborator_id_fkey";
+                        columns: ["project_collaborator_id"];
+                        isOneToOne: false;
+                        referencedRelation: "project_collaborators";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "collaborator_requirements_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                ];
+            };
             comm_channels: {
                 Row: {
                     assignment: string;
@@ -22642,6 +22776,69 @@ export type Database = {
                     },
                 ];
             };
+            org_comm_templates: {
+                Row: {
+                    available_variables: Json | null;
+                    body_html: string;
+                    body_text: string | null;
+                    created_at: string;
+                    deleted_at: string | null;
+                    description: string | null;
+                    id: string;
+                    is_active: boolean;
+                    name: string;
+                    organization_id: string;
+                    subject: string;
+                    template_key: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    available_variables?: Json | null;
+                    body_html: string;
+                    body_text?: string | null;
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    name: string;
+                    organization_id: string;
+                    subject: string;
+                    template_key: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    available_variables?: Json | null;
+                    body_html?: string;
+                    body_text?: string | null;
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    name?: string;
+                    organization_id?: string;
+                    subject?: string;
+                    template_key?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "org_comm_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "org_comm_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             org_memberships: {
                 Row: {
                     created_at: string | null;
@@ -23611,6 +23808,123 @@ export type Database = {
                         columns: ["updated_by"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            portal_access_tokens: {
+                Row: {
+                    collaborator_id: string;
+                    created_at: string;
+                    created_by: string | null;
+                    expires_at: string;
+                    id: string;
+                    is_active: boolean;
+                    last_used_at: string | null;
+                    organization_id: string;
+                    permissions: string[];
+                    project_id: string;
+                    revoked_at: string | null;
+                    revoked_by: string | null;
+                    token: string;
+                    token_hash: string;
+                    updated_at: string;
+                    use_count: number;
+                    vendor_id: string;
+                };
+                Insert: {
+                    collaborator_id: string;
+                    created_at?: string;
+                    created_by?: string | null;
+                    expires_at: string;
+                    id?: string;
+                    is_active?: boolean;
+                    last_used_at?: string | null;
+                    organization_id: string;
+                    permissions?: string[];
+                    project_id: string;
+                    revoked_at?: string | null;
+                    revoked_by?: string | null;
+                    token: string;
+                    token_hash: string;
+                    updated_at?: string;
+                    use_count?: number;
+                    vendor_id: string;
+                };
+                Update: {
+                    collaborator_id?: string;
+                    created_at?: string;
+                    created_by?: string | null;
+                    expires_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    last_used_at?: string | null;
+                    organization_id?: string;
+                    permissions?: string[];
+                    project_id?: string;
+                    revoked_at?: string | null;
+                    revoked_by?: string | null;
+                    token?: string;
+                    token_hash?: string;
+                    updated_at?: string;
+                    use_count?: number;
+                    vendor_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "pat_collaborator_fk";
+                        columns: ["collaborator_id"];
+                        isOneToOne: false;
+                        referencedRelation: "project_collaborators";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "portal_access_tokens_vendor_id_fkey";
+                        columns: ["vendor_id"];
+                        isOneToOne: false;
+                        referencedRelation: "vendors";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -26202,6 +26516,402 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                ];
+            };
+            project_collaborators: {
+                Row: {
+                    created_at: string;
+                    deleted_at: string | null;
+                    engagement_type: string;
+                    id: string;
+                    invited_at: string;
+                    invited_by: string | null;
+                    metadata: Json | null;
+                    notes: string | null;
+                    organization_id: string;
+                    portal_activated_at: string | null;
+                    portal_last_access_at: string | null;
+                    project_id: string;
+                    scope_summary: string | null;
+                    status: Database["public"]["Enums"]["collaborator_status"];
+                    updated_at: string;
+                    vendor_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    engagement_type?: string;
+                    id?: string;
+                    invited_at?: string;
+                    invited_by?: string | null;
+                    metadata?: Json | null;
+                    notes?: string | null;
+                    organization_id: string;
+                    portal_activated_at?: string | null;
+                    portal_last_access_at?: string | null;
+                    project_id: string;
+                    scope_summary?: string | null;
+                    status?: Database["public"]["Enums"]["collaborator_status"];
+                    updated_at?: string;
+                    vendor_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    engagement_type?: string;
+                    id?: string;
+                    invited_at?: string;
+                    invited_by?: string | null;
+                    metadata?: Json | null;
+                    notes?: string | null;
+                    organization_id?: string;
+                    portal_activated_at?: string | null;
+                    portal_last_access_at?: string | null;
+                    project_id?: string;
+                    scope_summary?: string | null;
+                    status?: Database["public"]["Enums"]["collaborator_status"];
+                    updated_at?: string;
+                    vendor_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "project_collaborators_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_collaborators_vendor_id_fkey";
+                        columns: ["vendor_id"];
+                        isOneToOne: false;
+                        referencedRelation: "vendors";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            project_comm_templates: {
+                Row: {
+                    available_variables: Json | null;
+                    body_html: string;
+                    body_text: string | null;
+                    created_at: string;
+                    deleted_at: string | null;
+                    description: string | null;
+                    id: string;
+                    is_active: boolean;
+                    is_customized: boolean;
+                    last_sent_at: string | null;
+                    name: string;
+                    org_template_id: string | null;
+                    organization_id: string;
+                    project_id: string;
+                    send_count: number;
+                    subject: string;
+                    template_key: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    available_variables?: Json | null;
+                    body_html: string;
+                    body_text?: string | null;
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    is_customized?: boolean;
+                    last_sent_at?: string | null;
+                    name: string;
+                    org_template_id?: string | null;
+                    organization_id: string;
+                    project_id: string;
+                    send_count?: number;
+                    subject: string;
+                    template_key: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    available_variables?: Json | null;
+                    body_html?: string;
+                    body_text?: string | null;
+                    created_at?: string;
+                    deleted_at?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    is_customized?: boolean;
+                    last_sent_at?: string | null;
+                    name?: string;
+                    org_template_id?: string | null;
+                    organization_id?: string;
+                    project_id?: string;
+                    send_count?: number;
+                    subject?: string;
+                    template_key?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "project_comm_templates_org_template_id_fkey";
+                        columns: ["org_template_id"];
+                        isOneToOne: false;
+                        referencedRelation: "org_comm_templates";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_comm_templates_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                ];
+            };
+            project_crew_submissions: {
+                Row: {
+                    created_at: string;
+                    credential_type: string | null;
+                    crew_member_id: string | null;
+                    deleted_at: string | null;
+                    department: string | null;
+                    dietary_restrictions: string | null;
+                    email: string | null;
+                    first_name: string;
+                    id: string;
+                    last_name: string;
+                    lodging_details: Json | null;
+                    meal_preferences: string | null;
+                    needs_credentials: boolean;
+                    needs_lodging: boolean;
+                    needs_parking: boolean;
+                    needs_radio: boolean;
+                    needs_travel: boolean;
+                    needs_uniform: boolean;
+                    organization_id: string;
+                    parking_type: string | null;
+                    phone: string | null;
+                    project_collaborator_id: string;
+                    project_id: string;
+                    radio_channel: string | null;
+                    rejection_reason: string | null;
+                    reviewed_at: string | null;
+                    reviewed_by: string | null;
+                    role_title: string;
+                    status: Database["public"]["Enums"]["crew_submission_status"];
+                    travel_details: Json | null;
+                    uniform_size: string | null;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    credential_type?: string | null;
+                    crew_member_id?: string | null;
+                    deleted_at?: string | null;
+                    department?: string | null;
+                    dietary_restrictions?: string | null;
+                    email?: string | null;
+                    first_name: string;
+                    id?: string;
+                    last_name: string;
+                    lodging_details?: Json | null;
+                    meal_preferences?: string | null;
+                    needs_credentials?: boolean;
+                    needs_lodging?: boolean;
+                    needs_parking?: boolean;
+                    needs_radio?: boolean;
+                    needs_travel?: boolean;
+                    needs_uniform?: boolean;
+                    organization_id: string;
+                    parking_type?: string | null;
+                    phone?: string | null;
+                    project_collaborator_id: string;
+                    project_id: string;
+                    radio_channel?: string | null;
+                    rejection_reason?: string | null;
+                    reviewed_at?: string | null;
+                    reviewed_by?: string | null;
+                    role_title: string;
+                    status?: Database["public"]["Enums"]["crew_submission_status"];
+                    travel_details?: Json | null;
+                    uniform_size?: string | null;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    credential_type?: string | null;
+                    crew_member_id?: string | null;
+                    deleted_at?: string | null;
+                    department?: string | null;
+                    dietary_restrictions?: string | null;
+                    email?: string | null;
+                    first_name?: string;
+                    id?: string;
+                    last_name?: string;
+                    lodging_details?: Json | null;
+                    meal_preferences?: string | null;
+                    needs_credentials?: boolean;
+                    needs_lodging?: boolean;
+                    needs_parking?: boolean;
+                    needs_radio?: boolean;
+                    needs_travel?: boolean;
+                    needs_uniform?: boolean;
+                    organization_id?: string;
+                    parking_type?: string | null;
+                    phone?: string | null;
+                    project_collaborator_id?: string;
+                    project_id?: string;
+                    radio_channel?: string | null;
+                    rejection_reason?: string | null;
+                    reviewed_at?: string | null;
+                    reviewed_by?: string | null;
+                    role_title?: string;
+                    status?: Database["public"]["Enums"]["crew_submission_status"];
+                    travel_details?: Json | null;
+                    uniform_size?: string | null;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "project_crew_submissions_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "crew_members";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_crew_utilization";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_project_collaborator_id_fkey";
+                        columns: ["project_collaborator_id"];
+                        isOneToOne: false;
+                        referencedRelation: "project_collaborators";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
                     },
                 ];
             };
@@ -34228,6 +34938,63 @@ export type Database = {
                     },
                 ];
             };
+            tags: {
+                Row: {
+                    id: string;
+                    organization_id: string;
+                    name: string;
+                    slug: string;
+                    color: string | null;
+                    description: string | null;
+                    category: string | null;
+                    usage_count: number;
+                    created_at: string;
+                    updated_at: string;
+                    created_by: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    organization_id: string;
+                    name: string;
+                    slug: string;
+                    color?: string | null;
+                    description?: string | null;
+                    category?: string | null;
+                    usage_count?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    created_by?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    organization_id?: string;
+                    name?: string;
+                    slug?: string;
+                    color?: string | null;
+                    description?: string | null;
+                    category?: string | null;
+                    usage_count?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    created_by?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "tags_created_by_fkey";
+                        columns: ["created_by"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "tags_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             teams: {
                 Row: {
                     avatar_url: string | null;
@@ -35429,6 +36196,161 @@ export type Database = {
                         columns: ["user_id"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            transfer_orders: {
+                Row: {
+                    id: string;
+                    organization_id: string;
+                    transfer_number: string;
+                    status: Database["public"]["Enums"]["transfer_order_status"];
+                    origin_location_id: string | null;
+                    destination_location_id: string | null;
+                    requested_by: string | null;
+                    approved_by: string | null;
+                    requested_date: string | null;
+                    expected_arrival_date: string | null;
+                    actual_arrival_date: string | null;
+                    notes: string | null;
+                    priority: string | null;
+                    total_items: number;
+                    created_at: string;
+                    updated_at: string;
+                    created_by: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    organization_id: string;
+                    transfer_number: string;
+                    status?: Database["public"]["Enums"]["transfer_order_status"];
+                    origin_location_id?: string | null;
+                    destination_location_id?: string | null;
+                    requested_by?: string | null;
+                    approved_by?: string | null;
+                    requested_date?: string | null;
+                    expected_arrival_date?: string | null;
+                    actual_arrival_date?: string | null;
+                    notes?: string | null;
+                    priority?: string | null;
+                    total_items?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    created_by?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    organization_id?: string;
+                    transfer_number?: string;
+                    status?: Database["public"]["Enums"]["transfer_order_status"];
+                    origin_location_id?: string | null;
+                    destination_location_id?: string | null;
+                    requested_by?: string | null;
+                    approved_by?: string | null;
+                    requested_date?: string | null;
+                    expected_arrival_date?: string | null;
+                    actual_arrival_date?: string | null;
+                    notes?: string | null;
+                    priority?: string | null;
+                    total_items?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    created_by?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "transfer_orders_approved_by_fkey";
+                        columns: ["approved_by"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_created_by_fkey";
+                        columns: ["created_by"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_destination_location_id_fkey";
+                        columns: ["destination_location_id"];
+                        isOneToOne: false;
+                        referencedRelation: "locations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_origin_location_id_fkey";
+                        columns: ["origin_location_id"];
+                        isOneToOne: false;
+                        referencedRelation: "locations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_requested_by_fkey";
+                        columns: ["requested_by"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            entity_tag_assignments: {
+                Row: {
+                    id: string;
+                    organization_id: string;
+                    tag_id: string;
+                    entity_type: string;
+                    entity_id: string;
+                    created_at: string;
+                    created_by: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    organization_id: string;
+                    tag_id: string;
+                    entity_type: string;
+                    entity_id: string;
+                    created_at?: string;
+                    created_by?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    organization_id?: string;
+                    tag_id?: string;
+                    entity_type?: string;
+                    entity_id?: string;
+                    created_at?: string;
+                    created_by?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "entity_tag_assignments_created_by_fkey";
+                        columns: ["created_by"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "entity_tag_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "entity_tag_assignments_tag_id_fkey";
+                        columns: ["tag_id"];
+                        isOneToOne: false;
+                        referencedRelation: "tags";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -41419,6 +42341,14 @@ export type Database = {
                 | "disputed"
                 | "void"
                 | "credited";
+            collaborator_status:
+                | "invited"
+                | "accepted"
+                | "onboarding"
+                | "active"
+                | "completed"
+                | "suspended"
+                | "terminated";
             comm_channel_priority: "emergency" | "critical" | "high" | "medium" | "low";
             command_layer: "command" | "tactical" | "operations";
             command_position_type:
@@ -41585,6 +42515,7 @@ export type Database = {
                 | "hospitality"
                 | "sponsor";
             crew_status: "active" | "inactive" | "on_leave" | "terminated" | "do_not_rehire";
+            crew_submission_status: "submitted" | "approved" | "rejected" | "credential_issued";
             currency_code:
                 | "USD"
                 | "EUR"
@@ -42371,6 +43302,27 @@ export type Database = {
                 | "closed"
                 | "disputed";
             rental_agreement_type: "rental" | "sale" | "rental_to_own" | "consignment";
+            requirement_status:
+                | "not_requested"
+                | "requested"
+                | "submitted"
+                | "in_review"
+                | "approved"
+                | "rejected"
+                | "expired"
+                | "waived";
+            requirement_type:
+                | "contract"
+                | "coi"
+                | "w9"
+                | "nda"
+                | "advance_manifest"
+                | "crew_roster"
+                | "insurance_auto"
+                | "insurance_gl"
+                | "workers_comp"
+                | "background_check"
+                | "custom";
             requisition_status:
                 | "draft"
                 | "pending_approval"
@@ -42595,6 +43547,14 @@ export type Database = {
                 | "foreign"
                 | "exempt";
             testimonial_status: "pending" | "approved" | "featured" | "archived";
+            transfer_order_status:
+                | "draft"
+                | "requested"
+                | "approved"
+                | "in_transit"
+                | "partially_received"
+                | "received"
+                | "cancelled";
             three_way_match_status:
                 | "not_applicable"
                 | "pending_receipt"
@@ -43286,6 +44246,15 @@ export const Constants = {
                 "void",
                 "credited",
             ],
+            collaborator_status: [
+                "invited",
+                "accepted",
+                "onboarding",
+                "active",
+                "completed",
+                "suspended",
+                "terminated",
+            ],
             comm_channel_priority: ["emergency", "critical", "high", "medium", "low"],
             command_layer: ["command", "tactical", "operations"],
             command_position_type: [
@@ -43463,6 +44432,7 @@ export const Constants = {
                 "sponsor",
             ],
             crew_status: ["active", "inactive", "on_leave", "terminated", "do_not_rehire"],
+            crew_submission_status: ["submitted", "approved", "rejected", "credential_issued"],
             currency_code: [
                 "USD",
                 "EUR",
@@ -44300,6 +45270,29 @@ export const Constants = {
                 "disputed",
             ],
             rental_agreement_type: ["rental", "sale", "rental_to_own", "consignment"],
+            requirement_status: [
+                "not_requested",
+                "requested",
+                "submitted",
+                "in_review",
+                "approved",
+                "rejected",
+                "expired",
+                "waived",
+            ],
+            requirement_type: [
+                "contract",
+                "coi",
+                "w9",
+                "nda",
+                "advance_manifest",
+                "crew_roster",
+                "insurance_auto",
+                "insurance_gl",
+                "workers_comp",
+                "background_check",
+                "custom",
+            ],
             requisition_status: [
                 "draft",
                 "pending_approval",

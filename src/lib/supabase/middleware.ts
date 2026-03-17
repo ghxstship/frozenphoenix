@@ -2,28 +2,83 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./config";
 
-const PUBLIC_EXACT_PATHS = ["/", "/login", "/signup", "/forgot-password"];
-const PUBLIC_PREFIX_PATHS = ["/auth/", "/api/", "/_next/", "/invite/", "/u/", "/org/", "/legal/"];
+// ─── Performance: Static constants hoisted out of request path ──────
+const PUBLIC_EXACT_PATHS = new Set(["/", "/login", "/signup", "/forgot-password"]);
+const PUBLIC_PREFIX_PATHS = [
+    "/auth/",
+    "/api/",
+    "/_next/",
+    "/invite/",
+    "/u/",
+    "/org/",
+    "/legal/",
+    "/portal/",
+    "/sign/",
+];
+const AUTH_REDIRECT_PATHS = new Set(["/login", "/signup", "/forgot-password"]);
+const BLOCKED_STATUSES = new Set(["suspended", "banned", "deactivated", "offboarded"]);
+const COOKIE_TTL_SHORT = 300; // 5 minutes
+const COOKIE_TTL_DAY = 86400; // 24 hours
+const IS_PROD = process.env.NODE_ENV === "production";
+const IS_DEV = process.env.NODE_ENV === "development";
+
+// Pre-compute CSP once at module load (static per deployment)
+const supabaseDomain = supabaseUrl
+    ? (() => {
+          try {
+              return new URL(supabaseUrl).hostname;
+          } catch {
+              return "";
+          }
+      })()
+    : "";
+const CSP_DIRECTIVES = [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${IS_DEV ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com https://cdn.jsdelivr.net`,
+    "style-src 'self' 'unsafe-inline'",
+    `connect-src 'self' ${supabaseUrl || ""} wss://${supabaseDomain} https://challenges.cloudflare.com https://accounts.google.com https://plc.directory https://bsky.social`,
+    "img-src 'self' data: blob: https://*.googleusercontent.com https://cdn.bsky.app",
+    "font-src 'self'",
+    "frame-src https://challenges.cloudflare.com https://accounts.google.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+].join("; ");
+
+const SECURITY_HEADERS: [string, string][] = [
+    ["X-Content-Type-Options", "nosniff"],
+    ["X-Frame-Options", "DENY"],
+    ["Referrer-Policy", "strict-origin-when-cross-origin"],
+    ["Permissions-Policy", "camera=(), microphone=(), geolocation=()"],
+    ["X-DNS-Prefetch-Control", "on"],
+    ["Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload"],
+    ["Content-Security-Policy", CSP_DIRECTIVES],
+];
 
 function isPublicRoute(pathname: string): boolean {
     return (
-        PUBLIC_EXACT_PATHS.includes(pathname) ||
+        PUBLIC_EXACT_PATHS.has(pathname) ||
         PUBLIC_PREFIX_PATHS.some((prefix) => pathname.startsWith(prefix))
     );
 }
 
-export async function updateSession(request: NextRequest) {
-    const supabaseResponse = NextResponse.next({
-        request,
+function setCacheCookie(response: NextResponse, name: string, value: string, maxAge: number): void {
+    response.cookies.set(name, value, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: "lax",
+        path: "/",
+        maxAge,
     });
+}
+
+export async function updateSession(request: NextRequest) {
+    const supabaseResponse = NextResponse.next({ request });
 
     // If Supabase is not configured, skip auth entirely.
-    // In production without credentials, protect dashboard routes by redirecting
-    // to /login, but always allow public paths through to avoid redirect loops.
     if (!supabaseUrl || !supabaseAnonKey) {
-        const isPublic = isPublicRoute(request.nextUrl.pathname);
-
-        if (process.env.NODE_ENV === "production" && !isPublic) {
+        if (IS_PROD && !isPublicRoute(request.nextUrl.pathname)) {
             const url = request.nextUrl.clone();
             url.pathname = "/login";
             return NextResponse.redirect(url);
@@ -40,9 +95,7 @@ export async function updateSession(request: NextRequest) {
             },
             setAll(cookiesToSet) {
                 cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-                response = NextResponse.next({
-                    request,
-                });
+                response = NextResponse.next({ request });
                 cookiesToSet.forEach(({ name, value, options }) =>
                     response.cookies.set(name, value, options)
                 );
@@ -50,245 +103,266 @@ export async function updateSession(request: NextRequest) {
         },
     });
 
-    // Refresh session if expired
+    // Refresh session if expired — this is the only mandatory network call
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protected routes - all dashboard routes require authentication
-    // Public routes are explicitly listed; everything else is protected
-    const isPublicPath = isPublicRoute(request.nextUrl.pathname);
+    const pathname = request.nextUrl.pathname;
+    const isPublicPath = isPublicRoute(pathname);
     const isProtectedPath = !isPublicPath;
 
     if (isProtectedPath && !user) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
-        url.searchParams.set("redirect", request.nextUrl.pathname);
+        url.searchParams.set("redirect", pathname);
         return NextResponse.redirect(url);
     }
 
-    // Redirect authenticated users away from auth pages
-    const authPaths = ["/login", "/signup", "/forgot-password"];
-    const isAuthPath = authPaths.includes(request.nextUrl.pathname);
-
-    if (isAuthPath && user) {
+    if (AUTH_REDIRECT_PATHS.has(pathname) && user) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);
     }
 
-    // ─── Parallel: MFA + Lifecycle + Role resolution ─────────────
-    // Run these checks concurrently instead of sequentially to cut
-    // ~200-400ms off every protected-route navigation.
+    // ─── Performance: Cookie-first checks ─────────────────────────
+    // Read cached values from short-lived cookies set on previous navigations.
+    // When ALL cookies are fresh, we skip ALL DB queries — middleware becomes <5ms.
     if (user && isProtectedPath) {
-        const checkMfa = !request.nextUrl.pathname.startsWith("/auth/mfa")
-            ? supabase.auth.mfa
-                  .getAuthenticatorAssuranceLevel()
-                  .then(({ data }) => ({ type: "mfa" as const, data }))
-                  .catch(() => ({ type: "mfa" as const, data: null }))
-            : Promise.resolve({ type: "mfa" as const, data: null });
+        const cachedRole = request.cookies.get("fp-user-role")?.value;
+        const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+        const cachedLifecycle = request.cookies.get("fp-lifecycle-status")?.value;
+        const cachedMfa = request.cookies.get("fp-mfa-level")?.value;
+        const onboardingComplete = request.cookies.get("fp-onboarding-complete")?.value === "1";
+        const onboardingSkipped = request.cookies.get("fp-onboarding-skipped")?.value === "1";
 
-        const checkLifecycle = Promise.resolve(
-            supabase.from("user_profiles").select("lifecycle_status").eq("id", user.id).single()
-        )
-            .then(({ data }) => ({ type: "lifecycle" as const, data }))
-            .catch(() => ({ type: "lifecycle" as const, data: null }));
+        const allCookiesFresh = !!(cachedRole && cachedOrgId && cachedLifecycle && cachedMfa);
 
-        const checkRole = Promise.resolve(
-            supabase
-                .from("org_memberships")
-                .select("role")
-                .eq("user_id", user.id)
-                .eq("is_default_org", true)
-                .single()
-        )
-            .then(({ data }) => ({ type: "role" as const, data }))
-            .catch(() => ({ type: "role" as const, data: null }));
+        if (allCookiesFresh) {
+            // Fast path: enforce from cached values, zero DB queries
+            if (BLOCKED_STATUSES.has(cachedLifecycle!)) {
+                await supabase.auth.signOut();
+                const url = request.nextUrl.clone();
+                url.pathname = "/login";
+                url.searchParams.set("reason", "account_suspended");
+                return NextResponse.redirect(url);
+            }
 
-        const [mfaResult, lifecycleResult, roleResult] = await Promise.all([
-            checkMfa,
-            checkLifecycle,
-            checkRole,
-        ]);
+            if (cachedMfa === "needs_aal2" && !pathname.startsWith("/auth/mfa")) {
+                const url = request.nextUrl.clone();
+                url.pathname = "/auth/mfa-verify";
+                return NextResponse.redirect(url);
+            }
 
-        // MFA enforcement
-        if (
-            mfaResult.data &&
-            "nextLevel" in mfaResult.data &&
-            mfaResult.data.nextLevel === "aal2" &&
-            mfaResult.data.currentLevel === "aal1"
-        ) {
-            const url = request.nextUrl.clone();
-            url.pathname = "/auth/mfa-verify";
-            return NextResponse.redirect(url);
-        }
+            // Onboarding already checked (cookie present or skipped) — skip entirely
+        } else {
+            // Slow path: one parallelized batch of ALL checks (MFA + lifecycle + role/orgId + onboarding)
+            const isMfaPage = pathname.startsWith("/auth/mfa");
+            const isOnboardingPath = pathname.startsWith("/onboarding");
+            const isSettingsPath = pathname.startsWith("/settings");
+            const needsOnboardingCheck =
+                !isOnboardingPath &&
+                !isSettingsPath &&
+                !onboardingSkipped &&
+                !onboardingComplete &&
+                !pathname.startsWith("/auth/") &&
+                !pathname.startsWith("/api/");
 
-        // Lifecycle enforcement
-        const blockedStatuses = ["suspended", "banned", "deactivated", "offboarded"];
-        if (
-            lifecycleResult.data &&
-            blockedStatuses.includes(lifecycleResult.data.lifecycle_status)
-        ) {
-            await supabase.auth.signOut();
-            const url = request.nextUrl.clone();
-            url.pathname = "/login";
-            url.searchParams.set("reason", "account_suspended");
-            return NextResponse.redirect(url);
-        }
+            // Build all promises in a single batch — no sequential waterfalls
+            const checkMfa = !isMfaPage
+                ? supabase.auth.mfa
+                      .getAuthenticatorAssuranceLevel()
+                      .then(({ data }) => ({ type: "mfa" as const, data }))
+                      .catch(() => ({ type: "mfa" as const, data: null }))
+                : Promise.resolve({ type: "mfa" as const, data: null });
 
-        // Cache user role in a cookie so API routes can skip the DB query
-        const resolvedRole = (roleResult.data?.role as string) ?? "member";
-        response.cookies.set("fp-user-role", resolvedRole, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-            maxAge: 300, // 5 minutes — short-lived to stay fresh
-        });
-    }
+            const checkLifecycle = Promise.resolve(
+                supabase.from("user_profiles").select("lifecycle_status").eq("id", user.id).single()
+            )
+                .then(({ data }) => ({ type: "lifecycle" as const, data }))
+                .catch(() => ({ type: "lifecycle" as const, data: null }));
 
-    // ─── Onboarding redirect guard ──────────────────────────────────
-    // New users without an organization are redirected to org-setup on first login.
-    // Users with incomplete gate_access steps are redirected to the relevant step.
-    // Skip for onboarding pages, API, settings, and auth routes to avoid loops.
-    const isOnboardingPath = request.nextUrl.pathname.startsWith("/onboarding");
-    const isSettingsPath = request.nextUrl.pathname.startsWith("/settings");
-    const onboardingSkipped = request.cookies.get("fp-onboarding-skipped")?.value === "1";
-    const onboardingComplete = request.cookies.get("fp-onboarding-complete")?.value === "1";
-    const shouldCheckOnboarding =
-        user &&
-        isProtectedPath &&
-        !isOnboardingPath &&
-        !isSettingsPath &&
-        !onboardingSkipped &&
-        !onboardingComplete &&
-        !request.nextUrl.pathname.startsWith("/auth/") &&
-        !request.nextUrl.pathname.startsWith("/api/");
-
-    if (shouldCheckOnboarding) {
-        try {
-            // Parallel: fetch org memberships (with slug) + gated steps in one round
-            const [membershipsResult, gatedStepsResult] = await Promise.all([
+            // Single query for role + orgId (was 2 separate queries before)
+            const checkRoleAndOrg = Promise.resolve(
                 supabase
                     .from("org_memberships")
-                    .select("id, role, organizations!inner(slug)")
+                    .select("role, organization_id")
                     .eq("user_id", user.id)
-                    .eq("status", "active"),
-                supabase
-                    .from("onboarding_step_definitions")
-                    .select("id, step_key")
-                    .eq("gate_access", true),
+                    .eq("is_default_org", true)
+                    .single()
+            )
+                .then(({ data }) => ({ type: "role_org" as const, data }))
+                .catch(() => ({ type: "role_org" as const, data: null }));
+
+            // Onboarding checks merged into same batch (was a separate sequential block)
+            const checkOnboardingMemberships = needsOnboardingCheck
+                ? Promise.resolve(
+                      supabase
+                          .from("org_memberships")
+                          .select("id, role, organizations!inner(slug)")
+                          .eq("user_id", user.id)
+                          .eq("status", "active")
+                  )
+                      .then(({ data }) => ({ type: "onboard_memberships" as const, data }))
+                      .catch(() => ({ type: "onboard_memberships" as const, data: null }))
+                : Promise.resolve({ type: "onboard_memberships" as const, data: null });
+
+            const checkGatedSteps = needsOnboardingCheck
+                ? Promise.resolve(
+                      supabase
+                          .from("onboarding_step_definitions")
+                          .select("id, step_key")
+                          .eq("gate_access", true)
+                  )
+                      .then(({ data }) => ({ type: "gated_steps" as const, data }))
+                      .catch(() => ({ type: "gated_steps" as const, data: null }))
+                : Promise.resolve({ type: "gated_steps" as const, data: null });
+
+            const [
+                mfaResult,
+                lifecycleResult,
+                roleOrgResult,
+                onboardMemberships,
+                gatedStepsResult,
+            ] = await Promise.all([
+                checkMfa,
+                checkLifecycle,
+                checkRoleAndOrg,
+                checkOnboardingMemberships,
+                checkGatedSteps,
             ]);
 
-            const orgMemberships = membershipsResult.data;
-            const hasNoOrg = !orgMemberships || orgMemberships.length === 0;
-
-            if (hasNoOrg) {
+            // ─── Enforce MFA ───
+            if (
+                mfaResult.data &&
+                "nextLevel" in mfaResult.data &&
+                mfaResult.data.nextLevel === "aal2" &&
+                mfaResult.data.currentLevel === "aal1"
+            ) {
+                // Cache for fast path on subsequent requests
+                setCacheCookie(response, "fp-mfa-level", "needs_aal2", COOKIE_TTL_SHORT);
                 const url = request.nextUrl.clone();
-                url.pathname = "/onboarding/org-setup";
+                url.pathname = "/auth/mfa-verify";
+                return NextResponse.redirect(url);
+            }
+            // Cache MFA as OK
+            setCacheCookie(response, "fp-mfa-level", "ok", COOKIE_TTL_SHORT);
+
+            // ─── Enforce lifecycle ───
+            const lifecycleStatus = lifecycleResult.data?.lifecycle_status ?? "active";
+            setCacheCookie(response, "fp-lifecycle-status", lifecycleStatus, COOKIE_TTL_SHORT);
+
+            if (BLOCKED_STATUSES.has(lifecycleStatus)) {
+                await supabase.auth.signOut();
+                const url = request.nextUrl.clone();
+                url.pathname = "/login";
+                url.searchParams.set("reason", "account_suspended");
                 return NextResponse.redirect(url);
             }
 
-            // Check for the default org — if that's the only membership, they still
-            // need to set up their own org (exec/pm users)
-            const firstMembership = orgMemberships[0];
-            const orgSlug =
-                firstMembership &&
-                typeof firstMembership.organizations === "object" &&
-                firstMembership.organizations !== null &&
-                "slug" in firstMembership.organizations
-                    ? (firstMembership.organizations as { slug: string }).slug
-                    : null;
+            // ─── Cache role + orgId ───
+            const resolvedRole = (roleOrgResult.data?.role as string) ?? "member";
+            const resolvedOrgId = (roleOrgResult.data?.organization_id as string) ?? "";
+            setCacheCookie(response, "fp-user-role", resolvedRole, COOKIE_TTL_SHORT);
+            setCacheCookie(response, "fp-org-id", resolvedOrgId, COOKIE_TTL_SHORT);
 
-            const onlyDefault = orgMemberships.length === 1 && orgSlug === "default";
+            // ─── Onboarding enforcement (data already fetched in parallel) ───
+            if (needsOnboardingCheck) {
+                try {
+                    const orgMemberships = onboardMemberships.data as Array<{
+                        id: string;
+                        role: string;
+                        organizations: { slug: string } | null;
+                    }> | null;
+                    const hasNoOrg = !orgMemberships || orgMemberships.length === 0;
 
-            if (onlyDefault && firstMembership?.role === "exec") {
-                const url = request.nextUrl.clone();
-                url.pathname = "/onboarding/org-setup";
-                return NextResponse.redirect(url);
-            }
-
-            // Gate access enforcement — check for incomplete gated steps
-            const gatedSteps = gatedStepsResult.data;
-
-            if (gatedSteps && gatedSteps.length > 0) {
-                const { data: completedProgress } = await supabase
-                    .from("user_onboarding_progress")
-                    .select("step_definition_id")
-                    .eq("user_id", user.id)
-                    .eq("status", "completed")
-                    .in(
-                        "step_definition_id",
-                        gatedSteps.map((s) => s.id)
-                    );
-
-                const completedIds = new Set(
-                    (completedProgress || []).map(
-                        (p: { step_definition_id: string }) => p.step_definition_id
-                    )
-                );
-
-                // Auto-resolve verify_email if the email is confirmed
-                const emailVerified = !!user.email_confirmed_at;
-                let allGatesComplete = true;
-
-                for (const step of gatedSteps) {
-                    if (completedIds.has(step.id)) continue;
-
-                    // Skip verify_email gate if email is already confirmed
-                    if (step.step_key === "verify_email" && emailVerified) continue;
-
-                    allGatesComplete = false;
-
-                    // Redirect to the appropriate step page
-                    const gateRoutes: Record<string, string> = {
-                        verify_email: "/settings/security",
-                    };
-
-                    const redirectPath = gateRoutes[step.step_key];
-                    if (redirectPath) {
+                    if (hasNoOrg) {
                         const url = request.nextUrl.clone();
-                        url.pathname = redirectPath;
-                        url.searchParams.set("gate", step.step_key);
+                        url.pathname = "/onboarding/org-setup";
                         return NextResponse.redirect(url);
                     }
-                }
 
-                // If all gates passed, cache completion to skip checks on future navigations
-                if (allGatesComplete) {
-                    response.cookies.set("fp-onboarding-complete", "1", {
-                        httpOnly: true,
-                        secure: process.env.NODE_ENV === "production",
-                        sameSite: "lax",
-                        path: "/",
-                        maxAge: 86400, // 24 hours
-                    });
+                    const firstMembership = orgMemberships[0];
+                    const orgSlug =
+                        firstMembership &&
+                        typeof firstMembership.organizations === "object" &&
+                        firstMembership.organizations !== null &&
+                        "slug" in firstMembership.organizations
+                            ? (firstMembership.organizations as { slug: string }).slug
+                            : null;
+
+                    const onlyDefault = orgMemberships.length === 1 && orgSlug === "default";
+
+                    if (onlyDefault && firstMembership?.role === "exec") {
+                        const url = request.nextUrl.clone();
+                        url.pathname = "/onboarding/org-setup";
+                        return NextResponse.redirect(url);
+                    }
+
+                    // Gate access enforcement
+                    const gatedSteps = gatedStepsResult.data as Array<{
+                        id: string;
+                        step_key: string;
+                    }> | null;
+
+                    if (gatedSteps && gatedSteps.length > 0) {
+                        // This is the only remaining sequential query — only runs when
+                        // gated steps exist AND onboarding not cached. Typically once per user.
+                        const { data: completedProgress } = await supabase
+                            .from("user_onboarding_progress")
+                            .select("step_definition_id")
+                            .eq("user_id", user.id)
+                            .eq("status", "completed")
+                            .in(
+                                "step_definition_id",
+                                gatedSteps.map((s) => s.id)
+                            );
+
+                        const completedIds = new Set(
+                            (completedProgress || []).map(
+                                (p: { step_definition_id: string }) => p.step_definition_id
+                            )
+                        );
+
+                        const emailVerified = !!user.email_confirmed_at;
+                        let allGatesComplete = true;
+
+                        for (const step of gatedSteps) {
+                            if (completedIds.has(step.id)) continue;
+                            if (step.step_key === "verify_email" && emailVerified) continue;
+
+                            allGatesComplete = false;
+
+                            const gateRoutes: Record<string, string> = {
+                                verify_email: "/settings/security",
+                            };
+
+                            const redirectPath = gateRoutes[step.step_key];
+                            if (redirectPath) {
+                                const url = request.nextUrl.clone();
+                                url.pathname = redirectPath;
+                                url.searchParams.set("gate", step.step_key);
+                                return NextResponse.redirect(url);
+                            }
+                        }
+
+                        if (allGatesComplete) {
+                            setCacheCookie(response, "fp-onboarding-complete", "1", COOKIE_TTL_DAY);
+                        }
+                    } else {
+                        setCacheCookie(response, "fp-onboarding-complete", "1", COOKIE_TTL_DAY);
+                    }
+                } catch {
+                    // Onboarding check failed — allow through rather than blocking
                 }
-            } else {
-                // No gated steps defined — cache completion
-                response.cookies.set("fp-onboarding-complete", "1", {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "lax",
-                    path: "/",
-                    maxAge: 86400,
-                });
             }
-        } catch {
-            // Onboarding check failed — allow through rather than blocking
         }
     }
 
-    // Security headers (OWASP)
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("X-Frame-Options", "DENY");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-    response.headers.set("X-DNS-Prefetch-Control", "on");
-    response.headers.set(
-        "Strict-Transport-Security",
-        "max-age=63072000; includeSubDomains; preload"
-    );
+    // ─── Security headers (applied once from pre-computed array) ───
+    for (const [key, value] of SECURITY_HEADERS) {
+        response.headers.set(key, value);
+    }
 
     // Prevent search engine indexing of API routes and auth pages
     if (
@@ -297,25 +371,6 @@ export async function updateSession(request: NextRequest) {
     ) {
         response.headers.set("X-Robots-Tag", "noindex, nofollow");
     }
-
-    // Content Security Policy
-    // C-003: unsafe-eval only permitted in development for hot-reload / React DevTools
-    const isDev = process.env.NODE_ENV === "development";
-    const supabaseDomain = supabaseUrl ? new URL(supabaseUrl).hostname : "";
-    const cspDirectives = [
-        "default-src 'self'",
-        `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com https://cdn.jsdelivr.net`,
-        "style-src 'self' 'unsafe-inline'",
-        `connect-src 'self' ${supabaseUrl || ""} wss://${supabaseDomain} https://challenges.cloudflare.com https://accounts.google.com https://plc.directory https://bsky.social`,
-        "img-src 'self' data: blob: https://*.googleusercontent.com https://cdn.bsky.app",
-        "font-src 'self'",
-        "frame-src https://challenges.cloudflare.com https://accounts.google.com",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-        "frame-ancestors 'none'",
-    ];
-    response.headers.set("Content-Security-Policy", cspDirectives.join("; "));
 
     return response;
 }

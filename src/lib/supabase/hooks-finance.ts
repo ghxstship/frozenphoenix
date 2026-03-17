@@ -445,6 +445,32 @@ export const useCreateEngineeringApproval = makeCreateHook<Tables<"engineering_a
 );
 
 // ═══════════════════════════════════════════════════════════════
+// FINANCIAL PERIODS
+// ═══════════════════════════════════════════════════════════════
+
+export const useFinancialPeriods = makeListHook<Tables<"financial_periods">>(
+    "financial_period",
+    "/api/financial-periods",
+    { sort_by: "start_date", sort_order: "desc" }
+);
+export const useFinancialPeriod = makeDetailHook<Tables<"financial_periods">>(
+    "financial_period",
+    "/api/financial-periods"
+);
+export const useCreateFinancialPeriod = makeCreateHook<Tables<"financial_periods">>(
+    "financial_period",
+    "/api/financial-periods"
+);
+export const useUpdateFinancialPeriod = makeUpdateHook<Tables<"financial_periods">>(
+    "financial_period",
+    "/api/financial-periods"
+);
+export const useDeleteFinancialPeriod = makeDeleteHook(
+    "financial_period",
+    "/api/financial-periods"
+);
+
+// ═══════════════════════════════════════════════════════════════
 // BILLING
 // ═══════════════════════════════════════════════════════════════
 

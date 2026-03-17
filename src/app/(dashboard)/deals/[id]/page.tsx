@@ -18,15 +18,67 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
-import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase";
+import {
+    useCreateComment,
+    useCreateProject,
+    useDeals,
+    useRecordActivityLog,
+    useUpdateDeal,
+} from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { Calendar, DollarSign, Edit, FolderKanban, Loader2, TrendingUp } from "lucide-react";
+import { Calendar, Clock, DollarSign, Edit, FolderKanban, Loader2, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
 
 function computeDaysToClose(dateStr: string): number {
     return Math.max(
         0,
         Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    );
+}
+
+function DealActivityTab({ dealId }: { dealId: string }) {
+    const { data: activity } = useRecordActivityLog("deal", dealId);
+    const items = (activity ?? []) as unknown as Array<Record<string, unknown>>;
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Activity Log</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {items.length === 0 ? (
+                    <EmptyState
+                        icon={Clock}
+                        title="No activity yet"
+                        description="Activity will appear here as actions are taken on this deal"
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {items.map((item) => (
+                            <div
+                                key={String(item.id)}
+                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(item.action ?? "Activity")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {String(
+                                            (item.user_profiles as Record<string, unknown> | null)
+                                                ?.display_name ?? "System"
+                                        )}
+                                    </p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {item.created_at ? formatDate(String(item.created_at)) : ""}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
 
@@ -260,18 +312,7 @@ export default function DealDetailPage() {
             {
                 id: "activity",
                 label: "Activity",
-                content: (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Activity Log</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                                Activity tracking will be available when connected to Supabase
-                            </p>
-                        </CardContent>
-                    </Card>
-                ),
+                content: <DealActivityTab dealId={dealId} />,
             },
             {
                 id: "notes",

@@ -110,11 +110,17 @@ function getNoOpClient() {
 
 // ─── Public API ───
 
+// Performance: Module-level singleton — avoids recreating the client on every hook call.
+let _browserClient: ReturnType<typeof createBrowserClient<Database>> | null | undefined;
+
 export function createClient() {
+    if (_browserClient !== undefined) return _browserClient;
     if (!supabaseUrl || !supabaseAnonKey) {
+        _browserClient = null;
         return null;
     }
-    return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+    _browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+    return _browserClient;
 }
 
 /**

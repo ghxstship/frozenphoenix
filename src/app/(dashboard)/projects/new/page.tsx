@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
-import { useCreateProject } from "@/lib/supabase";
+import { useCreateProject, useGenerateCommTemplates } from "@/lib/supabase";
 import { FormPageShell } from "@/components/shells/form-page-shell";
 import type { FormPageConfig } from "@/types/form-page-config";
 
@@ -91,14 +91,19 @@ const CONFIG: FormPageConfig = {
 
 export default function NewProjectPage() {
     const createProject = useCreateProject();
+    const generateTemplates = useGenerateCommTemplates();
 
     const handleSubmit = useMemo(
         () => async (data: Record<string, unknown>) => {
-            await createProject.mutateAsync(
+            const result = await createProject.mutateAsync(
                 data as unknown as Parameters<typeof createProject.mutateAsync>[0]
             );
+            const projectId = (result as Record<string, unknown>)?.id as string | undefined;
+            if (projectId) {
+                generateTemplates.mutate(projectId);
+            }
         },
-        [createProject]
+        [createProject, generateTemplates]
     );
 
     return (

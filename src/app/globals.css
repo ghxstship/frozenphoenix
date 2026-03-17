@@ -300,51 +300,53 @@ body {
 }
 
 /* ═══════ Baseline Micro-Transitions ═══════ */
-/* Normalized color/state transitions on interactive primitives.
-   Uses design-token durations so they respect [data-animation] speed settings.
-   Applied globally — no need for per-component transition-colors classes. */
+/* Performance: Scoped to prefers-reduced-motion: no-preference to avoid
+   unnecessary style recalculation on every interactive element mount.
+   Transitions are only visually relevant during hover/focus state changes. */
 
-button,
-[role="button"],
-a,
-input,
-select,
-textarea,
-summary,
-[role="tab"],
-[role="menuitem"],
-[role="option"],
-[role="switch"],
-[role="checkbox"],
-[role="radio"],
-[tabindex]:not([tabindex="-1"]) {
-    transition:
-        background-color var(--duration-fast) var(--ease-out-expo),
-        color var(--duration-fast) var(--ease-out-expo),
-        border-color var(--duration-fast) var(--ease-out-expo),
-        box-shadow var(--duration-fast) var(--ease-out-expo),
-        opacity var(--duration-fast) var(--ease-out-expo);
-}
+@media (prefers-reduced-motion: no-preference) {
+    button,
+    [role="button"],
+    a,
+    input,
+    select,
+    textarea,
+    summary,
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    [tabindex]:not([tabindex="-1"]) {
+        transition:
+            background-color var(--duration-fast) var(--ease-out-expo),
+            color var(--duration-fast) var(--ease-out-expo),
+            border-color var(--duration-fast) var(--ease-out-expo),
+            box-shadow var(--duration-fast) var(--ease-out-expo),
+            opacity var(--duration-fast) var(--ease-out-expo);
+    }
 
-/* SVG icons inside interactive elements */
-button svg,
-[role="button"] svg,
-a svg {
-    transition:
-        color var(--duration-fast) var(--ease-out-expo),
-        fill var(--duration-fast) var(--ease-out-expo),
-        stroke var(--duration-fast) var(--ease-out-expo),
-        transform var(--duration-fast) var(--ease-out-expo);
-}
+    /* SVG icons inside interactive elements */
+    button svg,
+    [role="button"] svg,
+    a svg {
+        transition:
+            color var(--duration-fast) var(--ease-out-expo),
+            fill var(--duration-fast) var(--ease-out-expo),
+            stroke var(--duration-fast) var(--ease-out-expo),
+            transform var(--duration-fast) var(--ease-out-expo);
+    }
 
-/* Badge / pill / tag elements */
-[class*="badge"],
-[class*="chip"],
-[data-slot="badge"] {
-    transition:
-        background-color var(--duration-fast) var(--ease-out-expo),
-        color var(--duration-fast) var(--ease-out-expo),
-        border-color var(--duration-fast) var(--ease-out-expo);
+    /* Badge / pill / tag elements */
+    [class*="badge"],
+    [class*="chip"],
+    [data-slot="badge"] {
+        transition:
+            background-color var(--duration-fast) var(--ease-out-expo),
+            color var(--duration-fast) var(--ease-out-expo),
+            border-color var(--duration-fast) var(--ease-out-expo);
+    }
 }
 
 /* ═══════ Utility Classes ═══════ */

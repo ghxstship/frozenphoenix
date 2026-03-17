@@ -12,6 +12,7 @@ interface SidebarState {
     isMobile: boolean;
     filterQuery: string;
     pinnedPaths: string[];
+    _hasHydrated: boolean;
     setOpen: (open: boolean) => void;
     setCollapsed: (collapsed: boolean) => void;
     setMobile: (mobile: boolean) => void;
@@ -28,6 +29,7 @@ export const useSidebar = create<SidebarState>()(
             isMobile: false,
             filterQuery: "",
             pinnedPaths: [],
+            _hasHydrated: false,
             setOpen: (open) => set((state) => (state.isOpen === open ? state : { isOpen: open })),
             setCollapsed: (collapsed) =>
                 set((state) =>
@@ -51,8 +53,16 @@ export const useSidebar = create<SidebarState>()(
                 isCollapsed: state.isCollapsed,
                 pinnedPaths: state.pinnedPaths,
             }),
+            // Performance: Mark hydration complete so consumers can avoid layout shift
+            onRehydrateStorage: () => () => {
+                useSidebar.setState({ _hasHydrated: true });
+            },
         }
     )
 );
+
+/** Performance: True once localStorage state has been loaded. Use to suppress
+ *  sidebar rendering until persisted collapse state is known, preventing layout shift. */
+export const useSidebarHasHydrated = () => useSidebar((s) => s._hasHydrated);
 
 export { SIDEBAR_WIDTH };

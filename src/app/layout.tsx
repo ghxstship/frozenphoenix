@@ -43,6 +43,13 @@ export default function RootLayout({
                         __html: `(function(){try{var s=JSON.parse(localStorage.getItem('pb-theme')||'{}');var m=(s.state&&s.state.colorMode)||'dark';if(m==='system'){m=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}document.documentElement.classList.add(m);}catch(e){document.documentElement.classList.add('dark');}})();`,
                     }}
                 />
+                {/* Performance: Service worker registration — deferred, production only.
+                    Precaches static assets + stale-while-revalidate for API GET requests. */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}`,
+                    }}
+                />
             </head>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <Providers>{children}</Providers>

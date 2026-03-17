@@ -51,6 +51,7 @@ export default function IntegrationDetailPage() {
     const [newPolicyEntity, setNewPolicyEntity] = useState("");
     const [newPolicyField, setNewPolicyField] = useState("");
     const [newPolicyStrategy, setNewPolicyStrategy] = useState("last_write_wins");
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const conn = (connection as Record<string, unknown>) ?? {};
     const isActive = conn.is_active as boolean;
@@ -73,9 +74,12 @@ export default function IntegrationDetailPage() {
     };
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to delete the "${displayName}" integration?`)) {
-            deleteConnection.mutate(id);
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDelete = () => {
+        deleteConnection.mutate(id);
+        setShowDeleteConfirm(false);
     };
 
     const handleAddPolicy = () => {
@@ -124,6 +128,30 @@ export default function IntegrationDetailPage() {
                         <span>
                             Integration connected successfully! Data sync will begin shortly.
                         </span>
+                    </div>
+                )}
+
+                {showDeleteConfirm && (
+                    <div
+                        role="alert"
+                        className="flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm"
+                    >
+                        <p>
+                            Are you sure you want to delete the <strong>{displayName}</strong>{" "}
+                            integration? This action cannot be undone.
+                        </p>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowDeleteConfirm(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={handleConfirmDelete}>
+                                Delete
+                            </Button>
+                        </div>
                     </div>
                 )}
 

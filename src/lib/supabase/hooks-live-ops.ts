@@ -40,6 +40,10 @@ export const useUpdateLiveEventInstance = makeUpdateHook<Tables<"live_event_inst
     "live_event_instance",
     "/api/live-event-instances"
 );
+export const useDeleteLiveEventInstance = makeDeleteHook(
+    "live_event_instance",
+    "/api/live-event-instances"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // LIVE CREW ASSIGNMENTS

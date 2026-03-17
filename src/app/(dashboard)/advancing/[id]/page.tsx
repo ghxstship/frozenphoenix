@@ -67,9 +67,15 @@ export default function AdvanceDetailPage() {
     const itemsList = (items as Record<string, unknown>[] | undefined) ?? [];
 
     const [actionLoading, setActionLoading] = React.useState<string | null>(null);
+    const [actionError, setActionError] = React.useState<string | null>(null);
+    const [rejectReason, setRejectReason] = React.useState("");
+    const [showRejectInput, setShowRejectInput] = React.useState(false);
+    const [cancelReason, setCancelReason] = React.useState("");
+    const [showCancelInput, setShowCancelInput] = React.useState(false);
 
     async function handleStatusAction(action: string, body?: Record<string, unknown>) {
         setActionLoading(action);
+        setActionError(null);
         try {
             const res = await fetch(`/api/advancing/${id}/${action}`, {
                 method: "POST",
@@ -78,7 +84,7 @@ export default function AdvanceDetailPage() {
             });
             if (!res.ok) {
                 const err = await res.json();
-                alert(err.error?.message ?? "Action failed");
+                setActionError(err.error?.message ?? "Action failed");
             }
         } finally {
             setActionLoading(null);
@@ -113,6 +119,93 @@ export default function AdvanceDetailPage() {
         ],
         overviewSlot: (
             <div className="space-y-6">
+                {/* Reject reason input */}
+                {showRejectInput && (
+                    <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3">
+                        <input
+                            type="text"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="Rejection reason (required)"
+                            className="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm"
+                            autoFocus
+                        />
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={!rejectReason.trim() || actionLoading !== null}
+                            onClick={() => {
+                                handleStatusAction("reject", { reason: rejectReason.trim() });
+                                setShowRejectInput(false);
+                                setRejectReason("");
+                            }}
+                        >
+                            Confirm Reject
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                                setShowRejectInput(false);
+                                setRejectReason("");
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                )}
+
+                {/* Cancel reason input */}
+                {showCancelInput && (
+                    <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/5 px-4 py-3">
+                        <input
+                            type="text"
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            placeholder="Cancellation reason (optional)"
+                            className="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm"
+                            autoFocus
+                        />
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={actionLoading !== null}
+                            onClick={() => {
+                                handleStatusAction("cancel", {
+                                    reason: cancelReason.trim() || undefined,
+                                });
+                                setShowCancelInput(false);
+                                setCancelReason("");
+                            }}
+                        >
+                            Confirm Cancel
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                                setShowCancelInput(false);
+                                setCancelReason("");
+                            }}
+                        >
+                            Dismiss
+                        </Button>
+                    </div>
+                )}
+
+                {/* Inline error banner */}
+                {actionError && (
+                    <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                        <span>{actionError}</span>
+                        <button
+                            onClick={() => setActionError(null)}
+                            className="text-xs text-muted-foreground hover:text-foreground ml-4"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                )}
+
                 {/* Status + metadata */}
                 {adv && (
                     <Card>
@@ -297,26 +390,20 @@ export default function AdvanceDetailPage() {
                             {actionLoading === "approve" ? "Approving..." : "Approve"}
                         </Button>
                     )}
-                    {canReject && (
+                    {canReject && !showRejectInput && (
                         <Button
                             variant="outline"
-                            onClick={() => {
-                                const reason = prompt("Rejection reason:");
-                                if (reason) handleStatusAction("reject", { reason });
-                            }}
+                            onClick={() => setShowRejectInput(true)}
                             disabled={actionLoading !== null}
                         >
                             <XCircle className="h-4 w-4" />
                             Reject
                         </Button>
                     )}
-                    {canCancel && (
+                    {canCancel && !showCancelInput && (
                         <Button
                             variant="ghost"
-                            onClick={() => {
-                                const reason = prompt("Cancellation reason (optional):");
-                                handleStatusAction("cancel", { reason: reason ?? undefined });
-                            }}
+                            onClick={() => setShowCancelInput(true)}
                             disabled={actionLoading !== null}
                         >
                             Cancel Advance

@@ -19,6 +19,7 @@ interface MessageComposerProps {
     onCancelReply?: () => void;
     draft?: string;
     onDraftChange?: (text: string) => void;
+    extraActions?: React.ReactNode;
     className?: string;
 }
 
@@ -30,6 +31,7 @@ export function MessageComposer({
     onCancelReply,
     draft = "",
     onDraftChange,
+    extraActions,
     className,
 }: MessageComposerProps) {
     const ms = useMessagingStrings();
@@ -122,6 +124,7 @@ export function MessageComposer({
                             <AtSign className="h-4 w-4" />
                         </button>
                     </Tooltip>
+                    {extraActions}
                 </div>
                 <textarea
                     ref={textareaRef}

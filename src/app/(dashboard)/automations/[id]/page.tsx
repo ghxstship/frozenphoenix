@@ -160,11 +160,35 @@ export default function AutomationDetailPage() {
         );
     }, []);
 
+    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+
     const handleSave = async () => {
-        // FUTURE: wire to API to persist automation rules via /api/automation-rules
-        alert(
-            isDryRun ? "Dry-run mode: rules validated but not saved." : "Rules saved successfully."
-        );
+        setSaveStatus("saving");
+        try {
+            const res = await fetch(`/api/automations/execute`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    automation_id: automationId,
+                    rules: rules.map((r) => ({
+                        trigger_type: r.trigger_type,
+                        conditions: r.conditions,
+                        action_type: r.action_type,
+                        action_config: r.action_config,
+                    })),
+                    dry_run: isDryRun,
+                }),
+            });
+            if (!res.ok) {
+                setSaveStatus("error");
+                return;
+            }
+            setSaveStatus("success");
+            setTimeout(() => setSaveStatus("idle"), 3000);
+        } catch {
+            setSaveStatus("error");
+            setTimeout(() => setSaveStatus("idle"), 3000);
+        }
     };
 
     const name = (automation?.name as string) || "Untitled Automation";
@@ -673,9 +697,32 @@ export default function AutomationDetailPage() {
                         )}
                         {isDryRun ? "Exit Dry-Run" : "Dry-Run Mode"}
                     </Button>
-                    <Button size="sm" onClick={handleSave}>
-                        <Save className="mr-2 h-4 w-4" />
-                        {isDryRun ? "Validate" : "Save Rules"}
+                    <Button
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={saveStatus === "saving"}
+                        variant={
+                            saveStatus === "success"
+                                ? "default"
+                                : saveStatus === "error"
+                                  ? "destructive"
+                                  : "default"
+                        }
+                    >
+                        {saveStatus === "saving" ? (
+                            <Activity className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
+                        {saveStatus === "saving"
+                            ? "Saving..."
+                            : saveStatus === "success"
+                              ? "Saved!"
+                              : saveStatus === "error"
+                                ? "Failed — Retry"
+                                : isDryRun
+                                  ? "Validate"
+                                  : "Save Rules"}
                     </Button>
                 </div>
             }

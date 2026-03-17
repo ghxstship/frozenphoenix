@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,11 +41,7 @@ export default function DeveloperPortalPage() {
     const [showKey, setShowKey] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
-    useEffect(() => {
-        fetchKeys();
-    }, []);
-
-    async function fetchKeys() {
+    const fetchKeys = useCallback(async () => {
         try {
             const res = await fetch("/api/api-keys");
             if (res.ok) {
@@ -55,7 +51,11 @@ export default function DeveloperPortalPage() {
         } catch {
             // Silently handle
         }
-    }
+    }, []);
+
+    useEffect(() => {
+        fetchKeys();
+    }, [fetchKeys]);
 
     async function handleCreateKey() {
         if (!newKeyName.trim()) return;
@@ -77,11 +77,18 @@ export default function DeveloperPortalPage() {
         }
     }
 
-    async function handleRevokeKey(keyId: string) {
-        if (!confirm("Are you sure you want to revoke this API key?")) return;
-        await fetch(`/api/api-keys?id=${keyId}`, { method: "DELETE" });
+    const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+
+    const handleRevokeKey = useCallback((keyId: string) => {
+        setRevokeTarget(keyId);
+    }, []);
+
+    const handleConfirmRevoke = useCallback(async () => {
+        if (!revokeTarget) return;
+        await fetch(`/api/api-keys?id=${revokeTarget}`, { method: "DELETE" });
+        setRevokeTarget(null);
         await fetchKeys();
-    }
+    }, [revokeTarget, fetchKeys]);
 
     const activeKeys = apiKeys.filter((k) => k.is_active);
     const revokedKeys = apiKeys.filter((k) => !k.is_active);
@@ -251,6 +258,33 @@ export default function DeveloperPortalPage() {
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
+                                            {revokeTarget === key.id && (
+                                                <div
+                                                    role="alert"
+                                                    className="mt-2 flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm"
+                                                >
+                                                    <p>
+                                                        Are you sure you want to revoke this API
+                                                        key? This action cannot be undone.
+                                                    </p>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => setRevokeTarget(null)}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={handleConfirmRevoke}
+                                                        >
+                                                            Revoke
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>

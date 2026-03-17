@@ -11,6 +11,7 @@ import { NewConversationDialog } from "@/components/messaging/new-conversation-d
 import { MessageSearch } from "@/components/messaging/message-search";
 import { useMessaging } from "@/hooks/use-messaging";
 import {
+    useAISummary,
     useConversations,
     useDeleteMessage,
     useEditMessage,
@@ -18,8 +19,15 @@ import {
     useOrgMembers,
     usePinMessage,
     useSendMessage,
+    useSendVoiceMessage,
     useToggleReaction,
+    useTranslateMessage,
 } from "@/lib/supabase/hooks-messaging";
+import type { AISummaryResult } from "@/lib/supabase/hooks-messaging";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
+import { VoiceMessageRecorder } from "@/components/messaging/voice-message-recorder";
+import { AISummaryPanel } from "@/components/messaging/ai-summary-panel";
+import { PushToTalkButton } from "@/components/messaging/push-to-talk-button";
 import { useAuth } from "@/lib/supabase/auth-context";
 import {
     useConversationsRealtime,
@@ -85,10 +93,18 @@ export default function MessagesPage() {
     );
 
     const sendMessage = useSendMessage();
+    const sendVoiceMessage = useSendVoiceMessage();
+    const aiSummary = useAISummary(activeConversationId ?? undefined);
     const toggleReaction = useToggleReaction();
     const pinMessage = usePinMessage();
     const editMessage = useEditMessage();
     const deleteMessage = useDeleteMessage();
+    const translateMessage = useTranslateMessage();
+    const { voiceEnabled, aiSummaryEnabled } = useMessagingEnabled();
+    const [summaryResult, setSummaryResult] = React.useState<AISummaryResult | null>(null);
+    const [summaryError, setSummaryError] = React.useState<string | null>(null);
+    const [translatingMessageId, setTranslatingMessageId] = React.useState<string | null>(null);
+    const [translatedTexts, setTranslatedTexts] = React.useState<Record<string, string>>({});
 
     const draftKey = activeConversationId ?? "new";
 
@@ -156,7 +172,83 @@ export default function MessagesPage() {
     const handleBack = React.useCallback(() => {
         setActiveConversation(null);
         setView("conversations");
+        setSummaryResult(null);
+        setSummaryError(null);
     }, [setActiveConversation, setView]);
+
+    const handleSendVoice = React.useCallback(
+        (blob: Blob, durationSeconds: number) => {
+            if (!activeConversationId) return;
+            sendVoiceMessage.mutate({
+                conversation_id: activeConversationId,
+                audio_blob: blob,
+                duration_seconds: durationSeconds,
+            });
+        },
+        [activeConversationId, sendVoiceMessage]
+    );
+
+    const handleGenerateSummary = React.useCallback(() => {
+        setSummaryError(null);
+        aiSummary.mutate(undefined, {
+            onSuccess: (data) => {
+                if (data) setSummaryResult(data);
+                else setSummaryError("empty");
+            },
+            onError: () => setSummaryError("failed"),
+        });
+    }, [aiSummary]);
+
+    const handleTranslate = React.useCallback(
+        (messageId: string, body: string, targetLanguage: string) => {
+            setTranslatingMessageId(messageId);
+            translateMessage.mutate(
+                { messageId, body, targetLanguage },
+                {
+                    onSuccess: (result) => {
+                        if (result) {
+                            setTranslatedTexts((prev) => ({
+                                ...prev,
+                                [messageId]: result.translated_text,
+                            }));
+                        }
+                        setTranslatingMessageId(null);
+                    },
+                    onError: () => setTranslatingMessageId(null),
+                }
+            );
+        },
+        [translateMessage]
+    );
+
+    const handleClearTranslation = React.useCallback((messageId: string) => {
+        setTranslatedTexts((prev) => {
+            const next = { ...prev };
+            delete next[messageId];
+            return next;
+        });
+    }, []);
+
+    const voiceRecorderSlot = voiceEnabled ? (
+        <>
+            <VoiceMessageRecorder onSend={handleSendVoice} />
+            <PushToTalkButton channelName={activeConversation?.name ?? undefined} />
+        </>
+    ) : null;
+
+    const aiSummarySlot = aiSummaryEnabled ? (
+        <AISummaryPanel
+            conversationId={activeConversationId ?? undefined}
+            onGenerate={handleGenerateSummary}
+            isGenerating={aiSummary.isPending}
+            result={summaryResult}
+            error={summaryError}
+            onDismiss={() => {
+                setSummaryResult(null);
+                setSummaryError(null);
+            }}
+        />
+    ) : null;
 
     const handleConversationCreated = React.useCallback(
         (conversationId: string) => {
@@ -247,6 +339,12 @@ export default function MessagesPage() {
                                 onCancelReply={() => setReplyTo(null)}
                                 draft={drafts[draftKey] ?? ""}
                                 onDraftChange={(text) => setDraft(draftKey, text)}
+                                composerExtraActions={voiceRecorderSlot}
+                                headerExtraContent={aiSummarySlot}
+                                onTranslate={handleTranslate}
+                                translatingMessageId={translatingMessageId}
+                                translatedTexts={translatedTexts}
+                                onClearTranslation={handleClearTranslation}
                                 className="flex-1"
                             />
                         )}
@@ -272,6 +370,12 @@ export default function MessagesPage() {
                                     onCancelReply={() => setReplyTo(null)}
                                     draft={drafts[draftKey] ?? ""}
                                     onDraftChange={(text) => setDraft(draftKey, text)}
+                                    composerExtraActions={voiceRecorderSlot}
+                                    headerExtraContent={aiSummarySlot}
+                                    onTranslate={handleTranslate}
+                                    translatingMessageId={translatingMessageId}
+                                    translatedTexts={translatedTexts}
+                                    onClearTranslation={handleClearTranslation}
                                     className="flex-1"
                                 />
                                 <div className="w-80 border-l border-border shrink-0">

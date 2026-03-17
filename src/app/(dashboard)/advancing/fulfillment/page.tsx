@@ -2,21 +2,113 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Package, Truck } from "lucide-react";
+import { CheckCircle2, ChevronDown, Package, Truck } from "lucide-react";
 import { PageShell } from "@/components/layouts/page-shell";
 import { PermissionGate } from "@/components/permission-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { AdvanceStatusBadge } from "@/components/advancing";
-import { useAdvances } from "@/lib/supabase/hooks-advancing";
+import {
+    useAdvanceItems,
+    useAdvances,
+    useUpdateAdvanceItemStatus,
+} from "@/lib/supabase/hooks-advancing";
 import { useAdvancesRealtime } from "@/lib/supabase/realtime-advancing";
 import { formatAdvanceCost } from "@/config/advancing-config";
 import type { AdvanceStatus } from "@/types";
 
+const ITEM_STATUS_FLOW: Record<string, { next: string; label: string } | undefined> = {
+    pending: { next: "sourcing", label: "Start Sourcing" },
+    sourcing: { next: "ordered", label: "Mark Ordered" },
+    ordered: { next: "shipped", label: "Mark Shipped" },
+    shipped: { next: "received", label: "Mark Received" },
+    received: { next: "inspected", label: "Mark Inspected" },
+    inspected: { next: "delivered", label: "Mark Delivered" },
+};
+
+function AdvanceItemsPanel({ advanceId }: { advanceId: string }) {
+    const { data: items, isLoading } = useAdvanceItems(advanceId);
+    const updateStatus = useUpdateAdvanceItemStatus();
+    const itemList = (items ?? []) as Record<string, unknown>[];
+
+    if (isLoading) {
+        return (
+            <div className="py-4 text-center text-xs text-muted-foreground">Loading items...</div>
+        );
+    }
+
+    if (itemList.length === 0) {
+        return <div className="py-4 text-center text-xs text-muted-foreground">No items</div>;
+    }
+
+    return (
+        <div className="space-y-2">
+            {itemList.map((item) => {
+                const status = String(item.status ?? "pending");
+                const flow = ITEM_STATUS_FLOW[status];
+                const catalogItem = item.catalog_items as Record<string, unknown> | null;
+                return (
+                    <div
+                        key={String(item.id)}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">
+                                {String(catalogItem?.name ?? `Item ${String(item.id).slice(0, 8)}`)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Qty: {String(item.quantity_requested ?? 0)}
+                                {item.quantity_confirmed
+                                    ? ` (${String(item.quantity_confirmed)} confirmed)`
+                                    : ""}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Badge
+                                variant={
+                                    status === "delivered" || status === "inspected"
+                                        ? "success"
+                                        : status === "received" || status === "shipped"
+                                          ? "info"
+                                          : status === "ordered" || status === "sourcing"
+                                            ? "warning"
+                                            : "ghost"
+                                }
+                                className="text-[10px]"
+                            >
+                                {status}
+                            </Badge>
+                            {flow && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={updateStatus.isPending}
+                                    onClick={() =>
+                                        updateStatus.mutate({
+                                            advanceId,
+                                            itemId: String(item.id),
+                                            status: flow.next,
+                                        })
+                                    }
+                                >
+                                    {flow.label}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 export default function FulfillmentPage() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = React.useState("");
+    const [expandedId, setExpandedId] = React.useState<string | null>(null);
     useAdvancesRealtime();
 
     const { data: approved, isLoading: l1 } = useAdvances({ status: "approved" });
@@ -113,43 +205,59 @@ export default function FulfillmentPage() {
                     />
                 ) : (
                     <div className="space-y-4">
-                        {filtered.map((advance) => (
-                            <Card
-                                key={advance.id as string}
-                                className="cursor-pointer transition-shadow hover:shadow-md"
-                                onClick={() => router.push(`/advancing/${advance.id}`)}
-                            >
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-mono text-muted-foreground">
-                                                {String(advance.advance_number)}
+                        {filtered.map((advance) => {
+                            const id = advance.id as string;
+                            const isExpanded = expandedId === id;
+                            return (
+                                <Card key={id} className="transition-shadow hover:shadow-md">
+                                    <CardHeader
+                                        className="pb-2 cursor-pointer"
+                                        onClick={() => setExpandedId(isExpanded ? null : id)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <ChevronDown
+                                                    className={`h-4 w-4 text-muted-foreground transition-transform ${!isExpanded ? "-rotate-90" : ""}`}
+                                                />
+                                                <span className="text-xs font-mono text-muted-foreground">
+                                                    {String(advance.advance_number)}
+                                                </span>
+                                                <AdvanceStatusBadge
+                                                    status={advance.status as AdvanceStatus}
+                                                />
+                                            </div>
+                                            <span className="text-sm font-semibold">
+                                                {formatAdvanceCost(
+                                                    Number(advance.total_estimated_cost ?? 0)
+                                                )}
                                             </span>
-                                            <AdvanceStatusBadge
-                                                status={advance.status as AdvanceStatus}
-                                            />
                                         </div>
-                                        <span className="text-sm font-semibold">
-                                            {formatAdvanceCost(
-                                                Number(advance.total_estimated_cost ?? 0)
-                                            )}
-                                        </span>
-                                    </div>
-                                    <CardTitle className="text-sm">
-                                        {String(advance.title)}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-xs text-muted-foreground">
-                                        {Number(advance.total_items ?? 0)} items &middot;{" "}
-                                        Created{" "}
-                                        {new Date(
-                                            String(advance.created_at)
-                                        ).toLocaleDateString()}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        <CardTitle className="text-sm">
+                                            {String(advance.title)}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-xs text-muted-foreground mb-3">
+                                            {Number(advance.total_items ?? 0)} items &middot;{" "}
+                                            Created{" "}
+                                            {new Date(
+                                                String(advance.created_at)
+                                            ).toLocaleDateString()}
+                                            <button
+                                                className="ml-2 text-primary hover:underline"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/advancing/${id}`);
+                                                }}
+                                            >
+                                                View Detail
+                                            </button>
+                                        </p>
+                                        {isExpanded && <AdvanceItemsPanel advanceId={id} />}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
             </PageShell>

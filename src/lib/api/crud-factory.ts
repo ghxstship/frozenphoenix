@@ -149,30 +149,39 @@ export interface CrudHandlers {
 // ─── Valid roles for cookie validation ───────────────────────
 const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
 
-// ─── Role Resolver ───────────────────────────────────────────
-// Reads the cached role from the middleware cookie first.
-// Falls back to a DB query only when the cookie is missing or stale.
+// ─── Role + OrgId Resolver ──────────────────────────────────
+// Performance: Reads both role AND orgId from middleware cookies first.
+// Falls back to a SINGLE combined query instead of two separate queries.
 
-async function resolveUserRole(
+async function resolveRoleAndOrg(
     supabase: Awaited<ReturnType<typeof createClient>>,
     userId: string,
-    cachedRole?: string | null
-): Promise<PermissionLevel> {
-    // Use the middleware-cached role if it's a valid known role
-    if (cachedRole && VALID_ROLES.has(cachedRole)) {
-        return cachedRole as PermissionLevel;
+    cachedRole?: string | null,
+    cachedOrgId?: string | null
+): Promise<{ role: PermissionLevel; orgId: string }> {
+    const roleFromCookie =
+        cachedRole && VALID_ROLES.has(cachedRole) ? (cachedRole as PermissionLevel) : null;
+    const orgIdFromCookie = cachedOrgId || null;
+
+    // Fast path: both cached
+    if (roleFromCookie && orgIdFromCookie) {
+        return { role: roleFromCookie, orgId: orgIdFromCookie };
     }
 
-    if (!supabase) return "member";
+    if (!supabase) return { role: "member", orgId: "" };
 
+    // Slow path: single query for both role + orgId
     const { data } = await supabase
         .from("org_memberships")
-        .select("role")
+        .select("role, organization_id")
         .eq("user_id", userId)
         .eq("is_default_org", true)
         .single();
 
-    return (data?.role as PermissionLevel) ?? "member";
+    return {
+        role: roleFromCookie ?? (data?.role as PermissionLevel) ?? "member",
+        orgId: orgIdFromCookie ?? data?.organization_id ?? "",
+    };
 }
 
 // ─── Apply Filters ───────────────────────────────────────────
@@ -273,7 +282,13 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+            const { role: userRole } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
             if (!hasPermission(userRole, resource, "read")) {
                 return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
             }
@@ -326,6 +341,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
                 },
             });
             response.headers.set("X-Request-Id", requestId);
+            // Performance: Allow browser + CDN to serve stale data while revalidating
+            response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=60");
             return response;
         } catch (err) {
             log.error("Unhandled error in LIST", {
@@ -353,7 +370,13 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = _request.cookies.get("fp-user-role")?.value;
-            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            const cachedOrgId = _request.cookies.get("fp-org-id")?.value;
+            const { role: userRole } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
             if (!hasPermission(userRole, resource, "read")) {
                 return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
             }
@@ -376,6 +399,8 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
 
             const response = NextResponse.json({ data });
             response.headers.set("X-Request-Id", requestId);
+            // Performance: Allow browser to serve stale detail while revalidating
+            response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=30");
             return response;
         } catch (err) {
             log.error("Unhandled error in GET", {
@@ -407,7 +432,13 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+            const { role: userRole } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
             if (!hasPermission(userRole, resource, "write")) {
                 return ApiErrors.forbidden(`Role "${userRole}" cannot create ${displayName}`);
             }
@@ -496,7 +527,13 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+            const { role: userRole } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
             if (!hasPermission(userRole, resource, "write")) {
                 return ApiErrors.forbidden(`Role "${userRole}" cannot update ${displayName}`);
             }
@@ -612,7 +649,13 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             if (!user) return ApiErrors.unauthorized();
 
             const cachedRole = _request.cookies.get("fp-user-role")?.value;
-            const userRole = await resolveUserRole(supabase, user.id, cachedRole);
+            const cachedOrgId = _request.cookies.get("fp-org-id")?.value;
+            const { role: userRole } = await resolveRoleAndOrg(
+                supabase,
+                user.id,
+                cachedRole,
+                cachedOrgId
+            );
             if (!hasPermission(userRole, resource, "delete")) {
                 return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${displayName}`);
             }

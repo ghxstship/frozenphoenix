@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import * as React from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import {
@@ -23,6 +24,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
+
+// Performance: Virtualize tbody when row count exceeds this threshold.
+// Below this, the DOM cost is negligible and virtualization adds overhead.
+const VIRTUALIZE_THRESHOLD = 50;
+const ESTIMATED_ROW_HEIGHT = 44;
 
 // ─── Column Definition ───
 export interface ColumnDef<T> {
@@ -95,6 +101,160 @@ interface DataTableProps<T> {
     // Grouping
     groupBy?: keyof T;
     groupLabels?: Record<string, string>;
+}
+
+// ─── Virtualized / Non-Virtualized Row Renderer ───
+// Extracted to keep the main DataTable component clean.
+// Uses @tanstack/react-virtual when rows > VIRTUALIZE_THRESHOLD.
+function NonGroupedRows<T extends object>({
+    data,
+    keyField,
+    visibleColumns,
+    selected,
+    getCellValue: _getCellValue,
+    renderCell,
+    handleSelectRow,
+    selectable,
+    striped,
+    hoverable,
+    compact,
+    onRowClick,
+    rowActions,
+}: {
+    data: T[];
+    keyField: keyof T;
+    visibleColumns: ColumnDef<T>[];
+    selected: Set<string>;
+    getCellValue: (row: T, column: ColumnDef<T>) => unknown;
+    renderCell: (row: T, column: ColumnDef<T>) => React.ReactNode;
+    handleSelectRow: (key: string) => void;
+    selectable: boolean;
+    striped: boolean;
+    hoverable: boolean;
+    compact: boolean;
+    onRowClick?: (row: T) => void;
+    rowActions?: (row: T) => React.ReactNode;
+}) {
+    const parentRef = React.useRef<HTMLTableSectionElement>(null);
+    const shouldVirtualize = data.length > VIRTUALIZE_THRESHOLD;
+
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const virtualizer = useVirtualizer({
+        count: data.length,
+        getScrollElement: () =>
+            parentRef.current?.closest(".overflow-x-auto") as HTMLElement | null,
+        estimateSize: () => ESTIMATED_ROW_HEIGHT,
+        overscan: 10,
+        enabled: shouldVirtualize,
+    });
+
+    const renderRow = (row: T, rowIndex: number, style?: React.CSSProperties) => {
+        const key = String(row[keyField]);
+        const isSelected = selected.has(key);
+
+        return (
+            <tr
+                key={key}
+                className={cn(
+                    "transition-colors group/row",
+                    striped && rowIndex % 2 === 1 && "bg-muted/30",
+                    hoverable && "hover:bg-muted/50",
+                    isSelected && "bg-primary/5",
+                    onRowClick &&
+                        "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                )}
+                style={style}
+                onClick={() => onRowClick?.(row)}
+                onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && onRowClick) {
+                        e.preventDefault();
+                        onRowClick(row);
+                    }
+                }}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? "button" : undefined}
+            >
+                {selectable && (
+                    <td
+                        className="w-12"
+                        style={{
+                            padding: "var(--density-table-py) var(--density-table-px)",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(key)}
+                            className="rounded border-input"
+                        />
+                    </td>
+                )}
+                {visibleColumns.map((column) => (
+                    <td
+                        key={column.id}
+                        className={cn(
+                            column.sticky && "sticky left-0 bg-background",
+                            column.align === "center" && "text-center",
+                            column.align === "right" && "text-right"
+                        )}
+                        style={{
+                            width: column.width,
+                            minWidth: column.minWidth,
+                            padding: compact
+                                ? `calc(var(--density-table-py) * 0.67) var(--density-table-px)`
+                                : "var(--density-table-py) var(--density-table-px)",
+                        }}
+                    >
+                        {renderCell(row, column)}
+                    </td>
+                ))}
+                {rowActions && (
+                    <td
+                        className="w-12"
+                        style={{
+                            padding: "var(--density-table-py) var(--density-table-px)",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {rowActions(row)}
+                    </td>
+                )}
+            </tr>
+        );
+    };
+
+    if (!shouldVirtualize) {
+        return <>{data.map((row, i) => renderRow(row, i))}</>;
+    }
+
+    // Virtualized: render spacer rows + visible rows
+    const virtualRows = virtualizer.getVirtualItems();
+    const totalHeight = virtualizer.getTotalSize();
+
+    return (
+        <>
+            {totalHeight > 0 && virtualRows.length > 0 && virtualRows[0]!.start > 0 && (
+                <tr aria-hidden="true">
+                    <td style={{ height: virtualRows[0]!.start, padding: 0 }} />
+                </tr>
+            )}
+            {virtualRows.map((virtualRow) => {
+                const row = data[virtualRow.index]!;
+                return renderRow(row, virtualRow.index);
+            })}
+            {totalHeight > 0 && virtualRows.length > 0 && (
+                <tr aria-hidden="true">
+                    <td
+                        style={{
+                            height: totalHeight - (virtualRows.at(-1)?.end ?? 0),
+                            padding: 0,
+                        }}
+                    />
+                </tr>
+            )}
+        </>
+    );
 }
 
 export function DataTable<T extends object>({
@@ -601,86 +761,21 @@ export function DataTable<T extends object>({
                                     );
                                 })()
                             ) : (
-                                paginatedData.map((row, rowIndex) => {
-                                    const key = String(row[keyField]);
-                                    const isSelected = selected.has(key);
-
-                                    return (
-                                        <tr
-                                            key={key}
-                                            className={cn(
-                                                "transition-colors group/row",
-                                                striped && rowIndex % 2 === 1 && "bg-muted/30",
-                                                hoverable && "hover:bg-muted/50",
-                                                isSelected && "bg-primary/5",
-                                                onRowClick &&
-                                                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                                            )}
-                                            onClick={() => onRowClick?.(row)}
-                                            onKeyDown={(e) => {
-                                                if (
-                                                    (e.key === "Enter" || e.key === " ") &&
-                                                    onRowClick
-                                                ) {
-                                                    e.preventDefault();
-                                                    onRowClick(row);
-                                                }
-                                            }}
-                                            tabIndex={onRowClick ? 0 : undefined}
-                                            role={onRowClick ? "button" : undefined}
-                                        >
-                                            {selectable && (
-                                                <td
-                                                    className="w-12"
-                                                    style={{
-                                                        padding:
-                                                            "var(--density-table-py) var(--density-table-px)",
-                                                    }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => handleSelectRow(key)}
-                                                        className="rounded border-input"
-                                                    />
-                                                </td>
-                                            )}
-                                            {visibleColumns.map((column) => (
-                                                <td
-                                                    key={column.id}
-                                                    className={cn(
-                                                        column.sticky &&
-                                                            "sticky left-0 bg-background",
-                                                        column.align === "center" && "text-center",
-                                                        column.align === "right" && "text-right"
-                                                    )}
-                                                    style={{
-                                                        width: column.width,
-                                                        minWidth: column.minWidth,
-                                                        padding: compact
-                                                            ? `calc(var(--density-table-py) * 0.67) var(--density-table-px)`
-                                                            : "var(--density-table-py) var(--density-table-px)",
-                                                    }}
-                                                >
-                                                    {renderCell(row, column)}
-                                                </td>
-                                            ))}
-                                            {rowActions && (
-                                                <td
-                                                    className="w-12"
-                                                    style={{
-                                                        padding:
-                                                            "var(--density-table-py) var(--density-table-px)",
-                                                    }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    {rowActions(row)}
-                                                </td>
-                                            )}
-                                        </tr>
-                                    );
-                                })
+                                <NonGroupedRows
+                                    data={paginatedData}
+                                    keyField={keyField}
+                                    visibleColumns={visibleColumns}
+                                    selected={selected}
+                                    getCellValue={getCellValue}
+                                    renderCell={renderCell}
+                                    handleSelectRow={handleSelectRow}
+                                    selectable={selectable}
+                                    striped={striped}
+                                    hoverable={hoverable}
+                                    compact={compact}
+                                    onRowClick={onRowClick}
+                                    rowActions={rowActions}
+                                />
                             )}
                         </tbody>
                     </table>

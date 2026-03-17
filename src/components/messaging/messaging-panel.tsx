@@ -8,6 +8,7 @@ import { ThreadPanel } from "./thread-panel";
 import { NewConversationDialog } from "./new-conversation-dialog";
 import { useMessaging } from "@/hooks/use-messaging";
 import {
+    useAISummary,
     useConversations,
     useDeleteMessage,
     useEditMessage,
@@ -15,8 +16,13 @@ import {
     useOrgMembers,
     usePinMessage,
     useSendMessage,
+    useSendVoiceMessage,
     useToggleReaction,
 } from "@/lib/supabase/hooks-messaging";
+import type { AISummaryResult } from "@/lib/supabase/hooks-messaging";
+import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
+import { VoiceMessageRecorder } from "./voice-message-recorder";
+import { AISummaryPanel } from "./ai-summary-panel";
 import { useAuth } from "@/lib/supabase/auth-context";
 import {
     useConversationsRealtime,
@@ -72,10 +78,15 @@ export function MessagingPanel() {
 
     // Mutations
     const sendMessage = useSendMessage();
+    const sendVoiceMessage = useSendVoiceMessage();
+    const aiSummary = useAISummary(activeConversationId ?? undefined);
     const toggleReaction = useToggleReaction();
     const pinMessage = usePinMessage();
     const editMessage = useEditMessage();
     const deleteMessage = useDeleteMessage();
+    const { voiceEnabled, aiSummaryEnabled } = useMessagingEnabled();
+    const [summaryResult, setSummaryResult] = React.useState<AISummaryResult | null>(null);
+    const [summaryError, setSummaryError] = React.useState<string | null>(null);
 
     // Draft key
     const draftKey = activeConversationId ?? "new";
@@ -153,7 +164,50 @@ export function MessagingPanel() {
     const handleBack = React.useCallback(() => {
         setActiveConversation(null);
         setView("conversations");
+        setSummaryResult(null);
+        setSummaryError(null);
     }, [setActiveConversation, setView]);
+
+    const handleSendVoice = React.useCallback(
+        (blob: Blob, durationSeconds: number) => {
+            if (!activeConversationId) return;
+            sendVoiceMessage.mutate({
+                conversation_id: activeConversationId,
+                audio_blob: blob,
+                duration_seconds: durationSeconds,
+            });
+        },
+        [activeConversationId, sendVoiceMessage]
+    );
+
+    const handleGenerateSummary = React.useCallback(() => {
+        setSummaryError(null);
+        aiSummary.mutate(undefined, {
+            onSuccess: (data) => {
+                if (data) setSummaryResult(data);
+                else setSummaryError("empty");
+            },
+            onError: () => setSummaryError("failed"),
+        });
+    }, [aiSummary]);
+
+    const voiceRecorderSlot = voiceEnabled ? (
+        <VoiceMessageRecorder onSend={handleSendVoice} />
+    ) : null;
+
+    const aiSummarySlot = aiSummaryEnabled ? (
+        <AISummaryPanel
+            conversationId={activeConversationId ?? undefined}
+            onGenerate={handleGenerateSummary}
+            isGenerating={aiSummary.isPending}
+            result={summaryResult}
+            error={summaryError}
+            onDismiss={() => {
+                setSummaryResult(null);
+                setSummaryError(null);
+            }}
+        />
+    ) : null;
 
     const handleConversationCreated = React.useCallback(
         (conversationId: string) => {
@@ -203,6 +257,8 @@ export function MessagingPanel() {
                         onCancelReply={() => setReplyTo(null)}
                         draft={drafts[draftKey] ?? ""}
                         onDraftChange={(text) => setDraft(draftKey, text)}
+                        composerExtraActions={voiceRecorderSlot}
+                        headerExtraContent={aiSummarySlot}
                         className="w-full"
                     />
                 )}

@@ -26,6 +26,7 @@ import {
 } from "@/config/phase-h-create-entity-configs";
 import {
     Archive,
+    ArrowRightLeft,
     Box,
     Boxes,
     CalendarClock,
@@ -402,5 +403,48 @@ export const MAINTENANCE_SCHEDULES_PAGE: ListPageConfig = {
         { id: "next_due", header: "Next Due", accessorKey: "next_due", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
+};
+
+// ─── transfer_order ───
+
+export const TRANSFER_ORDERS_PAGE: ListPageConfig = {
+    entityKey: "transfer_order",
+    description: "Inter-location asset and inventory transfer orders",
+    icon: ArrowRightLeft,
+    searchKeys: ["transfer_number", "notes"],
+    columns: [
+        { id: "transfer_number", header: "Transfer #", accessorKey: "transfer_number" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "priority", header: "Priority", accessorKey: "priority", fieldType: "status" },
+        { id: "total_items", header: "Items", accessorKey: "total_items" },
+        {
+            id: "requested_date",
+            header: "Requested",
+            accessorKey: "requested_date",
+            fieldType: "date",
+        },
+        {
+            id: "expected_arrival_date",
+            header: "Expected Arrival",
+            accessorKey: "expected_arrival_date",
+            fieldType: "date",
+        },
+    ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        columnLabels: {
+            draft: "Draft",
+            requested: "Requested",
+            approved: "Approved",
+            in_transit: "In Transit",
+            partially_received: "Partial",
+            received: "Received",
+            cancelled: "Cancelled",
+        },
+        cardTitleKey: "transfer_number",
+    },
     exportable: true,
 };

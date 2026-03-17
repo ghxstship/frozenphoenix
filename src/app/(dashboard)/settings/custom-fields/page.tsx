@@ -1,6 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
 import { PageShell } from "@/components/layouts/page-shell";
@@ -26,7 +34,8 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { useToast } from "@/components/ui/toast";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useCustomFieldDefinitions } from "@/lib/supabase";
+import { useCustomFieldDefinitions, useUpdateCustomFieldDefinition } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CustomFieldDefinition {
     id: string;
@@ -55,11 +64,72 @@ const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
 
 export default function CustomFieldsPage() {
     const { addToast } = useToast();
+    const queryClient = useQueryClient();
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [search, setSearch] = useState("");
     const [entityFilter, setEntityFilter] = useState("all");
+    const [editingField, setEditingField] = useState<CustomFieldDefinition | null>(null);
+    const [editName, setEditName] = useState("");
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { data: sbFields, isLoading } = useCustomFieldDefinitions();
+    const updateField = useUpdateCustomFieldDefinition();
+
+    const handleEdit = (field: CustomFieldDefinition) => {
+        setEditingField(field);
+        setEditName(field.name);
+    };
+
+    const handleEditSave = async () => {
+        if (!editingField || !editName.trim()) return;
+        updateField.mutate(
+            { id: editingField.id, name: editName.trim() } as Parameters<
+                typeof updateField.mutate
+            >[0],
+            {
+                onSuccess: () => {
+                    addToast({
+                        title: "Field updated",
+                        description: `${editName} saved successfully.`,
+                        variant: "default",
+                    });
+                    setEditingField(null);
+                },
+                onError: () => {
+                    addToast({
+                        title: "Update failed",
+                        description: "Could not update the field. Please try again.",
+                        variant: "destructive",
+                    });
+                },
+            }
+        );
+    };
+
+    const handleDelete = async (field: CustomFieldDefinition) => {
+        setDeletingId(field.id);
+        try {
+            const res = await fetch(`/api/custom-field-definitions?id=${field.id}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) {
+                addToast({
+                    title: "Delete failed",
+                    description: `Could not delete ${field.name}.`,
+                    variant: "destructive",
+                });
+                return;
+            }
+            addToast({
+                title: "Field deleted",
+                description: `${field.name} has been removed.`,
+                variant: "default",
+            });
+            queryClient.invalidateQueries({ queryKey: ["custom_field_definition"] });
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const fields: CustomFieldDefinition[] = useMemo(
         () =>
@@ -215,13 +285,7 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0"
-                                                onClick={() =>
-                                                    addToast({
-                                                        title: "Coming soon",
-                                                        description: `Editing ${field.name} is not yet available.`,
-                                                        variant: "default",
-                                                    })
-                                                }
+                                                onClick={() => handleEdit(field)}
                                             >
                                                 <Pencil className="h-3.5 w-3.5" />
                                             </Button>
@@ -229,13 +293,8 @@ export default function CustomFieldsPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0 text-destructive"
-                                                onClick={() =>
-                                                    addToast({
-                                                        title: "Coming soon",
-                                                        description: `Deleting ${field.name} is not yet available.`,
-                                                        variant: "default",
-                                                    })
-                                                }
+                                                disabled={deletingId === field.id}
+                                                onClick={() => handleDelete(field)}
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
@@ -260,6 +319,37 @@ export default function CustomFieldsPage() {
                 open={createOpen}
                 onClose={closeCreate}
             />
+            <Dialog
+                open={!!editingField}
+                onOpenChange={(open) => {
+                    if (!open) setEditingField(null);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Custom Field</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium">Field Name</label>
+                        <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            placeholder="Field name"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setEditingField(null)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleEditSave}
+                            disabled={!editName.trim() || updateField.isPending}
+                        >
+                            {updateField.isPending ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </PermissionGate>
     );
 }

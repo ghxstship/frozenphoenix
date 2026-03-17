@@ -338,3 +338,24 @@ export const useCreateStorageObject = makeCreateHook<Tables<"storage_objects">>(
     "/api/storage-objects"
 );
 export const useDeleteStorageObject = makeDeleteHook("storage_object", "/api/storage-objects");
+
+// TRANSFER ORDERS
+// ═══════════════════════════════════════════════════════════════
+export const useTransferOrders = makeListHook<Tables<"transfer_orders">>(
+    "transfer_order",
+    "/api/transfer-orders",
+    { sort_by: "created_at", sort_order: "desc" }
+);
+export const useTransferOrder = makeDetailHook<Tables<"transfer_orders">>(
+    "transfer_order",
+    "/api/transfer-orders"
+);
+export const useCreateTransferOrder = makeCreateHook<Tables<"transfer_orders">>(
+    "transfer_order",
+    "/api/transfer-orders"
+);
+export const useUpdateTransferOrder = makeUpdateHook<Tables<"transfer_orders">>(
+    "transfer_order",
+    "/api/transfer-orders"
+);
+export const useDeleteTransferOrder = makeDeleteHook("transfer_order", "/api/transfer-orders");

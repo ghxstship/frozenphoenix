@@ -21,7 +21,12 @@ import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
-import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
+import {
+    useCrewMembers,
+    useProjects,
+    useRecordActivityLog,
+    useUpdateCrewMember,
+} from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
@@ -35,6 +40,54 @@ import {
     Mail,
     Phone,
 } from "lucide-react";
+
+function CrewHistoryTab({ crewId }: { crewId: string }) {
+    const { data: activity } = useRecordActivityLog("crew_member", crewId);
+    const items = (activity ?? []) as unknown as Array<Record<string, unknown>>;
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Work History</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {items.length === 0 ? (
+                    <EmptyState
+                        icon={Clock}
+                        title="No history yet"
+                        description="Activity will appear here as work is logged"
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {items.map((item) => (
+                            <div
+                                key={String(item.id)}
+                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(item.action ?? "Activity")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {(item.metadata as Record<string, unknown> | null)
+                                            ?.description
+                                            ? String(
+                                                  (item.metadata as Record<string, unknown>)
+                                                      .description
+                                              )
+                                            : String(item.entity_type ?? "")}
+                                    </p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {item.created_at ? formatDate(String(item.created_at)) : ""}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "crew",
@@ -299,18 +352,7 @@ export default function CrewDetailPage() {
             {
                 id: "history",
                 label: "History",
-                content: (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Work History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                                Work history will be available when connected to Supabase
-                            </p>
-                        </CardContent>
-                    </Card>
-                ),
+                content: <CrewHistoryTab crewId={crewId} />,
             },
         ],
     };

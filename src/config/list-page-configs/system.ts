@@ -964,3 +964,23 @@ export const USER_MANAGEMENT_PAGE: ListPageConfig = {
     ],
     exportable: true,
 };
+
+// ─── tag ───
+
+export const TAGS_PAGE: ListPageConfig = {
+    entityKey: "tag",
+    description: "Cross-entity tags for organizing and categorizing records",
+    icon: Tags,
+    searchKeys: ["name", "description"],
+    columns: [
+        { id: "name", header: "Tag", accessorKey: "name" },
+        { id: "slug", header: "Slug", accessorKey: "slug" },
+        { id: "color", header: "Color", accessorKey: "color" },
+        { id: "category", header: "Category", accessorKey: "category", fieldType: "status" },
+        { id: "usage_count", header: "Usage", accessorKey: "usage_count" },
+        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+    views: ["table"],
+    defaultView: "table",
+    exportable: true,
+};

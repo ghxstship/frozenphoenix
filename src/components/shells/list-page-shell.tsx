@@ -33,39 +33,34 @@ import { RowActionsMenu } from "@/components/data-view/row-actions-menu";
 // Performance: Alternate data views are dynamically imported — only loaded when user
 // switches to that view mode. DataTable stays eager as the default view.
 // Saves ~200-400KB from the critical path JS bundle.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const DataBoard = dynamic(() =>
     import("@/components/data-view/data-board").then((m) => m.DataBoard)
-) as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>;
 const DataCards = dynamic(() =>
     import("@/components/data-view/data-cards").then((m) => m.DataCards)
-) as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>;
 const DataTimeline = dynamic(() =>
     import("@/components/data-view/data-timeline").then((m) => m.DataTimeline)
-) as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>;
 const DataCalendar = dynamic(() =>
     import("@/components/data-view/data-calendar").then((m) => m.DataCalendar)
-) as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>;
 const DataGallery = dynamic(() =>
     import("@/components/data-view/data-gallery").then((m) => m.DataGallery)
-) as any;
+) as React.ComponentType<any>;
 const DataChart = dynamic(() =>
     import("@/components/data-view/data-chart").then((m) => m.DataChart)
 );
 // getChartColor is a pure function needed synchronously at render time — import eagerly
 import { getChartColor } from "@/components/data-view/data-chart";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DataMap = dynamic(() =>
     import("@/components/data-view/data-map").then((m) => m.DataMap)
-) as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>;
 const DataWorkload = dynamic(() =>
     import("@/components/data-view/data-workload").then((m) => m.DataWorkload)
-) as any;
+) as React.ComponentType<any>;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 import { PermissionGate } from "@/components/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CsvExportButton } from "@/components/csv/csv-export-button";

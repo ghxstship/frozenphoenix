@@ -610,29 +610,6 @@ export function useClientInvoiceAging() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ORG MEMBERS (for messaging people picker)
-// ═══════════════════════════════════════════════════════════════
-
-export function useOrgMembers() {
-    return useQuery({
-        queryKey: ["org_members"],
-        queryFn: async () => {
-            const { getSupabase } = await import("./client");
-            const sb = getSupabase();
-            const {
-                data: { user },
-            } = await sb.auth.getUser();
-            if (!user) return [];
-            const { data } = await sb
-                .from("org_memberships")
-                .select("user_id, role, user_profiles(display_name, avatar_url, email)")
-                .neq("user_id", user.id);
-            return data ?? [];
-        },
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
 // LIVE CREW ASSIGNMENTS (for org-chart page)
 // ═══════════════════════════════════════════════════════════════
 

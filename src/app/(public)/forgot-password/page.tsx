@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,13 @@ export default function ForgotPasswordPage() {
     const [cooldown, setCooldown] = useState(0);
 
     const botProtection = useBotProtection();
+    const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (cooldownRef.current) clearInterval(cooldownRef.current);
+        };
+    }, []);
 
     const handleReset = useCallback(
         async (e: React.FormEvent) => {
@@ -60,10 +67,12 @@ export default function ForgotPasswordPage() {
         if (cooldown > 0) return;
         setCooldown(60);
         setSuccess(false);
-        const timer = setInterval(() => {
+        if (cooldownRef.current) clearInterval(cooldownRef.current);
+        cooldownRef.current = setInterval(() => {
             setCooldown((prev) => {
                 if (prev <= 1) {
-                    clearInterval(timer);
+                    if (cooldownRef.current) clearInterval(cooldownRef.current);
+                    cooldownRef.current = null;
                     return 0;
                 }
                 return prev - 1;

@@ -66,6 +66,7 @@ export const COMPLIANCE_REQUIREMENTS_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── contract_amendment ───
@@ -100,6 +101,7 @@ export const CONTRACT_AMENDMENTS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "amendment_type",
     },
+    exportable: true,
 };
 
 // ─── e_signature ───
@@ -124,6 +126,7 @@ export const E_SIGNATURES_PAGE: ListPageConfig = {
         cardTitleKey: "document_title",
         cardSubtitleKey: "signer_name",
     },
+    exportable: true,
 };
 
 // ─── insurance_requirement ───
@@ -151,6 +154,7 @@ export const INSURANCE_REQUIREMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── legal_hold ───
@@ -173,6 +177,7 @@ export const LEGAL_HOLDS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── rfq ───
@@ -196,6 +201,7 @@ export const RFQS_PAGE: ListPageConfig = {
         groupByKey: "status",
         cardTitleKey: "title",
     },
+    exportable: true,
 };
 
 // ─── rights ───
@@ -213,6 +219,7 @@ export const RIGHTS_PAGE: ListPageConfig = {
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── risk_assessment ───
@@ -241,6 +248,7 @@ export const RISK_ASSESSMENTS_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "risk_level",
     },
+    exportable: true,
 };
 
 // ─── vendor_compliance_document ───
@@ -258,6 +266,7 @@ export const VENDOR_COMPLIANCE_DOCUMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── compliance_template ───
@@ -275,6 +284,7 @@ export const COMPLIANCE_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── contract_obligation ───
@@ -309,6 +319,7 @@ export const CONTRACT_OBLIGATIONS_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── engagement_term ───
@@ -331,6 +342,7 @@ export const ENGAGEMENT_TERMS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── vendor_communication ───
@@ -353,4 +365,5 @@ export const VENDOR_COMMUNICATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "sent_at", header: "Date", accessorKey: "sent_at", fieldType: "date" },
     ],
+    exportable: true,
 };

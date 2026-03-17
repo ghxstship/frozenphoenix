@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { withApiHandlerParams } from "@/lib/api/with-api-handler";
 
 const updateConversationSchema = z.object({
     name: z.string().max(200).optional(),
@@ -13,137 +13,137 @@ const updateConversationSchema = z.object({
     category: z.string().max(50).optional(),
 });
 
-interface RouteContext {
-    params: Promise<{ id: string }>;
-}
-
 /**
  * GET /api/conversations/[id]
  * Get a single conversation by ID.
  */
-export async function GET(_request: NextRequest, context: RouteContext) {
-    const { id } = await context.params;
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const GET = withApiHandlerParams(
+    {
+        method: "GET",
+        route: "/api/conversations/[id]",
+        rbac: { resource: "conversations", action: "read" },
+    },
+    async (_request, { user }, { params }) => {
+        const { id } = await params;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const admin = createAdminClient();
-    if (!admin) return ApiErrors.serviceUnavailable();
+        // Verify membership
+        const { data: membership } = await serverFromTable(admin!, "conversation_members")
+            .select("role")
+            .eq("conversation_id", id)
+            .eq("user_id", user.id)
+            .single();
 
-    // Verify membership
-    const { data: membership } = await serverFromTable(admin!, "conversation_members")
-        .select("role")
-        .eq("conversation_id", id)
-        .eq("user_id", user.id)
-        .single();
+        if (!membership) {
+            // Check if public
+            const { data: conv } = await serverFromTable(admin!, "conversations")
+                .select("*")
+                .eq("id", id)
+                .eq("is_public", true)
+                .single();
+            if (!conv) return ApiErrors.notFound("Conversation");
+            return NextResponse.json({ data: conv });
+        }
 
-    if (!membership) {
-        // Check if public
-        const { data: conv } = await serverFromTable(admin!, "conversations")
+        const { data: conversation, error } = await serverFromTable(admin!, "conversations")
             .select("*")
             .eq("id", id)
-            .eq("is_public", true)
             .single();
-        if (!conv) return ApiErrors.notFound("Conversation");
-        return NextResponse.json({ data: conv });
+
+        if (error || !conversation) return ApiErrors.notFound("Conversation");
+        return NextResponse.json({ data: conversation });
     }
-
-    const { data: conversation, error } = await serverFromTable(admin!, "conversations")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-    if (error || !conversation) return ApiErrors.notFound("Conversation");
-    return NextResponse.json({ data: conversation });
-}
+);
 
 /**
  * PATCH /api/conversations/[id]
  * Update a conversation (owner/admin only).
  */
-export async function PATCH(request: NextRequest, context: RouteContext) {
-    const { id } = await context.params;
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const PATCH = withApiHandlerParams(
+    {
+        method: "PATCH",
+        route: "/api/conversations/[id]",
+        mutation: true,
+        rbac: { resource: "conversations", action: "write" },
+    },
+    async (request, { user, log }, { params }) => {
+        const { id } = await params;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const admin = createAdminClient();
-    if (!admin) return ApiErrors.serviceUnavailable();
+        // Verify owner/admin role
+        const { data: membership } = await serverFromTable(admin!, "conversation_members")
+            .select("role")
+            .eq("conversation_id", id)
+            .eq("user_id", user.id)
+            .single();
 
-    // Verify owner/admin role
-    const { data: membership } = await serverFromTable(admin!, "conversation_members")
-        .select("role")
-        .eq("conversation_id", id)
-        .eq("user_id", user.id)
-        .single();
+        const role = (membership as Record<string, unknown> | null)?.role as string | null;
+        if (!role || !["owner", "admin"].includes(role)) {
+            return ApiErrors.forbidden(
+                "Only conversation owners or admins can update conversations"
+            );
+        }
 
-    const role = (membership as Record<string, unknown> | null)?.role as string | null;
-    if (!role || !["owner", "admin"].includes(role)) {
-        return ApiErrors.forbidden("Only conversation owners or admins can update conversations");
+        const parsed = await parseAndValidate(request, updateConversationSchema);
+        if (!parsed.success) return parsed.response;
+
+        const { data: updated, error } = await serverFromTable(admin!, "conversations")
+            .update(parsed.data)
+            .eq("id", id)
+            .select("*")
+            .single();
+
+        if (error) {
+            log.error("[PATCH /api/conversations/[id]] update failed", { error });
+            return ApiErrors.internalError("Failed to update conversation");
+        }
+
+        return NextResponse.json({ data: updated });
     }
-
-    const parsed = await parseAndValidate(request, updateConversationSchema);
-    if (!parsed.success) return parsed.response;
-
-    const { data: updated, error } = await serverFromTable(admin!, "conversations")
-        .update(parsed.data)
-        .eq("id", id)
-        .select("*")
-        .single();
-
-    if (error) {
-        logger.error("[PATCH /api/conversations/[id]] update failed", { error });
-        return ApiErrors.internalError("Failed to update conversation");
-    }
-
-    return NextResponse.json({ data: updated });
-}
+);
 
 /**
  * DELETE /api/conversations/[id]
  * Archive a conversation (owner only).
  */
-export async function DELETE(_request: NextRequest, context: RouteContext) {
-    const { id } = await context.params;
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const DELETE = withApiHandlerParams(
+    {
+        method: "DELETE",
+        route: "/api/conversations/[id]",
+        mutation: true,
+        rbac: { resource: "conversations", action: "write" },
+    },
+    async (_request, { user, log }, { params }) => {
+        const { id } = await params;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const admin = createAdminClient();
-    if (!admin) return ApiErrors.serviceUnavailable();
+        // Verify owner role
+        const { data: membership } = await serverFromTable(admin!, "conversation_members")
+            .select("role")
+            .eq("conversation_id", id)
+            .eq("user_id", user.id)
+            .single();
 
-    // Verify owner role
-    const { data: membership } = await serverFromTable(admin!, "conversation_members")
-        .select("role")
-        .eq("conversation_id", id)
-        .eq("user_id", user.id)
-        .single();
+        const role = (membership as Record<string, unknown> | null)?.role as string | null;
+        if (role !== "owner") {
+            return ApiErrors.forbidden("Only the conversation owner can archive");
+        }
 
-    const role = (membership as Record<string, unknown> | null)?.role as string | null;
-    if (role !== "owner") {
-        return ApiErrors.forbidden("Only the conversation owner can archive");
+        const { error } = await serverFromTable(admin!, "conversations")
+            .update({ is_archived: true })
+            .eq("id", id);
+
+        if (error) {
+            log.error("[DELETE /api/conversations/[id]] archive failed", { error });
+            return ApiErrors.internalError("Failed to archive conversation");
+        }
+
+        return NextResponse.json({ success: true });
     }
-
-    const { error } = await serverFromTable(admin!, "conversations")
-        .update({ is_archived: true })
-        .eq("id", id);
-
-    if (error) {
-        logger.error("[DELETE /api/conversations/[id]] archive failed", { error });
-        return ApiErrors.internalError("Failed to archive conversation");
-    }
-
-    return NextResponse.json({ success: true });
-}
+);

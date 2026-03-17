@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-    useDeleteScopeOfWork,
-    useScopeOfWork,
-    useUpdateScopeOfWork,
-} from "@/lib/supabase/hooks-pages";
+import { useDeleteScopeOfWork, useScopeOfWork, useUpdateScopeOfWork } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +25,17 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/scopes-of-work",
     backLabel: "Scopes of Work",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "billing_type", label: "Billing", accessorKey: "billing_type", fieldType: "status" },
+        { id: "payment_terms", label: "Payment Terms", accessorKey: "payment_terms" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "billing_type", label: "Billing", accessorKey: "billing_type", fieldType: "status" },
+        { id: "payment_terms", label: "Payment Terms", accessorKey: "payment_terms" },
+    ],
     tabs: [],
 };
 
@@ -74,8 +80,8 @@ export default function ScopeOfWorkDetailPage() {
     const effectiveDate = (sow?.effective_date as string) ?? (sow?.effectiveDate as string) ?? "";
     const expirationDate =
         (sow?.expiration_date as string) ?? (sow?.expirationDate as string) ?? "";
-    const billingType = (sow?.billing_type as string) ?? (sow?.billingType as string) ?? "";
-    const paymentTerms = (sow?.payment_terms as string) ?? (sow?.paymentTerms as string) ?? "";
+    const _billingType = (sow?.billing_type as string) ?? (sow?.billingType as string) ?? "";
+    const _paymentTerms = (sow?.payment_terms as string) ?? (sow?.paymentTerms as string) ?? "";
     const sowDescription = (sow?.description as string) ?? "";
     const deliverables = parseDeliverables(sow?.deliverables);
     const completedDeliverables = deliverables.filter((d) => d.status === "completed").length;
@@ -101,40 +107,6 @@ export default function ScopeOfWorkDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">SOW Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    {sowNumber && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Number</span>
-                            <span className="font-mono font-medium">{sowNumber}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant((sow?.status as string) ?? "draft")}>
-                            {getStatusLabel((sow?.status as string) ?? "draft")}
-                        </Badge>
-                    </div>
-                    {billingType && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Billing</span>
-                            <span className="font-medium capitalize">
-                                {billingType.replace(/_/g, " ")}
-                            </span>
-                        </div>
-                    )}
-                    {paymentTerms && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Payment Terms</span>
-                            <span className="font-medium">{paymentTerms}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Client</CardTitle>
@@ -301,6 +273,19 @@ export default function ScopeOfWorkDetailPage() {
         subtitleFn: () => `${sowNumber} · ${client}`,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Total Value", icon: DollarSign, compute: () => formatCurrency(totalValue) },
+            {
+                label: "Deliverables",
+                icon: CheckCircle2,
+                compute: () => `${completedDeliverables}/${deliverableCount}`,
+            },
+            {
+                label: "Effective Date",
+                icon: Calendar,
+                compute: () => (effectiveDate ? formatDate(effectiveDate, "compact") : "TBD"),
+            },
+        ],
         tabs: [
             {
                 id: "deliverables",

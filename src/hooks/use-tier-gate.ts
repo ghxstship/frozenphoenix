@@ -10,7 +10,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useBillingPlan } from "@/lib/supabase/hooks-pages";
+import { useBillingPlan } from "@/lib/supabase";
 import {
     type EntitlementPath,
     getEntitlementLimit,

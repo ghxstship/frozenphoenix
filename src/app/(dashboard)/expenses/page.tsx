@@ -1,22 +1,18 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
-import { useExpenses } from "@/lib/supabase/hooks-pages";
-import { CREATE_EXPENSE_CONFIG } from "@/config/create-entity-configs";
+import { useExpenses } from "@/lib/supabase";
+import { EXPENSES_PAGE } from "@/config/list-page-configs";
 import { CheckCircle2, Clock, DollarSign, Receipt } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "expenses",
+    ...EXPENSES_PAGE,
     title: "Expenses",
-    description: "Track and manage expense reports and reimbursements",
-    icon: Receipt,
-    createConfig: CREATE_EXPENSE_CONFIG,
     createLabel: "Submit Expense",
     exportable: true,
     importable: true,
-    searchKeys: ["description", "submitted_by", "project_name"],
     stats: [
         {
             label: "Total Expenses",

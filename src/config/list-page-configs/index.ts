@@ -7,6 +7,7 @@ export * from "./finance";
 export * from "./marketing";
 export * from "./operations";
 export * from "./people";
+export * from "./primary";
 export * from "./production";
 export * from "./projects";
 export * from "./system";

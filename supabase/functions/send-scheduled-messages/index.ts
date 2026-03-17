@@ -21,10 +21,11 @@
  *   );
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+import {
+    createServiceClient,
+    errorResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 const MENTION_REGEX = /@\[([^\]]+)\]\(([a-f0-9-]+)\)/g;
 
@@ -40,29 +41,32 @@ function parseMentions(body: string): string[] {
 Deno.serve(async (req: Request) => {
     // Only allow POST (from cron) or GET (for health checks)
     if (req.method !== "POST" && req.method !== "GET") {
-        return new Response(JSON.stringify({ error: "Method not allowed" }), {
-            status: 405,
-            headers: { "Content-Type": "application/json" },
-        });
+        return errorResponse("Method not allowed", 405);
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // Auth guard — only cron / internal callers with service role key
+    const authError = requireServiceRoleAuth(req);
+    if (authError) return authError;
+
+    const supabase = createServiceClient();
 
     try {
         // Find all messages scheduled for delivery
         const { data: scheduledMessages, error: fetchError } = await supabase
             .from("messages")
-            .select("id, conversation_id, sender_id, body, mentioned_user_ids, entity_type, entity_id")
+            .select(
+                "id, conversation_id, sender_id, body, mentioned_user_ids, entity_type, entity_id"
+            )
             .lte("scheduled_for", new Date().toISOString())
             .is("deleted_at", null)
             .limit(100);
 
         if (fetchError) {
-            console.error("Failed to fetch scheduled messages:", fetchError);
-            return new Response(
-                JSON.stringify({ error: "Failed to fetch scheduled messages", details: fetchError.message }),
-                { status: 500, headers: { "Content-Type": "application/json" } }
-            );
+            console.error("Failed to fetch scheduled messages:", fetchError.message);
+            return new Response(JSON.stringify({ error: "Failed to fetch scheduled messages" }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            });
         }
 
         if (!scheduledMessages || scheduledMessages.length === 0) {
@@ -87,8 +91,8 @@ Deno.serve(async (req: Request) => {
                 .eq("id", msg.id);
 
             if (updateError) {
-                console.error(`Failed to deliver message ${msg.id}:`, updateError);
-                errors.push({ messageId: msg.id, error: updateError.message });
+                console.error(`Failed to deliver message ${msg.id}:`, updateError.message);
+                errors.push({ messageId: msg.id, error: "Delivery failed" });
                 failed++;
                 continue;
             }
@@ -103,10 +107,7 @@ Deno.serve(async (req: Request) => {
 
             // Parse mentions from body and dispatch notifications
             const mentionedIds = [
-                ...new Set([
-                    ...(msg.mentioned_user_ids ?? []),
-                    ...parseMentions(msg.body ?? ""),
-                ]),
+                ...new Set([...(msg.mentioned_user_ids ?? []), ...parseMentions(msg.body ?? "")]),
             ];
 
             if (mentionedIds.length > 0) {
@@ -132,7 +133,10 @@ Deno.serve(async (req: Request) => {
                         .insert(notifications);
 
                     if (notifError) {
-                        console.warn(`Failed to create mention notifications for message ${msg.id}:`, notifError);
+                        console.warn(
+                            `Failed to create mention notifications for message ${msg.id}:`,
+                            notifError
+                        );
                     }
                 }
             }
@@ -151,9 +155,9 @@ Deno.serve(async (req: Request) => {
         );
     } catch (err) {
         console.error("Unexpected error in send-scheduled-messages:", err);
-        return new Response(
-            JSON.stringify({ error: "Internal error", details: String(err) }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "Internal error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 });

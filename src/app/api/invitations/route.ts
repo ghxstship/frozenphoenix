@@ -46,7 +46,7 @@ export const POST = withApiHandler(
                 return ApiErrors.internalError("Failed to create referral invitations");
             }
 
-            return sendInviteEmails(request, data, null, message, invite_type);
+            return sendInviteEmails(data, null, message, invite_type);
         }
 
         // ── Org invites: verify membership + RBAC + role escalation ──
@@ -114,13 +114,12 @@ export const POST = withApiHandler(
             return ApiErrors.internalError("Failed to create invitations");
         }
 
-        return sendInviteEmails(request, data, orgName, message, invite_type);
+        return sendInviteEmails(data, orgName, message, invite_type);
     }
 );
 
 // ── Helper: send emails + return safe response ──────────────────────────
 function sendInviteEmails(
-    request: Request,
     data: Array<{
         id: string;
         email: string;
@@ -134,10 +133,8 @@ function sendInviteEmails(
     inviteType: string
 ) {
     if (data) {
-        const baseUrl =
-            request.headers.get("origin") || request.headers.get("x-forwarded-host") || "";
-        const protocol = request.headers.get("x-forwarded-proto") || "https";
-        const appUrl = baseUrl.startsWith("http") ? baseUrl : `${protocol}://${baseUrl}`;
+        // Use trusted server-side env var — never derive URLs from user-controlled headers
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
         Promise.allSettled(
             data.map(async (inv) => {

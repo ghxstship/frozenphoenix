@@ -23,7 +23,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput, DatePicker, FormField, Select, Textarea } from "@/components/ui/form";
 import { FormSection } from "@/components/layouts/form-layout";
 import { PermissionGate } from "@/components/permission-guard";
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Loader2 } from "lucide-react";
+import {
+    ArrowLeft,
+    ArrowRight,
+    CheckCircle2,
+    ChevronLeft,
+    Loader2,
+    Plus,
+    Trash2,
+} from "lucide-react";
 import type { FormFieldDef, FormPageConfig, FormWizardStepDef } from "@/types/form-page-config";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -192,6 +200,10 @@ function renderField(
             );
             break;
 
+        case "repeater":
+            // Repeater is handled separately in RepeaterFieldRenderer
+            return null;
+
         case "hidden":
             return null;
 
@@ -221,6 +233,109 @@ function renderField(
     );
 }
 
+// ─── Repeater Field Renderer ────────────────────────────────
+
+function RepeaterFieldRenderer({
+    field,
+    value,
+    onChange,
+    errors,
+}: {
+    field: FormFieldDef;
+    value: unknown;
+    onChange: (id: string, value: unknown) => void;
+    errors: Record<string, string | null>;
+}) {
+    const rows = Array.isArray(value) ? (value as FormData[]) : [];
+    const subFields = field.subFields ?? [];
+    const maxRows = field.maxRows ?? Infinity;
+    const minRows = field.minRows ?? 0;
+
+    const addRow = () => {
+        if (rows.length >= maxRows) return;
+        const newRow: FormData = {};
+        for (const sf of subFields) {
+            newRow[sf.id] = sf.defaultValue ?? (sf.type === "checkbox" ? false : "");
+        }
+        onChange(field.id, [...rows, newRow]);
+    };
+
+    const removeRow = (index: number) => {
+        if (rows.length <= minRows) return;
+        onChange(
+            field.id,
+            rows.filter((_, i) => i !== index)
+        );
+    };
+
+    const updateRow = (index: number, subFieldId: string, subValue: unknown) => {
+        const updated = rows.map((row, i) =>
+            i === index ? { ...row, [subFieldId]: subValue } : row
+        );
+        onChange(field.id, updated);
+    };
+
+    return (
+        <div className="col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">
+                    {field.label}
+                    {field.required && <span className="text-destructive ml-1">*</span>}
+                </label>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addRow}
+                    disabled={rows.length >= maxRows || field.disabled}
+                >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    {field.addLabel ?? "Add Item"}
+                </Button>
+            </div>
+            {field.description && (
+                <p className="text-xs text-muted-foreground">{field.description}</p>
+            )}
+            {rows.length === 0 && (
+                <p className="text-sm text-muted-foreground italic py-3">No items added yet.</p>
+            )}
+            {rows.map((row, rowIndex) => (
+                <Card key={rowIndex}>
+                    <CardContent className="pt-4 pb-3">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {subFields
+                                    .filter((sf) => !sf.hidden)
+                                    .map((sf) => {
+                                        const errorKey = `${field.id}.${rowIndex}.${sf.id}`;
+                                        return renderField(
+                                            sf,
+                                            row[sf.id],
+                                            (_id, val) => updateRow(rowIndex, sf.id, val),
+                                            errors[errorKey]
+                                        );
+                                    })}
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0 mt-6 text-muted-foreground hover:text-destructive"
+                                onClick={() => removeRow(rowIndex)}
+                                disabled={rows.length <= minRows || field.disabled}
+                                aria-label={`Remove item ${rowIndex + 1}`}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+            {errors[field.id] && <p className="text-xs text-destructive">{errors[field.id]}</p>}
+        </div>
+    );
+}
+
 // ─── Section Fields Grid ────────────────────────────────────
 
 function SectionFieldsGrid({
@@ -235,16 +350,25 @@ function SectionFieldsGrid({
     errors: Record<string, string | null>;
 }) {
     const visibleFields = fields.filter((f) => !f.hidden);
-    const hasGridFields = visibleFields.some((f) => !f.fullWidth);
+    const hasGridFields = visibleFields.some((f) => !f.fullWidth && f.type !== "repeater");
+
+    const renderFieldOrRepeater = (field: FormFieldDef) => {
+        if (field.type === "repeater") {
+            return (
+                <RepeaterFieldRenderer
+                    key={field.id}
+                    field={field}
+                    value={formData[field.id]}
+                    onChange={onChange}
+                    errors={errors}
+                />
+            );
+        }
+        return renderField(field, formData[field.id], onChange, errors[field.id]);
+    };
 
     if (!hasGridFields) {
-        return (
-            <>
-                {visibleFields.map((field) =>
-                    renderField(field, formData[field.id], onChange, errors[field.id])
-                )}
-            </>
-        );
+        return <>{visibleFields.map(renderFieldOrRepeater)}</>;
     }
 
     return (
@@ -252,9 +376,7 @@ function SectionFieldsGrid({
             className="grid grid-cols-1 sm:grid-cols-2"
             style={{ gap: "var(--density-form-field-gap)" }}
         >
-            {visibleFields.map((field) =>
-                renderField(field, formData[field.id], onChange, errors[field.id])
-            )}
+            {visibleFields.map(renderFieldOrRepeater)}
         </div>
     );
 }

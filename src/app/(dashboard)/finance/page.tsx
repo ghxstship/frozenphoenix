@@ -2,11 +2,11 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { useInvoices, usePurchaseOrders } from "@/lib/supabase/hooks";
+import { useInvoices, usePurchaseOrders } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, DollarSign, Receipt } from "lucide-react";
 import type { Invoice, PurchaseOrder } from "@/types";
@@ -204,12 +204,10 @@ export default function FinancePage() {
 
     return (
         <PermissionGate resource="finance" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Financial Operations"
-                    description="Three-way match engine — PO ↔ WO ↔ Invoice reconciliation"
-                />
-
+            <PageShell
+                title="Financial Operations"
+                description="Three-way match engine — PO ↔ WO ↔ Invoice reconciliation"
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Total PO Value"
@@ -279,7 +277,7 @@ export default function FinancePage() {
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Avatar } from "@/components/ui/avatar";
-import { useCrewMembers } from "@/lib/supabase/hooks";
+import { useCrewMembers } from "@/lib/supabase";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { AlertTriangle, ShieldAlert, ShieldCheck, Users } from "lucide-react";
-import { CREATE_WORKFORCE_CONFIG } from "@/config/create-entity-configs";
+import { CREW_PAGE } from "@/config/list-page-configs";
 import type { CertificationType, CrewMember } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { type BoardColumn, type CardField, DataBoard } from "@/components/data-view/data-board";
@@ -362,15 +362,11 @@ export default function CrewPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "crew_members",
+            ...CREW_PAGE,
             title: "Crew & Labor Command",
-            description: "Shift scheduling, certifications, and crew management",
-            icon: Users,
-            createConfig: CREATE_WORKFORCE_CONFIG,
             createLabel: "Add Crew",
             exportable: true,
             importable: true,
-            searchKeys: ["name", "role", "email"],
             stats: [
                 {
                     label: "Available",

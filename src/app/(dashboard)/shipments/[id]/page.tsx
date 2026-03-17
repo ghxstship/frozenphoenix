@@ -2,12 +2,8 @@
 
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteShipment, useUpdateShipment } from "@/lib/supabase/hooks-pages";
-import {
-    useCreateRecordComment,
-    useRecordActivityLog,
-    useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+import { useDeleteShipment, useUpdateShipment } from "@/lib/supabase";
+import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +13,8 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { useShipment } from "@/lib/supabase/hooks-pages";
-import { useLocations, useProjects } from "@/lib/supabase/hooks";
+import { useShipment } from "@/lib/supabase";
+import { useLocations, useProjects } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {

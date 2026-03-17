@@ -7,12 +7,12 @@ import { formatDate } from "@/lib/locale";
 import React, { useCallback, useState } from "react";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { useApprovals, useUpdateApproval } from "@/lib/supabase/hooks";
+import { useApprovals, useUpdateApproval } from "@/lib/supabase";
 import { LIFECYCLE_STAGES, type LifecycleStage } from "@/config/domain-config";
 import {
     AlertTriangle,
@@ -32,7 +32,7 @@ import type { Approval } from "@/types";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { DateField } from "@/components/data-view/field-renderers";
 import { PermissionGate } from "@/components/permission-guard";
-import { TabBar } from "@/components/ui/tab-bar";
+
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/layouts/empty-state";
 
@@ -266,31 +266,25 @@ export default function ApprovalsPage() {
 
     return (
         <PermissionGate resource="approvals" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Approval Shield"
-                    description="Lifecycle approval matrix with 72-hour auto-escalation workflow engine"
-                >
-                    <TabBar
-                        items={[
-                            {
-                                id: "approvals",
-                                label: "Approvals",
-                                icon: <Shield className="h-4 w-4" />,
-                            },
-                            {
-                                id: "lifecycle",
-                                label: "Lifecycle Matrix",
-                                icon: <GitBranch className="h-4 w-4" />,
-                            },
-                        ]}
-                        value={activeTab}
-                        onValueChange={(v) => setActiveTab(v as "approvals" | "lifecycle")}
-                        ariaLabel="Approvals page sections"
-                    />
-                    <CsvExportButton entity="approvals" />
-                </PageHeader>
-
+            <PageShell
+                title="Approval Shield"
+                description="Lifecycle approval matrix with 72-hour auto-escalation workflow engine"
+                tabs={[
+                    {
+                        id: "approvals",
+                        label: "Approvals",
+                        icon: <Shield className="h-4 w-4" />,
+                    },
+                    {
+                        id: "lifecycle",
+                        label: "Lifecycle Matrix",
+                        icon: <GitBranch className="h-4 w-4" />,
+                    },
+                ]}
+                activeTab={activeTab}
+                onTabChange={(v) => setActiveTab(v as "approvals" | "lifecycle")}
+                actions={<CsvExportButton entity="approvals" />}
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Pending" value={pending.length} icon={Clock} />
                     <StatCard title="Overdue" value={overdue.length} icon={AlertTriangle} />
@@ -708,7 +702,7 @@ export default function ApprovalsPage() {
                             ))}
                     </>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

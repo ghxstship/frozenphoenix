@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteTechSheet, useTechSheet, useUpdateTechSheet } from "@/lib/supabase/hooks-pages";
+import { useDeleteTechSheet, useTechSheet, useUpdateTechSheet } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";

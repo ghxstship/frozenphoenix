@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getBlueskyOAuthClient } from "@/lib/auth/bluesky-client";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 function getPublicUrl(): string {
     return (
@@ -14,6 +14,10 @@ function getPublicUrl(): string {
 
 export async function GET(request: NextRequest) {
     const publicUrl = getPublicUrl();
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+        return NextResponse.redirect(new URL("/login?error=bluesky_unavailable", publicUrl));
+    }
 
     try {
         const params = request.nextUrl.searchParams;
@@ -29,7 +33,9 @@ export async function GET(request: NextRequest) {
         try {
             const resolveUrl = `https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=`;
             // Reverse lookup: resolve DID → handle via the PLC directory
-            const plcRes = await fetch(`https://plc.directory/${encodeURIComponent(did)}`);
+            const plcRes = await fetch(`https://plc.directory/${encodeURIComponent(did)}`, {
+                signal: AbortSignal.timeout(5000),
+            });
             if (plcRes.ok) {
                 const plcDoc = await plcRes.json();
                 if (Array.isArray(plcDoc.alsoKnownAs)) {

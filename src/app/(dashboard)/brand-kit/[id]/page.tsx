@@ -6,7 +6,7 @@ import {
     useBrandKit,
     useDeleteBrandKit as useDeleteHook,
     useUpdateBrandKit as useUpdateHook,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

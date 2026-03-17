@@ -1,4 +1,9 @@
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 /**
  * incident-to-thread Edge Function
@@ -12,6 +17,9 @@ Deno.serve(async (req) => {
         if (req.method !== "POST") {
             return errorResponse("Method not allowed", 405);
         }
+
+        const authError = requireServiceRoleAuth(req);
+        if (authError) return authError;
 
         const body = await req.json();
         const { incident_id } = body as { incident_id?: string };
@@ -61,7 +69,10 @@ Deno.serve(async (req) => {
                 .single();
 
             if (!generalChannel) {
-                return jsonResponse({ skipped: true, reason: "No safety or general channel found for event" });
+                return jsonResponse({
+                    skipped: true,
+                    reason: "No safety or general channel found for event",
+                });
             }
 
             // Use general channel

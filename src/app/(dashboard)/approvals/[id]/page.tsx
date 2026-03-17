@@ -1,9 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useApproval } from "@/lib/supabase/hooks-pages";
-import { useUpdateApproval } from "@/lib/supabase/hooks";
-import { useDeleteApproval } from "@/lib/supabase/hooks-pages";
+import { useApproval } from "@/lib/supabase";
+import { useUpdateApproval } from "@/lib/supabase";
+import { useDeleteApproval } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";

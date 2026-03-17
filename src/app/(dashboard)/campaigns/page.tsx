@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Button } from "@/components/ui/button";
-import { CREATE_CAMPAIGN_CONFIG } from "@/config/create-entity-configs";
+import { CAMPAIGNS_PAGE } from "@/config/list-page-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,10 @@ import type { CampaignAsset, CampaignChannel, CampaignKpi } from "@/types/creati
 import {
     useCampaignAssets,
     useCampaignChannels,
-    useCampaignKpis,
+    useCampaignKPIs,
     useCampaigns,
     useUpdateCampaign,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
     Archive,
@@ -488,7 +488,7 @@ export default function CampaignsPage() {
     const { data: sbCampaigns, isLoading } = useCampaigns();
     const { data: sbChannels } = useCampaignChannels();
     const { data: sbAssets } = useCampaignAssets();
-    const { data: sbKpis } = useCampaignKpis();
+    const { data: sbKpis } = useCampaignKPIs();
 
     const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);
     const channels = useMemo(
@@ -510,15 +510,10 @@ export default function CampaignsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "campaigns",
+            ...CAMPAIGNS_PAGE,
             title: "Campaigns",
-            description:
-                "Multi-channel campaign lifecycle from planning through performance analysis",
-            icon: Megaphone,
-            createConfig: CREATE_CAMPAIGN_CONFIG,
             createLabel: "New Campaign",
             exportable: true,
-            searchKeys: ["name", "description", "status"],
             stats: [
                 {
                     label: "Active Campaigns",

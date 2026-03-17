@@ -47,6 +47,7 @@ export const BRANDS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── brief_template ───
@@ -63,6 +64,7 @@ export const BRIEF_TEMPLATES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── creative_review ───
@@ -87,6 +89,7 @@ export const CREATIVE_REVIEWS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "review_type",
     },
+    exportable: true,
 };
 
 // ─── survey_template ───
@@ -104,6 +107,7 @@ export const SURVEY_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── brand_guideline_section ───
@@ -120,6 +124,7 @@ export const BRAND_GUIDELINE_SECTIONS_PAGE: ListPageConfig = {
         { id: "order", header: "Order", accessorKey: "order" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── brand_kit ───
@@ -136,6 +141,7 @@ export const BRAND_KITS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── campaign_asset ───
@@ -166,6 +172,7 @@ export const CAMPAIGN_ASSETS_PAGE: ListPageConfig = {
         subtitleKey: "campaign_name",
         statusKey: "status",
     },
+    exportable: true,
 };
 
 // ─── campaign_channel ───
@@ -183,6 +190,7 @@ export const CAMPAIGN_CHANNELS_PAGE: ListPageConfig = {
         { id: "budget", header: "Budget", accessorKey: "budget", fieldType: "currency" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── campaign_kpi ───
@@ -208,6 +216,7 @@ export const CAMPAIGN_KPIS_PAGE: ListPageConfig = {
         valueKey: "current_value",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── catalog_category ───
@@ -225,6 +234,7 @@ export const CATALOG_CATEGORIES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── catalog_item ───
@@ -269,6 +279,7 @@ export const CATALOG_ITEMS_PAGE: ListPageConfig = {
         subtitleKey: "category_name",
         statusKey: "is_active",
     },
+    exportable: true,
 };
 
 // ─── survey_response ───
@@ -293,4 +304,5 @@ export const SURVEY_RESPONSES_PAGE: ListPageConfig = {
         valueKey: "score",
         aggregation: "avg",
     },
+    exportable: true,
 };

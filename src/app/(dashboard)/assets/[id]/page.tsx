@@ -3,11 +3,11 @@
 import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteAsset, useUpdateAsset as useUpdateAssetHook } from "@/lib/supabase/hooks-pages";
+import { useDeleteAsset } from "@/lib/supabase";
+import { useUpdateAsset as useUpdateAssetHook } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -20,12 +20,11 @@ import { Input } from "@/components/ui/input";
 import { ConditionBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
-import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase/hooks";
+import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
-    Barcode,
     Calendar,
     Clock,
     DollarSign,
@@ -129,7 +128,37 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/assets",
     backLabel: "Assets",
     chatterRecordType: "asset",
-    fields: [],
+    fields: [
+        { id: "category", label: "Category", accessorKey: "category" },
+        { id: "condition", label: "Condition", accessorKey: "condition", fieldType: "status" },
+        {
+            id: "ownedOrRental",
+            label: "Ownership",
+            accessorKey: "ownedOrRental",
+            fieldType: "status",
+        },
+        { id: "barcode", label: "Barcode", accessorKey: "barcode" },
+        { id: "location", label: "Location", accessorKey: "location" },
+        {
+            id: "purchasePrice",
+            label: "Purchase Price",
+            accessorKey: "purchasePrice",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+    ],
+    sidebarFields: [
+        { id: "category", label: "Category", accessorKey: "category" },
+        { id: "condition", label: "Condition", accessorKey: "condition", fieldType: "status" },
+        {
+            id: "ownedOrRental",
+            label: "Ownership",
+            accessorKey: "ownedOrRental",
+            fieldType: "status",
+        },
+        { id: "barcode", label: "Barcode", accessorKey: "barcode" },
+        { id: "location", label: "Location", accessorKey: "location" },
+    ],
     tabs: [],
 };
 
@@ -219,49 +248,11 @@ export default function AssetDetailPage() {
     };
 
     const isLoading = !sbAssets;
-    const conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
+    const _conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
     const isRental = asset?.ownedOrRental === "rental";
 
     const sidebarSlot = asset ? (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Asset Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Category</span>
-                        <span className="font-medium">{asset.category}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Condition</span>
-                        {conditionConfig && (
-                            <Badge variant={conditionConfig.variant}>{conditionConfig.label}</Badge>
-                        )}
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Ownership</span>
-                        <Badge variant={isRental ? "warning" : "default"}>
-                            {isRental ? "Rental" : "Owned"}
-                        </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Barcode className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-mono text-xs">{asset.barcode}</span>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Location</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{asset.location}</span>
-                    </div>
-                </CardContent>
-            </Card>
             {isRental && asset.rentalReturnDate && (
                 <Card className="border-warning/50 bg-warning/5">
                     <CardContent className="pt-4">
@@ -311,43 +302,6 @@ export default function AssetDetailPage() {
 
     const overviewSlot = asset ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {!!asset.purchasePrice && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <DollarSign className="h-4 w-4" />
-                                <span className="text-xs">Purchase Price</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {formatCurrency(asset.purchasePrice)}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-                {isRental && !!asset.dailyRentalCost && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <DollarSign className="h-4 w-4" />
-                                <span className="text-xs">Daily Rental Cost</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {formatCurrency(asset.dailyRentalCost)}/day
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <MapPin className="h-4 w-4" />
-                            <span className="text-xs">Current Location</span>
-                        </div>
-                        <p className="text-xl font-bold">{asset.location}</p>
-                    </CardContent>
-                </Card>
-            </div>
             {!!asset.notes && (
                 <Card>
                     <CardHeader>
@@ -379,6 +333,23 @@ export default function AssetDetailPage() {
         subtitleFn: () => asset?.category ?? "",
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Purchase Price",
+                icon: DollarSign,
+                compute: () => formatCurrency(asset?.purchasePrice ?? 0),
+            },
+            { label: "Location", icon: MapPin, compute: () => asset?.location ?? "—" },
+            ...(isRental && asset?.dailyRentalCost
+                ? [
+                      {
+                          label: "Daily Rental",
+                          icon: DollarSign,
+                          compute: () => `${formatCurrency(asset.dailyRentalCost!)}/day`,
+                      },
+                  ]
+                : []),
+        ],
         tabs: [
             {
                 id: "history",

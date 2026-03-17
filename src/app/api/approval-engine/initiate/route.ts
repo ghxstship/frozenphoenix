@@ -58,7 +58,7 @@ export const POST = withApiHandler(
                 case "NO_STEPS":
                     return ApiErrors.badRequest(result.error!);
                 default:
-                    return ApiErrors.internalError(result.error);
+                    return ApiErrors.internalError("Failed to initiate workflow");
             }
         }
 

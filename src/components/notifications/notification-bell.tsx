@@ -12,7 +12,7 @@ import {
     useMarkNotificationRead,
     useNotifications,
     useUnreadNotificationCount,
-} from "@/lib/supabase/hooks-v2-features";
+} from "@/lib/supabase";
 import { useNotificationsRealtime } from "@/lib/supabase/realtime";
 import { useAuth } from "@/lib/supabase/auth-context";
 

@@ -1,20 +1,15 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    useActivation,
-    useDeleteActivation,
-    useUpdateActivation,
-} from "@/lib/supabase/hooks-pages";
+import { useActivation, useDeleteActivation, useUpdateActivation } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { useEvents, useLocations, useProjects } from "@/lib/supabase/hooks";
+import { useEvents, useLocations, useProjects } from "@/lib/supabase";
 import { ACTIVATION_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -28,7 +23,91 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/activations",
     backLabel: "Activations",
     chatterRecordType: "activation",
-    fields: [],
+    fields: [
+        {
+            id: "description",
+            label: "Description",
+            accessorKey: "description",
+            fullWidth: true,
+        },
+        {
+            id: "zone",
+            label: "Zone",
+            accessorKey: "zone",
+        },
+        {
+            id: "install_date",
+            label: "Install Date",
+            accessorKey: "install_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "strike_date",
+            label: "Strike Date",
+            accessorKey: "strike_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "budget",
+            label: "Budget",
+            accessorKey: "budget",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "expected_footfall",
+            label: "Expected Footfall",
+            accessorKey: "expected_footfall",
+            fieldType: "number",
+            icon: Users,
+        },
+        {
+            id: "experience_goals",
+            label: "Experience Goals",
+            accessorKey: "experience_goals",
+            fieldType: "tags",
+            fullWidth: true,
+        },
+    ],
+    sidebarFields: [
+        {
+            id: "type",
+            label: "Type",
+            accessorKey: "type",
+            fieldType: "status",
+        },
+        {
+            id: "zone",
+            label: "Zone",
+            accessorKey: "zone",
+        },
+        {
+            id: "install_date",
+            label: "Install Date",
+            accessorKey: "install_date",
+            fieldType: "date",
+        },
+        {
+            id: "strike_date",
+            label: "Strike Date",
+            accessorKey: "strike_date",
+            fieldType: "date",
+        },
+        {
+            id: "budget",
+            label: "Budget",
+            accessorKey: "budget",
+            fieldType: "currency",
+        },
+        {
+            id: "expected_footfall",
+            label: "Expected Footfall",
+            accessorKey: "expected_footfall",
+            fieldType: "number",
+        },
+    ],
     tabs: [],
 };
 
@@ -58,12 +137,12 @@ export default function ActivationDetailPage() {
         ? (sbEvents ?? []).filter((e: Record<string, unknown>) => e.activation_id === activationId)
         : [];
 
-    const typeConfig = activation
+    const _typeConfig = activation
         ? ACTIVATION_TYPE_CONFIG[activation.type as keyof typeof ACTIVATION_TYPE_CONFIG]
         : null;
     const components =
         activation && Array.isArray(activation.components) ? activation.components : [];
-    const totalComponentCost = components.reduce(
+    const _totalComponentCost = components.reduce(
         (sum: number, c: unknown) => sum + Number((c as Record<string, unknown>).cost ?? 0),
         0
     );
@@ -73,49 +152,8 @@ export default function ActivationDetailPage() {
 
     const enrichedRecord = rec ? { ...rec, _locationName: location?.name ?? "" } : null;
 
-    const sidebarSlot = (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Activation Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="secondary">
-                            {typeConfig?.label ?? String(rec?.type ?? "")}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Zone</span>
-                        <span className="font-medium">{String(rec?.zone ?? "—")}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Install Date</span>
-                        <span>
-                            {rec?.install_date ? formatDate(String(rec.install_date)) : "—"}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Strike Date</span>
-                        <span>{rec?.strike_date ? formatDate(String(rec.strike_date)) : "—"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Budget</span>
-                        <span className="font-medium">
-                            {formatCurrency(Number(rec?.budget ?? 0))}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Expected Footfall</span>
-                        <span>
-                            {rec?.expected_footfall
-                                ? Number(rec.expected_footfall).toLocaleString()
-                                : "—"}
-                        </span>
-                    </div>
-                </CardContent>
-            </Card>
+    const sidebarSlot =
+        project || location ? (
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Related Records</CardTitle>
@@ -138,96 +176,34 @@ export default function ActivationDetailPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
-    );
-
-    const overviewSlot = (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs">Budget</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {formatCurrency(Number(rec?.budget ?? 0))}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            Component cost: {formatCurrency(totalComponentCost)}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Package className="h-4 w-4" />
-                            <span className="text-xs">Components</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {readyComponents}/{components.length}
-                        </p>
-                        <p className="text-xs text-muted-foreground">ready</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Calendar className="h-4 w-4" />
-                            <span className="text-xs">Events</span>
-                        </div>
-                        <p className="text-xl font-bold">{activationEvents.length}</p>
-                        <p className="text-xs text-muted-foreground">scheduled</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Users className="h-4 w-4" />
-                            <span className="text-xs">Footfall</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {Number(rec?.expected_footfall ?? 0).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">expected</p>
-                    </CardContent>
-                </Card>
-            </div>
-            {!!rec?.description && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Description</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">{String(rec.description)}</p>
-                    </CardContent>
-                </Card>
-            )}
-            {Array.isArray(rec?.experience_goals) &&
-                (rec.experience_goals as unknown[]).length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Experience Goals</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-wrap gap-2">
-                                {(rec.experience_goals as unknown[]).map((g: unknown) => (
-                                    <Badge key={String(g)} variant="secondary">
-                                        {String(g)}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-        </div>
-    );
+        ) : undefined;
 
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
         subtitleFn: () => location?.name ?? "",
         sidebarSlot,
-        overviewSlot,
+        stats: [
+            {
+                label: "Budget",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.budget ?? 0)),
+            },
+            {
+                label: "Components",
+                icon: Package,
+                compute: () => `${readyComponents}/${components.length} ready`,
+            },
+            {
+                label: "Events",
+                icon: Calendar,
+                compute: () => activationEvents.length,
+            },
+            {
+                label: "Expected Footfall",
+                icon: Users,
+                compute: (r) => Number(r.expected_footfall ?? 0).toLocaleString(),
+            },
+        ],
         tabs: [
             {
                 id: "components",

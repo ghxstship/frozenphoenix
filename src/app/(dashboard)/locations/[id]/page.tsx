@@ -2,7 +2,8 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteLocation, useUpdateLocation } from "@/lib/supabase/hooks-pages";
+import { useDeleteLocation } from "@/lib/supabase";
+import { useUpdateLocation } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records";
-import { useActivations, useEvents, useLocation, useProjects } from "@/lib/supabase/hooks";
+import { useActivations, useEvents, useLocation, useProjects } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
@@ -42,7 +43,42 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/locations",
     backLabel: "Locations",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "capacity", label: "Capacity", accessorKey: "capacity", fieldType: "number" },
+        {
+            id: "square_footage",
+            label: "Square Footage",
+            accessorKey: "square_footage",
+            fieldType: "number",
+        },
+        {
+            id: "daily_rate",
+            label: "Daily Rate",
+            accessorKey: "daily_rate",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "total_cost",
+            label: "Total Cost",
+            accessorKey: "total_cost",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+    ],
+    sidebarFields: [
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "capacity", label: "Capacity", accessorKey: "capacity", fieldType: "number" },
+        {
+            id: "square_footage",
+            label: "Square Footage",
+            accessorKey: "square_footage",
+            fieldType: "number",
+        },
+        { id: "daily_rate", label: "Daily Rate", accessorKey: "daily_rate", fieldType: "currency" },
+        { id: "total_cost", label: "Total Cost", accessorKey: "total_cost", fieldType: "currency" },
+    ],
     tabs: [],
 };
 
@@ -274,61 +310,6 @@ export default function LocationDetailPage() {
 
     const overviewSlot = location ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {location.capacity && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <Users className="h-4 w-4" />
-                                <span className="text-xs">Capacity</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {location.capacity.toLocaleString()}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-                {location.squareFootage && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <MapPin className="h-4 w-4" />
-                                <span className="text-xs">Square Footage</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {location.squareFootage.toLocaleString()} sq ft
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-                {location.dailyRate && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <DollarSign className="h-4 w-4" />
-                                <span className="text-xs">Daily Rate</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {formatCurrency(location.dailyRate)}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-                {location.totalCost && (
-                    <Card>
-                        <CardContent className="pt-4">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <DollarSign className="h-4 w-4" />
-                                <span className="text-xs">Total Cost</span>
-                            </div>
-                            <p className="text-xl font-bold">
-                                {formatCurrency(location.totalCost)}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-
             {(location.accessStartDate || location.accessEndDate) && (
                 <Card>
                     <CardHeader>
@@ -489,6 +470,44 @@ export default function LocationDetailPage() {
             location?.address ? `${location.address.city}, ${location.address.state}` : "",
         sidebarSlot,
         overviewSlot,
+        stats: [
+            ...(location?.capacity
+                ? [
+                      {
+                          label: "Capacity",
+                          icon: Users,
+                          compute: () => location.capacity!.toLocaleString(),
+                      },
+                  ]
+                : []),
+            ...(location?.squareFootage
+                ? [
+                      {
+                          label: "Square Footage",
+                          icon: MapPin,
+                          compute: () => `${location.squareFootage!.toLocaleString()} sq ft`,
+                      },
+                  ]
+                : []),
+            ...(location?.dailyRate
+                ? [
+                      {
+                          label: "Daily Rate",
+                          icon: DollarSign,
+                          compute: () => formatCurrency(location.dailyRate!),
+                      },
+                  ]
+                : []),
+            ...(location?.totalCost
+                ? [
+                      {
+                          label: "Total Cost",
+                          icon: DollarSign,
+                          compute: () => formatCurrency(location.totalCost!),
+                      },
+                  ]
+                : []),
+        ],
         tabs: [
             {
                 id: "activations",

@@ -3,7 +3,7 @@
 import { LoadingState } from "@/components/layouts/loading-state";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SERVICE_REQUEST_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,8 +28,8 @@ import {
     ShieldCheck,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-import { useApprovals, useProjects } from "@/lib/supabase/hooks";
-import { useClientInvoices, useEstimates } from "@/lib/supabase/hooks-pages";
+import { useApprovals, useProjects } from "@/lib/supabase";
+import { useClientInvoices, useEstimates } from "@/lib/supabase";
 
 const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success" | "destructive"> =
     {
@@ -141,11 +141,10 @@ export default function ClientPortalPage() {
 
     return (
         <PermissionGate resource="client_portal" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Client Portal"
-                    description="View projects, estimates, invoices, and pending approvals. Request new work or make payments."
-                >
+            <PageShell
+                title="Client Portal"
+                description="View projects, estimates, invoices, and pending approvals. Request new work or make payments."
+                actions={
                     <div className="flex items-center gap-2">
                         <Button size="sm" variant="outline">
                             <MessageSquare className="h-4 w-4" /> Messages
@@ -158,8 +157,8 @@ export default function ClientPortalPage() {
                             Client View
                         </Badge>
                     </div>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard
                         title="Active Projects"
@@ -390,7 +389,7 @@ export default function ClientPortalPage() {
                         ))}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
             <CreateEntityDialog
                 config={CREATE_SERVICE_REQUEST_CONFIG}
                 open={createOpen}

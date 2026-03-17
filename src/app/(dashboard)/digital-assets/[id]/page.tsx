@@ -1,18 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    useDeleteDigitalAsset,
-    useDigitalAsset,
-    useUpdateDigitalAsset,
-} from "@/lib/supabase/hooks-pages";
+import { useDeleteDigitalAsset, useDigitalAsset, useUpdateDigitalAsset } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Download, Eye, FileBox, History, Link2, Shield, User } from "lucide-react";
@@ -63,7 +58,45 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/digital-assets",
     backLabel: "Digital Assets",
     chatterRecordType: "digital_asset",
-    fields: [],
+    fields: [
+        {
+            id: "asset_class_l1",
+            label: "Class L1",
+            accessorKey: "asset_class_l1",
+            fieldType: "status",
+        },
+        {
+            id: "asset_class_l2",
+            label: "Class L2",
+            accessorKey: "asset_class_l2",
+            fieldType: "status",
+        },
+        {
+            id: "sensitivity",
+            label: "Sensitivity",
+            accessorKey: "sensitivity",
+            fieldType: "status",
+        },
+        { id: "document_number", label: "Doc #", accessorKey: "document_number" },
+        { id: "filename", label: "Filename", accessorKey: "filename" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        {
+            id: "asset_class_l1",
+            label: "Class",
+            accessorKey: "asset_class_l1",
+            fieldType: "status",
+        },
+        {
+            id: "sensitivity",
+            label: "Sensitivity",
+            accessorKey: "sensitivity",
+            fieldType: "status",
+        },
+        { id: "document_number", label: "Doc #", accessorKey: "document_number" },
+        { id: "filename", label: "Filename", accessorKey: "filename" },
+    ],
     tabs: [],
 };
 
@@ -77,9 +110,9 @@ export default function DigitalAssetDetailPage() {
     const _assetName = (da?.name as string) ?? "";
     const filename = (da?.filename as string) ?? "";
     const description = (da?.description as string) ?? "";
-    const assetStatus = (da?.status as string) ?? "draft";
-    const assetClassL1 = (da?.asset_class_l1 as string) ?? "";
-    const assetClassL2 = (da?.asset_class_l2 as string) ?? "";
+    const _assetStatus = (da?.status as string) ?? "draft";
+    const _assetClassL1 = (da?.asset_class_l1 as string) ?? "";
+    const _assetClassL2 = (da?.asset_class_l2 as string) ?? "";
     const sensitivity = (da?.sensitivity as string) ?? "";
     const documentNumber = (da?.document_number as string) ?? "";
     const publishedAt = (da?.published_at as string) ?? "";
@@ -102,50 +135,6 @@ export default function DigitalAssetDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Asset Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(assetStatus) as "default"}>
-                            {getStatusLabel(assetStatus)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Class</span>
-                        <Badge variant="outline" className="capitalize">
-                            {assetClassL1} / {assetClassL2}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sensitivity</span>
-                        <Badge
-                            variant={
-                                sensitivity === "confidential"
-                                    ? "warning"
-                                    : sensitivity === "restricted"
-                                      ? "destructive"
-                                      : "ghost"
-                            }
-                        >
-                            {sensitivity}
-                        </Badge>
-                    </div>
-                    {documentNumber && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Doc #</span>
-                            <span className="font-mono text-xs">{documentNumber}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Filename</span>
-                        <span className="text-xs truncate max-w-[140px]">{filename}</span>
-                    </div>
-                </CardContent>
-            </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Dates</CardTitle>
@@ -195,48 +184,6 @@ export default function DigitalAssetDetailPage() {
 
     const overviewSlot = (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Shield className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Sensitivity</p>
-                                <p className="text-sm font-bold capitalize">{sensitivity}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <History className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Version</p>
-                                <p className="text-sm font-bold">
-                                    {versions[0]?.version_label ?? "v1"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-primary" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Last Reviewed</p>
-                                <p className="text-sm font-semibold">
-                                    {lastReviewedAt
-                                        ? formatDate(lastReviewedAt, "compact")
-                                        : "Never"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {description && (
                 <Card>
                     <CardHeader>
@@ -283,6 +230,15 @@ export default function DigitalAssetDetailPage() {
         subtitleFn: () => `${filename} · ${documentNumber || entityId}`,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Sensitivity", icon: Shield, compute: () => sensitivity },
+            { label: "Version", icon: History, compute: () => versions[0]?.version_label ?? "v1" },
+            {
+                label: "Last Reviewed",
+                icon: Calendar,
+                compute: () => (lastReviewedAt ? formatDate(lastReviewedAt, "compact") : "Never"),
+            },
+        ],
         tabs: [
             {
                 id: "versions",

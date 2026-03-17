@@ -149,7 +149,11 @@ export async function initiateWorkflow(
     }
 
     // 5. Create initial step approval(s)
-    const assignErr = await assignStepApprovals(supabase, instance.id, firstStep);
+    const assignErr = await assignStepApprovals(supabase, instance.id, firstStep, {
+        entityName: payload.entityName,
+        workflowName: workflow.name,
+        organizationId: payload.organizationId,
+    });
     if (assignErr) {
         logger.error(`${LOG} failed to assign step approvals`, { error: assignErr });
         return { success: false, error: assignErr, code: "DB_ERROR" };
@@ -620,7 +624,19 @@ async function advanceToNextStep(
         .single();
 
     if (nextStepFull) {
-        await assignStepApprovals(supabase, instance.id, nextStepFull);
+        // Fetch workflow name + instance context for notification dispatch (G11)
+        const { data: wfCtx } = await supabase
+            .from("workflow_instances")
+            .select("entity_name, organization_id, approval_workflows(name)")
+            .eq("id", instance.id)
+            .single();
+        await assignStepApprovals(supabase, instance.id, nextStepFull, {
+            entityName: (wfCtx?.entity_name as string) ?? undefined,
+            workflowName:
+                ((wfCtx?.approval_workflows as unknown as Record<string, unknown>)
+                    ?.name as string) ?? undefined,
+            organizationId: (wfCtx?.organization_id as string) ?? undefined,
+        });
     }
 
     logger.info(`${LOG} advanced`, { instanceId: instance.id, nextStepId: nextStep.id });
@@ -632,11 +648,13 @@ async function advanceToNextStep(
 
 /**
  * Create workflow_step_approvals rows for a step's configured approvers.
+ * Also dispatches in-app notifications to each assigned approver (G11).
  */
 async function assignStepApprovals(
     supabase: SupabaseClient,
     instanceId: string,
-    step: Record<string, unknown>
+    step: Record<string, unknown>,
+    context?: { entityName?: string; workflowName?: string; organizationId?: string }
 ): Promise<string | null> {
     const approverUserIds = step.approver_user_ids as string[] | null;
     const now = new Date().toISOString();
@@ -658,6 +676,29 @@ async function assignStepApprovals(
 
     if (error) {
         return error.message;
+    }
+
+    // Dispatch notifications to each approver (G11)
+    const stepName = (step.name as string) || "Approval Step";
+    const entityLabel = context?.entityName || "a record";
+    const workflowLabel = context?.workflowName || "an approval workflow";
+
+    const notifications = approverUserIds.map((uid) => ({
+        user_id: uid,
+        type: "approval",
+        title: `Approval Required: ${stepName}`,
+        message: `You have been assigned to approve "${entityLabel}" in ${workflowLabel}.`,
+        action_url: `/approvals?instance=${instanceId}`,
+        organization_id: context?.organizationId || null,
+    }));
+
+    const { error: notifErr } = await supabase.from("notifications").insert(notifications);
+    if (notifErr) {
+        logger.warn("[ApprovalEngine] Failed to dispatch step notifications", {
+            instanceId,
+            error: notifErr.message,
+        });
+        // Non-fatal — do not fail the workflow because of notification issues
     }
 
     return null;

@@ -3,10 +3,13 @@
 import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useDeleteVendor, useVendor } from "@/lib/supabase";
 import {
-    useDeleteVendor,
-    useUpdateVendor as useUpdateVendorHook,
-} from "@/lib/supabase/hooks-pages";
+    useCreatePurchaseOrder,
+    useInvoices,
+    usePurchaseOrders,
+    useUpdateVendor,
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,13 +27,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { useVendor } from "@/lib/supabase/hooks-pages";
-import {
-    useCreatePurchaseOrder,
-    useInvoices,
-    usePurchaseOrders,
-    useUpdateVendor,
-} from "@/lib/supabase/hooks";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
@@ -66,7 +62,7 @@ export default function VendorDetailPage() {
         entityId: vendorId,
         entityLabel: "Vendor",
         listPath: "/vendors",
-        useUpdateHook: useUpdateVendorHook,
+        useUpdateHook: useUpdateVendor,
         useDeleteHook: useDeleteVendor,
     });
     const [poDialogOpen, setPoDialogOpen] = useState(false);

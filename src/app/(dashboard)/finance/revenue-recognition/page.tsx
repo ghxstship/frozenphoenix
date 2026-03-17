@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,10 +25,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import {
-    useRevenueRecognitionEntries,
-    useRevenueRecognitionSummary,
-} from "@/lib/supabase/hooks-v2-features";
+import { useRevenueRecognitionEntries, useRevenueRecognitionSummary } from "@/lib/supabase";
 
 type RevRecTab = "entries" | "summary" | "schedules";
 
@@ -143,16 +140,15 @@ export default function RevenueRecognitionPage() {
 
     return (
         <PermissionGate resource="finance" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Revenue Recognition"
-                    description="ASC 606 / IFRS 15 compliant revenue recognition tracking across projects"
-                >
+            <PageShell
+                title="Revenue Recognition"
+                description="ASC 606 / IFRS 15 compliant revenue recognition tracking across projects"
+                actions={
                     <Button size="sm">
                         <TrendingUp className="h-4 w-4" /> Run Recognition
                     </Button>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Recognized Revenue"
@@ -349,7 +345,7 @@ export default function RevenueRecognitionPage() {
                         </CardContent>
                     </Card>
                 </TabPanel>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

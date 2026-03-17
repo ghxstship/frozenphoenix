@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useTimeTrackingCompliance, useTimeTrackingPolicy } from "@/lib/supabase/hooks-v2-features";
-import { useCrewMembers } from "@/lib/supabase/hooks";
+import { useTimeTrackingCompliance, useTimeTrackingPolicy } from "@/lib/supabase";
+import { useCrewMembers } from "@/lib/supabase";
 
 interface CompliancePolicy {
     id: string;
@@ -80,7 +80,7 @@ export default function TimeTrackingCompliancePage() {
 
     const policies: CompliancePolicy[] = useMemo(
         () =>
-            (sbPolicies ?? []).map((p: Record<string, unknown>) => ({
+            ((sbPolicies ?? []) as Record<string, unknown>[]).map((p) => ({
                 id: String(p.id),
                 name: String(p.name ?? ""),
                 maxDailyHours: Number(p.max_daily_hours ?? 10),
@@ -152,11 +152,10 @@ export default function TimeTrackingCompliancePage() {
 
     return (
         <PermissionGate resource="time_tracking" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Time Tracking Compliance"
-                    description="Monitor logging policies, violations, and workforce compliance status"
-                >
+            <PageShell
+                title="Time Tracking Compliance"
+                description="Monitor logging policies, violations, and workforce compliance status"
+                actions={
                     <div className="flex gap-2">
                         <Button size="sm" variant="outline">
                             <Bell className="h-4 w-4" /> Send Reminders
@@ -165,8 +164,8 @@ export default function TimeTrackingCompliancePage() {
                             <Shield className="h-4 w-4" /> Manage Policies
                         </Button>
                     </div>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Active Violations"
@@ -377,7 +376,7 @@ export default function TimeTrackingCompliancePage() {
                         })}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

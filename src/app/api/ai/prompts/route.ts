@@ -4,42 +4,44 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-    const supabase = await createClient();
-    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/ai/prompts",
+        rbac: { resource: "ai", action: "read" },
+    },
+    async (_request, { supabase, user, log }) => {
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const { data: membership } = await supabase
+            .from("org_memberships")
+            .select("organization_id, role")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-    const admin = createAdminClient();
-    if (!admin) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        if (!membership || !["exec", "director"].includes(membership.role)) {
+            return ApiErrors.forbidden("Requires exec or director role");
+        }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
-        .select("organization_id, role")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+        const { data: prompts, error } = await admin
+            .from("ai_system_prompts")
+            .select("id, name, role_scope, prompt_text, is_default, active")
+            .eq("org_id", membership.organization_id)
+            .order("is_default", { ascending: false });
 
-    if (!membership || !["exec", "director"].includes(membership.role)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        if (error) {
+            log.error("[GET /api/ai/prompts]", { error });
+            return ApiErrors.internalError("Failed to fetch system prompts");
+        }
+
+        return NextResponse.json({ prompts: prompts ?? [] });
     }
-
-    const { data: prompts, error } = await admin
-        .from("ai_system_prompts")
-        .select("id, name, role_scope, prompt_text, is_default, active")
-        .eq("org_id", membership.organization_id)
-        .order("is_default", { ascending: false });
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ prompts: prompts ?? [] });
-}
+);

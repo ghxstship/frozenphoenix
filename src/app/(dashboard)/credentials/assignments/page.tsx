@@ -2,7 +2,7 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -165,11 +165,10 @@ export default function CredentialAssignmentsPage() {
     return (
         <>
             <PermissionGate resource="credential_assignments" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Credential Assignments"
-                        description="View and manage all credential assignments across events"
-                    >
+                <PageShell
+                    title="Credential Assignments"
+                    description="View and manage all credential assignments across events"
+                    actions={
                         <div className="flex items-center gap-2">
                             <Button size="sm" variant="outline">
                                 <Upload className="h-4 w-4" />
@@ -184,8 +183,8 @@ export default function CredentialAssignmentsPage() {
                                 Assign Credential
                             </Button>
                         </div>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title="Total Assignments" value={rows.length} icon={Users} />
                         <StatCard title="Checked In" value={checkedIn} icon={BadgeCheck} />
@@ -218,7 +217,7 @@ export default function CredentialAssignmentsPage() {
                         stickyHeader
                         hoverable
                     />
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_CREDENTIAL_ASSIGNMENT_CONFIG}

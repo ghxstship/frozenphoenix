@@ -39,7 +39,7 @@ export const POST = withApiHandler(
                 case "NO_ESCALATION_TARGET":
                     return ApiErrors.badRequest(result.error!);
                 default:
-                    return ApiErrors.internalError(result.error);
+                    return ApiErrors.internalError("Escalation failed");
             }
         }
 

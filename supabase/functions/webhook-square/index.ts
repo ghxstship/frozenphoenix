@@ -4,8 +4,21 @@
  * normalizes transactions, and inserts into pos_transactions + pos_transaction_items.
  */
 
-import { computePayloadHash, createServiceClient, errorResponse, isDuplicate, jsonResponse, logWebhookEvent, updateWebhookEventStatus } from "../_shared/webhook-utils.ts";
-import { completeSyncEvent, createSyncEvent, incrementConnectionErrorCount, updateConnectionSyncTimestamp } from "../_shared/sync-utils.ts";
+import {
+    computePayloadHash,
+    createServiceClient,
+    errorResponse,
+    isDuplicate,
+    jsonResponse,
+    logWebhookEvent,
+    updateWebhookEventStatus,
+} from "../_shared/webhook-utils.ts";
+import {
+    completeSyncEvent,
+    createSyncEvent,
+    incrementConnectionErrorCount,
+    updateConnectionSyncTimestamp,
+} from "../_shared/sync-utils.ts";
 import { squareAdapter } from "../_shared/provider-adapters/square.ts";
 
 const PROVIDER_NAME = "square";
@@ -43,17 +56,21 @@ Deno.serve(async (req: Request) => {
     //    If multiple active connections exist, match by webhook secret.
     // -----------------------------------------------------------------------
     const headers: Record<string, string> = {};
-    req.headers.forEach((v: string, k: string) => { headers[k.toLowerCase()] = v; });
+    req.headers.forEach((v: string, k: string) => {
+        headers[k.toLowerCase()] = v;
+    });
 
     let connection: Record<string, unknown> | null = null;
 
     if (connections.length === 1) {
         connection = connections[0] as Record<string, unknown>;
         const secret = (connection.webhook_secret as string) ?? "";
-        if (secret) {
-            const valid = await squareAdapter.validateSignature(rawBody, headers, secret);
-            if (!valid) return errorResponse("Invalid webhook signature", 401);
+        if (!secret) {
+            console.error("Square connection missing webhook_secret — rejecting unsigned payload");
+            return errorResponse("Webhook signature validation not configured", 500);
         }
+        const valid = await squareAdapter.validateSignature(rawBody, headers, secret);
+        if (!valid) return errorResponse("Invalid webhook signature", 401);
     } else {
         // Multiple connections — find the one whose secret validates
         for (const conn of connections) {
@@ -61,7 +78,10 @@ Deno.serve(async (req: Request) => {
             const secret = (c.webhook_secret as string) ?? "";
             if (!secret) continue;
             const valid = await squareAdapter.validateSignature(rawBody, headers, secret);
-            if (valid) { connection = c; break; }
+            if (valid) {
+                connection = c;
+                break;
+            }
         }
         if (!connection) {
             return errorResponse("No matching connection for webhook signature", 401);
@@ -158,7 +178,10 @@ Deno.serve(async (req: Request) => {
 
             processed++;
         } catch (err) {
-            console.error(`Failed to process transaction ${txn.providerTransactionId}:`, (err as Error).message);
+            console.error(
+                `Failed to process transaction ${txn.providerTransactionId}:`,
+                (err as Error).message
+            );
             failed++;
         }
     }
@@ -166,7 +189,8 @@ Deno.serve(async (req: Request) => {
     // -----------------------------------------------------------------------
     // 7. Finalize
     // -----------------------------------------------------------------------
-    const finalStatus = failed === 0 ? "completed" : failed === transactions.length ? "failed" : "partial";
+    const finalStatus =
+        failed === 0 ? "completed" : failed === transactions.length ? "failed" : "partial";
 
     if (syncEventId) {
         await completeSyncEvent(supabase, syncEventId, {
@@ -186,7 +210,7 @@ Deno.serve(async (req: Request) => {
         await updateWebhookEventStatus(
             supabase,
             webhookEventId,
-            failed === transactions.length ? "failed" : "processed",
+            failed === transactions.length ? "failed" : "processed"
         );
     }
 

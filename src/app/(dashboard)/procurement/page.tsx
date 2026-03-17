@@ -13,9 +13,9 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import type { BadgeVariant } from "@/config/ui-variants";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { useProjects, useVendors } from "@/lib/supabase/hooks";
-import { usePurchaseOrders, usePurchaseRequisitions } from "@/lib/supabase/hooks-pages";
-import { CREATE_PURCHASE_REQUISITION_CONFIG } from "@/config/create-entity-configs";
+import { useProjects, usePurchaseOrders, useVendors } from "@/lib/supabase";
+import { usePurchaseRequisitions } from "@/lib/supabase";
+import { PROCUREMENT_PAGE } from "@/config/list-page-configs";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
 
@@ -334,13 +334,9 @@ export default function ProcurementPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "procurement",
+            ...PROCUREMENT_PAGE,
             title: "Procurement Hub",
-            description: "Purchase requests, vendor orders, and spend tracking",
-            icon: ShoppingCart,
-            createConfig: CREATE_PURCHASE_REQUISITION_CONFIG,
             createLabel: "New Request",
-            searchKeys: ["title", "status"],
             stats: [
                 {
                     label: "Total PO Value",

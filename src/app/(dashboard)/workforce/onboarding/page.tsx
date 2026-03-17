@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { WorkerOffboardingRun, WorkerOnboardingRun } from "@/types/workforce";
 import type { LifecycleStepStatus } from "@/types/workforce";
-import { useWorkerOffboardingRuns, useWorkerOnboardingRuns } from "@/lib/supabase/hooks-pages";
+import { useWorkerOffboardingRuns, useWorkerOnboardingRuns } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 

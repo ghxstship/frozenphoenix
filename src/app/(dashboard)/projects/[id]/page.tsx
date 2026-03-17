@@ -29,12 +29,8 @@ import {
     useStakeholders,
     useTasks,
     useUpdateProject,
-} from "@/lib/supabase/hooks";
-import {
-    useCreateRecordComment,
-    useRecordActivityLog,
-    useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+} from "@/lib/supabase";
+import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -139,7 +135,7 @@ export default function ProjectDetailPage() {
             logger.error("Failed to add task", { error });
         }
     };
-    const { data: sbTasks } = useTasks(projectId);
+    const { data: sbTasks } = useTasks({ project_id: projectId });
     const { data: sbApprovals } = useApprovals();
     const { data: sbStakeholders } = useStakeholders();
     const projectTasks = sbTasks ?? [];

@@ -2,12 +2,8 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteEvent, useUpdateEvent } from "@/lib/supabase/hooks-pages";
-import {
-    useCreateRecordComment,
-    useRecordActivityLog,
-    useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+import { useDeleteEvent, useUpdateEvent } from "@/lib/supabase";
+import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +14,8 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { useEvent } from "@/lib/supabase/hooks-pages";
-import { useActivations, useCrewShifts, useLocations, useProjects } from "@/lib/supabase/hooks";
+import { useEvent } from "@/lib/supabase";
+import { useActivations, useCrewShifts, useLocations, useProjects } from "@/lib/supabase";
 import { EVENT_TYPE_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -33,7 +29,38 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/events",
     backLabel: "Events",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date", icon: Calendar },
+        { id: "start_time", label: "Start Time", accessorKey: "start_time" },
+        { id: "end_time", label: "End Time", accessorKey: "end_time" },
+        { id: "doors_time", label: "Doors", accessorKey: "doors_time" },
+        {
+            id: "attendee_count",
+            label: "Attendees",
+            accessorKey: "attendee_count",
+            fieldType: "number",
+        },
+        {
+            id: "budget",
+            label: "Budget",
+            accessorKey: "budget",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+    ],
+    sidebarFields: [
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date" },
+        { id: "start_time", label: "Start", accessorKey: "start_time" },
+        { id: "end_time", label: "End", accessorKey: "end_time" },
+        {
+            id: "attendee_count",
+            label: "Attendees",
+            accessorKey: "attendee_count",
+            fieldType: "number",
+        },
+        { id: "budget", label: "Budget", accessorKey: "budget", fieldType: "currency" },
+    ],
     tabs: [],
 };
 
@@ -110,61 +137,8 @@ export default function EventDetailPage() {
         });
     };
 
-    const sidebarSlot = event ? (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Event Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant={(typeConfig?.variant as "default") ?? "secondary"}>
-                            {typeConfig?.label ?? event.type}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Date</span>
-                        <span className="font-medium">{formatDate(event.date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Time</span>
-                        <span>
-                            {event.start_time}–{event.end_time}
-                        </span>
-                    </div>
-                    {event.doors_time && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Doors</span>
-                            <span>{event.doors_time}</span>
-                        </div>
-                    )}
-                    {event.attendee_count && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Attendees</span>
-                            <span className="font-medium">{event.attendee_count}</span>
-                        </div>
-                    )}
-                    {event.vip_count && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">VIPs</span>
-                            <span className="font-medium">{event.vip_count}</span>
-                        </div>
-                    )}
-                    {event.specific_location && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Specific Location</span>
-                            <span>{event.specific_location}</span>
-                        </div>
-                    )}
-                    {event.budget && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Budget</span>
-                            <span className="font-medium">{formatCurrency(event.budget)}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+    const sidebarSlot =
+        project || location || activation ? (
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Related Records</CardTitle>
@@ -195,53 +169,10 @@ export default function EventDetailPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
-    ) : undefined;
+        ) : undefined;
 
     const overviewSlot = event ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Users className="h-4 w-4" />
-                            <span className="text-xs">Attendees</span>
-                        </div>
-                        <p className="text-xl font-bold">{event.attendee_count ?? 0}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Clock className="h-4 w-4" />
-                            <span className="text-xs">Duration</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {event.start_time}–{event.end_time}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Play className="h-4 w-4" />
-                            <span className="text-xs">Cues</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {Array.isArray(event.run_of_show) ? event.run_of_show.length : 0}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs">Budget</span>
-                        </div>
-                        <p className="text-xl font-bold">{formatCurrency(event.budget ?? 0)}</p>
-                    </CardContent>
-                </Card>
-            </div>
             {event.description && (
                 <Card>
                     <CardHeader>
@@ -271,6 +202,25 @@ export default function EventDetailPage() {
             event ? `${formatDate(event.date)} · ${event.start_time}–${event.end_time}` : "",
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Attendees", icon: Users, compute: (r) => Number(r.attendee_count ?? 0) },
+            {
+                label: "Duration",
+                icon: Clock,
+                compute: (r) => `${r.start_time ?? ""}–${r.end_time ?? ""}`,
+            },
+            {
+                label: "Cues",
+                icon: Play,
+                compute: (r) =>
+                    Array.isArray(r.run_of_show) ? (r.run_of_show as unknown[]).length : 0,
+            },
+            {
+                label: "Budget",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.budget ?? 0)),
+            },
+        ],
         tabs: [
             {
                 id: "run-of-show",

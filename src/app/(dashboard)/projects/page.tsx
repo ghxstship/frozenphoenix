@@ -6,13 +6,13 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useProjects } from "@/lib/supabase/hooks";
+import { useProjects } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ArrowRight, Calendar, DollarSign, FolderKanban, Users } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { CREATE_PROJECT_CONFIG } from "@/config/create-entity-configs";
+import { PROJECTS_PAGE } from "@/config/list-page-configs";
 import {
     PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
     PROJECT_PHASE_ORDER,
@@ -370,15 +370,11 @@ export default function ProjectsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "projects",
+            ...PROJECTS_PAGE,
             title: "Productions",
-            description: "Manage your active productions and their lifecycle",
-            icon: FolderKanban,
-            createConfig: CREATE_PROJECT_CONFIG,
             createLabel: "New Project",
             exportable: true,
             importable: true,
-            searchKeys: ["name", "client"],
             stats: [
                 {
                     label: "Active",

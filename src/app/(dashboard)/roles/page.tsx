@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -142,11 +142,10 @@ export default function RolesPage() {
 
     return (
         <PermissionGate resource="settings" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Role & Permission Management"
-                    description="Configure role-based access control across all platform resources"
-                >
+            <PageShell
+                title="Role & Permission Management"
+                description="Configure role-based access control across all platform resources"
+                actions={
                     <div className="flex items-center gap-2">
                         {useDbRoles && (
                             <Badge variant="success" className="gap-1">
@@ -159,8 +158,8 @@ export default function RolesPage() {
                             Audit Log
                         </Button>
                     </div>
-                </PageHeader>
-
+                }
+            >
                 {dbLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -376,7 +375,7 @@ export default function RolesPage() {
                         </Card>
                     </>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

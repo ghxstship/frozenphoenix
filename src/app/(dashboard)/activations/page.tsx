@@ -2,21 +2,17 @@
 
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useActivations, useLocations, useProjects } from "@/lib/supabase/hooks";
-import { CREATE_ACTIVATION_CONFIG } from "@/config/create-entity-configs";
+import { useActivations, useLocations, useProjects } from "@/lib/supabase";
+import { ACTIVATIONS_PAGE } from "@/config/list-page-configs";
 import { DollarSign, Sparkles, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "activations",
+    ...ACTIVATIONS_PAGE,
     title: "Activations",
-    description: "Manage brand activations, installations, and experiences",
-    icon: Sparkles,
-    createConfig: CREATE_ACTIVATION_CONFIG,
     createLabel: "New Activation",
     exportable: true,
-    searchKeys: ["name", "type", "zone"],
     stats: [
         { label: "Total Activations", icon: Sparkles, filter: () => true },
         {
@@ -52,14 +48,6 @@ const config: ListPageConfig = {
                 { value: "active", label: "Active" },
             ],
         },
-    ],
-    columns: [
-        { id: "name", header: "Name", accessorKey: "name" },
-        { id: "type", header: "Type", accessorKey: "type" },
-        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "zone", header: "Zone", accessorKey: "zone" },
-        { id: "expected_footfall", header: "Footfall", accessorKey: "expected_footfall" },
-        { id: "budget", header: "Budget", accessorKey: "budget", fieldType: "currency" },
     ],
 };
 

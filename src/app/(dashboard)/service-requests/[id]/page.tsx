@@ -5,7 +5,7 @@ import {
     useDeleteServiceRequest,
     useServiceRequest,
     useUpdateServiceRequest,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";

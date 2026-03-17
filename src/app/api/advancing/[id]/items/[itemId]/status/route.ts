@@ -1,40 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { advanceItemStatusTransitionSchema } from "@/lib/validation/advancing-schemas";
-import { logger } from "@/lib/logger";
+import { withApiHandlerParams } from "@/lib/api/with-api-handler";
 
-export async function POST(
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string; itemId: string }> }
-) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const POST = withApiHandlerParams(
+    {
+        method: "POST",
+        route: "/api/advancing/[id]/items/[itemId]/status",
+        mutation: true,
+        rbac: { resource: "advancing", action: "write" },
+    },
+    async (request, { supabase, log }, { params }) => {
+        const { id, itemId } = await params;
+        const parsed = await parseAndValidate(request, advanceItemStatusTransitionSchema);
+        if (!parsed.success) return parsed.response;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const updates: Record<string, unknown> = { status: parsed.data.status };
+        if (parsed.data.quantity_confirmed !== undefined) {
+            updates.quantity_confirmed = parsed.data.quantity_confirmed;
+        }
 
-    const { id, itemId } = await params;
-    const parsed = await parseAndValidate(request, advanceItemStatusTransitionSchema);
-    if (!parsed.success) return parsed.response;
+        const { data, error } = await serverFromTable(supabase, "production_advance_items")
+            .update(updates)
+            .eq("id", itemId)
+            .eq("advance_id", id)
+            .select()
+            .single();
 
-    const updates: Record<string, unknown> = { status: parsed.data.status };
-    if (parsed.data.quantity_confirmed !== undefined) {
-        updates.quantity_confirmed = parsed.data.quantity_confirmed;
+        if (error) {
+            if (error.code === "PGRST116") return ApiErrors.notFound("Advance item");
+            log.error("[POST /api/advancing/[id]/items/[itemId]/status]", { error });
+            return ApiErrors.internalError("Failed to update item status");
+        }
+
+        return NextResponse.json({ data });
     }
-
-    const { data, error } = await serverFromTable(supabase!, "production_advance_items")
-        .update(updates)
-        .eq("id", itemId)
-        .eq("advance_id", id)
-        .select()
-        .single();
-
-    if (error) {
-        if (error.code === "PGRST116") return ApiErrors.notFound("Advance item");
-        logger.error("[POST /api/advancing/[id]/items/[itemId]/status]", { error });
-        return ApiErrors.internalError("Failed to update item status");
-    }
-
-    return NextResponse.json({ data });
-}
+);

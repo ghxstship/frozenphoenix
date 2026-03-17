@@ -1,4 +1,9 @@
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 /**
  * archive-event-channels Edge Function
@@ -11,6 +16,9 @@ Deno.serve(async (req) => {
         if (req.method !== "POST") {
             return errorResponse("Method not allowed", 405);
         }
+
+        const authError = requireServiceRoleAuth(req);
+        if (authError) return authError;
 
         const supabase = createServiceClient();
 
@@ -41,10 +49,7 @@ Deno.serve(async (req) => {
             console.error("Error fetching completed event channels:", completedErr);
         }
 
-        const channelsToArchive = [
-            ...(expiredChannels ?? []),
-            ...(completedEventChannels ?? []),
-        ];
+        const channelsToArchive = [...(expiredChannels ?? []), ...(completedEventChannels ?? [])];
 
         // Deduplicate by ID
         const uniqueIds = [...new Set(channelsToArchive.map((c) => c.id))];

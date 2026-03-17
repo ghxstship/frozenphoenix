@@ -42,6 +42,7 @@ export const CHECKLIST_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── project_template ───
@@ -59,6 +60,7 @@ export const PROJECT_TEMPLATES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── stakeholder ───
@@ -105,6 +107,7 @@ export const STAKEHOLDERS_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "stakeholder_type",
     },
+    exportable: true,
 };
 
 // ─── work_package ───
@@ -150,6 +153,7 @@ export const WORK_PACKAGES_PAGE: ListPageConfig = {
         ],
     },
     quickViewConfig: WORK_PACKAGE_QUICK_VIEW,
+    exportable: true,
 };
 
 // ─── milestone ───
@@ -179,6 +183,7 @@ export const MILESTONES_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── project_assignment ───
@@ -212,6 +217,7 @@ export const PROJECT_ASSIGNMENTS_PAGE: ListPageConfig = {
             { id: "assigned_at", label: "Assigned", accessorKey: "assigned_at", fieldType: "date" },
         ],
     },
+    exportable: true,
 };
 
 // ─── stakeholder_project ───
@@ -234,4 +240,5 @@ export const STAKEHOLDER_PROJECTS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Added", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };

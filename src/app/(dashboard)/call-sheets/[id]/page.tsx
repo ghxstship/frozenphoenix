@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCallSheet, useDeleteCallSheet, useUpdateCallSheet } from "@/lib/supabase/hooks-pages";
+import { useCallSheet, useDeleteCallSheet, useUpdateCallSheet } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,19 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/call-sheets",
     backLabel: "Call Sheets",
     chatterRecordType: "call_sheet",
-    fields: [],
+    fields: [
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date", icon: Calendar },
+        { id: "call_time", label: "Call Time", accessorKey: "call_time" },
+        { id: "wrap_time", label: "Wrap Time", accessorKey: "wrap_time" },
+        { id: "venue", label: "Venue", accessorKey: "venue", icon: MapPin },
+        { id: "project_name", label: "Project", accessorKey: "project_name" },
+    ],
+    sidebarFields: [
+        { id: "date", label: "Date", accessorKey: "date", fieldType: "date" },
+        { id: "call_time", label: "Call Time", accessorKey: "call_time" },
+        { id: "wrap_time", label: "Wrap Time", accessorKey: "wrap_time" },
+        { id: "venue", label: "Venue", accessorKey: "venue" },
+    ],
     tabs: [],
 };
 
@@ -85,8 +97,8 @@ export default function CallSheetDetailPage() {
     const csDate = (cs?.date as string) ?? "";
     const venue = (cs?.venue as string) ?? "";
     const venueAddress = (cs?.venue_address as string) ?? "";
-    const callTime = (cs?.call_time as string) ?? "";
-    const wrapTime = (cs?.wrap_time as string) ?? "";
+    const _callTime = (cs?.call_time as string) ?? "";
+    const _wrapTime = (cs?.wrap_time as string) ?? "";
     const productionNotes = (cs?.production_notes as string) ?? "";
     const emergencyContact = (cs?.emergency_contact as string) ?? "";
     const parkingInstructions = (cs?.parking_instructions as string) ?? "";
@@ -104,38 +116,6 @@ export default function CallSheetDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">At a Glance</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Date</p>
-                            <p className="font-medium">{csDate ? formatDate(csDate) : "—"}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Call / Wrap</p>
-                            <p className="font-medium">
-                                {callTime} — {wrapTime}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Crew</p>
-                            <p className="font-medium">
-                                {confirmed}/{crew.length} confirmed
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm flex items-center gap-2">
@@ -225,6 +205,11 @@ export default function CallSheetDetailPage() {
         ...BASE_CONFIG,
         subtitleFn: () => `${projectName} — ${csDate ? formatDate(csDate) : ""}`,
         sidebarSlot,
+        stats: [
+            { label: "Crew", icon: Users, compute: () => `${confirmed}/${crew.length} confirmed` },
+            { label: "Schedule", icon: Clock, compute: () => `${schedule.length} entries` },
+            { label: "Departments", icon: Users, compute: () => departments.length },
+        ],
         tabs: [
             {
                 id: "schedule",

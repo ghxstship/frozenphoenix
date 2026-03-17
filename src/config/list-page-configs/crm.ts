@@ -63,6 +63,7 @@ export const CONTACTS_PAGE: ListPageConfig = {
         fields: [{ id: "email", label: "Email", accessorKey: "email" }],
     },
     quickViewConfig: CONTACT_QUICK_VIEW,
+    exportable: true,
 };
 
 // ─── guest_incident ───
@@ -87,6 +88,7 @@ export const GUEST_INCIDENTS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "description",
     },
+    exportable: true,
 };
 
 // ─── lost_reason ───
@@ -103,6 +105,7 @@ export const LOST_REASONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── testimonial ───
@@ -120,6 +123,7 @@ export const TESTIMONIALS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── vip_guest ───
@@ -144,6 +148,7 @@ export const VIP_GUESTS_PAGE: ListPageConfig = {
         subtitleKey: "organization",
         statusKey: "vip_tier",
     },
+    exportable: true,
 };
 
 // ─── vip_service_request ───
@@ -168,6 +173,7 @@ export const VIP_SERVICE_REQUESTS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "guest_name",
     },
+    exportable: true,
 };
 
 // ─── account_health_score ───
@@ -194,6 +200,7 @@ export const ACCOUNT_HEALTH_SCORES_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "trend",
     },
+    exportable: true,
 };
 
 // ─── upsell_event ───
@@ -210,6 +217,7 @@ export const UPSELL_EVENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── upsell_trigger ───
@@ -227,4 +235,5 @@ export const UPSELL_TRIGGERS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };

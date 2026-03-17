@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase/hooks-pages";
+import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +106,51 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/contracts",
     backLabel: "Contracts",
     chatterRecordType: "contract",
-    fields: [],
+    fields: [
+        { id: "description", label: "Description", accessorKey: "description", fullWidth: true },
+        {
+            id: "value",
+            label: "Contract Value",
+            accessorKey: "value",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "effective_date",
+            label: "Effective Date",
+            accessorKey: "effective_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "expiration_date",
+            label: "Expiration Date",
+            accessorKey: "expiration_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        { id: "auto_renew", label: "Auto-Renew", accessorKey: "auto_renew", fieldType: "boolean" },
+        { id: "vendor_name", label: "Vendor", accessorKey: "vendor_name" },
+        { id: "client_name", label: "Client", accessorKey: "client_name" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "value", label: "Value", accessorKey: "value", fieldType: "currency" },
+        {
+            id: "effective_date",
+            label: "Effective Date",
+            accessorKey: "effective_date",
+            fieldType: "date",
+        },
+        {
+            id: "expiration_date",
+            label: "Expiration Date",
+            accessorKey: "expiration_date",
+            fieldType: "date",
+        },
+        { id: "auto_renew", label: "Auto-Renew", accessorKey: "auto_renew", fieldType: "boolean" },
+    ],
     tabs: [],
 };
 
@@ -131,18 +175,18 @@ export default function ContractDetailPage() {
     const contractStatus = ((ct?.status as string) ?? "draft") as ContractStatusType;
     const vendorName = (ct?.vendor_name as string) ?? (ct?.vendorName as string) ?? "";
     const clientName = (ct?.client_name as string) ?? (ct?.clientName as string) ?? "";
-    const contractValue = (ct?.value as number) ?? 0;
+    const _contractValue = (ct?.value as number) ?? 0;
     const effectiveDate = (ct?.effective_date as string) ?? (ct?.effectiveDate as string) ?? "";
     const expirationDate = (ct?.expiration_date as string) ?? (ct?.expirationDate as string) ?? "";
-    const autoRenew = (ct?.auto_renew as boolean) ?? (ct?.autoRenew as boolean) ?? false;
-    const contractDescription = (ct?.description as string) ?? "";
+    const _autoRenew = (ct?.auto_renew as boolean) ?? (ct?.autoRenew as boolean) ?? false;
+    const _contractDescription = (ct?.description as string) ?? "";
     const clauses = parseClauses(ct?.clauses);
     const signatures = parseSignatures(ct?.signatures);
     const amendments = parseAmendments(ct?.amendments);
     const relatedDocuments = parseDocs(ct?.related_documents ?? ct?.relatedDocuments);
 
-    const statusCfg = CONTRACT_STATUS_MAP[contractStatus];
-    const typeCfg = CONTRACT_TYPE_MAP[contractType];
+    const _statusCfg = CONTRACT_STATUS_MAP[contractStatus];
+    const _typeCfg = CONTRACT_TYPE_MAP[contractType];
     const { addToast } = useToast();
 
     const handleExportPDF = () => {
@@ -165,129 +209,20 @@ export default function ContractDetailPage() {
         return Math.ceil((new Date(expirationDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     }, [expirationDate]);
 
-    const sidebarSlot = (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Contract Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={statusCfg?.variant}>{statusCfg?.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant={typeCfg?.variant}>{typeCfg?.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Value</span>
-                        <span className="font-bold">{formatCurrency(contractValue)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Counterparty</span>
-                        <span className="font-medium">{clientName || vendorName || "—"}</span>
-                    </div>
-                    {autoRenew && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Auto-Renew</span>
-                            <Badge variant="success">Yes</Badge>
-                        </div>
-                    )}
+    const sidebarSlot =
+        daysUntilExpiry <= 90 && daysUntilExpiry > 0 ? (
+            <Card className="border-warning/50 bg-warning/5">
+                <CardContent className="pt-4">
+                    <Badge variant="warning" className="w-full justify-center">
+                        <AlertTriangle className="mr-1 h-3 w-3" />
+                        {daysUntilExpiry}d until expiry
+                    </Badge>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Timeline</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Effective Date</p>
-                            <p className="font-medium">
-                                {effectiveDate ? formatDate(effectiveDate) : "TBD"}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Expiration Date</p>
-                            <p className="font-medium">
-                                {expirationDate ? formatDate(expirationDate) : "TBD"}
-                            </p>
-                        </div>
-                    </div>
-                    {daysUntilExpiry <= 90 && daysUntilExpiry > 0 && (
-                        <Badge variant="warning" className="w-full justify-center">
-                            <AlertTriangle className="mr-1 h-3 w-3" />
-                            {daysUntilExpiry}d until expiry
-                        </Badge>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
-    );
+        ) : undefined;
 
     const overviewSlot = (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <DollarSign className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Contract Value</p>
-                                <p className="text-lg font-bold">{formatCurrency(contractValue)}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
-                                <Calendar className="h-5 w-5 text-info" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Effective Period</p>
-                                <p className="text-sm font-semibold">
-                                    {effectiveDate ? formatDate(effectiveDate) : "TBD"} —{" "}
-                                    {expirationDate ? formatDate(expirationDate) : "TBD"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-secondary/50 flex items-center justify-center">
-                                <Building2 className="h-5 w-5 text-secondary-foreground" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Counterparty</p>
-                                <p className="text-sm font-semibold">
-                                    {clientName || vendorName || "—"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-base">Description</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        {contractDescription || "No description provided."}
-                    </p>
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
@@ -344,6 +279,24 @@ export default function ContractDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Contract Value",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.value ?? 0)),
+            },
+            {
+                label: "Effective Period",
+                icon: Calendar,
+                compute: () =>
+                    `${effectiveDate ? formatDate(effectiveDate) : "TBD"} — ${expirationDate ? formatDate(expirationDate) : "TBD"}`,
+            },
+            {
+                label: "Counterparty",
+                icon: Building2,
+                compute: () => clientName || vendorName || "—",
+            },
+        ],
         tabs: [
             {
                 id: "signatures",

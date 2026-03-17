@@ -3,21 +3,7 @@
 import { ListPageShell } from "@/components/shells";
 import { PermissionGate } from "@/components/permission-guard";
 import { useFeatureFlags } from "@/lib/settings/hooks";
-import { Flag } from "lucide-react";
-import type { ListPageConfig } from "@/types/list-page-config";
-
-const config: ListPageConfig = {
-    entityKey: "feature_flags",
-    title: "Feature Flags",
-    description: "Control feature rollout across organizations, roles, and users",
-    icon: Flag,
-    searchKeys: ["name"],
-    columns: [
-        { id: "name", header: "Name", accessorKey: "name" },
-        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
-    ],
-};
+import { FEATURE_FLAGS_PAGE } from "@/config/list-page-configs";
 
 export default function FeatureFlagsPage() {
     const { data: rawData, isLoading } = useFeatureFlags();
@@ -25,7 +11,7 @@ export default function FeatureFlagsPage() {
 
     return (
         <PermissionGate resource="settings" action="manage">
-            <ListPageShell config={config} data={data} isLoading={isLoading} />
+            <ListPageShell config={FEATURE_FLAGS_PAGE} data={data} isLoading={isLoading} />
         </PermissionGate>
     );
 }

@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { buildTransactionalEmail, sendEmail } from "@/lib/email";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/logger"; // Used by helper functions outside handler scope
 import { withApiHandler } from "@/lib/api/with-api-handler";
+import {
+    notificationDispatchByIdSchema,
+    notificationDispatchCreateSchema,
+    validate,
+} from "@/lib/validation/schemas";
 
 /**
  * POST /api/notifications/dispatch
@@ -30,18 +35,19 @@ export const POST = withApiHandler(
             return ApiErrors.serviceUnavailable("Admin client not configured");
         }
 
-        let body: Record<string, unknown>;
+        let rawBody: unknown;
         try {
-            body = await request.json();
+            rawBody = await request.json();
         } catch {
             return ApiErrors.badRequest("Invalid JSON body");
         }
 
         // ── Path A: Dispatch an existing notification by ID ──
-        if (body.notification_id && typeof body.notification_id === "string") {
+        const byIdResult = validate(notificationDispatchByIdSchema, rawBody);
+        if (byIdResult.success) {
             const { data: notification, error } = await serverFromTable(admin!, "notifications")
                 .select("*")
-                .eq("id", body.notification_id)
+                .eq("id", byIdResult.data.notification_id)
                 .single();
 
             if (error || !notification) {
@@ -53,14 +59,13 @@ export const POST = withApiHandler(
         }
 
         // ── Path B: Create + dispatch in one call ──
-        const userId = body.user_id as string | undefined;
-        const title = body.title as string | undefined;
-
-        if (!userId || !title) {
-            return ApiErrors.badRequest("user_id and title are required");
+        const createResult = validate(notificationDispatchCreateSchema, rawBody);
+        if (!createResult.success) {
+            return ApiErrors.validationError(createResult.errors);
         }
 
-        const messageText = (body.body as string) || title;
+        const { user_id: userId, title, body: bodyText, type, action_url } = createResult.data;
+        const messageText = bodyText || title;
 
         const { data: notification, error: insertErr } = await serverFromTable(
             admin!,
@@ -70,8 +75,8 @@ export const POST = withApiHandler(
                 user_id: userId,
                 title,
                 message: messageText,
-                type: (body.type as string) || "info",
-                action_url: (body.action_url as string) || null,
+                type: type ?? "info",
+                action_url: action_url ?? null,
             })
             .select("*")
             .single();

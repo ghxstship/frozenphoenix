@@ -65,6 +65,7 @@ export const CREDENTIAL_TYPES_PAGE: ListPageConfig = {
         { id: "is_required", header: "Required", accessorKey: "is_required", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── goal ───
@@ -93,6 +94,7 @@ export const GOALS_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "status",
     },
+    exportable: true,
 };
 
 // ─── review_cycle ───
@@ -110,6 +112,7 @@ export const REVIEW_CYCLES_PAGE: ListPageConfig = {
         { id: "start_date", header: "Start", accessorKey: "start_date", fieldType: "date" },
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── review ───
@@ -127,6 +130,7 @@ export const REVIEWS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── time_off_request ───
@@ -157,6 +161,7 @@ export const TIME_OFF_REQUESTS_PAGE: ListPageConfig = {
         endDateKey: "end_date",
         colorKey: "leave_type",
     },
+    exportable: true,
 };
 
 // ─── timesheet ───
@@ -174,6 +179,7 @@ export const TIMESHEETS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "submitted_at", header: "Submitted", accessorKey: "submitted_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── worker_offboarding_run ───
@@ -191,6 +197,7 @@ export const WORKER_OFFBOARDING_RUNS_PAGE: ListPageConfig = {
         { id: "completion_percent", header: "Progress", accessorKey: "completion_percent" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── worker_onboarding_run ───
@@ -208,6 +215,7 @@ export const WORKER_ONBOARDING_RUNS_PAGE: ListPageConfig = {
         { id: "completion_percent", header: "Progress", accessorKey: "completion_percent" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── certification ───
@@ -225,6 +233,7 @@ export const CERTIFICATIONS_PAGE: ListPageConfig = {
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── credential_assignment ───
@@ -247,6 +256,7 @@ export const CREDENTIAL_ASSIGNMENTS_PAGE: ListPageConfig = {
         { id: "issued_at", header: "Issued", accessorKey: "issued_at", fieldType: "date" },
         { id: "expires_at", header: "Expires", accessorKey: "expires_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── credential_inventory_pool ───
@@ -269,6 +279,7 @@ export const CREDENTIAL_INVENTORY_POOLS_PAGE: ListPageConfig = {
         { id: "available_quantity", header: "Available", accessorKey: "available_quantity" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── crew_availability ───
@@ -300,6 +311,7 @@ export const CREW_AVAILABILITY_PAGE: ListPageConfig = {
         endDateKey: "available_to",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── crew_shift ───
@@ -333,6 +345,7 @@ export const CREW_SHIFTS_PAGE: ListPageConfig = {
         colorKey: "status",
         groupByKey: "crew_member_name",
     },
+    exportable: true,
 };
 
 // ─── live_crew_assignment ───
@@ -350,6 +363,7 @@ export const LIVE_CREW_ASSIGNMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Assigned", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── schedule_entry ───
@@ -383,6 +397,7 @@ export const SCHEDULE_ENTRIES_PAGE: ListPageConfig = {
         colorKey: "status",
         groupByKey: "assignee_name",
     },
+    exportable: true,
 };
 
 // ─── shift ───
@@ -400,6 +415,7 @@ export const SHIFTS_PAGE: ListPageConfig = {
         { id: "end_time", header: "End", accessorKey: "end_time", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── team_member ───
@@ -417,6 +433,7 @@ export const TEAM_MEMBERS_PAGE: ListPageConfig = {
         { id: "joined_at", header: "Joined", accessorKey: "joined_at", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── time_entry ───
@@ -434,6 +451,7 @@ export const TIME_ENTRIES_PAGE: ListPageConfig = {
         { id: "billable", header: "Billable", accessorKey: "billable", fieldType: "status" },
         { id: "entry_date", header: "Date", accessorKey: "entry_date", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── time_tracking_policy ───
@@ -451,6 +469,7 @@ export const TIME_TRACKING_POLICIES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── worker_classification ───
@@ -473,6 +492,7 @@ export const WORKER_CLASSIFICATIONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── worker_compliance_doc ───
@@ -490,6 +510,7 @@ export const WORKER_COMPLIANCE_DOCS_PAGE: ListPageConfig = {
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── worker_profile ───
@@ -550,6 +571,7 @@ export const WORKER_PROFILES_PAGE: ListPageConfig = {
         categoryKey: "department",
     },
     quickViewConfig: WORKER_PROFILE_QUICK_VIEW,
+    exportable: true,
 };
 
 // ─── worker_review ───
@@ -572,4 +594,5 @@ export const WORKER_REVIEWS_PAGE: ListPageConfig = {
         },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };

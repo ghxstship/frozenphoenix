@@ -3,7 +3,7 @@
 import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { useComplianceDrift } from "@/lib/supabase/hooks-v2-features";
+import { useComplianceDrift } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { PermissionGate } from "@/components/permission-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

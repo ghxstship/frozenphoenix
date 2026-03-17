@@ -4,11 +4,11 @@ import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
-import { useProjects, useTasks } from "@/lib/supabase/hooks";
+import { useProjects, useTasks } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CheckSquare } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { CREATE_TASK_CONFIG } from "@/config/create-entity-configs";
+import { TASKS_PAGE } from "@/config/list-page-configs";
 import {
     FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
     TASK_PRIORITY_MAP as TASK_PRIORITY_CONFIG,
@@ -423,15 +423,11 @@ export default function TasksPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "tasks",
+            ...TASKS_PAGE,
             title: "Tasks",
-            description: "Granular task management with fabrication tracking",
-            icon: CheckSquare,
-            createConfig: CREATE_TASK_CONFIG,
             createLabel: "New Task",
             exportable: true,
             importable: true,
-            searchKeys: ["title", "status", "priority"],
             stats: [
                 {
                     label: "In Progress",

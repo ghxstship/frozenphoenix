@@ -2,10 +2,9 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase/hooks-pages";
+import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,7 +51,32 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/invoices",
     backLabel: "Invoices",
     chatterRecordType: "invoice",
-    fields: [],
+    fields: [
+        {
+            id: "issued_date",
+            label: "Issued",
+            accessorKey: "issued_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date", icon: Clock },
+        { id: "currency", label: "Currency", accessorKey: "currency" },
+        { id: "tax_rate", label: "Tax Rate", accessorKey: "tax_rate", fieldType: "percentage" },
+        { id: "po_number", label: "PO Number", accessorKey: "po_number" },
+    ],
+    sidebarFields: [
+        {
+            id: "delivery_status",
+            label: "Status",
+            accessorKey: "delivery_status",
+            fieldType: "status",
+        },
+        { id: "issued_date", label: "Issued", accessorKey: "issued_date", fieldType: "date" },
+        { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+        { id: "currency", label: "Currency", accessorKey: "currency" },
+        { id: "tax_rate", label: "Tax Rate", accessorKey: "tax_rate", fieldType: "percentage" },
+        { id: "po_number", label: "PO Number", accessorKey: "po_number" },
+    ],
     tabs: [],
 };
 
@@ -93,13 +117,13 @@ export default function InvoiceDetailPage() {
     const companyAddress = (inv?.company_address as string) ?? "";
     const projectName = (inv?.project_name as string) ?? "";
     const invoiceStatus = (inv?.delivery_status as InvoiceDeliveryStatusType) ?? "draft";
-    const issueDate = (inv?.issued_date as string) ?? "";
-    const dueDate = (inv?.due_date as string) ?? "";
-    const currency = (inv?.currency as string) ?? "USD";
+    const _issueDate = (inv?.issued_date as string) ?? "";
+    const _dueDate = (inv?.due_date as string) ?? "";
+    const _currency = (inv?.currency as string) ?? "USD";
     const taxRate = (inv?.tax_rate as number) ?? 0;
     const paidAmount = (inv?.paid_amount as number) ?? 0;
     const invoiceNotes = (inv?.notes as string) ?? "";
-    const poNumber = (inv?.po_number as string) ?? "";
+    const _poNumber = (inv?.po_number as string) ?? "";
     const createdBy = (inv?.created_by_name as string) ?? "";
 
     const subtotal = useMemo(
@@ -110,71 +134,26 @@ export default function InvoiceDetailPage() {
     const total = subtotal + taxAmount;
     const balance = total - paidAmount;
 
-    const statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoiceStatus];
+    const _statusCfg = INVOICE_DELIVERY_STATUS_MAP[invoiceStatus];
 
     const sidebarSlot = (
-        <div className="space-y-4">
-            <Card>
-                <CardContent className="py-4 space-y-4">
-                    <div className="text-center">
-                        <p className="text-xs text-muted-foreground">Balance Due</p>
-                        <p className="text-3xl font-bold mt-1">{formatCurrency(balance)}</p>
-                    </div>
-                    <ProgressBar
-                        value={total > 0 ? (paidAmount / total) * 100 : 0}
-                        size="md"
-                        variant="success"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Paid: {formatCurrency(paidAmount)}</span>
-                        <span>Total: {formatCurrency(total)}</span>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Invoice Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={statusCfg?.variant}>{statusCfg?.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Issued</span>
-                        <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {issueDate ? formatDate(issueDate) : "—"}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Due</span>
-                        <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {dueDate ? formatDate(dueDate) : "—"}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Currency</span>
-                        <span>{currency}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tax Rate</span>
-                        <span>{taxRate}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Terms</span>
-                        <span>Net 30</span>
-                    </div>
-                    {poNumber && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">PO Number</span>
-                            <span className="font-mono text-xs">{poNumber}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+        <Card>
+            <CardContent className="py-4 space-y-4">
+                <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Balance Due</p>
+                    <p className="text-3xl font-bold mt-1">{formatCurrency(balance)}</p>
+                </div>
+                <ProgressBar
+                    value={total > 0 ? (paidAmount / total) * 100 : 0}
+                    size="md"
+                    variant="success"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Paid: {formatCurrency(paidAmount)}</span>
+                    <span>Total: {formatCurrency(total)}</span>
+                </div>
+            </CardContent>
+        </Card>
     );
 
     const overviewSlot = (
@@ -280,6 +259,11 @@ export default function InvoiceDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Total", icon: DollarSign, compute: () => formatCurrency(total) },
+            { label: "Paid", icon: CheckCircle2, compute: () => formatCurrency(paidAmount) },
+            { label: "Balance", icon: CreditCard, compute: () => formatCurrency(balance) },
+        ],
         tabs: [
             {
                 id: "payments",

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
-import { useProject, useUpdateProject } from "@/lib/supabase/hooks";
+import { useProject, useUpdateProject } from "@/lib/supabase";
 import { FormPageShell } from "@/components/shells/form-page-shell";
 import type { FormPageConfig } from "@/types/form-page-config";
 import { FolderKanban } from "lucide-react";

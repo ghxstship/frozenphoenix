@@ -1,130 +1,130 @@
-import { NextRequest } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
-import { logger } from "@/lib/logger";
 import { csvResponse, serializeCsv } from "@/lib/csv/csv-utils";
 import { getEntityTemplate, getExportableFields } from "@/lib/csv/csv-templates";
+import { withApiHandler } from "@/lib/api/with-api-handler";
+import { csvExportSchema, validate } from "@/lib/validation/schemas";
 
 const MAX_EXPORT_ROWS = 10_000;
 
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
-
-    let body: Record<string, unknown>;
-    try {
-        body = (await request.json()) as Record<string, unknown>;
-    } catch {
-        return ApiErrors.badRequest("Invalid JSON body");
-    }
-
-    const entity = body.entity as string | undefined;
-    const filters = body.filters as Record<string, unknown> | undefined;
-    const limit = Math.min(Number(body.limit) || MAX_EXPORT_ROWS, MAX_EXPORT_ROWS);
-    const preview = body.preview === true;
-    const selectedColumns = Array.isArray(body.columns) ? (body.columns as string[]) : undefined;
-
-    if (!entity) {
-        return ApiErrors.badRequest("entity is required");
-    }
-
-    const template = getEntityTemplate(entity);
-    if (!template) {
-        return ApiErrors.badRequest(
-            `Unknown entity: ${entity}. Valid entities: ${Object.keys((await import("@/lib/csv/csv-templates")).CSV_ENTITY_TEMPLATES).join(", ")}`
-        );
-    }
-
-    if (!template.exportEnabled) {
-        return ApiErrors.badRequest(`Export is not enabled for entity: ${entity}`);
-    }
-
-    const sb = supabase!;
-
-    try {
-        // Build select string from exportable fields, optionally filtered by user selection
-        const allExportFields = getExportableFields(template);
-        const exportFields = selectedColumns
-            ? allExportFields.filter((f) => selectedColumns.includes(f.dbColumn))
-            : allExportFields;
-
-        if (exportFields.length === 0) {
-            return ApiErrors.badRequest("No columns selected for export");
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/csv/export",
+        mutation: true,
+        rbac: { resource: "csv", action: "read" },
+    },
+    async (request, { supabase, log }) => {
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
         }
 
-        const selectColumns = exportFields.map((f) => f.dbColumn).join(", ");
-        const effectiveLimit = preview ? 5 : limit;
-
-        let query = serverFromTable(sb, template.dbTable)
-            .select(template.selectQuery ?? selectColumns)
-            .limit(effectiveLimit);
-
-        // Apply default sort
-        if (template.defaultSort) {
-            query = query.order(template.defaultSort.column, {
-                ascending: template.defaultSort.ascending,
-            });
+        const result = validate(csvExportSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
         }
 
-        // Apply user-provided filters
-        if (filters) {
-            for (const [key, value] of Object.entries(filters)) {
-                if (value === null || value === undefined || value === "") continue;
-                query = query.eq(key, value as string);
+        const entity = result.data.entity;
+        const filters = result.data.filters as Record<string, unknown> | undefined;
+        const limit = Math.min(result.data.limit ?? MAX_EXPORT_ROWS, MAX_EXPORT_ROWS);
+        const preview = result.data.preview;
+        const selectedColumns = result.data.columns;
+
+        const template = getEntityTemplate(entity);
+        if (!template) {
+            return ApiErrors.badRequest(
+                `Unknown entity: ${entity}. Valid entities: ${Object.keys((await import("@/lib/csv/csv-templates")).CSV_ENTITY_TEMPLATES).join(", ")}`
+            );
+        }
+
+        if (!template.exportEnabled) {
+            return ApiErrors.badRequest(`Export is not enabled for entity: ${entity}`);
+        }
+
+        try {
+            // Build select string from exportable fields, optionally filtered by user selection
+            const allExportFields = getExportableFields(template);
+            const exportFields = selectedColumns
+                ? allExportFields.filter((f) => selectedColumns.includes(f.dbColumn))
+                : allExportFields;
+
+            if (exportFields.length === 0) {
+                return ApiErrors.badRequest("No columns selected for export");
             }
+
+            const selectColumns = exportFields.map((f) => f.dbColumn).join(", ");
+            const effectiveLimit = preview ? 5 : limit;
+
+            let query = serverFromTable(supabase, template.dbTable)
+                .select(template.selectQuery ?? selectColumns)
+                .limit(effectiveLimit);
+
+            // Apply default sort
+            if (template.defaultSort) {
+                query = query.order(template.defaultSort.column, {
+                    ascending: template.defaultSort.ascending,
+                });
+            }
+
+            // Apply user-provided filters
+            if (filters) {
+                for (const [key, value] of Object.entries(filters)) {
+                    if (value === null || value === undefined || value === "") continue;
+                    query = query.eq(key, value as string);
+                }
+            }
+
+            const {
+                data: rows,
+                error,
+                count,
+            } = preview
+                ? await query.select(template.selectQuery ?? selectColumns, {
+                      count: "exact",
+                      head: false,
+                  })
+                : await query;
+
+            if (error) {
+                log.error("[POST /api/csv/export]", { entity, error });
+                return ApiErrors.internalError("Failed to fetch export data");
+            }
+
+            const records = (rows ?? []) as Record<string, unknown>[];
+
+            // Preview mode: return JSON with rows + total count
+            if (preview) {
+                return NextResponse.json({
+                    data: {
+                        rows: records,
+                        total_count: count ?? records.length,
+                        columns: exportFields.map((f) => ({
+                            key: f.dbColumn,
+                            label: f.csvHeader,
+                            type: f.type,
+                        })),
+                    },
+                });
+            }
+
+            // Full export: return CSV file
+            const headers = exportFields.map((f) => ({
+                key: f.dbColumn,
+                label: f.csvHeader,
+            }));
+
+            const csv = serializeCsv(records, headers);
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const filename = `${template.entity}_export_${timestamp}.csv`;
+
+            return csvResponse(csv, filename);
+        } catch (err) {
+            log.error("[POST /api/csv/export] Unexpected error", { entity, err });
+            return ApiErrors.internalError("Export failed");
         }
-
-        const {
-            data: rows,
-            error,
-            count,
-        } = preview
-            ? await query.select(template.selectQuery ?? selectColumns, {
-                  count: "exact",
-                  head: false,
-              })
-            : await query;
-
-        if (error) {
-            logger.error("[POST /api/csv/export]", { entity, error });
-            return ApiErrors.internalError("Failed to fetch export data");
-        }
-
-        const records = (rows ?? []) as Record<string, unknown>[];
-
-        // Preview mode: return JSON with rows + total count
-        if (preview) {
-            return Response.json({
-                data: {
-                    rows: records,
-                    total_count: count ?? records.length,
-                    columns: exportFields.map((f) => ({
-                        key: f.dbColumn,
-                        label: f.csvHeader,
-                        type: f.type,
-                    })),
-                },
-            });
-        }
-
-        // Full export: return CSV file
-        const headers = exportFields.map((f) => ({
-            key: f.dbColumn,
-            label: f.csvHeader,
-        }));
-
-        const csv = serializeCsv(records, headers);
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `${template.entity}_export_${timestamp}.csv`;
-
-        return csvResponse(csv, filename);
-    } catch (err) {
-        logger.error("[POST /api/csv/export] Unexpected error", { entity, err });
-        return ApiErrors.internalError("Export failed");
     }
-}
+);

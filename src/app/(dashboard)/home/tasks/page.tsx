@@ -2,13 +2,13 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import { TaskRow, TimeHorizonGroup } from "@/components/home";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PermissionGate } from "@/components/permission-guard";
-import { useMyTaskCounts, useMyTasks } from "@/lib/supabase/hooks";
+import { useMyTaskCounts, useMyTasks } from "@/lib/supabase";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import type { TaskPriority, TaskStatus } from "@/types";
 import { useMemo, useState } from "react";
@@ -97,22 +97,26 @@ export default function HomeTasksPage() {
 
     return (
         <PermissionGate resource="tasks" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader title="Tasks" description="Your assigned tasks across all projects">
-                    <Link href="/tasks">
-                        <Button variant="outline" size="sm">
-                            <ListFilter className="mr-1.5 h-3.5 w-3.5" />
-                            All Tasks
-                        </Button>
-                    </Link>
-                    <Link href="/tasks?view=board">
-                        <Button size="sm">
-                            <Plus className="mr-1.5 h-3.5 w-3.5" />
-                            New Task
-                        </Button>
-                    </Link>
-                </PageHeader>
-
+            <PageShell
+                title="Tasks"
+                description="Your assigned tasks across all projects"
+                actions={
+                    <>
+                        <Link href="/tasks">
+                            <Button variant="outline" size="sm">
+                                <ListFilter className="mr-1.5 h-3.5 w-3.5" />
+                                All Tasks
+                            </Button>
+                        </Link>
+                        <Link href="/tasks?view=board">
+                            <Button size="sm">
+                                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                                New Task
+                            </Button>
+                        </Link>
+                    </>
+                }
+            >
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <KpiCard label="Total Active" value={counts?.total ?? 0} icon={ClipboardList} />
@@ -210,7 +214,7 @@ export default function HomeTasksPage() {
                         )}
                     </div>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

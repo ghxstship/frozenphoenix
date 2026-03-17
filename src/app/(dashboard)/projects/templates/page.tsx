@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_PROJECT_TEMPLATE_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +25,7 @@ import {
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useCreateProjectTemplate, useProjectTemplates } from "@/lib/supabase/hooks-v2-features";
+import { useCreateProjectTemplate, useProjectTemplates } from "@/lib/supabase";
 
 interface ProjectTemplate {
     id: string;
@@ -90,16 +90,15 @@ export default function ProjectTemplatesPage() {
     return (
         <>
             <PermissionGate resource="projects" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Project Templates"
-                        description="Create projects from predefined templates with tasks, milestones, and role assignments"
-                    >
+                <PageShell
+                    title="Project Templates"
+                    description="Create projects from predefined templates with tasks, milestones, and role assignments"
+                    actions={
                         <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" /> New Template
                         </Button>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title="Templates" value={templates.length} icon={Layout} />
                         <StatCard title="Total Usage" value={totalUsage} icon={Copy} />
@@ -263,7 +262,7 @@ export default function ProjectTemplatesPage() {
                             ))}
                         </div>
                     )}
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_PROJECT_TEMPLATE_CONFIG}

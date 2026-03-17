@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useCallback, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -98,9 +98,7 @@ export default function AssetScannerPage() {
 
     return (
         <PermissionGate resource="assets" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader title={S.title} description={S.subtitle} />
-
+            <PageShell title={S.title} description={S.subtitle}>
                 <OfflineIndicator
                     isOnline={isOnline}
                     pendingCount={pendingCount}
@@ -251,7 +249,7 @@ export default function AssetScannerPage() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

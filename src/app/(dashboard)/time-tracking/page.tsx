@@ -4,7 +4,7 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { TabBar } from "@/components/ui/tab-bar";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -33,11 +33,8 @@ import {
     Timer,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import {
-    useCreateTimeEntry,
-    useSubmitTimeEntries,
-    useTimeEntries,
-} from "@/lib/supabase/hooks-pages";
+import { useSubmitTimeEntries } from "@/lib/supabase";
+import { useCreateTimeEntry, useTimeEntries } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TimeEntryStatus = "draft" | "submitted" | "approved" | "rejected";
@@ -395,39 +392,40 @@ export default function TimeTrackingPage() {
 
     return (
         <PermissionGate resource="time_tracking" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Time Tracking"
-                    description="Track hours, manage timesheets, and monitor billable utilization"
-                >
-                    <Button variant="outline" onClick={() => setTimerRunning(!timerRunning)}>
-                        {timerRunning ? (
-                            <Pause className="mr-2 h-4 w-4" />
-                        ) : (
-                            <Play className="mr-2 h-4 w-4" />
-                        )}
-                        {timerRunning ? "Pause" : "Start"} Timer
-                    </Button>
-                    <Button
-                        onClick={() =>
-                            createEntry.mutate({
-                                entry_date: today,
-                                hours: 0,
-                                billable: true,
-                                status: "draft",
-                            })
-                        }
-                        disabled={createEntry.isPending}
-                    >
-                        {createEntry.isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <Plus className="mr-2 h-4 w-4" />
-                        )}
-                        Log Time
-                    </Button>
-                </PageHeader>
-
+            <PageShell
+                title="Time Tracking"
+                description="Track hours, manage timesheets, and monitor billable utilization"
+                actions={
+                    <>
+                        <Button variant="outline" onClick={() => setTimerRunning(!timerRunning)}>
+                            {timerRunning ? (
+                                <Pause className="mr-2 h-4 w-4" />
+                            ) : (
+                                <Play className="mr-2 h-4 w-4" />
+                            )}
+                            {timerRunning ? "Pause" : "Start"} Timer
+                        </Button>
+                        <Button
+                            onClick={() =>
+                                createEntry.mutate({
+                                    entry_date: today,
+                                    hours: 0,
+                                    billable: true,
+                                    status: "draft",
+                                })
+                            }
+                            disabled={createEntry.isPending}
+                        >
+                            {createEntry.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Plus className="mr-2 h-4 w-4" />
+                            )}
+                            Log Time
+                        </Button>
+                    </>
+                }
+            >
                 {/* Active Timer Banner */}
                 {timerRunning && (
                     <Card className="border-primary/30 bg-primary/5">
@@ -879,7 +877,7 @@ export default function TimeTrackingPage() {
                         </Card>
                     </div>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

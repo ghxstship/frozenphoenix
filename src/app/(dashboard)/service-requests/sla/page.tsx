@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useSlaPolicies, useSlaStatus } from "@/lib/supabase/hooks-v2-features";
+import { useSlaPolicies, useSlaStatus } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SLA_POLICY_CONFIG } from "@/config/create-entity-configs";
 
@@ -153,11 +153,10 @@ export default function SlaPage() {
     return (
         <>
             <PermissionGate resource="service_requests" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="SLA Management"
-                        description="Service Level Agreement policies, active SLA timers, and compliance metrics"
-                    >
+                <PageShell
+                    title="SLA Management"
+                    description="Service Level Agreement policies, active SLA timers, and compliance metrics"
+                    actions={
                         <div className="flex gap-2">
                             <Button size="sm" variant="outline">
                                 <Settings className="h-4 w-4" /> Configure
@@ -166,8 +165,8 @@ export default function SlaPage() {
                                 <Plus className="h-4 w-4" /> New Policy
                             </Button>
                         </div>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="SLA Compliance"
@@ -487,7 +486,7 @@ export default function SlaPage() {
                             </Card>
                         </div>
                     </TabPanel>
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_SLA_POLICY_CONFIG}

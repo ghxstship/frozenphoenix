@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
+import { resetPasswordSchema, validate } from "@/lib/validation/schemas";
 
 export const POST = withApiHandler(
     {
@@ -11,11 +12,19 @@ export const POST = withApiHandler(
         skipAuth: true,
     },
     async (request) => {
-        const { email } = await request.json();
-
-        if (!email || typeof email !== "string") {
-            return ApiErrors.validationError({ email: ["Email is required"] });
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
         }
+
+        const result = validate(resetPasswordSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
+        const { email } = result.data;
 
         const supabase = await createClient();
         if (!supabase) {
@@ -29,7 +38,7 @@ export const POST = withApiHandler(
         });
 
         if (error) {
-            return ApiErrors.badRequest(error.message);
+            // Do not leak Supabase error details — fall through to generic success
         }
 
         // Always return success to prevent email enumeration

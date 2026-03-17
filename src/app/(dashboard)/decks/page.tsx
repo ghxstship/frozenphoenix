@@ -2,11 +2,11 @@
 
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { CREATE_DECK_CONFIG } from "@/config/create-entity-configs";
+import { DECKS_PAGE } from "@/config/list-page-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDecks, useProjects } from "@/lib/supabase/hooks";
+import { useDecks, useProjects } from "@/lib/supabase";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
@@ -415,13 +415,9 @@ export default function DecksPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "decks",
+            ...DECKS_PAGE,
             title: "Presentation Decks",
-            description: "Auto-generated pitch, progress, and wrap decks with live data binding",
-            icon: Presentation,
-            createConfig: CREATE_DECK_CONFIG,
             createLabel: "New Deck",
-            searchKeys: ["title", "type", "status"],
             stats: [
                 {
                     label: "Pitch Decks",

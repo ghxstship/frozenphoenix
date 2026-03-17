@@ -1850,17 +1850,28 @@ export const CREATE_INTEGRATION_CONFIG: CreateEntityConfig = {
     description: "Connect a new external service.",
     fields: [
         {
-            key: "name",
+            key: "display_name",
             label: "Connection Name",
             type: "text",
             placeholder: "e.g. Main QuickBooks",
             required: true,
         },
         {
-            key: "type",
+            key: "provider_type",
             label: "Service",
             type: "select",
             options: mapToOptions(INTEGRATION_TYPE_MAP),
+            required: true,
+        },
+        {
+            key: "sync_direction",
+            label: "Sync Direction",
+            type: "select",
+            options: [
+                { value: "inbound", label: "Inbound (provider → platform)" },
+                { value: "outbound", label: "Outbound (platform → provider)" },
+                { value: "bidirectional", label: "Bidirectional" },
+            ],
             required: true,
         },
     ],

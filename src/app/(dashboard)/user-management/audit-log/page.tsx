@@ -3,7 +3,7 @@
 import { formatDateTime } from "@/lib/locale";
 
 import { useCallback, useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { getStatusLabel } from "@/config/ui-variants";
 import type { LoginAuditEntry, RoleChangeLogEntry } from "@/types/user-lifecycle";
-import { useLoginAuditLog, useRoleChangeLog } from "@/lib/supabase/hooks-pages";
+import { useLoginAuditLog, useRoleChangeLog } from "@/lib/supabase";
 import {
     AlertTriangle,
     Clock,
@@ -28,6 +28,7 @@ import {
 import type { LoginEventType, RoleChangeType } from "@/types";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { PermissionGate } from "@/components/permission-guard";
 
 type AuditTab = "login" | "role_changes";
 
@@ -194,244 +195,258 @@ export default function AuditLogPage() {
     }, [activeTab, filteredLogins, filteredRoleChanges]);
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
+        <PermissionGate resource="audit_log">
+            <PageShell
                 title="Audit Log"
                 description="Immutable log of authentication events, role changes, and access modifications"
+                actions={
+                    <Button variant="outline" onClick={handleExportCsv}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export
+                    </Button>
+                }
             >
-                <Button variant="outline" onClick={handleExportCsv}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export
-                </Button>
-            </PageHeader>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard title="Login Events" value={loginAudit.length} icon={LogIn} />
+                    <StatCard title="Successful" value={successCount} icon={ShieldCheck} />
+                    <StatCard title="Failed" value={failureCount} icon={ShieldAlert} />
+                    <StatCard title="Unique IPs" value={uniqueIps} icon={Globe} />
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Login Events" value={loginAudit.length} icon={LogIn} />
-                <StatCard title="Successful" value={successCount} icon={ShieldCheck} />
-                <StatCard title="Failed" value={failureCount} icon={ShieldAlert} />
-                <StatCard title="Unique IPs" value={uniqueIps} icon={Globe} />
-            </div>
+                <TabBar
+                    idPrefix="audit-tabs"
+                    ariaLabel="Audit sections"
+                    items={[
+                        { id: "login", label: "Login Events", icon: <LogIn className="h-4 w-4" /> },
+                        {
+                            id: "role_changes",
+                            label: "Role Changes",
+                            icon: <KeyRound className="h-4 w-4" />,
+                        },
+                    ]}
+                    value={activeTab}
+                    onValueChange={(tabId) => setActiveTab(tabId as AuditTab)}
+                />
 
-            <TabBar
-                idPrefix="audit-tabs"
-                ariaLabel="Audit sections"
-                items={[
-                    { id: "login", label: "Login Events", icon: <LogIn className="h-4 w-4" /> },
-                    {
-                        id: "role_changes",
-                        label: "Role Changes",
-                        icon: <KeyRound className="h-4 w-4" />,
-                    },
-                ]}
-                value={activeTab}
-                onValueChange={(tabId) => setActiveTab(tabId as AuditTab)}
-            />
+                <TabPanel
+                    value="login"
+                    activeValue={activeTab}
+                    idPrefix="audit-tabs"
+                    className="mt-0"
+                >
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <LogIn className="h-4 w-4" />
+                                Authentication Events
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                                <SearchInput
+                                    value={search}
+                                    onValueChange={setSearch}
+                                    placeholder="Search by email, user, or IP..."
+                                    className="flex-1"
+                                />
+                                <div className="flex gap-2">
+                                    {(["all", "success", "failure"] as const).map((f) => (
+                                        <Button
+                                            key={f}
+                                            variant={eventFilter === f ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => setEventFilter(f)}
+                                        >
+                                            {f === "all"
+                                                ? "All"
+                                                : f === "success"
+                                                  ? "Success"
+                                                  : "Failure"}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
 
-            <TabPanel value="login" activeValue={activeTab} idPrefix="audit-tabs" className="mt-0">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <LogIn className="h-4 w-4" />
-                            Authentication Events
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                            <div className="space-y-2">
+                                {filteredLogins.map((event) => {
+                                    const Icon = EVENT_ICONS[event.eventType] ?? LogIn;
+                                    const DeviceIcon = getDeviceIcon(event.userAgent);
+                                    const label = EVENT_LABELS[event.eventType] ?? event.eventType;
+
+                                    return (
+                                        <div
+                                            key={event.id}
+                                            className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                                                event.success
+                                                    ? "bg-secondary/30 hover:bg-secondary/50"
+                                                    : "bg-destructive/5 hover:bg-destructive/10"
+                                            }`}
+                                        >
+                                            <div
+                                                className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                    event.success
+                                                        ? "bg-success/10"
+                                                        : "bg-destructive/10"
+                                                }`}
+                                            >
+                                                <Icon
+                                                    className={`h-4 w-4 ${event.success ? "text-success" : "text-destructive"}`}
+                                                />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-medium">
+                                                        {event.userName ?? event.email ?? "Unknown"}
+                                                    </span>
+                                                    <Badge
+                                                        variant={
+                                                            event.success
+                                                                ? "success"
+                                                                : "destructive"
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {label}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                                                    {event.authMethod && (
+                                                        <span>
+                                                            {getStatusLabel(event.authMethod)}
+                                                        </span>
+                                                    )}
+                                                    {event.ipAddress && (
+                                                        <span className="flex items-center gap-1">
+                                                            <Globe className="h-2.5 w-2.5" />
+                                                            {event.ipAddress}
+                                                        </span>
+                                                    )}
+                                                    {event.city && event.countryCode && (
+                                                        <span>
+                                                            {event.city}, {event.countryCode}
+                                                        </span>
+                                                    )}
+                                                    {event.failureReason && (
+                                                        <span className="text-destructive">
+                                                            {event.failureReason}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0 text-xs text-muted-foreground">
+                                                <DeviceIcon className="h-3.5 w-3.5" />
+                                                <span>{formatTime(event.createdAt)}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabPanel>
+
+                <TabPanel
+                    value="role_changes"
+                    activeValue={activeTab}
+                    idPrefix="audit-tabs"
+                    className="mt-0"
+                >
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <KeyRound className="h-4 w-4" />
+                                Role & Access Changes
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
                             <SearchInput
                                 value={search}
                                 onValueChange={setSearch}
-                                placeholder="Search by email, user, or IP..."
-                                className="flex-1"
+                                placeholder="Search by user or changed by..."
+                                className="mb-4"
                             />
-                            <div className="flex gap-2">
-                                {(["all", "success", "failure"] as const).map((f) => (
-                                    <Button
-                                        key={f}
-                                        variant={eventFilter === f ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => setEventFilter(f)}
-                                    >
-                                        {f === "all"
-                                            ? "All"
-                                            : f === "success"
-                                              ? "Success"
-                                              : "Failure"}
-                                    </Button>
-                                ))}
+
+                            <div className="space-y-2">
+                                {filteredRoleChanges.map((change) => {
+                                    const label =
+                                        CHANGE_TYPE_LABELS[change.changeType] ?? change.changeType;
+                                    const isNegative = [
+                                        "account_suspended",
+                                        "account_deactivated",
+                                        "account_deletion_requested",
+                                        "account_anonymized",
+                                        "membership_suspended",
+                                        "membership_revoked",
+                                        "role_revoked",
+                                    ].includes(change.changeType);
+
+                                    return (
+                                        <div
+                                            key={change.id}
+                                            className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                                        >
+                                            <div
+                                                className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                    isNegative ? "bg-destructive/10" : "bg-info/10"
+                                                }`}
+                                            >
+                                                <KeyRound
+                                                    className={`h-4 w-4 ${isNegative ? "text-destructive" : "text-info"}`}
+                                                />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-sm font-medium">
+                                                        {change.userName}
+                                                    </span>
+                                                    <Badge
+                                                        variant={
+                                                            isNegative ? "destructive" : "info"
+                                                        }
+                                                        className="text-[10px]"
+                                                    >
+                                                        {label}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                                                    {change.oldValue && change.newValue && (
+                                                        <span>
+                                                            {getStatusLabel(change.oldValue)} →{" "}
+                                                            {getStatusLabel(change.newValue)}
+                                                        </span>
+                                                    )}
+                                                    {!change.oldValue && change.newValue && (
+                                                        <span>
+                                                            → {getStatusLabel(change.newValue)}
+                                                        </span>
+                                                    )}
+                                                    {change.reason && (
+                                                        <span className="italic">
+                                                            &ldquo;{change.reason}&rdquo;
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="text-right shrink-0">
+                                                <p className="text-xs text-muted-foreground">
+                                                    by {change.changedByName}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {formatTime(change.createdAt)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            {filteredLogins.map((event) => {
-                                const Icon = EVENT_ICONS[event.eventType] ?? LogIn;
-                                const DeviceIcon = getDeviceIcon(event.userAgent);
-                                const label = EVENT_LABELS[event.eventType] ?? event.eventType;
-
-                                return (
-                                    <div
-                                        key={event.id}
-                                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                            event.success
-                                                ? "bg-secondary/30 hover:bg-secondary/50"
-                                                : "bg-destructive/5 hover:bg-destructive/10"
-                                        }`}
-                                    >
-                                        <div
-                                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                event.success
-                                                    ? "bg-success/10"
-                                                    : "bg-destructive/10"
-                                            }`}
-                                        >
-                                            <Icon
-                                                className={`h-4 w-4 ${event.success ? "text-success" : "text-destructive"}`}
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">
-                                                    {event.userName ?? event.email ?? "Unknown"}
-                                                </span>
-                                                <Badge
-                                                    variant={
-                                                        event.success ? "success" : "destructive"
-                                                    }
-                                                    className="text-[10px]"
-                                                >
-                                                    {label}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
-                                                {event.authMethod && (
-                                                    <span>{getStatusLabel(event.authMethod)}</span>
-                                                )}
-                                                {event.ipAddress && (
-                                                    <span className="flex items-center gap-1">
-                                                        <Globe className="h-2.5 w-2.5" />
-                                                        {event.ipAddress}
-                                                    </span>
-                                                )}
-                                                {event.city && event.countryCode && (
-                                                    <span>
-                                                        {event.city}, {event.countryCode}
-                                                    </span>
-                                                )}
-                                                {event.failureReason && (
-                                                    <span className="text-destructive">
-                                                        {event.failureReason}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 shrink-0 text-xs text-muted-foreground">
-                                            <DeviceIcon className="h-3.5 w-3.5" />
-                                            <span>{formatTime(event.createdAt)}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabPanel>
-
-            <TabPanel
-                value="role_changes"
-                activeValue={activeTab}
-                idPrefix="audit-tabs"
-                className="mt-0"
-            >
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <KeyRound className="h-4 w-4" />
-                            Role & Access Changes
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <SearchInput
-                            value={search}
-                            onValueChange={setSearch}
-                            placeholder="Search by user or changed by..."
-                            className="mb-4"
-                        />
-
-                        <div className="space-y-2">
-                            {filteredRoleChanges.map((change) => {
-                                const label =
-                                    CHANGE_TYPE_LABELS[change.changeType] ?? change.changeType;
-                                const isNegative = [
-                                    "account_suspended",
-                                    "account_deactivated",
-                                    "account_deletion_requested",
-                                    "account_anonymized",
-                                    "membership_suspended",
-                                    "membership_revoked",
-                                    "role_revoked",
-                                ].includes(change.changeType);
-
-                                return (
-                                    <div
-                                        key={change.id}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
-                                    >
-                                        <div
-                                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                isNegative ? "bg-destructive/10" : "bg-info/10"
-                                            }`}
-                                        >
-                                            <KeyRound
-                                                className={`h-4 w-4 ${isNegative ? "text-destructive" : "text-info"}`}
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-sm font-medium">
-                                                    {change.userName}
-                                                </span>
-                                                <Badge
-                                                    variant={isNegative ? "destructive" : "info"}
-                                                    className="text-[10px]"
-                                                >
-                                                    {label}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                                                {change.oldValue && change.newValue && (
-                                                    <span>
-                                                        {getStatusLabel(change.oldValue)} →{" "}
-                                                        {getStatusLabel(change.newValue)}
-                                                    </span>
-                                                )}
-                                                {!change.oldValue && change.newValue && (
-                                                    <span>→ {getStatusLabel(change.newValue)}</span>
-                                                )}
-                                                {change.reason && (
-                                                    <span className="italic">
-                                                        &ldquo;{change.reason}&rdquo;
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="text-right shrink-0">
-                                            <p className="text-xs text-muted-foreground">
-                                                by {change.changedByName}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                {formatTime(change.createdAt)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabPanel>
-        </div>
+                        </CardContent>
+                    </Card>
+                </TabPanel>
+            </PageShell>
+        </PermissionGate>
     );
 }

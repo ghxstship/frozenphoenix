@@ -4,44 +4,46 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-    const supabase = await createClient();
-    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/ai/documents",
+        rbac: { resource: "ai", action: "read" },
+    },
+    async (_request, { supabase, user, log }) => {
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const { data: membership } = await supabase
+            .from("org_memberships")
+            .select("organization_id, role")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-    const admin = createAdminClient();
-    if (!admin) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        if (!membership || !["exec", "director"].includes(membership.role)) {
+            return ApiErrors.forbidden("Requires exec or director role");
+        }
 
-    const { data: membership } = await supabase
-        .from("org_memberships")
-        .select("organization_id, role")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+        const { data: documents, error } = await admin
+            .from("ai_documents")
+            .select(
+                "id, title, source_type, original_filename, processing_status, chunk_count, total_tokens, created_at"
+            )
+            .eq("org_id", membership.organization_id)
+            .order("created_at", { ascending: false });
 
-    if (!membership || !["exec", "director"].includes(membership.role)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        if (error) {
+            log.error("[GET /api/ai/documents]", { error });
+            return ApiErrors.internalError("Failed to fetch AI documents");
+        }
+
+        return NextResponse.json({ documents: documents ?? [] });
     }
-
-    const { data: documents, error } = await admin
-        .from("ai_documents")
-        .select(
-            "id, title, source_type, original_filename, processing_status, chunk_count, total_tokens, created_at"
-        )
-        .eq("org_id", membership.organization_id)
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ documents: documents ?? [] });
-}
+);

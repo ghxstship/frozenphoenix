@@ -2,14 +2,14 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import { DocCard } from "@/components/home";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SearchInput } from "@/components/ui/search-input";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Button } from "@/components/ui/button";
 import { PermissionGate } from "@/components/permission-guard";
 import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
-import { useMyDocuments } from "@/lib/supabase/hooks-pages";
+import { useDocuments } from "@/lib/supabase";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import type { DocumentStatus, DocumentType } from "@/types";
 import { useMemo, useState } from "react";
@@ -30,7 +30,7 @@ const TYPE_FILTERS = [
 const STATUS_FILTERS = ["all", "draft", "published", "pending_review"] as const;
 
 export default function HomeDocumentsPage() {
-    const { data: sbDocs, isLoading } = useMyDocuments();
+    const { data: sbDocs, isLoading } = useDocuments();
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useQueryTabState({
         key: "type",
@@ -85,25 +85,26 @@ export default function HomeDocumentsPage() {
 
     return (
         <PermissionGate resource="documents" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Documents"
-                    description="Your documents and shared files across all projects"
-                >
-                    <Link href="/documents">
-                        <Button variant="outline" size="sm">
-                            <ListFilter className="mr-1.5 h-3.5 w-3.5" />
-                            All Documents
-                        </Button>
-                    </Link>
-                    <Link href="/documents">
-                        <Button size="sm">
-                            <Plus className="mr-1.5 h-3.5 w-3.5" />
-                            New Document
-                        </Button>
-                    </Link>
-                </PageHeader>
-
+            <PageShell
+                title="Documents"
+                description="Your documents and shared files across all projects"
+                actions={
+                    <>
+                        <Link href="/documents">
+                            <Button variant="outline" size="sm">
+                                <ListFilter className="mr-1.5 h-3.5 w-3.5" />
+                                All Documents
+                            </Button>
+                        </Link>
+                        <Link href="/documents">
+                            <Button size="sm">
+                                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                                New Document
+                            </Button>
+                        </Link>
+                    </>
+                }
+            >
                 {/* Filters */}
                 <div className="flex items-center gap-4 flex-wrap">
                     <SearchInput
@@ -185,7 +186,7 @@ export default function HomeDocumentsPage() {
                         <p className="text-sm">No documents found</p>
                     </div>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

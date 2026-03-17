@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
+import { credentialBulkImportSchema, validate } from "@/lib/validation/schemas";
 
 export const POST = withApiHandler(
     {
@@ -11,12 +12,19 @@ export const POST = withApiHandler(
         rbac: { resource: "credentials", action: "write" },
     },
     async (request, { supabase, user, log }) => {
-        const body = await request.json();
-        const { entity_type, target_pool_id, file_name, file_size_bytes, rows } = body;
-
-        if (!entity_type || !file_name || !rows || !Array.isArray(rows)) {
-            return ApiErrors.badRequest("entity_type, file_name, and rows[] are required");
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
         }
+
+        const result = validate(credentialBulkImportSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
+        const { entity_type, target_pool_id, file_name, file_size_bytes, rows } = result.data;
 
         const sb = supabase;
 
@@ -122,7 +130,11 @@ export const POST = withApiHandler(
             } as Record<string, unknown>);
 
             if (insertError) {
-                errorDetails.push({ row: i + 1, field: "_insert", message: insertError.message });
+                errorDetails.push({
+                    row: i + 1,
+                    field: "_insert",
+                    message: "Failed to insert record",
+                });
                 errorRows++;
             } else {
                 processedRows++;

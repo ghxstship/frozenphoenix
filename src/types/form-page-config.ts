@@ -30,7 +30,8 @@ export type FormFieldType =
     | "checkbox"
     | "color"
     | "password"
-    | "hidden";
+    | "hidden"
+    | "repeater";
 
 export interface FormFieldDef {
     /** Unique field ID — also used as the form data key */
@@ -59,6 +60,16 @@ export interface FormFieldDef {
     disabled?: boolean;
     /** Whether the field is hidden (still in form data but not rendered) */
     hidden?: boolean;
+
+    // ─── Repeater-specific ───
+    /** Sub-field definitions for repeater type — each row contains these fields */
+    subFields?: FormFieldDef[];
+    /** Minimum number of repeater rows (default: 0) */
+    minRows?: number;
+    /** Maximum number of repeater rows (default: unlimited) */
+    maxRows?: number;
+    /** Label for the "Add Row" button (default: "Add Item") */
+    addLabel?: string;
 }
 
 // ─── Section Definition ─────────────────────────────────────

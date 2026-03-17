@@ -3,10 +3,8 @@
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-    useDeleteCrewMember,
-    useUpdateCrewMember as useUpdateCrewMemberHook,
-} from "@/lib/supabase/hooks-pages";
+import { useDeleteCrewMember } from "@/lib/supabase";
+import { useUpdateCrewMember as useUpdateCrewMemberHook } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
-import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase/hooks";
+import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
@@ -46,7 +44,29 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/crew",
     backLabel: "Crew",
     chatterRecordType: "crew_member",
-    fields: [],
+    fields: [
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email", icon: Mail },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone", icon: Phone },
+        { id: "role", label: "Role", accessorKey: "role" },
+        {
+            id: "hourly_rate",
+            label: "Hourly Rate",
+            accessorKey: "hourly_rate",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+    ],
+    sidebarFields: [
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email" },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone" },
+        { id: "role", label: "Role", accessorKey: "role" },
+        {
+            id: "hourly_rate",
+            label: "Hourly Rate",
+            accessorKey: "hourly_rate",
+            fieldType: "currency",
+        },
+    ],
     tabs: [],
 };
 
@@ -123,147 +143,55 @@ export default function CrewDetailPage() {
         return Array.isArray(teamIds) ? teamIds.includes(crewId) : false;
     });
 
-    const sidebarSlot = crewMember ? (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Contact Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <a
-                            href={`mailto:${crewMember.email}`}
-                            className="text-primary hover:underline"
-                        >
-                            {crewMember.email}
-                        </a>
+    const sidebarSlot =
+        expiredCerts.length > 0 ? (
+            <Card className="border-destructive/50 bg-destructive/5">
+                <CardContent className="pt-4">
+                    <div className="flex items-center gap-2 text-destructive mb-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Expired Certifications</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a href={`tel:${crewMember.phone}`} className="hover:underline">
-                            {crewMember.phone}
-                        </a>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        {expiredCerts.length} certification{expiredCerts.length > 1 ? "s" : ""}{" "}
+                        expired
+                    </p>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Employment</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Role</span>
-                        <span className="font-medium">{crewMember.role}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Hourly Rate</span>
-                        <span className="font-medium">
-                            {formatCurrency(crewMember.hourlyRate)}/hr
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <StatusBadge status={crewMember.status} />
-                    </div>
-                </CardContent>
-            </Card>
-            {expiredCerts.length > 0 && (
-                <Card className="border-destructive/50 bg-destructive/5">
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-destructive mb-2">
-                            <AlertTriangle className="h-4 w-4" />
-                            <span className="text-sm font-medium">Expired Certifications</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {expiredCerts.length} certification{expiredCerts.length > 1 ? "s" : ""}{" "}
-                            expired
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
-    ) : undefined;
+        ) : undefined;
 
     const overviewSlot = crewMember ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs">Hourly Rate</span>
-                        </div>
-                        <p className="text-xl font-bold">{formatCurrency(crewMember.hourlyRate)}</p>
-                        <p className="text-xs text-muted-foreground">per hour</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Award className="h-4 w-4" />
-                            <span className="text-xs">Certifications</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {validCerts.length}/{crewMember.certifications.length}
-                        </p>
-                        <p className="text-xs text-muted-foreground">valid</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <HardHat className="h-4 w-4" />
-                            <span className="text-xs">Projects</span>
-                        </div>
-                        <p className="text-xl font-bold">{assignedProjects.length}</p>
-                        <p className="text-xs text-muted-foreground">assigned</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Clock className="h-4 w-4" />
-                            <span className="text-xs">This Month</span>
-                        </div>
-                        <p className="text-xl font-bold">0h</p>
-                        <p className="text-xs text-muted-foreground">logged</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-base">Assigned Projects</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {assignedProjects.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                            Not assigned to any projects
-                        </p>
-                    ) : (
-                        <div className="space-y-3">
-                            {assignedProjects.map((project) => (
-                                <div
-                                    key={project.id}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
-                                >
-                                    <div>
-                                        <p className="text-sm font-medium">{project.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {
-                                                (project as unknown as Record<string, unknown>)
-                                                    .client as string
-                                            }
-                                        </p>
-                                    </div>
-                                    <StatusBadge status={project.status} />
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Assigned Projects</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {assignedProjects.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                        Not assigned to any projects
+                    </p>
+                ) : (
+                    <div className="space-y-3">
+                        {assignedProjects.map((project) => (
+                            <div
+                                key={project.id}
+                                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">{project.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {
+                                            (project as unknown as Record<string, unknown>)
+                                                .client as string
+                                        }
+                                    </p>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                                <StatusBadge status={project.status} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     ) : undefined;
 
     const config: DetailPageConfig = {
@@ -271,6 +199,21 @@ export default function CrewDetailPage() {
         subtitleFn: () => crewMember?.role ?? "",
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Hourly Rate",
+                icon: DollarSign,
+                compute: (r) => `${formatCurrency(Number(r.hourly_rate ?? 0))}/hr`,
+            },
+            {
+                label: "Certifications",
+                icon: Award,
+                compute: () =>
+                    `${validCerts.length}/${crewMember?.certifications.length ?? 0} valid`,
+            },
+            { label: "Projects", icon: HardHat, compute: () => assignedProjects.length },
+            { label: "This Month", icon: Clock, compute: () => "0h logged" },
+        ],
         tabs: [
             {
                 id: "certifications",

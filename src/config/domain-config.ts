@@ -1783,21 +1783,55 @@ export const INCIDENT_SEVERITY_MAP = Object.fromEntries(
 
 // ─── Integration Types ───
 export type IntegrationType =
+    | "eventbrite"
+    | "square"
+    | "front_gate"
+    | "intellitix"
+    | "custom"
     | "quickbooks"
     | "xero"
+    | "stripe"
     | "slack"
     | "google_calendar"
-    | "dropbox"
     | "google_drive"
-    | "zapier";
+    | "dropbox"
+    | "zapier"
+    | "hubspot"
+    | "docusign"
+    | "twilio"
+    | "sendgrid"
+    | "deputy"
+    | "gusto"
+    | "asana"
+    | "monday"
+    | "jira"
+    | "salesforce"
+    | "microsoft_teams";
 
 export const INTEGRATION_TYPES: EnumConfig<IntegrationType>[] = [
-    { value: "quickbooks", label: "QuickBooks", variant: "default" },
+    { value: "eventbrite", label: "Eventbrite", variant: "default" },
+    { value: "square", label: "Square", variant: "default" },
+    { value: "front_gate", label: "Front Gate Tickets", variant: "default" },
+    { value: "intellitix", label: "Intellitix", variant: "default" },
+    { value: "custom", label: "Custom", variant: "ghost" },
+    { value: "quickbooks", label: "QuickBooks", variant: "info" },
     { value: "xero", label: "Xero", variant: "info" },
+    { value: "stripe", label: "Stripe", variant: "info" },
     { value: "slack", label: "Slack", variant: "secondary" },
+    { value: "microsoft_teams", label: "Microsoft Teams", variant: "secondary" },
     { value: "google_calendar", label: "Google Calendar", variant: "info" },
-    { value: "dropbox", label: "Dropbox", variant: "info" },
     { value: "google_drive", label: "Google Drive", variant: "info" },
+    { value: "dropbox", label: "Dropbox", variant: "info" },
+    { value: "hubspot", label: "HubSpot", variant: "info" },
+    { value: "salesforce", label: "Salesforce", variant: "info" },
+    { value: "docusign", label: "DocuSign", variant: "info" },
+    { value: "asana", label: "Asana", variant: "secondary" },
+    { value: "monday", label: "Monday.com", variant: "secondary" },
+    { value: "jira", label: "Jira", variant: "secondary" },
+    { value: "deputy", label: "Deputy", variant: "secondary" },
+    { value: "gusto", label: "Gusto", variant: "secondary" },
+    { value: "twilio", label: "Twilio", variant: "warning" },
+    { value: "sendgrid", label: "SendGrid", variant: "warning" },
     { value: "zapier", label: "Zapier", variant: "warning" },
 ];
 

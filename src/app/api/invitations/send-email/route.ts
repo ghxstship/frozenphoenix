@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { sendEmailSchema } from "@/lib/validation/api-schemas";
-import { logger } from "@/lib/logger";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
@@ -26,94 +26,103 @@ const ROLE_LABELS: Record<string, string> = {
  * invite email template. When RESEND_API_KEY is set, it sends a
  * branded HTML email via Resend.
  */
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) {
-        return ApiErrors.serviceUnavailable();
-    }
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/invitations/send-email",
+        mutation: true,
+        skipAuth: true,
+    },
+    async (request, { log }) => {
+        const supabase = await createClient();
+        if (!supabase) {
+            return ApiErrors.serviceUnavailable();
+        }
 
-    const validated = await parseAndValidate(request, sendEmailSchema);
-    if (!validated.success) return validated.response;
+        const validated = await parseAndValidate(request, sendEmailSchema);
+        if (!validated.success) return validated.response;
 
-    const { to, token, role, orgName, personalMessage, appUrl } = validated.data;
+        const { to, token, role, orgName, personalMessage, appUrl } = validated.data;
 
-    const inviteUrl = `${appUrl}/invite/${token}`;
-    const roleLabel = ROLE_LABELS[role] || role;
+        const inviteUrl = `${appUrl}/invite/${token}`;
+        const roleLabel = ROLE_LABELS[role] || role;
 
-    // Strategy 1: Use Resend if configured
-    if (process.env.RESEND_API_KEY) {
-        try {
-            const res = await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    from: process.env.RESEND_FROM_EMAIL || "Playbook <noreply@playbook.app>",
-                    to: [to],
-                    subject: `You're invited to join ${orgName}`,
-                    html: buildInvitationEmail({
-                        orgName,
-                        roleLabel,
-                        inviteUrl,
-                        personalMessage,
+        // Strategy 1: Use Resend if configured
+        if (process.env.RESEND_API_KEY) {
+            try {
+                const res = await fetch("https://api.resend.com/emails", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        from: process.env.RESEND_FROM_EMAIL || "Playbook <noreply@playbook.app>",
+                        to: [to],
+                        subject: `You're invited to join ${orgName}`,
+                        html: buildInvitationEmail({
+                            orgName,
+                            roleLabel,
+                            inviteUrl,
+                            personalMessage,
+                        }),
                     }),
-                }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    log.error("Resend email delivery error", { err });
+                    return ApiErrors.badGateway("Email delivery failed");
+                }
+
+                return NextResponse.json({ sent: true });
+            } catch (err) {
+                log.error("Resend email delivery exception", { err });
+                return ApiErrors.badGateway("Email delivery failed");
+            }
+        }
+
+        // Strategy 2: Use Supabase Auth admin invite (sends Supabase's built-in email template)
+        // This requires the service_role key and admin API access.
+        // The invite will create the user if they don't exist, or send a magic link if they do.
+        try {
+            const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(to, {
+                data: {
+                    invite_token: token,
+                    invited_role: role,
+                    org_name: orgName,
+                },
+                redirectTo: inviteUrl,
             });
 
-            if (!res.ok) {
-                const err = await res.text();
-                logger.error("Resend email delivery error", { err });
+            if (inviteError) {
+                // admin.inviteUserByEmail requires service_role — if we only have anon key,
+                // fall back to logging the invite URL for development
+                if (inviteError.message.includes("not authorized") || inviteError.status === 403) {
+                    log.warn("No email provider configured — invite URL logged", { to, inviteUrl });
+                    return NextResponse.json({
+                        sent: false,
+                        fallback: "logged",
+                        message:
+                            "No email provider configured. Invite URL logged to server console.",
+                    });
+                }
+                log.error("Supabase invite error", { message: inviteError.message });
                 return ApiErrors.badGateway("Email delivery failed");
             }
 
             return NextResponse.json({ sent: true });
-        } catch (err) {
-            logger.error("Resend email delivery exception", { err });
-            return ApiErrors.badGateway("Email delivery failed");
+        } catch {
+            // Final fallback: log the invite URL
+            log.warn("Email delivery unavailable — invite URL logged", { to, inviteUrl });
+            return NextResponse.json({
+                sent: false,
+                fallback: "logged",
+                message: "Invite URL logged to server console.",
+            });
         }
     }
-
-    // Strategy 2: Use Supabase Auth admin invite (sends Supabase's built-in email template)
-    // This requires the service_role key and admin API access.
-    // The invite will create the user if they don't exist, or send a magic link if they do.
-    try {
-        const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(to, {
-            data: {
-                invite_token: token,
-                invited_role: role,
-                org_name: orgName,
-            },
-            redirectTo: inviteUrl,
-        });
-
-        if (inviteError) {
-            // admin.inviteUserByEmail requires service_role — if we only have anon key,
-            // fall back to logging the invite URL for development
-            if (inviteError.message.includes("not authorized") || inviteError.status === 403) {
-                logger.warn("No email provider configured — invite URL logged", { to, inviteUrl });
-                return NextResponse.json({
-                    sent: false,
-                    fallback: "logged",
-                    message: "No email provider configured. Invite URL logged to server console.",
-                });
-            }
-            logger.error("Supabase invite error", { message: inviteError.message });
-            return ApiErrors.badGateway("Email delivery failed");
-        }
-
-        return NextResponse.json({ sent: true });
-    } catch {
-        // Final fallback: log the invite URL
-        logger.warn("Email delivery unavailable — invite URL logged", { to, inviteUrl });
-        return NextResponse.json({
-            sent: false,
-            fallback: "logged",
-            message: "Invite URL logged to server console.",
-        });
-    }
-}
+);
 
 // ─── HTML Email Template ────────────────────────────────────────
 function buildInvitationEmail(params: {

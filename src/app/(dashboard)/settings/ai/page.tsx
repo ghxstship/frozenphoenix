@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { TabBar } from "@/components/ui/tab-bar";
+
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useToast } from "@/components/ui/toast";
 import { PermissionGate } from "@/components/permission-guard";
@@ -138,24 +138,19 @@ export default function AISettingsPage() {
 
     return (
         <PermissionGate resource="settings" action="manage" fallback={<AccessDenied />}>
-            <div className="space-y-6">
-                <PageHeader
-                    title="AI Copilot Settings"
-                    description="Configure AI providers, models, system prompts, and usage limits."
-                >
+            <PageShell
+                title="AI Copilot Settings"
+                description="Configure AI providers, models, system prompts, and usage limits."
+                actions={
                     <Badge variant="outline" className="gap-1">
                         <Sparkles className="h-3 w-3" />
                         Admin Only
                     </Badge>
-                </PageHeader>
-
-                <TabBar
-                    items={TABS}
-                    value={activeTab}
-                    onValueChange={setActiveTab as (value: string) => void}
-                    ariaLabel="AI Settings Tabs"
-                />
-
+                }
+                tabs={TABS}
+                activeTab={activeTab}
+                onTabChange={setActiveTab as (value: string) => void}
+            >
                 <div className="mt-6">
                     {activeTab === "providers" && <ProvidersPanel />}
                     {activeTab === "models" && <ModelsPanel />}
@@ -164,7 +159,7 @@ export default function AISettingsPage() {
                     {activeTab === "knowledge" && <KnowledgeBasePanel />}
                     {activeTab === "limits" && <LimitsPanel />}
                 </div>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

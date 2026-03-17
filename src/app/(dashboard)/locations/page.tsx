@@ -2,22 +2,18 @@
 
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useLocations, useProjects } from "@/lib/supabase/hooks";
-import { CREATE_LOCATION_CONFIG } from "@/config/create-entity-configs";
+import { useLocations, useProjects } from "@/lib/supabase";
+import { LOCATIONS_PAGE } from "@/config/list-page-configs";
 import { Building, DollarSign, MapPin, Warehouse } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "locations",
+    ...LOCATIONS_PAGE,
     title: "Locations",
-    description: "Manage venues, warehouses, and project locations",
-    icon: MapPin,
-    createConfig: CREATE_LOCATION_CONFIG,
     createLabel: "Add Location",
     exportable: true,
     importable: true,
-    searchKeys: ["name", "type"],
     stats: [
         { label: "Total Locations", icon: MapPin, filter: () => true },
         { label: "Venues", icon: Building, filter: (r) => r.type === "venue" },

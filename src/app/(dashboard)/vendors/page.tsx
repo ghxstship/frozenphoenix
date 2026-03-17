@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useVendors } from "@/lib/supabase/hooks";
+import { useVendors } from "@/lib/supabase";
 import type { Vendor } from "@/types";
 import { FileText, ShieldAlert, ShieldCheck, Star, Store } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
@@ -14,7 +14,7 @@ import {
     PhoneField,
     RatingField,
 } from "@/components/data-view/field-renderers";
-import { CREATE_VENDOR_CONFIG } from "@/config/create-entity-configs";
+import { VENDORS_PAGE } from "@/config/list-page-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { ListPageShell } from "@/components/shells/list-page-shell";
@@ -266,15 +266,11 @@ export default function VendorsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "vendors",
+            ...VENDORS_PAGE,
             title: "Vendor Vault",
-            description: "Centralized vendor management with COI validation, 1099s, and NDAs",
-            icon: Store,
-            createConfig: CREATE_VENDOR_CONFIG,
             createLabel: "Add Vendor",
             exportable: true,
             importable: true,
-            searchKeys: ["name", "specialty", "contactName"],
             stats: [
                 {
                     label: "Active Vendors",

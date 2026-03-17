@@ -70,6 +70,7 @@ export const ADVANCE_TEMPLATES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── foh_zone ───
@@ -87,6 +88,7 @@ export const FOH_ZONES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── post_event_report ───
@@ -104,6 +106,7 @@ export const POST_EVENT_REPORTS_PAGE: ListPageConfig = {
         { id: "report_date", header: "Date", accessorKey: "report_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── production_advance ───
@@ -121,6 +124,7 @@ export const PRODUCTION_ADVANCES_PAGE: ListPageConfig = {
         { id: "advance_date", header: "Date", accessorKey: "advance_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── production_checklist ───
@@ -143,6 +147,7 @@ export const PRODUCTION_CHECKLISTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── production_expense ───
@@ -168,6 +173,7 @@ export const PRODUCTION_EXPENSES_PAGE: ListPageConfig = {
         valueKey: "amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── production_run ───
@@ -204,6 +210,7 @@ export const PRODUCTION_RUNS_PAGE: ListPageConfig = {
         endDateKey: "end_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── production_sop ───
@@ -221,6 +228,7 @@ export const PRODUCTION_SOPS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── production_vertical ───
@@ -237,6 +245,7 @@ export const PRODUCTION_VERTICALS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── space_booking ───
@@ -270,6 +279,7 @@ export const SPACE_BOOKINGS_PAGE: ListPageConfig = {
         colorKey: "status",
         groupByKey: "space_name",
     },
+    exportable: true,
 };
 
 // ─── strike_sequence ───
@@ -287,6 +297,7 @@ export const STRIKE_SEQUENCES_PAGE: ListPageConfig = {
         { id: "scheduled_at", header: "Scheduled", accessorKey: "scheduled_at", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── technical_spec ───
@@ -303,6 +314,7 @@ export const TECHNICAL_SPECS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── command_position ───
@@ -320,6 +332,7 @@ export const COMMAND_POSITIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── environmental_reading ───
@@ -336,6 +349,7 @@ export const ENVIRONMENTAL_READINGS_PAGE: ListPageConfig = {
         { id: "unit", header: "Unit", accessorKey: "unit" },
         { id: "recorded_at", header: "Recorded", accessorKey: "recorded_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── foh_zone_reading ───
@@ -351,6 +365,7 @@ export const FOH_ZONE_READINGS_PAGE: ListPageConfig = {
         { id: "sales_amount", header: "Sales", accessorKey: "sales_amount", fieldType: "currency" },
         { id: "recorded_at", header: "Recorded", accessorKey: "recorded_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── live_event_instance ───
@@ -368,6 +383,7 @@ export const LIVE_EVENT_INSTANCES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "attendance", header: "Attendance", accessorKey: "attendance" },
     ],
+    exportable: true,
 };
 
 // ─── live_financial_snapshot ───
@@ -399,6 +415,7 @@ export const LIVE_FINANCIAL_SNAPSHOTS_PAGE: ListPageConfig = {
         },
         { id: "snapshot_at", header: "Snapshot", accessorKey: "snapshot_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── production_advance_item ───
@@ -418,6 +435,7 @@ export const PRODUCTION_ADVANCE_ITEMS_PAGE: ListPageConfig = {
         { id: "end_date", header: "End", accessorKey: "end_date", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── production_budget_line ───
@@ -453,6 +471,7 @@ export const PRODUCTION_BUDGET_LINES_PAGE: ListPageConfig = {
         valueKey: "budgeted_amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── production_milestone ───
@@ -485,6 +504,7 @@ export const PRODUCTION_MILESTONES_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── production_task ───
@@ -514,6 +534,7 @@ export const PRODUCTION_TASKS_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "priority",
     },
+    exportable: true,
 };
 
 // ─── production_time_entry ───
@@ -538,6 +559,7 @@ export const PRODUCTION_TIME_ENTRIES_PAGE: ListPageConfig = {
         dateKey: "entry_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── readiness_gate ───
@@ -562,6 +584,7 @@ export const READINESS_GATES_PAGE: ListPageConfig = {
         cardTitleKey: "name",
         cardSubtitleKey: "gate_type",
     },
+    exportable: true,
 };
 
 // ─── ros_cue ───
@@ -584,4 +607,5 @@ export const ROS_CUES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "order", header: "Order", accessorKey: "order" },
     ],
+    exportable: true,
 };

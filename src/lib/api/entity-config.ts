@@ -4775,6 +4775,56 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         softDelete: false,
         trackAuthor: false,
     }),
+
+    // ─── Orphan entityKey remediations (list page configs referencing missing entity configs) ──
+
+    credential: defineEntity({
+        entityName: "credential",
+        displayName: "Credential",
+        displayNamePlural: "Credentials",
+        table: "credential_types",
+        resource: "credential_types",
+        slug: "credentials",
+        searchColumns: ["name", "category"],
+        icon: "Ticket",
+        softDelete: false,
+    }),
+
+    survey: defineEntity({
+        entityName: "survey",
+        displayName: "Survey",
+        displayNamePlural: "Surveys",
+        table: "survey_templates",
+        resource: "surveys",
+        slug: "surveys",
+        searchColumns: ["name", "description"],
+        icon: "ClipboardList",
+    }),
+
+    user_management: defineEntity({
+        entityName: "user_management",
+        displayName: "User",
+        displayNamePlural: "Users",
+        table: "user_profiles",
+        resource: "user_management",
+        slug: "user-management",
+        searchColumns: ["display_name", "email"],
+        icon: "Users",
+        softDelete: false,
+        trackAuthor: false,
+    }),
+
+    vendor_onboarding: defineEntity({
+        entityName: "vendor_onboarding",
+        displayName: "Vendor Onboarding",
+        displayNamePlural: "Vendor Onboarding",
+        table: "vendors",
+        resource: "vendor_onboarding",
+        slug: "vendor-onboarding",
+        searchColumns: ["name", "contact_name"],
+        icon: "Handshake",
+        softDelete: false,
+    }),
 };
 
 // ─── Lookups ─────────────────────────────────────────────────

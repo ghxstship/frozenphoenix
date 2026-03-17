@@ -3,12 +3,11 @@
 import { logger } from "@/lib/logger";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteDeal, useUpdateDeal as useUpdateDealHook } from "@/lib/supabase/hooks-pages";
+import { useDeleteDeal } from "@/lib/supabase";
+import { useUpdateDeal as useUpdateDealHook } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,20 +18,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { DEAL_STAGE_MAP } from "@/config/domain-config";
-import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase/hooks";
+import { useCreateComment, useCreateProject, useDeals, useUpdateDeal } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import {
-    Building2,
-    Calendar,
-    DollarSign,
-    Edit,
-    FolderKanban,
-    Loader2,
-    Mail,
-    TrendingUp,
-    User,
-} from "lucide-react";
+import { Calendar, DollarSign, Edit, FolderKanban, Loader2, TrendingUp } from "lucide-react";
 
 function computeDaysToClose(dateStr: string): number {
     return Math.max(
@@ -49,7 +38,51 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/pipeline",
     backLabel: "Pipeline",
     chatterRecordType: "deal",
-    fields: [],
+    fields: [
+        {
+            id: "value",
+            label: "Deal Value",
+            accessorKey: "value",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "probability",
+            label: "Probability",
+            accessorKey: "probability",
+            fieldType: "percentage",
+        },
+        {
+            id: "expected_close_date",
+            label: "Expected Close",
+            accessorKey: "expected_close_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        { id: "assigned_to", label: "Assigned To", accessorKey: "assigned_to" },
+        { id: "contact_name", label: "Contact", accessorKey: "contact_name" },
+        { id: "contact_email", label: "Email", accessorKey: "contact_email", fieldType: "email" },
+        { id: "company", label: "Company", accessorKey: "company" },
+    ],
+    sidebarFields: [
+        { id: "stage", label: "Stage", accessorKey: "stage", fieldType: "status" },
+        {
+            id: "probability",
+            label: "Probability",
+            accessorKey: "probability",
+            fieldType: "percentage",
+        },
+        {
+            id: "expected_close_date",
+            label: "Expected Close",
+            accessorKey: "expected_close_date",
+            fieldType: "date",
+        },
+        { id: "assigned_to", label: "Assigned To", accessorKey: "assigned_to" },
+        { id: "contact_name", label: "Contact", accessorKey: "contact_name" },
+        { id: "contact_email", label: "Email", accessorKey: "contact_email", fieldType: "email" },
+        { id: "company", label: "Company", accessorKey: "company" },
+    ],
     tabs: [],
 };
 
@@ -160,74 +193,12 @@ export default function DealDetailPage() {
         }
     };
 
-    const stageConfig = deal ? DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP] : null;
+    const _stageConfig = deal ? DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP] : null;
     const weightedValue = deal ? deal.value * (deal.probability / 100) : 0;
     const daysToClose = deal ? computeDaysToClose(deal.expectedCloseDate) : 0;
 
-    const sidebarSlot =
-        deal && stageConfig ? (
-            <div className="space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm">Deal Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Stage</span>
-                            <Badge variant={stageConfig.variant}>{stageConfig.label}</Badge>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Probability</span>
-                            <span className="font-medium">{deal.probability}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Expected Close</span>
-                            <span>{formatDate(deal.expectedCloseDate)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Assigned To</span>
-                            <span>{deal.assignedTo}</span>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm">Contact</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm">
-                        <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{deal.contactName}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <a
-                                href={`mailto:${deal.contactEmail}`}
-                                className="text-primary hover:underline"
-                            >
-                                {deal.contactEmail}
-                            </a>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                            <span>{deal.company}</span>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        ) : undefined;
-
     const overviewSlot = deal ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatCard title="Deal Value" value={formatCurrency(deal.value)} icon={DollarSign} />
-                <StatCard
-                    title="Weighted Value"
-                    value={formatCurrency(weightedValue)}
-                    icon={TrendingUp}
-                />
-                <StatCard title="Days to Close" value={daysToClose} icon={Calendar} />
-            </div>
             {!!deal.notes && (
                 <Card>
                     <CardHeader>
@@ -271,8 +242,20 @@ export default function DealDetailPage() {
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
         subtitleFn: () => deal?.company ?? "",
-        sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Deal Value",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.value ?? 0)),
+            },
+            {
+                label: "Weighted Value",
+                icon: TrendingUp,
+                compute: () => formatCurrency(weightedValue),
+            },
+            { label: "Days to Close", icon: Calendar, compute: () => daysToClose },
+        ],
         tabs: [
             {
                 id: "activity",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -466,12 +466,10 @@ export default function SettingsPage() {
         .slice(0, 2);
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Settings"
-                description="Manage your account, organization, and preferences"
-            />
-
+        <PageShell
+            title="Settings"
+            description="Manage your account, organization, and preferences"
+        >
             <div className="flex flex-col lg:flex-row gap-6">
                 <Card className="lg:w-64 shrink-0">
                     <CardContent className="p-2">
@@ -1995,7 +1993,7 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </PageShell>
     );
 }
 

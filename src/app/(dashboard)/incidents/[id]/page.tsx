@@ -2,24 +2,19 @@
 
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteIncident, useUpdateIncident } from "@/lib/supabase/hooks-pages";
-import {
-    useCreateRecordComment,
-    useRecordActivityLog,
-    useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+import { useDeleteIncident, useUpdateIncident } from "@/lib/supabase";
+import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
-import { useIncident } from "@/lib/supabase/hooks-pages";
-import { useLocations, useProjects } from "@/lib/supabase/hooks";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useIncident } from "@/lib/supabase";
+import { useLocations, useProjects } from "@/lib/supabase";
+import { formatCurrency } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
@@ -47,7 +42,45 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/incidents",
     backLabel: "Incidents",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "severity", label: "Severity", accessorKey: "severity", fieldType: "status" },
+        { id: "occurred_at", label: "Occurred", accessorKey: "occurred_at", fieldType: "date" },
+        { id: "reported_at", label: "Reported", accessorKey: "reported_at", fieldType: "date" },
+        {
+            id: "estimated_cost",
+            label: "Est. Cost",
+            accessorKey: "estimated_cost",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "insurance_claim",
+            label: "Insurance Claim",
+            accessorKey: "insurance_claim",
+            fieldType: "boolean",
+        },
+    ],
+    sidebarFields: [
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "type", label: "Type", accessorKey: "type", fieldType: "status" },
+        { id: "severity", label: "Severity", accessorKey: "severity", fieldType: "status" },
+        { id: "occurred_at", label: "Occurred", accessorKey: "occurred_at", fieldType: "date" },
+        { id: "reported_at", label: "Reported", accessorKey: "reported_at", fieldType: "date" },
+        {
+            id: "estimated_cost",
+            label: "Est. Cost",
+            accessorKey: "estimated_cost",
+            fieldType: "currency",
+        },
+        {
+            id: "insurance_claim",
+            label: "Insurance",
+            accessorKey: "insurance_claim",
+            fieldType: "boolean",
+        },
+    ],
     tabs: [],
 };
 
@@ -129,51 +162,8 @@ export default function IncidentDetailPage() {
         });
     };
 
-    const sidebarSlot = incident ? (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Incident Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Number</span>
-                        <span className="font-mono text-xs">{incident.number}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="secondary" className="capitalize">
-                            {incident.type.replace(/_/g, " ")}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Severity</span>
-                        <Badge variant={severityCfg.variant as "default"}>
-                            {severityCfg.label}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Occurred</span>
-                        <span>{incident.occurred_at ? formatDate(incident.occurred_at) : "—"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Reported</span>
-                        <span>{incident.reported_at ? formatDate(incident.reported_at) : "—"}</span>
-                    </div>
-                    {(incident.estimated_cost ?? 0) > 0 && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Est. Cost</span>
-                            <span className="font-medium">
-                                {formatCurrency(incident.estimated_cost ?? 0)}
-                            </span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Insurance</span>
-                        <span>{incident.insurance_claim ? "Claim Filed" : "No Claim"}</span>
-                    </div>
-                </CardContent>
-            </Card>
+    const sidebarSlot =
+        project || location ? (
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Related Records</CardTitle>
@@ -196,53 +186,10 @@ export default function IncidentDetailPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
-    ) : undefined;
+        ) : undefined;
 
     const overviewSlot = incident ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Shield className="h-4 w-4" />
-                            <span className="text-xs">Severity</span>
-                        </div>
-                        <p className={`text-xl font-bold ${severityCfg.color}`}>
-                            {severityCfg.label}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Clock className="h-4 w-4" />
-                            <span className="text-xs">Time Since</span>
-                        </div>
-                        <p className="text-xl font-bold">{daysSince}d</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs">Est. Cost</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {formatCurrency(incident.estimated_cost ?? 0)}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Users className="h-4 w-4" />
-                            <span className="text-xs">Witnesses</span>
-                        </div>
-                        <p className="text-xl font-bold">{(incident.witness_ids ?? []).length}</p>
-                    </CardContent>
-                </Card>
-            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Description</CardTitle>
@@ -291,6 +238,20 @@ export default function IncidentDetailPage() {
         subtitleFn: () => (incident ? `${incident.number} · ${incident.specific_location}` : ""),
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Severity", icon: Shield, compute: () => severityCfg.label },
+            { label: "Time Since", icon: Clock, compute: () => `${daysSince}d` },
+            {
+                label: "Est. Cost",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.estimated_cost ?? 0)),
+            },
+            {
+                label: "Witnesses",
+                icon: Users,
+                compute: (r) => ((r.witness_ids as string[]) ?? []).length,
+            },
+        ],
         tabs: [
             {
                 id: "investigation",

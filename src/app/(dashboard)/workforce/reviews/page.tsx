@@ -13,7 +13,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { Calendar, ClipboardCheck, Plus, Star, ThumbsUp } from "lucide-react";
 import type { WorkerReview } from "@/types/workforce";
 import type { ReviewTargetType } from "@/types/workforce";
-import { useWorkerReviewsList } from "@/lib/supabase/hooks-pages";
+import { useWorkerReviewsList } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 

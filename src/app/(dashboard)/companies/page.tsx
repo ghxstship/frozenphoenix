@@ -6,9 +6,9 @@ import { Building2, Eye, Globe, MapPin, Pencil, Star, Trash2, Users } from "luci
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCompanies } from "@/lib/supabase/hooks-pages";
+import { useCompanies } from "@/lib/supabase";
 import { ListPageShell } from "@/components/shells/list-page-shell";
-import { CREATE_COMPANY_CONFIG } from "@/config/create-entity-configs";
+import { COMPANIES_PAGE } from "@/config/list-page-configs";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -303,15 +303,11 @@ export default function CompaniesPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "companies",
+            ...COMPANIES_PAGE,
             title: "Companies",
-            description: "Manage your clients, brands, agencies, and partners",
-            icon: Building2,
-            createConfig: CREATE_COMPANY_CONFIG,
             createLabel: "Add Company",
             exportable: true,
             importable: true,
-            searchKeys: ["name", "industry"],
             stats: [
                 { label: "Total Companies", icon: Building2, compute: (r) => r.length },
                 {

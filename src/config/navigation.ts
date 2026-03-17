@@ -25,6 +25,7 @@ import {
     ClipboardList,
     ClipboardMinus,
     ClipboardPenLine,
+    Code2,
     ContactRound,
     Cpu,
     CreditCard,
@@ -1142,6 +1143,12 @@ export const navigationConfig: NavSection[] = [
                         permission: "settings.manage",
                     },
                     {
+                        title: "Developer Portal",
+                        path: "/settings/developer",
+                        icon: Code2,
+                        permission: "settings.manage",
+                    },
+                    {
                         title: "Email Integration",
                         path: "/settings/email-integration",
                         icon: Mail,
@@ -1178,6 +1185,12 @@ export const navigationConfig: NavSection[] = [
                         path: "/integrations/sync-log",
                         icon: RefreshCw,
                         permission: "sync_events.read",
+                    },
+                    {
+                        title: "Marketplace",
+                        path: "/integrations/marketplace",
+                        icon: Store,
+                        permission: "provider_connections.read",
                     },
                 ],
             },

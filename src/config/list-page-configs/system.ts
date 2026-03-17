@@ -9,6 +9,7 @@ import type { ListPageConfig } from "@/types/list-page-config";
 import {
     CREATE_CUSTOM_FIELD_CONFIG,
     CREATE_SLA_POLICY_CONFIG,
+    CREATE_USER_INVITE_CONFIG,
     CREATE_VAULT_DOCUMENT_CONFIG,
 } from "@/config/create-entity-configs";
 import {
@@ -73,6 +74,7 @@ import {
     Target,
     Timer,
     UserCog,
+    Users,
     Zap,
 } from "lucide-react";
 
@@ -91,6 +93,7 @@ export const AUTOMATION_RULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── custom_field_definition ───
@@ -108,6 +111,7 @@ export const CUSTOM_FIELD_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type" },
         { id: "is_required", header: "Required", accessorKey: "is_required", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── data_export_request ───
@@ -125,6 +129,7 @@ export const DATA_EXPORT_REQUESTS_PAGE: ListPageConfig = {
         { id: "requested_at", header: "Requested", accessorKey: "requested_at", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── invitation ───
@@ -147,6 +152,7 @@ export const INVITATIONS_PAGE: ListPageConfig = {
         { id: "expires_at", header: "Expires", accessorKey: "expires_at", fieldType: "date" },
         { id: "created_at", header: "Sent", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── provider_connection ───
@@ -169,6 +175,7 @@ export const PROVIDER_CONNECTIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── report_definition ───
@@ -185,6 +192,7 @@ export const REPORT_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── resilience_target ───
@@ -202,6 +210,7 @@ export const RESILIENCE_TARGETS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── sla_definition ───
@@ -223,6 +232,7 @@ export const SLA_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── temporary_access_grant ───
@@ -240,6 +250,7 @@ export const TEMPORARY_ACCESS_GRANTS_PAGE: ListPageConfig = {
         { id: "expires_at", header: "Expires", accessorKey: "expires_at", fieldType: "date" },
         { id: "created_at", header: "Granted", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── vault_document ───
@@ -262,6 +273,7 @@ export const VAULT_DOCUMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── workflow ───
@@ -279,6 +291,7 @@ export const WORKFLOWS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── access_audit_log ───
@@ -294,6 +307,7 @@ export const ACCESS_AUDIT_LOG_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── activity ───
@@ -309,6 +323,7 @@ export const ACTIVITIES_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── activity_log_entry ───
@@ -324,6 +339,7 @@ export const ACTIVITY_LOG_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── advance_status_history ───
@@ -340,6 +356,7 @@ export const ADVANCE_STATUS_HISTORY_PAGE: ListPageConfig = {
         { id: "changed_by", header: "Changed By", accessorKey: "changed_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── approval_step ───
@@ -362,6 +379,7 @@ export const APPROVAL_STEPS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── approval_workflow ───
@@ -384,6 +402,7 @@ export const APPROVAL_WORKFLOWS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── asset_assignment ───
@@ -420,6 +439,7 @@ export const ASSET_ASSIGNMENTS_PAGE: ListPageConfig = {
         endDateKey: "return_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── asset_tag ───
@@ -436,6 +456,7 @@ export const ASSET_TAGS_PAGE: ListPageConfig = {
         { id: "usage_count", header: "Usage", accessorKey: "usage_count" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── asset_version ───
@@ -453,6 +474,7 @@ export const ASSET_VERSIONS_PAGE: ListPageConfig = {
         { id: "created_by", header: "Author", accessorKey: "created_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── automation_execution ───
@@ -469,6 +491,7 @@ export const AUTOMATION_EXECUTIONS_PAGE: ListPageConfig = {
         { id: "duration_ms", header: "Duration", accessorKey: "duration_ms" },
         { id: "executed_at", header: "Executed", accessorKey: "executed_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── automation_log ───
@@ -484,6 +507,7 @@ export const AUTOMATION_LOGS_PAGE: ListPageConfig = {
         { id: "execution_id", header: "Execution", accessorKey: "execution_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── calendar_event ───
@@ -516,6 +540,7 @@ export const CALENDAR_EVENTS_PAGE: ListPageConfig = {
         endDateKey: "end_time",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── channel_template ───
@@ -532,6 +557,7 @@ export const CHANNEL_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── comm_channel ───
@@ -548,6 +574,7 @@ export const COMM_CHANNELS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── comment ───
@@ -564,6 +591,7 @@ export const COMMENTS_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── conversation ───
@@ -585,6 +613,7 @@ export const CONVERSATIONS_PAGE: ListPageConfig = {
             fieldType: "date",
         },
     ],
+    exportable: true,
 };
 
 // ─── custom_field ───
@@ -602,6 +631,7 @@ export const CUSTOM_FIELDS_PAGE: ListPageConfig = {
         { id: "value", header: "Value", accessorKey: "value" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── dashboard_widget ───
@@ -619,6 +649,7 @@ export const DASHBOARD_WIDGETS_PAGE: ListPageConfig = {
         { id: "is_visible", header: "Visible", accessorKey: "is_visible", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── document_version ───
@@ -636,6 +667,7 @@ export const DOCUMENT_VERSIONS_PAGE: ListPageConfig = {
         { id: "created_by", header: "Author", accessorKey: "created_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── domain_event ───
@@ -651,6 +683,7 @@ export const DOMAIN_EVENTS_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── email_message ───
@@ -667,6 +700,7 @@ export const EMAIL_MESSAGES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "sent_at", header: "Sent", accessorKey: "sent_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── knowledge_article ───
@@ -692,6 +726,7 @@ export const KNOWLEDGE_ARTICLES_PAGE: ListPageConfig = {
         statusKey: "status",
         fields: [{ id: "views_count", label: "Views", accessorKey: "views_count" }],
     },
+    exportable: true,
 };
 
 // ─── login_audit_log ───
@@ -708,6 +743,7 @@ export const LOGIN_AUDIT_LOG_PAGE: ListPageConfig = {
         { id: "user_agent", header: "User Agent", accessorKey: "user_agent" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── notification ───
@@ -728,6 +764,7 @@ export const NOTIFICATIONS_PAGE: ListPageConfig = {
         { id: "is_read", header: "Read", accessorKey: "is_read", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── organization ───
@@ -745,6 +782,7 @@ export const ORGANIZATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── profile ───
@@ -775,6 +813,7 @@ export const PROFILES_PAGE: ListPageConfig = {
         statusKey: "role",
         fields: [{ id: "status", label: "Status", accessorKey: "status", fieldType: "status" }],
     },
+    exportable: true,
 };
 
 // ─── role_change_log ───
@@ -791,6 +830,7 @@ export const ROLE_CHANGE_LOG_PAGE: ListPageConfig = {
         { id: "changed_by", header: "Changed By", accessorKey: "changed_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── scan_event ───
@@ -807,6 +847,7 @@ export const SCAN_EVENTS_PAGE: ListPageConfig = {
         { id: "scanned_by", header: "Scanned By", accessorKey: "scanned_by" },
         { id: "scanned_at", header: "Date", accessorKey: "scanned_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── service_health_check ───
@@ -823,6 +864,7 @@ export const SERVICE_HEALTH_CHECKS_PAGE: ListPageConfig = {
         { id: "response_time_ms", header: "Response (ms)", accessorKey: "response_time_ms" },
         { id: "checked_at", header: "Checked", accessorKey: "checked_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── sla_policy ───
@@ -840,6 +882,7 @@ export const SLA_POLICIES_PAGE: ListPageConfig = {
         { id: "resolution_time", header: "Resolution Time", accessorKey: "resolution_time" },
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
     ],
+    exportable: true,
 };
 
 // ─── sla_tracking ───
@@ -867,6 +910,7 @@ export const SLA_TRACKING_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "compliance_status",
     },
+    exportable: true,
 };
 
 // ─── storage_object ───
@@ -883,6 +927,7 @@ export const STORAGE_OBJECTS_PAGE: ListPageConfig = {
         { id: "uploaded_by", header: "Uploaded By", accessorKey: "uploaded_by" },
         { id: "created_at", header: "Uploaded", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── sync_event ───
@@ -899,4 +944,23 @@ export const SYNC_EVENTS_PAGE: ListPageConfig = {
         { id: "records_synced", header: "Records", accessorKey: "records_synced" },
         { id: "synced_at", header: "Synced", accessorKey: "synced_at", fieldType: "date" },
     ],
+    exportable: true,
+};
+
+// ─── user_management ───
+
+export const USER_MANAGEMENT_PAGE: ListPageConfig = {
+    entityKey: "user_management",
+    description: "Manage users, roles, and access across your organization",
+    icon: Users,
+    createConfig: CREATE_USER_INVITE_CONFIG,
+    searchKeys: ["name", "email", "role"],
+    columns: [
+        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "email", header: "Email", accessorKey: "email" },
+        { id: "role", header: "Role", accessorKey: "role", fieldType: "status" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "created_at", header: "Joined", accessorKey: "created_at", fieldType: "date" },
+    ],
+    exportable: true,
 };

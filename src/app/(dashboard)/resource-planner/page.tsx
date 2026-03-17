@@ -20,8 +20,8 @@ import {
     useCreateResourceBooking,
     useResourceBookings,
     useUpdateResourceBooking,
-} from "@/lib/supabase/hooks-productive";
-import { useCrewMembers } from "@/lib/supabase/hooks";
+} from "@/lib/supabase";
+import { useCrewMembers } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_RESOURCE_BOOKING_CONFIG } from "@/config/create-entity-configs";
 

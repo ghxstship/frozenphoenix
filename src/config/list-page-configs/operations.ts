@@ -59,6 +59,7 @@ export const BOMS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── consumable ───
@@ -100,6 +101,7 @@ export const CONSUMABLES_PAGE: ListPageConfig = {
         valueKey: "quantity_on_hand",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── inventory_audit ───
@@ -117,6 +119,7 @@ export const INVENTORY_AUDITS_PAGE: ListPageConfig = {
         { id: "audit_date", header: "Date", accessorKey: "audit_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── kit ───
@@ -134,6 +137,7 @@ export const KITS_PAGE: ListPageConfig = {
         { id: "total_value", header: "Value", accessorKey: "total_value", fieldType: "currency" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── load_plan ───
@@ -168,6 +172,7 @@ export const LOAD_PLANS_PAGE: ListPageConfig = {
         dateKey: "departure_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── maintenance_record ───
@@ -207,6 +212,7 @@ export const MAINTENANCE_RECORDS_PAGE: ListPageConfig = {
         dateKey: "scheduled_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── qc_gate ───
@@ -224,6 +230,7 @@ export const QC_GATES_PAGE: ListPageConfig = {
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── quality_check_template ───
@@ -241,6 +248,7 @@ export const QUALITY_CHECK_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── rental_agreement ───
@@ -272,6 +280,7 @@ export const RENTAL_AGREEMENTS_PAGE: ListPageConfig = {
         endDateKey: "start_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── resource_booking ───
@@ -304,6 +313,7 @@ export const RESOURCE_BOOKINGS_PAGE: ListPageConfig = {
         endDateKey: "end_date",
         colorKey: "status",
     },
+    exportable: true,
 };
 
 // ─── consumable_usage ───
@@ -321,6 +331,7 @@ export const CONSUMABLE_USAGE_PAGE: ListPageConfig = {
         { id: "usage_date", header: "Date", accessorKey: "usage_date", fieldType: "date" },
         { id: "created_at", header: "Logged", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── equipment_check_in ───
@@ -338,6 +349,7 @@ export const EQUIPMENT_CHECK_INS_PAGE: ListPageConfig = {
         { id: "condition", header: "Condition", accessorKey: "condition", fieldType: "status" },
         { id: "checked_at", header: "Date", accessorKey: "checked_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── inventory_reservation ───
@@ -355,6 +367,7 @@ export const INVENTORY_RESERVATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "reserved_until", header: "Until", accessorKey: "reserved_until", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── logistics_event ───
@@ -371,6 +384,7 @@ export const LOGISTICS_EVENTS_PAGE: ListPageConfig = {
         { id: "location", header: "Location", accessorKey: "location" },
         { id: "occurred_at", header: "Date", accessorKey: "occurred_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── maintenance_schedule ───
@@ -388,4 +402,5 @@ export const MAINTENANCE_SCHEDULES_PAGE: ListPageConfig = {
         { id: "next_due", header: "Next Due", accessorKey: "next_due", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };

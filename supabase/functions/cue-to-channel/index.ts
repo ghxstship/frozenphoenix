@@ -1,4 +1,9 @@
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 /**
  * cue-to-channel Edge Function
@@ -12,6 +17,9 @@ Deno.serve(async (req) => {
         if (req.method !== "POST") {
             return errorResponse("Method not allowed", 405);
         }
+
+        const authError = requireServiceRoleAuth(req);
+        if (authError) return authError;
 
         const body = await req.json();
         const { cue_id, event_id, cue_name, cue_type, department, notes } = body as {

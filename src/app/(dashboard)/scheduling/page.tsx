@@ -4,7 +4,7 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useMemo, useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SHIFT_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +14,9 @@ import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { GanttChart, type GanttTask } from "@/components/ui/gantt-chart";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Avatar } from "@/components/ui/avatar";
-import { useCrewMembers, useProjects, useShifts } from "@/lib/supabase/hooks";
-import { useCrewUtilization } from "@/lib/supabase/hooks-feature-gaps";
-import { useResourceBookings } from "@/lib/supabase/hooks-pages";
+import { useCrewMembers, useProjects, useShifts } from "@/lib/supabase";
+import { useCrewUtilization } from "@/lib/supabase";
+import { useResourceBookings } from "@/lib/supabase";
 import { formatDate } from "@/lib/locale";
 import type { CrewMember, Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
@@ -213,11 +213,10 @@ export default function SchedulingPage() {
     return (
         <>
             <PermissionGate resource="scheduling" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Crew Scheduling"
-                        description="Shift management and labor allocation across productions"
-                    >
+                <PageShell
+                    title="Crew Scheduling"
+                    description="Shift management and labor allocation across productions"
+                    actions={
                         <div className="flex items-center gap-2">
                             <select
                                 value={selectedProject}
@@ -236,8 +235,8 @@ export default function SchedulingPage() {
                                 Add Shift
                             </Button>
                         </div>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title="Crew Scheduled" value={filteredCrew.length} icon={Users} />
                         <StatCard
@@ -560,7 +559,7 @@ export default function SchedulingPage() {
                             </CardContent>
                         </Card>
                     )}
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_SHIFT_CONFIG}

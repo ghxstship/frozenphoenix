@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { CREATE_CREDENTIAL_CONFIG } from "@/config/create-entity-configs";
+import { CREDENTIALS_PAGE } from "@/config/list-page-configs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -243,13 +243,9 @@ export default function CredentialsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "credential_types",
+            ...CREDENTIALS_PAGE,
             title: "Credentials & Ticketing",
-            description: "Manage credential types, inventory pools, and assignment policies",
-            icon: Ticket,
-            createConfig: CREATE_CREDENTIAL_CONFIG,
             createLabel: "New Credential Type",
-            searchKeys: ["name", "category"],
             stats: [
                 { label: "Credential Types", icon: Ticket, compute: () => typeRows.length },
                 {

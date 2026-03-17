@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,14 +23,14 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useKnowledgeArticles } from "@/lib/supabase/hooks-feature-gaps";
+import { useKnowledgeBaseArticles } from "@/lib/supabase";
 
 interface CollaborativeDocument {
     id: string;
     title: string;
     category: string;
     lastEditedBy: string;
-    lastEditedAt: string;
+    lastEditedAt: string | null;
     activeEditors: ActiveEditor[];
     version: number;
     status: "draft" | "published" | "locked";
@@ -61,7 +61,7 @@ const STATUS_BADGE: Record<string, "success" | "warning" | "default"> = {
 };
 
 export default function CollaborativeEditingPage() {
-    const { data: sbArticles, isLoading } = useKnowledgeArticles();
+    const { data: sbArticles, isLoading } = useKnowledgeBaseArticles();
 
     const documents: CollaborativeDocument[] = useMemo(
         () =>
@@ -91,17 +91,16 @@ export default function CollaborativeEditingPage() {
 
     return (
         <PermissionGate resource="knowledge_base" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Collaborative Editing"
-                    description="Real-time multi-user document editing with presence indicators and conflict resolution"
-                >
+            <PageShell
+                title="Collaborative Editing"
+                description="Real-time multi-user document editing with presence indicators and conflict resolution"
+                actions={
                     <Badge variant="info" className="text-sm px-3 py-1">
                         <Users className="mr-2 h-3.5 w-3.5" />
                         {totalEditors} active editors
                     </Badge>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Documents" value={documents.length} icon={FileText} />
                     <StatCard title="Active Editors" value={totalEditors} icon={Users} />
@@ -184,7 +183,8 @@ export default function CollaborativeEditingPage() {
 
                                     <p className="text-[10px] text-muted-foreground mt-2">
                                         <Clock className="h-3 w-3 inline mr-1" />
-                                        {doc.lastEditedBy} · {formatDate(doc.lastEditedAt)}
+                                        {doc.lastEditedBy} ·{" "}
+                                        {doc.lastEditedAt ? formatDate(doc.lastEditedAt) : "—"}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -370,7 +370,7 @@ export default function CollaborativeEditingPage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

@@ -3,6 +3,22 @@
 // ═══════════════════════════════════════════════════════════════
 // Single import point for all Supabase functionality.
 // Usage: import { useDeals, uploadFile, useSignOut } from "@/lib/supabase";
+//
+// POLICY: This is the ONLY valid import path for hooks in consumer files.
+// No consumer may import from domain hook files directly.
+
+// ─── Hook Factories ───
+export {
+    makeCreateHook,
+    makeDeleteHook,
+    makeDetailHook,
+    makeListHook,
+    makeUpdateHook,
+} from "./hook-factories";
+export type { FilterParams } from "./hook-factories";
+
+// ─── Hook Types (SSOT for all join-aware types) ───
+export type * from "./hook-types";
 
 // ─── Configuration ───
 export { supabaseUrl, supabaseAnonKey } from "./config";
@@ -104,50 +120,30 @@ export {
     getPaginationRange,
 } from "./mutation-utils";
 
-// ─── V2 Feature Hooks ───
-export {
-    useAutomationExecutions,
-    useCreateAutomationExecution,
-    useUpdateAutomationExecution,
-    useRevenueRecognitionEntries,
-    useRevenueRecognitionSummary,
-    useCreateRevenueRecognition,
-    useTimeTrackingPolicy,
-    useUpsertTimeTrackingPolicy,
-    useTimeTrackingCompliance,
-    useNotifications,
-    useUnreadNotificationCount,
-    useCreateNotification,
-    useMarkNotificationRead,
-    useMarkAllNotificationsRead,
-    useNotificationPreferences,
-    useUpsertNotificationPreference,
-    useEmailMessages,
-    useCreateEmailMessage,
-    useSurveyTemplates,
-    useCreateSurveyTemplate,
-    useSurveyResponses,
-    useCreateSurveyResponse,
-    useSlaPolicies,
-    useCreateSlaPolicy,
-    useSlaStatus,
-    useCustomFieldDefinitions,
-    useCreateCustomFieldDefinition,
-    useUpdateCustomFieldDefinition,
-    useCustomFieldValues,
-    useUpsertCustomFieldValue,
-    useProjectTemplates,
-    useCreateProjectTemplate,
-    useUpdateProjectTemplate,
-    useAiReportQueries,
-    useCreateAiReportQuery,
-    useGenerateInvoiceFromTime,
-    useComplianceDrift,
-    useOrgSecuritySettings,
-    useUpdateOrgSecuritySettings,
-} from "./hooks-v2-features";
+// ═══════════════════════════════════════════════════════════════
+// DOMAIN HOOK FILES — Normalized architecture
+// Using export * for all new domain files.
+// ═══════════════════════════════════════════════════════════════
 
-// ─── Advancing Hooks ───
+export * from "./hooks-core";
+export * from "./hooks-crm";
+export * from "./hooks-finance";
+export * from "./hooks-workforce";
+export * from "./hooks-production";
+export * from "./hooks-assets-inventory";
+export * from "./hooks-documents";
+export * from "./hooks-legal";
+export * from "./hooks-automation";
+export * from "./hooks-admin";
+export * from "./hooks-live-ops";
+export * from "./hooks-feature-gaps";
+
+// ═══════════════════════════════════════════════════════════════
+// UNCHANGED DOMAIN FILES
+// Named exports to avoid conflicts with domain files above.
+// ═══════════════════════════════════════════════════════════════
+
+// ─── Advancing ───
 export {
     useCatalogCategories,
     useCatalogCategory,
@@ -183,7 +179,7 @@ export {
     useCatalogRealtime,
 } from "./realtime-advancing";
 
-// ─── Credentialing Hooks ───
+// ─── Credentialing ───
 export {
     useBulkImportJob,
     useBulkImportJobs,
@@ -207,7 +203,7 @@ export {
     useUpdateExportTemplate,
 } from "./hooks-credentialing";
 
-// ─── External Sync & POS Hooks ───
+// ─── External Sync & POS ───
 export {
     useCreateProviderConnection,
     useCreateSyncConflictPolicy,
@@ -218,13 +214,13 @@ export {
     useProviderConnections,
     useProviderTicketMap,
     useSyncConflictPolicies,
-    useSyncEvents,
+    useSyncEvents as useSyncEventsExternal,
     useUpdateProviderConnection,
     useUpdateSyncConflictPolicy,
     useWebhookEvents,
 } from "./hooks-external-sync";
 
-// ─── Messaging Hooks ───
+// ─── Messaging ───
 export {
     messagingKeys,
     useConversations,
@@ -239,14 +235,13 @@ export {
     useUpdateConversation,
     useSendMessage,
     useEditMessage,
-    useDeleteMessage,
+    useDeleteMessage as useDeleteMessageHook,
     useToggleReaction,
     usePinMessage,
     useMarkRead,
     useAcknowledgeMandatoryRead,
     useAddConversationMembers,
     useRemoveConversationMember,
-    useOrgMembers,
 } from "./hooks-messaging";
 
 // ─── Messaging Realtime ───
@@ -257,7 +252,7 @@ export {
     useConversationsRealtime,
 } from "./hooks-messaging-realtime";
 
-// ─── Approval Engine Hooks ───
+// ─── Approval Engine ───
 export {
     useApprovalInstanceStatus,
     useInitiateApproval,
@@ -266,7 +261,7 @@ export {
     useCancelApproval,
 } from "./hooks-approval-engine";
 
-// ─── Context Switcher Hooks ───
+// ─── Context Switcher ───
 export {
     useTeamsForSwitcher,
     useTeamMembers,
@@ -275,166 +270,13 @@ export {
     useActivationsForSwitcher,
 } from "./hooks-switcher";
 
-// ─── Teams Page Hooks ───
-export {
-    useTeams,
-    useTeamDetail,
-    useCreateTeam,
-    useUpdateTeam,
-    useDeleteTeam,
-    useTeamMembersPage,
-    useAddTeamMember,
-    useRemoveTeamMember,
-    useMyDocuments,
-} from "./hooks-pages";
+// ─── SOW & Invoicing ───
+export * from "./hooks-sow";
 
-// ─── User-Scoped Home Hooks ───
-export { useMyTasks, useMyTaskCounts } from "./hooks";
+// ─── Workflows & Approval (join-aware) ───
+export * from "./hooks-workflows";
 
-// ─── Live-Ops Hooks ───
-export {
-    useLiveEventInstances,
-    useLiveCrewAssignments,
-    useStrikeSequences,
-    useEnvironmentalReadings,
-    useFohZones,
-    useFohZoneReadings,
-    useCommChannels,
-    useDepartmentStatuses,
-    useGuestIncidents,
-    useReadinessGates,
-    useRosCues,
-    useVipGuests,
-    useEquipmentCheckIns,
-    useLiveFinancialSnapshots,
-    usePostEventReports,
-} from "./hooks-live-ops";
-
-// ─── Remaining Entity Hooks ───
-export {
-    useRentalAgreements,
-    useRentalAgreement,
-    useCreateRentalAgreement,
-    useUpdateRentalAgreement,
-    useDeleteRentalAgreement,
-    useRightsLicenses,
-    useRightsLicense,
-    useCreateRightsLicense,
-    useUpdateRightsLicense,
-    useDeleteRightsLicense,
-    usePaymentApprovals,
-    usePaymentApproval,
-    useCreatePaymentApproval,
-    useUpdatePaymentApproval,
-    useWorkPackages,
-    useWorkPackage,
-    useCreateWorkPackage,
-    useUpdateWorkPackage,
-    useDeleteWorkPackage,
-    useBoms,
-    useBom,
-    useCreateBom,
-    useUpdateBom,
-    useDeleteBom,
-    useProductionRuns,
-    useProductionRun,
-    useCreateProductionRun,
-    useUpdateProductionRun,
-    useDeleteProductionRun,
-    useProductionVerticals,
-    useProductionVertical,
-    useCreateProductionVertical,
-    useUpdateProductionVertical,
-    useTechnicalSpecs,
-    useTechnicalSpec,
-    useCreateTechnicalSpec,
-    useUpdateTechnicalSpec,
-    useQcGates,
-    useQcGate,
-    useCreateQcGate,
-    useUpdateQcGate,
-    useKits,
-    useKit,
-    useCreateKit,
-    useUpdateKit,
-    useDeleteKit,
-    useLoadPlans,
-    useLoadPlan,
-    useCreateLoadPlan,
-    useUpdateLoadPlan,
-    useInventoryAudits,
-    useInventoryAudit,
-    useCreateInventoryAudit,
-    useUpdateInventoryAudit,
-    useAssetVersions,
-    useAssetVersion,
-    useCreateAssetVersion,
-    useAssetTags,
-    useCreateAssetTag,
-    useDeleteAssetTag,
-    useSpaceBookings,
-    useSpaceBooking,
-    useCreateSpaceBooking,
-    useUpdateSpaceBooking,
-    useDeleteSpaceBooking,
-    useScanEvents,
-    useCreateScanEvent,
-    useVipServiceRequests,
-    useVipServiceRequest,
-    useCreateVipServiceRequest,
-    useUpdateVipServiceRequest,
-    useWorkerClassifications,
-    useWorkerClassification,
-    useCreateWorkerClassification,
-    useUpdateWorkerClassification,
-    useWorkerComplianceDocs,
-    useWorkerComplianceDoc,
-    useCreateWorkerComplianceDoc,
-    useUpdateWorkerComplianceDoc,
-    useBrands,
-    useBrand,
-    useCreateBrand,
-    useUpdateBrand,
-    useDepreciationSchedules,
-    useDepreciationSchedule,
-    useCreateDepreciationSchedule,
-    useUpdateDepreciationSchedule,
-    useContractAmendments,
-    useContractAmendment,
-    useCreateContractAmendment,
-    useUpdateContractAmendment,
-    useLegalHolds,
-    useLegalHold,
-    useCreateLegalHold,
-    useUpdateLegalHold,
-    useStorageObjects,
-    useStorageObject,
-    useCreateStorageObject,
-    useDeleteStorageObject,
-    useVendorCommunications,
-    useVendorCommunication,
-    useCreateVendorCommunication,
-    useHrCertifications,
-    useHrCertification,
-    useCreateHrCertification,
-    useUpdateHrCertification,
-    useProductionBudgetLines,
-    useProductionBudgetLine,
-    useCreateProductionBudgetLine,
-    useUpdateProductionBudgetLine,
-    useDeleteProductionBudgetLine,
-} from "./hooks-remaining-entities";
-
-// ─── User Certifications ───
-export {
-    useUserCertifications,
-    useCreateUserCertification,
-    useUpdateUserCertification,
-    useDeleteUserCertification,
-} from "./hooks-extended";
-export type { UserCertification } from "./hooks-extended";
-
-// ─── Scanning Hooks ───
+// ─── Scanning ───
 export { useAssetLookup, useAssetScan, useAssetScanHistory } from "./hooks-scanning";
 export type {
     AssetScanAction,

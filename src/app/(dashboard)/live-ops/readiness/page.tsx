@@ -1,129 +1,138 @@
 "use client";
 
-import { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock, Gauge, XCircle } from "lucide-react";
 import { READINESS_GATE_STATUS_MAP } from "@/config/domain-config";
-import { StaggerItem } from "@/components/ui/stagger-container";
-import { LoadingState } from "@/components/layouts/loading-state";
-import { useReadinessGates } from "@/lib/supabase/hooks-live-ops";
+import { useReadinessGates } from "@/lib/supabase";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+
+type Row = Record<string, unknown>;
+
+const STATUS_OPTIONS = ["all", "passed", "in_progress", "not_started", "failed", "waived"] as const;
+
+const CONFIG: DashboardPageConfig = {
+    resource: "live_ops",
+    title: "Readiness Gates",
+    description:
+        "Pre-show verification checkpoints — all blocking gates must pass before doors open",
+    stats: [
+        {
+            label: "Passed",
+            icon: CheckCircle2,
+            compute: (d) => d.filter((r) => r.status === "passed").length,
+        },
+        {
+            label: "In Progress",
+            icon: Clock,
+            compute: (d) => d.filter((r) => r.status === "in_progress").length,
+        },
+        {
+            label: "Not Started",
+            icon: Gauge,
+            compute: (d) => d.filter((r) => r.status === "not_started").length,
+        },
+        {
+            label: "Blocking Remaining",
+            icon: AlertTriangle,
+            compute: (d) =>
+                d.filter((r) => r.is_blocking && !["passed", "waived"].includes(r.status as string))
+                    .length,
+        },
+    ],
+    alerts: [
+        {
+            condition: (d) =>
+                d.filter((r) => r.is_blocking && !["passed", "waived"].includes(r.status as string))
+                    .length > 0,
+            message: (d) => {
+                const count = d.filter(
+                    (r) => r.is_blocking && !["passed", "waived"].includes(r.status as string)
+                ).length;
+                return `${count} blocking gate(s) still outstanding — doors cannot open`;
+            },
+            severity: "destructive",
+            icon: XCircle,
+        },
+    ],
+    filters: [
+        {
+            id: "status",
+            label: "Status",
+            type: "button-group",
+            options: STATUS_OPTIONS.map((s) => ({
+                value: s,
+                label:
+                    s === "all"
+                        ? "All"
+                        : (READINESS_GATE_STATUS_MAP[s as keyof typeof READINESS_GATE_STATUS_MAP]
+                              ?.label ?? s),
+            })),
+            defaultValue: "all",
+            predicate: (item, val) => item.status === val,
+        },
+    ],
+    cardRenderer: (item: Row) => (
+        <Card
+            className={`hover:shadow-sm transition-all ${Boolean(item.is_blocking) && !["passed", "waived"].includes(item.status as string) ? "border-l-2 border-l-destructive" : ""}`}
+        >
+            <CardContent className="py-3">
+                <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">
+                        G{item.gate_number as string}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-semibold truncate">
+                                {item.name as string}
+                            </h3>
+                            <StatusBadge
+                                status={item.status as string}
+                                className="text-[10px] shrink-0"
+                            />
+                            {Boolean(item.is_blocking) && (
+                                <span className="text-[10px] text-destructive font-medium shrink-0">
+                                    BLOCKING
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                            Verifier: {item.verifier_role as string}
+                        </p>
+                    </div>
+                    {typeof item.verified_by_id === "string" && (
+                        <div className="text-right text-xs shrink-0">
+                            <p className="font-medium">{item.verified_by_id}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                                {typeof item.verified_at === "string"
+                                    ? new Date(item.verified_at).toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                      })
+                                    : ""}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    ),
+    emptyState: {
+        icon: Gauge,
+        title: "No readiness gates",
+        description: "Readiness gates will appear here when configured for an event.",
+    },
+};
 
 export default function ReadinessGatesPage() {
-    const [statusFilter, setStatusFilter] = useState<string>("all");
-    const { data: gates, isLoading } = useReadinessGates();
-
-    if (isLoading) return <LoadingState />;
-
-    const rows = gates ?? [];
-    const passed = rows.filter((g) => g.status === "passed").length;
-    const inProgress = rows.filter((g) => g.status === "in_progress").length;
-    const notStarted = rows.filter((g) => g.status === "not_started").length;
-    const blockingRemaining = rows.filter(
-        (g) => g.is_blocking && !["passed", "waived"].includes(g.status)
-    ).length;
-
-    const filtered = rows.filter((g) => statusFilter === "all" || g.status === statusFilter);
+    const { data, isLoading } = useReadinessGates();
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Readiness Gates"
-                description="Pre-show verification checkpoints — all blocking gates must pass before doors open"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Passed" value={passed} icon={CheckCircle2} />
-                <StatCard title="In Progress" value={inProgress} icon={Clock} />
-                <StatCard title="Not Started" value={notStarted} icon={Gauge} />
-                <StatCard
-                    title="Blocking Remaining"
-                    value={blockingRemaining}
-                    icon={AlertTriangle}
-                />
-            </div>
-
-            {blockingRemaining > 0 && (
-                <Card className="border-destructive/30 bg-destructive/5">
-                    <CardContent className="py-3 flex items-center gap-3">
-                        <XCircle className="h-5 w-5 text-destructive shrink-0" />
-                        <p className="text-sm font-medium text-destructive">
-                            {blockingRemaining} blocking gate(s) still outstanding — doors cannot
-                            open
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-
-            <div className="flex gap-2 flex-wrap">
-                {["all", "passed", "in_progress", "not_started", "failed", "waived"].map((s) => (
-                    <Button
-                        key={s}
-                        variant={statusFilter === s ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setStatusFilter(s)}
-                    >
-                        {s === "all"
-                            ? "All"
-                            : (READINESS_GATE_STATUS_MAP[
-                                  s as keyof typeof READINESS_GATE_STATUS_MAP
-                              ]?.label ?? s)}
-                    </Button>
-                ))}
-            </div>
-
-            <div className="space-y-2">
-                {filtered.map((gate, i) => (
-                    <StaggerItem key={gate.id} index={i} stagger="tight">
-                        <Card
-                            className={`hover:shadow-sm transition-all ${gate.is_blocking && !["passed", "waived"].includes(gate.status) ? "border-l-2 border-l-destructive" : ""}`}
-                        >
-                            <CardContent className="py-3">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">
-                                        G{gate.gate_number}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-sm font-semibold truncate">
-                                                {gate.name}
-                                            </h3>
-                                            <StatusBadge
-                                                status={gate.status}
-                                                className="text-[10px] shrink-0"
-                                            />
-                                            {gate.is_blocking && (
-                                                <span className="text-[10px] text-destructive font-medium shrink-0">
-                                                    BLOCKING
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            Verifier: {gate.verifier_role}
-                                        </p>
-                                    </div>
-                                    {gate.verified_by_id && (
-                                        <div className="text-right text-xs shrink-0">
-                                            <p className="font-medium">{gate.verified_by_id}</p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                {gate.verified_at
-                                                    ? new Date(gate.verified_at).toLocaleTimeString(
-                                                          [],
-                                                          { hour: "2-digit", minute: "2-digit" }
-                                                      )
-                                                    : ""}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </StaggerItem>
-                ))}
-            </div>
-        </div>
+        <OperationalDashboardShell
+            config={CONFIG}
+            data={data as Row[] | null}
+            isLoading={isLoading}
+        />
     );
 }

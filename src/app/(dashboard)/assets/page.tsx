@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAssets, useVehicles } from "@/lib/supabase/hooks";
+import { useAssets, useVehicles } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { AlertTriangle, Clock, MapPin, Package, QrCode, ScanBarcode, Truck } from "lucide-react";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import {
     LocationField,
     PhoneField,
 } from "@/components/data-view/field-renderers";
-import { CREATE_ASSET_CONFIG } from "@/config/create-entity-configs";
+import { ASSETS_PAGE } from "@/config/list-page-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
@@ -392,15 +392,11 @@ export default function AssetsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "assets",
+            ...ASSETS_PAGE,
             title: "Asset & Fleet Ledger",
-            description: "Equipment inventory, rental tracking, and vehicle fleet management",
-            icon: Package,
-            createConfig: CREATE_ASSET_CONFIG,
             createLabel: "Add Asset",
             exportable: true,
             importable: true,
-            searchKeys: ["name", "barcode", "category", "location"],
             stats: [
                 { label: "Total Assets", icon: Package, compute: (r) => r.length },
                 {

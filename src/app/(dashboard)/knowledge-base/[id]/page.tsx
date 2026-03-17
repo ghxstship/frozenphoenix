@@ -2,13 +2,13 @@
 
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteKBArticle, useUpdateKBArticle } from "@/lib/supabase/hooks-pages";
+import { useDeleteKBArticle, useUpdateKBArticle } from "@/lib/supabase";
 import {
     useCreateRecordComment,
-    useKnowledgeArticle,
+    useKnowledgeBaseArticle,
     useRecordActivityLog,
     useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/form/textarea";
-import { StatusBadge } from "@/components/ui/status-badge";
+
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { formatDate } from "@/lib/utils";
@@ -52,7 +52,15 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/knowledge-base",
     backLabel: "Knowledge Base",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+        { id: "version", label: "Version", accessorKey: "version" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+        { id: "version", label: "Version", accessorKey: "version" },
+    ],
     tabs: [],
 };
 
@@ -75,7 +83,7 @@ export default function KBArticleDetailPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [linkSearch, setLinkSearch] = useState("");
 
-    const { data: article, isLoading } = useKnowledgeArticle(articleId);
+    const { data: article, isLoading } = useKnowledgeBaseArticle(articleId);
     const { data: sbActivity } = useRecordActivityLog("kb_article", articleId);
     const { data: sbComments } = useRecordComments("kb_article", articleId);
     const createComment = useCreateRecordComment();
@@ -134,21 +142,9 @@ export default function KBArticleDetailPage() {
         <div className="space-y-4">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Article Details</CardTitle>
+                    <CardTitle className="text-sm">Author</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Category</span>
-                        <Badge variant="secondary">{article.category}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <StatusBadge status={article.status} />
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Version</span>
-                        <span className="font-medium">v{article.version}</span>
-                    </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Author</span>
                         <span className="font-medium">
@@ -163,7 +159,7 @@ export default function KBArticleDetailPage() {
                     )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Updated</span>
-                        <span>{formatDate(article.updated_at)}</span>
+                        <span>{formatDate(article.updated_at ?? "")}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -244,6 +240,19 @@ export default function KBArticleDetailPage() {
         },
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Version", icon: BookOpen, compute: () => `v${article?.version ?? 1}` },
+            {
+                label: "Published",
+                icon: FileText,
+                compute: () => (article?.published_at ? formatDate(article.published_at) : "Draft"),
+            },
+            {
+                label: "Updated",
+                icon: Edit,
+                compute: () => (article?.updated_at ? formatDate(article.updated_at) : "—"),
+            },
+        ],
         tabs: [
             {
                 id: "edit",

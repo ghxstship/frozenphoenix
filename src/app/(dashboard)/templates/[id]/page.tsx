@@ -1,7 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteTemplate, useTemplate, useUpdateTemplate } from "@/lib/supabase/hooks-pages";
+import {
+    useDeleteProjectTemplate,
+    useProjectTemplate,
+    useUpdateProjectTemplate,
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +68,18 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/templates",
     backLabel: "Templates",
     chatterRecordType: "template",
-    fields: [],
+    fields: [
+        { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+        { id: "is_default", label: "Default", accessorKey: "is_default", fieldType: "boolean" },
+        { id: "usage_count", label: "Usage Count", accessorKey: "usage_count" },
+    ],
+    sidebarFields: [
+        { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+        { id: "is_default", label: "Default", accessorKey: "is_default", fieldType: "boolean" },
+        { id: "created_by", label: "Created By", accessorKey: "created_by" },
+        { id: "last_used", label: "Last Used", accessorKey: "last_used", fieldType: "date" },
+        { id: "usage_count", label: "Usage Count", accessorKey: "usage_count" },
+    ],
     tabs: [],
 };
 
@@ -72,14 +87,14 @@ export default function TemplateDetailPage() {
     const params = useParams();
     const router = useRouter();
     const templateId = params.id as string;
-    const { data: sbRecord, isLoading } = useTemplate(templateId);
+    const { data: sbRecord, isLoading } = useProjectTemplate(templateId);
     const tmpl = sbRecord as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: templateId,
         entityLabel: "Template",
         listPath: "/templates",
-        useUpdateHook: useUpdateTemplate,
-        useDeleteHook: useDeleteTemplate,
+        useUpdateHook: useUpdateProjectTemplate,
+        useDeleteHook: useDeleteProjectTemplate,
     });
 
     const tmplCategory = ((tmpl?.category as string) ?? "proposal") as TemplateCategory;
@@ -88,63 +103,29 @@ export default function TemplateDetailPage() {
     const tmplUsageCount = (tmpl?.usage_count as number) ?? (tmpl?.usageCount as number) ?? 0;
     const tmplIsDefault = (tmpl?.is_default as boolean) ?? (tmpl?.isDefault as boolean) ?? false;
     const tmplTags = Array.isArray(tmpl?.tags) ? (tmpl.tags as string[]) : [];
-    const tmplCreatedBy = (tmpl?.created_by as string) ?? (tmpl?.createdBy as string) ?? "";
+    const _tmplCreatedBy = (tmpl?.created_by as string) ?? (tmpl?.createdBy as string) ?? "";
     const tmplContent = (tmpl?.content as string) ?? "";
     const usageHistory = parseUsageHistory(tmpl?.usage_history ?? tmpl?.usageHistory);
     const catCfg = CATEGORY_CONFIG[tmplCategory];
 
-    const sidebarSlot = (
-        <div className="space-y-4">
+    const sidebarSlot =
+        tmplTags.length > 0 ? (
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Template Details</CardTitle>
+                    <CardTitle className="text-sm">Tags</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Category</span>
-                        <Badge variant={catCfg.variant}>{catCfg.label}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Default</span>
-                        <span>{tmplIsDefault ? "Yes" : "No"}</span>
-                    </div>
-                    {tmplCreatedBy && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Created By</span>
-                            <span>{tmplCreatedBy}</span>
-                        </div>
-                    )}
-                    {tmplLastUsed && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Last Used</span>
-                            <span>{formatDate(tmplLastUsed)}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Usage Count</span>
-                        <span className="font-medium">{tmplUsageCount}</span>
+                <CardContent>
+                    <div className="flex flex-wrap gap-1.5">
+                        {tmplTags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                                <Tag className="h-3 w-3 mr-1" />
+                                {tag}
+                            </Badge>
+                        ))}
                     </div>
                 </CardContent>
             </Card>
-            {tmplTags.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm">Tags</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-wrap gap-1.5">
-                            {tmplTags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                    <Tag className="h-3 w-3 mr-1" />
-                                    {tag}
-                                </Badge>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
-    );
+        ) : undefined;
 
     const overviewSlot = (
         <div className="space-y-6">
@@ -205,6 +186,16 @@ export default function TemplateDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Total Uses", icon: Copy, compute: () => `${tmplUsageCount}` },
+            {
+                label: "Last Used",
+                icon: Clock,
+                compute: () => (tmplLastUsed ? formatDate(tmplLastUsed) : "\u2014"),
+            },
+            { label: "Category", icon: FileText, compute: () => catCfg.label },
+            { label: "Default", icon: Star, compute: () => (tmplIsDefault ? "Yes" : "No") },
+        ],
         tabs: [
             {
                 id: "preview",

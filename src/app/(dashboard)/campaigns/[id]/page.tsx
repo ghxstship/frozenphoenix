@@ -5,10 +5,10 @@ import {
     useCampaign,
     useCampaignAssets,
     useCampaignChannels,
-    useCampaignKpis,
+    useCampaignKPIs,
     useDeleteCampaign,
     useUpdateCampaign,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +60,26 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/campaigns",
     backLabel: "Campaigns",
     chatterRecordType: "campaign",
-    fields: [],
+    fields: [
+        { id: "objective", label: "Objective", accessorKey: "objective", fieldType: "status" },
+        {
+            id: "total_budget",
+            label: "Budget",
+            accessorKey: "total_budget",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+        { id: "roi", label: "ROI", accessorKey: "roi" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "objective", label: "Type", accessorKey: "objective", fieldType: "status" },
+        { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+        { id: "roi", label: "ROI", accessorKey: "roi" },
+    ],
     tabs: [],
 };
 
@@ -76,9 +95,9 @@ export default function CampaignDetailPage() {
         useUpdateHook: useUpdateCampaign,
         useDeleteHook: useDeleteCampaign,
     });
-    const { data: sbChannels } = useCampaignChannels(entityId);
-    const { data: sbAssets } = useCampaignAssets(entityId);
-    const { data: sbKpis } = useCampaignKpis(entityId);
+    const { data: sbChannels } = useCampaignChannels({ campaign_id: entityId });
+    const { data: sbAssets } = useCampaignAssets({ campaign_id: entityId });
+    const { data: sbKpis } = useCampaignKPIs({ campaign_id: entityId });
 
     const channels: ChannelView[] = (sbChannels ?? []).map((r: Record<string, unknown>) => ({
         id: String(r.id ?? ""),
@@ -106,47 +125,6 @@ export default function CampaignDetailPage() {
 
     const sidebarSlot = campaign ? (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Campaign Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(campaign.status) as "default"}>
-                            {getStatusLabel(campaign.status)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <span className="font-medium capitalize">
-                            {campaign.objective ?? "General"}
-                        </span>
-                    </div>
-                    {campaign.start_date && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Start</span>
-                            <span className="font-medium">
-                                {formatDate(campaign.start_date, "compact")}
-                            </span>
-                        </div>
-                    )}
-                    {campaign.end_date && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">End</span>
-                            <span className="font-medium">
-                                {formatDate(campaign.end_date, "compact")}
-                            </span>
-                        </div>
-                    )}
-                    {campaign.roi !== null && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">ROI</span>
-                            <span className="font-bold text-success">{campaign.roi}x</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Budget</CardTitle>
@@ -197,56 +175,6 @@ export default function CampaignDetailPage() {
 
     const overviewSlot = campaign ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <DollarSign className="h-5 w-5 text-primary" />
-                            <div>
-                                <p className="text-[10px] text-muted-foreground">Budget</p>
-                                <p className="text-sm font-bold">
-                                    {formatCurrency(campaign.total_budget ?? 0)}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <BarChart3 className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-[10px] text-muted-foreground">Channels</p>
-                                <p className="text-sm font-bold">{channels.length}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <ImageIcon className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-[10px] text-muted-foreground">Assets</p>
-                                <p className="text-sm font-bold">{assets.length}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <TrendingUp className="h-5 w-5 text-success" />
-                            <div>
-                                <p className="text-[10px] text-muted-foreground">ROI</p>
-                                <p className="text-sm font-bold">
-                                    {campaign.roi !== null ? `${campaign.roi}x` : "—"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
             {campaign.total_reach !== null && (
                 <Card>
                     <CardHeader>
@@ -333,6 +261,20 @@ export default function CampaignDetailPage() {
         subtitleFn: () => campaign?.description ?? "",
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Budget",
+                icon: DollarSign,
+                compute: () => formatCurrency(campaign?.total_budget ?? 0),
+            },
+            { label: "Channels", icon: BarChart3, compute: () => channels.length },
+            { label: "Assets", icon: ImageIcon, compute: () => assets.length },
+            {
+                label: "ROI",
+                icon: TrendingUp,
+                compute: () => (campaign?.roi !== null ? `${campaign?.roi}x` : "—"),
+            },
+        ],
         tabs: [
             {
                 id: "channels",

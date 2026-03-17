@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_GOAL_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useGoals, useUpdateGoal } from "@/lib/supabase/hooks-feature-gaps";
+import { useGoals, useUpdateGoal } from "@/lib/supabase";
 
 type GoalStatus = "not_started" | "on_track" | "at_risk" | "behind" | "completed" | "cancelled";
 type GoalCategory = "performance" | "development" | "project" | "team" | "personal";
@@ -154,16 +154,15 @@ export default function GoalsPage() {
 
     return (
         <PermissionGate resource="workforce" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Goals & OKRs"
-                    description="Track individual and team objectives with measurable key results"
-                >
+            <PageShell
+                title="Goals & OKRs"
+                description="Track individual and team objectives with measurable key results"
+                actions={
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New Goal
                     </Button>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="On Track" value={onTrack} icon={TrendingUp} />
                     <StatCard
@@ -370,7 +369,7 @@ export default function GoalsPage() {
                         <p className="text-sm text-muted-foreground">No goals found</p>
                     </div>
                 )}
-            </div>
+            </PageShell>
             <CreateEntityDialog
                 config={CREATE_GOAL_CONFIG}
                 open={createOpen}

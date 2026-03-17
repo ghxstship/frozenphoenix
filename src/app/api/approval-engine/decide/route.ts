@@ -49,7 +49,7 @@ export const POST = withApiHandler(
                 case "VALIDATION":
                     return ApiErrors.badRequest(result.error!);
                 default:
-                    return ApiErrors.internalError(result.error);
+                    return ApiErrors.internalError("Failed to process decision");
             }
         }
 

@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useCallback, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -158,9 +158,7 @@ export default function BatchAssetScannerPage() {
 
     return (
         <PermissionGate resource="assets" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader title={S.batchTitle} description={S.batchSubtitle} />
-
+            <PageShell title={S.batchTitle} description={S.batchSubtitle}>
                 <ScanFeedback
                     result={feedback.result}
                     message={feedback.message}
@@ -345,7 +343,7 @@ export default function BatchAssetScannerPage() {
                         </Card>
                     </div>
                 </div>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

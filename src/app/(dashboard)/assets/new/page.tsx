@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useCreateAsset } from "@/lib/supabase/hooks";
+import { useCreateAsset } from "@/lib/supabase";
 import { FormPageShell } from "@/components/shells/form-page-shell";
 import type { FormPageConfig } from "@/types/form-page-config";
 

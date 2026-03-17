@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useDeleteOpportunity, useUpdateOpportunity } from "@/lib/supabase/hooks-pages";
+import { useDeleteOpportunity, useUpdateOpportunity } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,7 @@ import {
     User,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useOpportunity } from "@/lib/supabase/hooks-pages";
+import { useOpportunity } from "@/lib/supabase";
 
 interface OppActivityItem {
     id: string;

@@ -12,7 +12,12 @@
  * }
  */
 
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 import {
     completeSyncEvent,
     createSyncEvent,
@@ -32,6 +37,10 @@ Deno.serve(async (req: Request) => {
     if (req.method !== "POST") {
         return errorResponse("Method not allowed", 405);
     }
+
+    // Auth guard — only pg_notify / internal callers with service role key
+    const authErr = requireServiceRoleAuth(req);
+    if (authErr) return authErr;
 
     const supabase = createServiceClient();
     let body: OutboundSyncRequest;
@@ -173,7 +182,7 @@ Deno.serve(async (req: Request) => {
 });
 
 // ---------------------------------------------------------------------------
-// Provider Push (placeholder — each provider would have its own implementation)
+// Provider Push — Real implementations per provider (G2)
 // ---------------------------------------------------------------------------
 
 async function pushToProvider(
@@ -187,24 +196,145 @@ async function pushToProvider(
         credentials: { apiKey: string; apiSecret: string; accessToken: string };
     }
 ): Promise<void> {
-    // Log outbound sync attempt for audit
-    await supabase
-        .from("sync_events")
-        .update({
-            metadata: {
-                outbound_entity_id: params.entity.id,
-                outbound_action: params.action,
-                provider: params.providerName,
-            },
-        })
-        .eq("connection_id", params.connectionId);
+    const { providerName, entity, action, credentials } = params;
 
-    // NEXT: Implement provider-specific API calls
-    // - Eventbrite: PATCH /v3/attendees/{id}/ for check-in status
-    // - Square: POST /v2/orders for order updates
-    // - Front Gate: Provider-specific API endpoints
+    switch (providerName) {
+        case "eventbrite":
+            await pushToEventbrite(entity, action, credentials);
+            break;
+        case "square":
+            await pushToSquare(entity, action, credentials);
+            break;
+        default:
+            // Log outbound sync attempt for unsupported providers
+            console.warn(`Outbound sync not implemented for provider: ${providerName}`);
+    }
+}
 
-    // For now, this is a successful no-op placeholder
-    // that logs the intent. Real implementation would make
-    // HTTP requests to the provider APIs.
+// ─── Eventbrite Outbound ─────────────────────────────────────
+
+async function pushToEventbrite(
+    entity: Record<string, unknown>,
+    action: string,
+    credentials: { apiKey: string; apiSecret: string; accessToken: string }
+): Promise<void> {
+    const token = credentials.accessToken || credentials.apiKey;
+    if (!token) throw new Error("No Eventbrite API token configured");
+
+    const baseUrl = "https://www.eventbriteapi.com/v3";
+    const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+    };
+
+    // Look up provider ticket mapping
+    const providerTicketId = entity.provider_ticket_id as string;
+
+    if (action === "update" && providerTicketId) {
+        // Update attendee check-in status
+        const checkedIn = entity.status === "checked_in" || entity.status === "used";
+        const endpoint = `${baseUrl}/attendees/${providerTicketId}/`;
+
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                attendee: {
+                    checked_in: checkedIn,
+                },
+            }),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Eventbrite API error (${response.status}): ${errText.slice(0, 300)}`);
+        }
+    }
+}
+
+// ─── Square Outbound ─────────────────────────────────────────
+
+async function pushToSquare(
+    entity: Record<string, unknown>,
+    action: string,
+    credentials: { apiKey: string; apiSecret: string; accessToken: string }
+): Promise<void> {
+    const token = credentials.accessToken || credentials.apiKey;
+    if (!token) throw new Error("No Square API token configured");
+
+    const baseUrl = "https://connect.squareup.com/v2";
+    const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Square-Version": "2024-01-18",
+    };
+
+    if (action === "update" && entity.provider_transaction_id) {
+        // Update an existing order
+        const orderId = entity.provider_transaction_id as string;
+        const locationId = entity.location_external_id as string;
+
+        if (!locationId) throw new Error("Square requires location_id for order updates");
+
+        const response = await fetch(`${baseUrl}/orders/${orderId}`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({
+                order: {
+                    location_id: locationId,
+                    version: entity.version || 1,
+                    state: mapToSquareState(entity.status as string),
+                },
+                idempotency_key: `outbound-${entity.id}-${Date.now()}`,
+            }),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Square API error (${response.status}): ${errText.slice(0, 300)}`);
+        }
+    } else if (action === "create") {
+        // Create a new order
+        const locationId = entity.location_external_id as string;
+        if (!locationId) throw new Error("Square requires location_id for order creation");
+
+        const response = await fetch(`${baseUrl}/orders`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                order: {
+                    location_id: locationId,
+                    reference_id: entity.id as string,
+                    line_items:
+                        (entity.items as unknown[])?.map((item: unknown) => {
+                            const i = item as Record<string, unknown>;
+                            return {
+                                name: i.name,
+                                quantity: String(i.quantity ?? 1),
+                                base_price_money: {
+                                    amount: Math.round(Number(i.unit_price ?? 0) * 100),
+                                    currency: (entity.currency as string) || "USD",
+                                },
+                            };
+                        }) ?? [],
+                },
+                idempotency_key: `outbound-create-${entity.id}-${Date.now()}`,
+            }),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Square API error (${response.status}): ${errText.slice(0, 300)}`);
+        }
+    }
+}
+
+function mapToSquareState(status: string): string {
+    const map: Record<string, string> = {
+        completed: "COMPLETED",
+        cancelled: "CANCELED",
+        pending: "OPEN",
+        refunded: "CANCELED",
+    };
+    return map[status] ?? "OPEN";
 }

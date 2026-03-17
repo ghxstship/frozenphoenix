@@ -1,76 +1,102 @@
 "use client";
 
-import { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { AlertTriangle, CheckCircle2, Clock, Coffee, LogIn, LogOut, Users } from "lucide-react";
-import { useLiveCrewAssignments, useUpdateLiveCrewAssignment } from "@/lib/supabase/hooks-live-ops";
+import { useLiveCrewAssignments, useUpdateLiveCrewAssignment } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+
+type Row = Record<string, unknown>;
+
+const CONFIG: DashboardPageConfig = {
+    resource: "live_ops",
+    title: "Live Crew",
+    description: "On-site crew assignments, check-in status, and overtime tracking",
+    searchable: true,
+    searchPlaceholder: "Search crew...",
+    searchKeys: ["role_description", "department"],
+    stats: [
+        {
+            label: "Checked In",
+            icon: CheckCircle2,
+            compute: (d) => {
+                const checkedIn = d.filter((r) => !!r.checked_in_at).length;
+                return `${checkedIn}/${d.length}`;
+            },
+        },
+        {
+            label: "Overtime Flagged",
+            icon: AlertTriangle,
+            compute: (d) => d.filter((r) => r.overtime_flagged).length,
+        },
+        {
+            label: "Total Hours Today",
+            icon: Clock,
+            compute: (d) => d.reduce((s, r) => s + (Number(r.hours_worked) || 0), 0).toFixed(1),
+        },
+        { label: "Total Crew", icon: Users, compute: (d) => d.length },
+    ],
+    emptyState: {
+        icon: Users,
+        title: "No crew assigned",
+        description: "Crew assignments will appear here during live events.",
+    },
+};
 
 export default function LiveCrewPage() {
     const [search, setSearch] = useState("");
     const { data: crew, isLoading } = useLiveCrewAssignments();
     const updateAssignment = useUpdateLiveCrewAssignment();
 
-    if (isLoading) return <LoadingState />;
+    const rows = useMemo(() => (crew ?? []) as Row[], [crew]);
 
-    const rows = crew ?? [];
-    const checkedIn = rows.filter((c) => !!c.checked_in_at).length;
-    const overtime = rows.filter((c) => c.overtime_flagged).length;
-    const totalHours = rows.reduce((s, c) => s + (c.hours_worked ?? 0), 0);
-
-    const filtered = rows.filter(
-        (c) =>
-            !search ||
-            (c.role_description ?? "").toLowerCase().includes(search.toLowerCase()) ||
-            (c.department ?? "").toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = useMemo(() => {
+        if (!search) return rows;
+        const q = search.toLowerCase();
+        return rows.filter(
+            (c) =>
+                String(c.role_description ?? "")
+                    .toLowerCase()
+                    .includes(q) ||
+                String(c.department ?? "")
+                    .toLowerCase()
+                    .includes(q)
+        );
+    }, [rows, search]);
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Live Crew"
-                description="On-site crew assignments, check-in status, and overtime tracking"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                    title="Checked In"
-                    value={`${checkedIn}/${rows.length}`}
-                    icon={CheckCircle2}
-                />
-                <StatCard title="Overtime Flagged" value={overtime} icon={AlertTriangle} />
-                <StatCard title="Total Hours Today" value={totalHours.toFixed(1)} icon={Clock} />
-                <StatCard title="Total Crew" value={rows.length} icon={Users} />
-            </div>
-
+        <OperationalDashboardShell
+            config={{ ...CONFIG, searchable: false }}
+            data={rows}
+            isLoading={isLoading}
+        >
+            {/* Search managed locally because crew cards have mutations that need the typed row */}
             <SearchInput
                 value={search}
                 onValueChange={setSearch}
                 placeholder="Search crew..."
-                className="max-w-sm"
+                className="max-w-sm mb-4"
             />
-
             <div className="space-y-2">
                 {filtered.map((member, i) => (
-                    <StaggerItem key={member.id} index={i} stagger="tight">
+                    <StaggerItem key={member.id as string} index={i} stagger="tight">
                         <Card
                             className={`hover:shadow-sm transition-all ${member.overtime_flagged ? "border-l-2 border-l-warning" : ""}`}
                         >
                             <CardContent className="py-3">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-xs font-bold">
-                                        {member.radio_callsign ?? "—"}
+                                        {(member.radio_callsign as string) ?? "—"}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-sm font-semibold truncate">
-                                                {member.crew_member_id}
+                                                {member.crew_member_id as string}
                                             </h3>
                                             <StatusBadge
                                                 status={
@@ -80,7 +106,7 @@ export default function LiveCrewPage() {
                                                 }
                                                 className="text-[10px] shrink-0"
                                             />
-                                            {member.overtime_flagged && (
+                                            {Boolean(member.overtime_flagged) && (
                                                 <span className="text-[10px] text-warning font-medium shrink-0 flex items-center gap-0.5">
                                                     <AlertTriangle className="h-3 w-3" />
                                                     OT
@@ -88,16 +114,17 @@ export default function LiveCrewPage() {
                                             )}
                                         </div>
                                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            {member.role_description ?? ""} ·{" "}
-                                            {member.department ?? ""} · {member.zone ?? ""}
+                                            {(member.role_description as string) ?? ""} ·{" "}
+                                            {(member.department as string) ?? ""} ·{" "}
+                                            {(member.zone as string) ?? ""}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                         <div className="text-right text-sm">
                                             <p className="font-medium">
-                                                {member.hours_worked ?? 0}h
+                                                {Number(member.hours_worked) || 0}h
                                             </p>
-                                            {member.checked_in_at && (
+                                            {typeof member.checked_in_at === "string" && (
                                                 <p className="text-[10px] text-muted-foreground">
                                                     In:{" "}
                                                     {new Date(
@@ -119,7 +146,7 @@ export default function LiveCrewPage() {
                                                     disabled={updateAssignment.isPending}
                                                     onClick={() =>
                                                         updateAssignment.mutate({
-                                                            id: member.id,
+                                                            id: member.id as string,
                                                             checked_in_at: new Date().toISOString(),
                                                         })
                                                     }
@@ -138,7 +165,7 @@ export default function LiveCrewPage() {
                                                             disabled={updateAssignment.isPending}
                                                             onClick={() =>
                                                                 updateAssignment.mutate({
-                                                                    id: member.id,
+                                                                    id: member.id as string,
                                                                     break_start:
                                                                         new Date().toISOString(),
                                                                     break_end: null,
@@ -156,7 +183,7 @@ export default function LiveCrewPage() {
                                                             disabled={updateAssignment.isPending}
                                                             onClick={() =>
                                                                 updateAssignment.mutate({
-                                                                    id: member.id,
+                                                                    id: member.id as string,
                                                                     break_end:
                                                                         new Date().toISOString(),
                                                                 })
@@ -174,7 +201,7 @@ export default function LiveCrewPage() {
                                                         disabled={updateAssignment.isPending}
                                                         onClick={() =>
                                                             updateAssignment.mutate({
-                                                                id: member.id,
+                                                                id: member.id as string,
                                                                 checked_out_at:
                                                                     new Date().toISOString(),
                                                             })
@@ -187,12 +214,14 @@ export default function LiveCrewPage() {
                                             ) : (
                                                 <span className="text-[10px] text-muted-foreground">
                                                     Out:{" "}
-                                                    {new Date(
-                                                        member.checked_out_at
-                                                    ).toLocaleTimeString([], {
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
+                                                    {typeof member.checked_out_at === "string"
+                                                        ? new Date(
+                                                              member.checked_out_at
+                                                          ).toLocaleTimeString([], {
+                                                              hour: "2-digit",
+                                                              minute: "2-digit",
+                                                          })
+                                                        : ""}
                                                 </span>
                                             )}
                                         </div>
@@ -203,6 +232,6 @@ export default function LiveCrewPage() {
                     </StaggerItem>
                 ))}
             </div>
-        </div>
+        </OperationalDashboardShell>
     );
 }

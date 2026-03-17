@@ -290,13 +290,21 @@ export async function updateSession(request: NextRequest) {
         "max-age=63072000; includeSubDomains; preload"
     );
 
+    // Prevent search engine indexing of API routes and auth pages
+    if (
+        request.nextUrl.pathname.startsWith("/api/") ||
+        request.nextUrl.pathname.startsWith("/auth/")
+    ) {
+        response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    }
+
     // Content Security Policy
     // C-003: unsafe-eval only permitted in development for hot-reload / React DevTools
     const isDev = process.env.NODE_ENV === "development";
     const supabaseDomain = supabaseUrl ? new URL(supabaseUrl).hostname : "";
     const cspDirectives = [
         "default-src 'self'",
-        `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
+        `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com https://cdn.jsdelivr.net`,
         "style-src 'self' 'unsafe-inline'",
         `connect-src 'self' ${supabaseUrl || ""} wss://${supabaseDomain} https://challenges.cloudflare.com https://accounts.google.com https://plc.directory https://bsky.social`,
         "img-src 'self' data: blob: https://*.googleusercontent.com https://cdn.bsky.app",

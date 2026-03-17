@@ -1,4 +1,9 @@
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 /**
  * escalation-engine Edge Function
@@ -10,6 +15,9 @@ Deno.serve(async (req) => {
         if (req.method !== "POST") {
             return errorResponse("Method not allowed", 405);
         }
+
+        const authError = requireServiceRoleAuth(req);
+        if (authError) return authError;
 
         const supabase = createServiceClient();
 
@@ -29,27 +37,38 @@ Deno.serve(async (req) => {
         for (const rule of rules) {
             let escalatedCount = 0;
 
-            if (rule.trigger_type === "unacknowledged" || rule.trigger_type === "unread_mandatory") {
+            if (
+                rule.trigger_type === "unacknowledged" ||
+                rule.trigger_type === "unread_mandatory"
+            ) {
                 // Find unacknowledged mandatory reads older than delay_minutes
                 const cutoff = new Date(Date.now() - rule.delay_minutes * 60 * 1000).toISOString();
 
                 const { data: pendingAcks } = await supabase
                     .from("mandatory_read_acknowledgments")
-                    .select("id, message_id, user_id, messages!inner(conversation_id, body, created_at)")
+                    .select(
+                        "id, message_id, user_id, messages!inner(conversation_id, body, created_at)"
+                    )
                     .is("acknowledged_at", null)
                     .lt("messages.created_at", cutoff);
 
                 if (pendingAcks && pendingAcks.length > 0) {
                     // Process escalation levels
-                    const levels = (rule.escalation_levels as Array<{
-                        delay_minutes: number;
-                        action: string;
-                        target_role?: string;
-                    }>) ?? [];
+                    const levels =
+                        (rule.escalation_levels as Array<{
+                            delay_minutes: number;
+                            action: string;
+                            target_role?: string;
+                        }>) ?? [];
 
                     for (const ack of pendingAcks) {
-                        const msgData = ack.messages as unknown as { conversation_id: string; body: string; created_at: string };
-                        const messageAge = (Date.now() - new Date(msgData.created_at).getTime()) / 60000;
+                        const msgData = ack.messages as unknown as {
+                            conversation_id: string;
+                            body: string;
+                            created_at: string;
+                        };
+                        const messageAge =
+                            (Date.now() - new Date(msgData.created_at).getTime()) / 60000;
 
                         // Find the appropriate escalation level based on age
                         const applicableLevel = levels
@@ -59,7 +78,12 @@ Deno.serve(async (req) => {
                         if (applicableLevel) {
                             if (applicableLevel.action === "reminder") {
                                 // Send a DM reminder to the user
-                                await sendReminderDm(supabase, ack.user_id, msgData.body, msgData.conversation_id);
+                                await sendReminderDm(
+                                    supabase,
+                                    ack.user_id,
+                                    msgData.body,
+                                    msgData.conversation_id
+                                );
                                 escalatedCount++;
                             } else if (applicableLevel.action === "notify_manager") {
                                 // Find user's manager and notify them
@@ -100,7 +124,9 @@ Deno.serve(async (req) => {
 
                 const { data: unreadCritical } = await supabase
                     .from("messages")
-                    .select("id, conversation_id, body, sender_id, created_at, conversations!inner(category)")
+                    .select(
+                        "id, conversation_id, body, sender_id, created_at, conversations!inner(category)"
+                    )
                     .in("conversations.category", ["safety"])
                     .eq("is_system_message", false)
                     .lt("created_at", cutoff)
@@ -122,7 +148,9 @@ Deno.serve(async (req) => {
                             .eq("message_id", msg.id);
 
                         const readUserIds = new Set((readReceipts ?? []).map((r) => r.user_id));
-                        const unreadMembers = (members ?? []).filter((m) => !readUserIds.has(m.user_id));
+                        const unreadMembers = (members ?? []).filter(
+                            (m) => !readUserIds.has(m.user_id)
+                        );
 
                         for (const member of unreadMembers) {
                             await sendReminderDm(
@@ -141,7 +169,9 @@ Deno.serve(async (req) => {
             totalEscalated += escalatedCount;
         }
 
-        console.log(`Escalation engine: ${totalEscalated} escalations across ${rules.length} rules`);
+        console.log(
+            `Escalation engine: ${totalEscalated} escalations across ${rules.length} rules`
+        );
         return jsonResponse({ escalated: totalEscalated, rules: results });
     } catch (err) {
         console.error("escalation-engine error:", err);
@@ -184,9 +214,9 @@ async function sendReminderDm(
         dmId = newDm.id;
 
         // Add user as member
-        await supabase.from("conversation_members").insert([
-            { conversation_id: dmId, user_id: userId, role: "member" },
-        ]);
+        await supabase
+            .from("conversation_members")
+            .insert([{ conversation_id: dmId, user_id: userId, role: "member" }]);
     }
 
     // Send the reminder message

@@ -89,20 +89,23 @@ export interface HandlerOptions {
     skipAuth?: boolean;
 }
 
-type HandlerFn = (request: NextRequest, context: HandlerContext) => Promise<NextResponse>;
+type HandlerFn = (
+    request: NextRequest,
+    context: HandlerContext
+) => Promise<NextResponse | Response>;
 
 type HandlerWithParamsFn = (
     request: NextRequest,
     context: HandlerContext,
     routeContext: { params: Promise<{ [key: string]: string }> }
-) => Promise<NextResponse>;
+) => Promise<NextResponse | Response>;
 
 // ─── Wrapper (no route params) ───────────────────────────────
 
 export function withApiHandler(
     options: HandlerOptions,
     handler: HandlerFn
-): (request: NextRequest) => Promise<NextResponse> {
+): (request: NextRequest) => Promise<Response> {
     return async (request: NextRequest) => {
         const requestId = generateRequestId();
         const log = logger.child({
@@ -188,7 +191,7 @@ export function withApiHandlerParams(
 ): (
     request: NextRequest,
     routeContext: { params: Promise<{ [key: string]: string }> }
-) => Promise<NextResponse> {
+) => Promise<Response> {
     return async (
         request: NextRequest,
         routeContext: { params: Promise<{ [key: string]: string }> }

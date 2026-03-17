@@ -2,7 +2,7 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import React from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -211,12 +211,10 @@ export default function SyncLogPage() {
 
     return (
         <PermissionGate resource="sync_events" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Sync Log"
-                    description="Monitor data synchronization events and webhook activity"
-                />
-
+            <PageShell
+                title="Sync Log"
+                description="Monitor data synchronization events and webhook activity"
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Total Syncs" value={syncs.length} icon={RefreshCw} />
                     <StatCard title="Completed" value={completedSyncs} icon={CheckCircle2} />
@@ -263,7 +261,7 @@ export default function SyncLogPage() {
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

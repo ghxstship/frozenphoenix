@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
+import { credentialExportSchema, validate } from "@/lib/validation/schemas";
 
 export const POST = withApiHandler(
     {
@@ -11,12 +12,19 @@ export const POST = withApiHandler(
         rbac: { resource: "credentials", action: "read" },
     },
     async (request, { supabase, log }) => {
-        const body = await request.json();
-        const { entity_type, template_id, format, filters } = body;
-
-        if (!entity_type || !format) {
-            return ApiErrors.badRequest("entity_type and format are required");
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
         }
+
+        const result = validate(credentialExportSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
+        const { entity_type, template_id, format, filters } = result.data;
 
         const sb = supabase;
 

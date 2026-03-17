@@ -1,18 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    useCreativeAsset,
-    useDeleteCreativeAsset,
-    useUpdateCreativeAsset,
-} from "@/lib/supabase/hooks-pages";
+import { useCreativeAsset, useDeleteCreativeAsset, useUpdateCreativeAsset } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Download, Eye, MessageSquare, Palette, User } from "lucide-react";
@@ -58,7 +53,38 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/creative-assets",
     backLabel: "Creative Assets",
     chatterRecordType: "creative_asset",
-    fields: [],
+    fields: [
+        { id: "asset_role", label: "Role", accessorKey: "asset_role", fieldType: "status" },
+        {
+            id: "brand_compliance_score",
+            label: "Brand Score",
+            accessorKey: "brand_compliance_score",
+        },
+        { id: "locale", label: "Locale", accessorKey: "locale" },
+        {
+            id: "due_date",
+            label: "Due",
+            accessorKey: "due_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+    ],
+    sidebarFields: [
+        {
+            id: "production_status",
+            label: "Status",
+            accessorKey: "production_status",
+            fieldType: "status",
+        },
+        { id: "asset_role", label: "Role", accessorKey: "asset_role", fieldType: "status" },
+        {
+            id: "brand_compliance_score",
+            label: "Brand Score",
+            accessorKey: "brand_compliance_score",
+        },
+        { id: "locale", label: "Locale", accessorKey: "locale" },
+        { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+    ],
     tabs: [],
 };
 
@@ -77,15 +103,15 @@ export default function CreativeAssetDetailPage() {
     });
 
     const assetRole = (ca?.asset_role as string) ?? "";
-    const productionStatus = (ca?.production_status as string) ?? "draft";
+    const _productionStatus = (ca?.production_status as string) ?? "draft";
     const targetChannels = Array.isArray(ca?.target_channels)
         ? (ca.target_channels as string[])
         : [];
     const brandComplianceScore =
         typeof ca?.brand_compliance_score === "number" ? ca.brand_compliance_score : null;
-    const locale = (ca?.locale as string) ?? "";
+    const _locale = (ca?.locale as string) ?? "";
     const specs = parseSpecs(ca?.specs);
-    const dueDate = (ca?.due_date as string) ?? "";
+    const _dueDate = (ca?.due_date as string) ?? "";
     const approvedAt = (ca?.approved_at as string) ?? "";
     const assignedTo = (ca?.assigned_to as string) ?? "";
     const campaignName = (ca?.campaign_name as string) ?? "";
@@ -94,45 +120,6 @@ export default function CreativeAssetDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Asset Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(productionStatus) as "default"}>
-                            {getStatusLabel(productionStatus)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Role</span>
-                        <Badge variant="outline" className="capitalize">
-                            {assetRole}
-                        </Badge>
-                    </div>
-                    {brandComplianceScore !== null && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Brand Score</span>
-                            <Badge variant={brandComplianceScore >= 80 ? "success" : "warning"}>
-                                {brandComplianceScore}%
-                            </Badge>
-                        </div>
-                    )}
-                    {locale && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Locale</span>
-                            <span className="font-mono text-xs">{locale}</span>
-                        </div>
-                    )}
-                    {dueDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Due</span>
-                            <span className="font-medium">{formatDate(dueDate, "compact")}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Channels</CardTitle>
@@ -179,45 +166,6 @@ export default function CreativeAssetDetailPage() {
 
     const overviewSlot = (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Palette className="h-5 w-5 text-primary" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Brand Score</p>
-                                <p className="text-lg font-bold">{brandComplianceScore ?? "—"}%</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Approved</p>
-                                <p className="text-sm font-semibold">
-                                    {approvedAt ? formatDate(approvedAt, "compact") : "Pending"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <User className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Assigned To</p>
-                                <p className="text-sm font-semibold">
-                                    {assignedTo || "Unassigned"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
             {!!description && (
                 <Card>
                     <CardHeader>
@@ -248,6 +196,19 @@ export default function CreativeAssetDetailPage() {
         subtitleFn: () => `${campaignName} · ${assetRole}`,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Brand Score",
+                icon: Palette,
+                compute: () => `${brandComplianceScore ?? "—"}%`,
+            },
+            {
+                label: "Approved",
+                icon: Calendar,
+                compute: () => (approvedAt ? formatDate(approvedAt, "compact") : "Pending"),
+            },
+            { label: "Assigned To", icon: User, compute: () => assignedTo || "Unassigned" },
+        ],
         tabs: [
             {
                 id: "reviews",

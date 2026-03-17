@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { CREATE_BUDGET_CONFIG } from "@/config/create-entity-configs";
+import { BUDGETS_PAGE } from "@/config/list-page-configs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { BurnChart } from "@/components/ui/burn-chart";
@@ -11,18 +11,14 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records";
-import { useProjects } from "@/lib/supabase/hooks";
+import { useProjects } from "@/lib/supabase";
 import type { BudgetLineItem } from "@/types/production";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency } from "@/lib/utils";
-import { useBudgets } from "@/lib/supabase/hooks";
-import {
-    useAcknowledgeBudgetAlert,
-    useBudgetAlerts,
-    useBudgetProfitability,
-} from "@/lib/supabase/hooks-feature-gaps";
-import { useBudgetLines } from "@/lib/supabase/hooks-pages";
+import { useBudgets } from "@/lib/supabase";
+import { useAcknowledgeBudgetAlert, useBudgetAlerts, useBudgetProfitability } from "@/lib/supabase";
+import { useBudgetLines } from "@/lib/supabase";
 import {
     AlertTriangle,
     BarChart3,
@@ -453,7 +449,7 @@ function BudgetsContent({
 
 // ─── Page ────────────────────────────────────────────────────
 export default function BudgetsPage() {
-    const { data: sbBudgets, isLoading: loadingBudgets } = useBudgets("");
+    const { data: sbBudgets, isLoading: loadingBudgets } = useBudgets();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
     const { data: sbBudgetLines } = useBudgetLines();
 
@@ -506,14 +502,10 @@ export default function BudgetsPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "budgets",
+            ...BUDGETS_PAGE,
             title: "Budgets",
-            description: "Manage project budgets and track spending",
-            icon: DollarSign,
-            createConfig: CREATE_BUDGET_CONFIG,
             createLabel: "New Budget",
             exportable: true,
-            searchKeys: ["status"],
             stats: [
                 {
                     label: "Total Budgeted",

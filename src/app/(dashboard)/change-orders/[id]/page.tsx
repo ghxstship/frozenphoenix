@@ -1,18 +1,12 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    useChangeOrder,
-    useDeleteChangeOrder,
-    useUpdateChangeOrder,
-} from "@/lib/supabase/hooks-pages";
+import { useChangeOrder, useDeleteChangeOrder, useUpdateChangeOrder } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -26,7 +20,29 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/change-orders",
     backLabel: "Change Orders",
     chatterRecordType: "change_order",
-    fields: [],
+    fields: [
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "change_type", label: "Type", accessorKey: "change_type", fieldType: "status" },
+        {
+            id: "value_impact",
+            label: "Value Impact",
+            accessorKey: "value_impact",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "requested_at",
+            label: "Requested",
+            accessorKey: "requested_at",
+            fieldType: "date",
+            icon: Calendar,
+        },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "change_type", label: "Type", accessorKey: "change_type", fieldType: "status" },
+    ],
     tabs: [],
 };
 
@@ -46,29 +62,6 @@ export default function ChangeOrderDetailPage() {
 
     const sidebarSlot = co ? (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Change Order Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(co.status) as "default"}>
-                            {getStatusLabel(co.status)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Number</span>
-                        <span className="font-mono text-xs">{co.number}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="outline" className="capitalize">
-                            {co.change_type.replace(/_/g, " ")}
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Impact</CardTitle>
@@ -139,50 +132,6 @@ export default function ChangeOrderDetailPage() {
 
     const overviewSlot = co ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <DollarSign className="h-5 w-5 text-success" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Value Impact</p>
-                                <p className="text-lg font-bold">
-                                    {co.value_impact >= 0 ? "+" : ""}
-                                    {formatCurrency(co.value_impact)}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Schedule Impact</p>
-                                <p className="text-sm font-semibold">
-                                    {(co.schedule_impact_days ?? 0) > 0
-                                        ? `+${co.schedule_impact_days} days`
-                                        : "No delay"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Requested</p>
-                                <p className="text-sm font-semibold">
-                                    {co.requested_at ? formatDate(co.requested_at, "compact") : "—"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
             {!!co.description && (
                 <Card>
                     <CardHeader>
@@ -270,6 +219,27 @@ export default function ChangeOrderDetailPage() {
         subtitleFn: () => (co ? `${co.number} · ${co.project_id ?? "—"}` : ""),
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Value Impact",
+                icon: DollarSign,
+                compute: () =>
+                    `${co?.value_impact >= 0 ? "+" : ""}${formatCurrency(co?.value_impact ?? 0)}`,
+            },
+            {
+                label: "Schedule Impact",
+                icon: Clock,
+                compute: () =>
+                    (co?.schedule_impact_days ?? 0) > 0
+                        ? `+${co?.schedule_impact_days} days`
+                        : "No delay",
+            },
+            {
+                label: "Requested",
+                icon: Calendar,
+                compute: () => (co?.requested_at ? formatDate(co.requested_at, "compact") : "—"),
+            },
+        ],
         tabs: [
             {
                 id: "scope",

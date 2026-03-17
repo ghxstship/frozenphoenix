@@ -3,6 +3,7 @@ import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import type { IdentifierType, ScanMethodType } from "@/types/credentialing";
 import { type HandlerContext, withApiHandler } from "@/lib/api/with-api-handler";
+import { credentialScanSchema, validate } from "@/lib/validation/schemas";
 
 const CREDENTIAL_SELECT =
     "*, credential_types:credential_type_id(id, name, category, color_hex, default_zone_access)";
@@ -76,17 +77,23 @@ export const POST = withApiHandler(
         rbac: { resource: "credentials", action: "write" },
     },
     async (request, { supabase, user, log }) => {
-        const body = await request.json();
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
+
+        const result = validate(credentialScanSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
 
         // Support both new (identifier) and legacy (barcode_value) field names
-        const identifier: string = body.identifier ?? body.barcode_value ?? "";
-        const identifierType: IdentifierType = body.identifier_type ?? "auto";
-        const scanMethod: ScanMethodType = body.scan_method ?? "keyboard";
-        const { scan_type, zone_id, device_id, latitude, longitude, notes } = body;
-
-        if (!identifier || !scan_type) {
-            return ApiErrors.badRequest("identifier (or barcode_value) and scan_type are required");
-        }
+        const identifier: string = result.data.identifier ?? result.data.barcode_value ?? "";
+        const identifierType: IdentifierType = result.data.identifier_type as IdentifierType;
+        const scanMethod: ScanMethodType = result.data.scan_method as ScanMethodType;
+        const { scan_type, zone_id, device_id, latitude, longitude, notes } = result.data;
 
         const sb = supabase;
 

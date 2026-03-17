@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDeleteBrief, useUpdateBrief } from "@/lib/supabase/hooks-pages";
+import { useDeleteBrief, useUpdateBrief } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +12,13 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, CheckCircle2, DollarSign, FileText, Send, Target } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useBrief } from "@/lib/supabase/hooks-pages";
+import { useBrief } from "@/lib/supabase";
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "briefs",
@@ -29,7 +28,39 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/briefs",
     backLabel: "Briefs",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "brief_type", label: "Type", accessorKey: "brief_type", fieldType: "status" },
+        {
+            id: "total_budget",
+            label: "Budget",
+            accessorKey: "total_budget",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        { id: "version", label: "Version", accessorKey: "version" },
+        {
+            id: "start_date",
+            label: "Start",
+            accessorKey: "start_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "end_date",
+            label: "End",
+            accessorKey: "end_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "brief_type", label: "Type", accessorKey: "brief_type", fieldType: "status" },
+        { id: "total_budget", label: "Budget", accessorKey: "total_budget", fieldType: "currency" },
+        { id: "version", label: "Version", accessorKey: "version" },
+        { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+    ],
     tabs: [],
 };
 
@@ -93,50 +124,6 @@ export default function BriefDetailPage() {
         <div className="space-y-4">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Brief Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(brief.status)}>
-                            {getStatusLabel(brief.status)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="outline">
-                            {typeIcon} {typeCfg?.label ?? brief.brief_type}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Budget</span>
-                        <span className="font-bold">{formatCurrency(brief.total_budget ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Version</span>
-                        <span className="font-medium">v{brief.version}</span>
-                    </div>
-                    {brief.start_date && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Start</span>
-                            <span className="font-medium">
-                                {formatDate(brief.start_date, "compact")}
-                            </span>
-                        </div>
-                    )}
-                    {brief.end_date && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">End</span>
-                            <span className="font-medium">
-                                {formatDate(brief.end_date, "compact")}
-                            </span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
                     <CardTitle className="text-sm">Channels & Markets</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -197,44 +184,6 @@ export default function BriefDetailPage() {
 
     const overviewSlot = brief ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <DollarSign className="h-5 w-5 text-primary" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Budget</p>
-                                <p className="text-lg font-bold">
-                                    {formatCurrency(brief.total_budget ?? 0)}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Target className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">KPIs Defined</p>
-                                <p className="text-lg font-bold">{completedKpis}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Milestones</p>
-                                <p className="text-lg font-bold">{milestoneDates.length}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {brief.objective_summary && (
                 <Card>
                     <CardHeader>
@@ -349,6 +298,15 @@ export default function BriefDetailPage() {
         },
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Budget",
+                icon: DollarSign,
+                compute: () => formatCurrency(brief?.total_budget ?? 0),
+            },
+            { label: "KPIs Defined", icon: Target, compute: () => completedKpis },
+            { label: "Milestones", icon: Calendar, compute: () => milestoneDates.length },
+        ],
         tabs: [
             {
                 id: "deliverables",

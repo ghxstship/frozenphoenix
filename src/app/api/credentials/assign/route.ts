@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
+import { credentialAssignSchema, validate } from "@/lib/validation/schemas";
 
 export const POST = withApiHandler(
     {
@@ -11,7 +12,18 @@ export const POST = withApiHandler(
         rbac: { resource: "credentials", action: "write" },
     },
     async (request, { supabase, user, log }) => {
-        const body = await request.json();
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
+
+        const result = validate(credentialAssignSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
         const {
             pool_id,
             credential_type_id,
@@ -25,13 +37,7 @@ export const POST = withApiHandler(
             valid_from,
             valid_until,
             notes,
-        } = body;
-
-        if (!pool_id || !credential_type_id || !assignee_name) {
-            return ApiErrors.badRequest(
-                "pool_id, credential_type_id, and assignee_name are required"
-            );
-        }
+        } = result.data;
 
         // Verify pool has availability
         const { data: pool, error: poolError } = await serverFromTable(

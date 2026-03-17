@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
@@ -32,7 +32,7 @@ import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SCENARIO_CONFIG } from "@/config/create-entity-configs";
-import { useScenarios } from "@/lib/supabase/hooks-productive";
+import { useScenarios } from "@/lib/supabase";
 
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
@@ -295,16 +295,15 @@ export default function ScenariosPage() {
     return (
         <>
             <PermissionGate resource="scenarios" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Scenario Builder"
-                        description="Simulate pricing, resource, and budget outcomes to make data-driven decisions"
-                    >
+                <PageShell
+                    title="Scenario Builder"
+                    description="Simulate pricing, resource, and budget outcomes to make data-driven decisions"
+                    actions={
                         <Button onClick={openCreate}>
                             <Plus className="mr-2 h-4 w-4" /> New Scenario
                         </Button>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="Active Scenarios"
@@ -810,7 +809,7 @@ export default function ScenariosPage() {
                             })}
                         </div>
                     )}
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_SCENARIO_CONFIG}

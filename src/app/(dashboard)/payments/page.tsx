@@ -1,28 +1,12 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
-import { usePayments } from "@/lib/supabase/hooks-pages";
-import { CREATE_PAYMENT_CONFIG } from "@/config/create-entity-configs";
-import { ArrowDownRight } from "lucide-react";
-import type { ListPageConfig } from "@/types/list-page-config";
-
-const config: ListPageConfig = {
-    entityKey: "payments",
-    title: "Payments",
-    description: "Track incoming and outgoing payments across all projects",
-    icon: ArrowDownRight,
-    createConfig: CREATE_PAYMENT_CONFIG,
-    searchKeys: ["name"],
-    columns: [
-        { id: "name", header: "Name", accessorKey: "name" },
-        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
-    ],
-};
+import { usePayments } from "@/lib/supabase";
+import { PAYMENTS_PAGE } from "@/config/list-page-configs";
 
 export default function PaymentsPage() {
     const { data: rawData, isLoading } = usePayments();
     const data = (rawData ?? []) as Record<string, unknown>[];
 
-    return <ListPageShell config={config} data={data} isLoading={isLoading} />;
+    return <ListPageShell config={PAYMENTS_PAGE} data={data} isLoading={isLoading} />;
 }

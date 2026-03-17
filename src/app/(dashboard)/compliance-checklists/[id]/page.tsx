@@ -5,7 +5,7 @@ import {
     useComplianceChecklist,
     useDeleteComplianceChecklist,
     useUpdateComplianceChecklist,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { EmptyState } from "@/components/layouts/empty-state";

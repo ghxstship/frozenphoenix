@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from "lucide-react";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import { useCreateAdvance } from "@/lib/supabase/hooks-advancing";
-import { useEvents } from "@/lib/supabase/hooks";
+import { useEvents } from "@/lib/supabase";
 import { ADVANCE_PRIORITIES, ADVANCE_TYPES, formatAdvanceCost } from "@/config/advancing-config";
 import { Badge } from "@/components/ui/badge";
 import type { AdvancePriority, AdvanceType } from "@/types";

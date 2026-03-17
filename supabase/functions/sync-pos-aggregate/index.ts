@@ -11,7 +11,12 @@
  * }
  */
 
-import { createServiceClient, errorResponse, jsonResponse } from "../_shared/webhook-utils.ts";
+import {
+    createServiceClient,
+    errorResponse,
+    jsonResponse,
+    requireServiceRoleAuth,
+} from "../_shared/webhook-utils.ts";
 
 interface AggregateRequest {
     event_id?: string;
@@ -22,6 +27,9 @@ Deno.serve(async (req: Request) => {
     if (req.method !== "POST" && req.method !== "GET") {
         return errorResponse("Method not allowed", 405);
     }
+
+    const authError = requireServiceRoleAuth(req);
+    if (authError) return authError;
 
     const supabase = createServiceClient();
 
@@ -96,7 +104,8 @@ Deno.serve(async (req: Request) => {
         // -------------------------------------------------------------------
         // 3. F&B revenue for foh_zone_readings (if event scoped)
         // -------------------------------------------------------------------
-        const fbRevenue = (byCategory["food"]?.revenue ?? 0) + (byCategory["beverage"]?.revenue ?? 0);
+        const fbRevenue =
+            (byCategory["food"]?.revenue ?? 0) + (byCategory["beverage"]?.revenue ?? 0);
         const merchRevenue = byCategory["merchandise"]?.revenue ?? 0;
 
         // -------------------------------------------------------------------

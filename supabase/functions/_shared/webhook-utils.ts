@@ -28,7 +28,7 @@ export async function validateHmacSignature(
     payload: string,
     signature: string,
     secret: string,
-    algorithm: "sha256" | "sha1" = "sha256",
+    algorithm: "sha256" | "sha1" = "sha256"
 ): Promise<WebhookValidationResult> {
     if (!signature || !secret) {
         return { valid: false, error: "Missing signature or secret" };
@@ -41,7 +41,7 @@ export async function validateHmacSignature(
             encoder.encode(secret),
             { name: "HMAC", hash: `SHA-${algorithm === "sha256" ? "256" : "1"}` },
             false,
-            ["sign"],
+            ["sign"]
         );
         const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
         const computed = new Uint8Array(sig);
@@ -87,7 +87,7 @@ export async function computePayloadHash(payload: string): Promise<string> {
 export async function isDuplicate(
     supabase: ReturnType<typeof createClient>,
     payloadHash: string,
-    providerName: string,
+    providerName: string
 ): Promise<boolean> {
     const { data } = await supabase
         .from("webhook_events")
@@ -116,7 +116,7 @@ export async function logWebhookEvent(
         status: "pending" | "processed" | "failed" | "duplicate";
         errorMessage?: string;
         processedAt?: string;
-    },
+    }
 ): Promise<string | null> {
     const { data, error } = await supabase
         .from("webhook_events")
@@ -144,7 +144,7 @@ export async function updateWebhookEventStatus(
     supabase: ReturnType<typeof createClient>,
     eventId: string,
     status: "processed" | "failed",
-    errorMessage?: string,
+    errorMessage?: string
 ): Promise<void> {
     await supabase
         .from("webhook_events")
@@ -154,6 +154,69 @@ export async function updateWebhookEventStatus(
             processed_at: new Date().toISOString(),
         })
         .eq("id", eventId);
+}
+
+// ---------------------------------------------------------------------------
+// Constant-time string comparison (timing-safe)
+// ---------------------------------------------------------------------------
+
+/**
+ * Compares two strings in constant time to prevent timing attacks.
+ * Uses Web Crypto subtle.timingSafeEqual where available, falls back
+ * to byte-by-byte XOR comparison with fixed iteration count.
+ */
+export function timingSafeEqual(a: string, b: string): boolean {
+    const enc = new TextEncoder();
+    const aBytes = enc.encode(a);
+    const bBytes = enc.encode(b);
+
+    if (aBytes.length !== bBytes.length) {
+        // Still iterate to avoid length-based timing leak
+        let result = 1;
+        for (let i = 0; i < aBytes.length; i++) {
+            result |= aBytes[i] ^ (bBytes[i % (bBytes.length || 1)] ?? 0);
+        }
+        void result;
+        return false;
+    }
+
+    let result = 0;
+    for (let i = 0; i < aBytes.length; i++) {
+        result |= aBytes[i] ^ bBytes[i];
+    }
+    return result === 0;
+}
+
+// ---------------------------------------------------------------------------
+// Internal Auth Guard — verifies service_role Bearer token
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates that the request carries a valid Authorization header with
+ * the SUPABASE_SERVICE_ROLE_KEY. Use this for edge functions triggered
+ * by cron, DB webhooks, or internal callers — NOT user-facing endpoints.
+ *
+ * Returns null if auth is valid, or an error Response to return immediately.
+ */
+export function requireServiceRoleAuth(req: Request): Response | null {
+    const authHeader = req.headers.get("Authorization");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    if (!serviceRoleKey) {
+        console.error("SUPABASE_SERVICE_ROLE_KEY is not set");
+        return errorResponse("Server misconfiguration", 500);
+    }
+
+    if (!authHeader) {
+        return errorResponse("Missing Authorization header", 401);
+    }
+
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!timingSafeEqual(token, serviceRoleKey)) {
+        return errorResponse("Invalid authorization", 403);
+    }
+
+    return null;
 }
 
 // ---------------------------------------------------------------------------

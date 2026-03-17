@@ -357,6 +357,198 @@ export const orgProfileUpdateSchema = z.object({
     profile_visibility: z.enum(["public", "connections", "private"]).optional(),
 });
 
+// ─── Organization Update (PATCH) ───
+export const organizationUpdateSchema = z.object({
+    name: z.string().min(2).max(200).optional(),
+    slug: z
+        .string()
+        .regex(/^[a-z0-9-]+$/)
+        .max(100)
+        .optional(),
+    industry: z.string().max(100).optional(),
+    timezone: z.string().max(50).optional(),
+    currency: z.string().length(3).optional(),
+    logo_url: z.string().url().max(500).optional().or(z.literal("")).or(z.null()),
+    website_url: z.string().url().max(500).optional().or(z.literal("")).or(z.null()),
+});
+
+// ─── Organization Security ───
+export const orgSecurityUpdateSchema = z.object({
+    require_mfa: z.boolean().optional(),
+    enforce_sso: z.boolean().optional(),
+    sso_domain: z.string().max(255).optional().or(z.literal("")).or(z.null()),
+    allowed_email_domains: z.array(z.string().max(255)).optional(),
+    session_timeout_hours: z.number().int().min(1).max(8760).optional(),
+    max_sessions_per_user: z.number().int().min(1).max(50).optional(),
+    invitation_expiry_days: z.number().int().min(1).max(90).optional(),
+    default_role: z.enum(["exec", "pm", "client", "vendor"]).optional(),
+});
+
+// ─── Settings Change Requests ───
+export const settingsChangeRequestCreateSchema = z.object({
+    organization_id: uuidField,
+    setting_key: nonEmptyString.max(200),
+    scope_type: z.string().max(50).optional().default("organization"),
+    scope_id: uuidField.optional().or(z.null()),
+    current_value: z.unknown().optional(),
+    proposed_value: z.unknown(),
+    reason: z.string().max(2000).optional().or(z.null()),
+});
+
+export const settingsChangeRequestReviewSchema = z.object({
+    action: z.enum(["approved", "rejected"]),
+    comment: z.string().max(2000).optional().or(z.null()),
+});
+
+// ─── Integration Connections ───
+export const integrationConnectionCreateSchema = z.object({
+    provider_type: nonEmptyString.max(100),
+    display_name: nonEmptyString.max(200),
+    event_id: uuidField.optional().or(z.null()),
+    api_key: z.string().max(500).optional().or(z.null()),
+    api_secret: z.string().max(500).optional().or(z.null()),
+    webhook_secret: z.string().max(500).optional().or(z.null()),
+    sync_direction: z.enum(["inbound", "outbound", "bidirectional"]).optional().default("inbound"),
+});
+
+// ─── CSV Export / Import ───
+export const csvExportSchema = z.object({
+    entity: nonEmptyString.max(100),
+    filters: z.record(z.string(), z.unknown()).optional(),
+    limit: z.number().int().positive().max(10_000).optional(),
+    preview: z.boolean().optional().default(false),
+    columns: z.array(z.string().max(100)).optional(),
+});
+
+export const csvImportSchema = z.object({
+    entity: nonEmptyString.max(100),
+    rows: z.array(z.record(z.string(), z.unknown())).min(1).max(5_000),
+});
+
+// ─── Automation Execute ───
+export const automationExecuteSchema = z.object({
+    trigger_type: nonEmptyString.max(100),
+    entity_type: nonEmptyString.max(100),
+    record: z.record(z.string(), z.unknown()),
+});
+
+// ─── Notification Dispatch ───
+export const notificationDispatchByIdSchema = z.object({
+    notification_id: uuidField,
+});
+
+export const notificationDispatchCreateSchema = z.object({
+    user_id: uuidField,
+    title: nonEmptyString.max(500),
+    body: z.string().max(5000).optional(),
+    type: z.string().max(50).optional().default("info"),
+    entity_type: z.string().max(100).optional(),
+    entity_id: uuidField.optional(),
+    action_url: z.string().url().max(1000).optional().or(z.null()),
+    organization_id: uuidField.optional(),
+});
+
+// ─── Asset QR Batch ───
+export const assetQrBatchSchema = z.object({
+    asset_ids: z.array(uuidField).min(1).max(100),
+    size: z.number().int().min(64).max(1024).optional().default(256),
+});
+
+// ─── Asset Scan ───
+export const assetScanSchema = z.object({
+    identifier: nonEmptyString.max(500),
+    identifier_type: z.enum(["barcode", "rfid", "nfc", "auto"]).optional().default("auto"),
+    scan_action: z.enum([
+        "check_in",
+        "check_out",
+        "transfer",
+        "verify",
+        "count",
+        "damage",
+        "audit",
+        "receive",
+        "ship",
+    ]),
+    scan_method: z.string().max(50).optional().default("keyboard"),
+    location_id: uuidField.optional(),
+    notes: z.string().max(2000).optional(),
+});
+
+// ─── Asset NFC ───
+export const assetNfcRegisterSchema = z.object({
+    nfc_serial: nonEmptyString.max(200),
+});
+
+// ─── Credential Scan ───
+export const credentialScanSchema = z
+    .object({
+        identifier: z.string().max(500).optional(),
+        barcode_value: z.string().max(500).optional(),
+        identifier_type: z.enum(["barcode", "rfid", "nfc", "auto"]).optional().default("auto"),
+        scan_method: z.string().max(50).optional().default("keyboard"),
+        scan_type: nonEmptyString.max(50),
+        zone_id: uuidField.optional(),
+        device_id: z.string().max(200).optional(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
+        notes: z.string().max(2000).optional(),
+    })
+    .refine((d) => !!(d.identifier || d.barcode_value), {
+        message: "identifier or barcode_value is required",
+        path: ["identifier"],
+    });
+
+// ─── Credential Bulk Import ───
+export const credentialBulkImportSchema = z.object({
+    entity_type: nonEmptyString.max(100),
+    target_pool_id: uuidField.optional(),
+    file_name: nonEmptyString.max(500),
+    file_size_bytes: z.number().int().nonnegative().optional(),
+    rows: z.array(z.record(z.string(), z.unknown())).min(1).max(10_000),
+});
+
+// ─── Credential Assign ───
+export const credentialAssignSchema = z.object({
+    pool_id: uuidField,
+    credential_type_id: uuidField,
+    assignee_name: nonEmptyString.max(200),
+    assignee_email: emailField.optional().or(z.literal("")),
+    profile_id: uuidField.optional(),
+    crew_member_id: uuidField.optional(),
+    vip_guest_id: uuidField.optional(),
+    vendor_id: uuidField.optional(),
+    zone_access: z.array(z.string().max(200)).optional().default([]),
+    valid_from: optionalDate,
+    valid_until: optionalDate,
+    notes: z.string().max(2000).optional(),
+});
+
+// ─── Credential Export ───
+export const credentialExportSchema = z.object({
+    entity_type: z.enum(["credential_assignments", "credential_scan_log", "pos_transactions"]),
+    template_id: uuidField.optional(),
+    format: z.enum(["csv", "json", "xlsx", "pdf"]),
+    filters: z
+        .object({
+            event_id: uuidField.optional(),
+            pool_id: uuidField.optional(),
+            status: z.string().max(50).optional(),
+            date_from: z.string().max(30).optional(),
+            date_to: z.string().max(30).optional(),
+        })
+        .optional(),
+});
+
+// ─── Event Channels ───
+export const eventChannelCreateSchema = z.object({
+    template_id: uuidField.optional(),
+});
+
+// ─── Auth Reset Password ───
+export const resetPasswordSchema = z.object({
+    email: emailField,
+});
+
 // ─── Validation helper ───
 export type ValidationResult<T> =
     | { success: true; data: T }

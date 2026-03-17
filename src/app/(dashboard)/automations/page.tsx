@@ -4,7 +4,7 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_AUTOMATION_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,8 +28,8 @@ import {
     Zap,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { useAutomations } from "@/lib/supabase/hooks-pages";
-import { useAutomationLogs } from "@/lib/supabase/hooks-extended";
+import { useAutomations } from "@/lib/supabase";
+import { useAutomationLogs } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -189,17 +189,16 @@ export default function AutomationsPage() {
 
     return (
         <PermissionGate resource="automations" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Automation Builder"
-                    description="Configure trigger-action automations for workflows, notifications, and business logic"
-                >
+            <PageShell
+                title="Automation Builder"
+                description="Configure trigger-action automations for workflows, notifications, and business logic"
+                actions={
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         New Automation
                     </Button>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Total Automations" value={automations.length} icon={Zap} />
                     <StatCard
@@ -535,7 +534,7 @@ export default function AutomationsPage() {
                         </div>
                     )}
                 </TabPanel>
-            </div>
+            </PageShell>
             <CreateEntityDialog
                 config={CREATE_AUTOMATION_CONFIG}
                 open={createOpen}

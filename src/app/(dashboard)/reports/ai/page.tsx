@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useAiReportQueries, useCreateAiReportQuery } from "@/lib/supabase/hooks-v2-features";
+import { useAiReportQueries, useCreateAiReportQuery } from "@/lib/supabase";
 
 interface AiReportQuery {
     id: string;
@@ -128,17 +128,16 @@ export default function AiReportsPage() {
 
     return (
         <PermissionGate resource="reports" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="AI Report Generation"
-                    description="Ask questions in natural language and get instant charts and data visualizations"
-                >
+            <PageShell
+                title="AI Report Generation"
+                description="Ask questions in natural language and get instant charts and data visualizations"
+                actions={
                     <Badge variant="info" className="text-sm px-3 py-1">
                         <Sparkles className="mr-2 h-3.5 w-3.5" />
                         AI-Powered
                     </Badge>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Reports Generated" value={queries.length} icon={BarChart3} />
                     <StatCard
@@ -298,7 +297,7 @@ export default function AiReportsPage() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

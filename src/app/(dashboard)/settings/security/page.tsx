@@ -19,6 +19,7 @@ import {
     Smartphone,
     Trash2,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 interface MfaFactor {
     id: string;
@@ -213,258 +214,264 @@ export default function SecuritySettingsPage() {
     const verifiedFactors = mfaFactors.filter((f) => f.status === "verified");
 
     return (
-        <div className="space-y-6 max-w-2xl animate-fade-in">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Security Settings</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Manage your password, two-factor authentication, and active sessions.
-                </p>
-            </div>
+        <PermissionGate resource="security">
+            <div className="space-y-6 max-w-2xl animate-fade-in">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Security Settings</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Manage your password, two-factor authentication, and active sessions.
+                    </p>
+                </div>
 
-            {/* Password Change */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <Key className="h-4 w-4" aria-hidden="true" />
-                        Change Password
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handlePasswordChange} className="space-y-4" noValidate>
-                        {pwError && (
-                            <div
-                                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                                role="alert"
-                            >
-                                <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                {pwError}
-                            </div>
-                        )}
-                        {pwSuccess && (
-                            <div
-                                className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm"
-                                role="status"
-                            >
-                                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                Password updated successfully.
-                            </div>
-                        )}
-
-                        <div className="space-y-2">
-                            <label htmlFor="current-pw" className="text-sm font-medium">
-                                Current Password
-                            </label>
-                            <PasswordInput
-                                id="current-pw"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                autoComplete="current-password"
-                                placeholder="••••••••"
-                                disabled={pwLoading}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="new-pw" className="text-sm font-medium">
-                                New Password
-                            </label>
-                            <PasswordInput
-                                id="new-pw"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                autoComplete="new-password"
-                                placeholder="••••••••"
-                                showStrengthMeter
-                                disabled={pwLoading}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="confirm-new-pw" className="text-sm font-medium">
-                                Confirm New Password
-                            </label>
-                            <PasswordInput
-                                id="confirm-new-pw"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                autoComplete="new-password"
-                                placeholder="••••••••"
-                                disabled={pwLoading}
-                            />
-                        </div>
-                        <Button type="submit" disabled={pwLoading} aria-busy={pwLoading}>
-                            {pwLoading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{" "}
-                                    Updating…
-                                </>
-                            ) : (
-                                "Update Password"
-                            )}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-
-            {/* Two-Factor Authentication */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <Smartphone className="h-4 w-4" aria-hidden="true" />
-                        Two-Factor Authentication
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {mfaLoading ? (
-                        <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : verifiedFactors.length > 0 ? (
-                        <>
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm">
-                                <Shield className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                Two-factor authentication is enabled.
-                            </div>
-                            {verifiedFactors.map((factor) => (
+                {/* Password Change */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Key className="h-4 w-4" aria-hidden="true" />
+                            Change Password
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handlePasswordChange} className="space-y-4" noValidate>
+                            {pwError && (
                                 <div
-                                    key={factor.id}
-                                    className="flex items-center justify-between p-3 rounded-lg border"
+                                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                    role="alert"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <Smartphone
-                                            className="h-4 w-4 text-muted-foreground"
+                                    <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                    {pwError}
+                                </div>
+                            )}
+                            {pwSuccess && (
+                                <div
+                                    className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm"
+                                    role="status"
+                                >
+                                    <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                    Password updated successfully.
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                <label htmlFor="current-pw" className="text-sm font-medium">
+                                    Current Password
+                                </label>
+                                <PasswordInput
+                                    id="current-pw"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    autoComplete="current-password"
+                                    placeholder="••••••••"
+                                    disabled={pwLoading}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="new-pw" className="text-sm font-medium">
+                                    New Password
+                                </label>
+                                <PasswordInput
+                                    id="new-pw"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    placeholder="••••••••"
+                                    showStrengthMeter
+                                    disabled={pwLoading}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="confirm-new-pw" className="text-sm font-medium">
+                                    Confirm New Password
+                                </label>
+                                <PasswordInput
+                                    id="confirm-new-pw"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    placeholder="••••••••"
+                                    disabled={pwLoading}
+                                />
+                            </div>
+                            <Button type="submit" disabled={pwLoading} aria-busy={pwLoading}>
+                                {pwLoading ? (
+                                    <>
+                                        <Loader2
+                                            className="h-4 w-4 animate-spin"
                                             aria-hidden="true"
-                                        />
+                                        />{" "}
+                                        Updating…
+                                    </>
+                                ) : (
+                                    "Update Password"
+                                )}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                {/* Two-Factor Authentication */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Smartphone className="h-4 w-4" aria-hidden="true" />
+                            Two-Factor Authentication
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {mfaLoading ? (
+                            <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : verifiedFactors.length > 0 ? (
+                            <>
+                                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm">
+                                    <Shield className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                    Two-factor authentication is enabled.
+                                </div>
+                                {verifiedFactors.map((factor) => (
+                                    <div
+                                        key={factor.id}
+                                        className="flex items-center justify-between p-3 rounded-lg border"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Smartphone
+                                                className="h-4 w-4 text-muted-foreground"
+                                                aria-hidden="true"
+                                            />
+                                            <div>
+                                                <p className="text-sm font-medium">
+                                                    {factor.friendly_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Added {formatDate(factor.created_at)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setMfaConfirmId(factor.id)}
+                                            disabled={mfaRemoving === factor.id}
+                                            aria-label={`Remove ${factor.friendly_name}`}
+                                        >
+                                            {mfaRemoving === factor.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            )}
+                                        </Button>
+                                        {mfaConfirmId === factor.id && (
+                                            <div
+                                                className="flex items-center gap-2 mt-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5"
+                                                role="alertdialog"
+                                                aria-label="Confirm MFA removal"
+                                            >
+                                                <p className="text-xs text-destructive flex-1">
+                                                    Remove this factor? You will no longer need a
+                                                    code to sign in.
+                                                </p>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleRemoveMfa(factor.id)}
+                                                    disabled={mfaRemoving === factor.id}
+                                                >
+                                                    Confirm
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setMfaConfirmId(null)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            <div className="text-center py-4 space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                    Add an extra layer of security to your account with an
+                                    authenticator app.
+                                </p>
+                                <Button onClick={() => router.push("/auth/mfa-setup")}>
+                                    <Plus className="h-4 w-4" aria-hidden="true" />
+                                    Enable Two-Factor Auth
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Recent Login Activity */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <MonitorSmartphone className="h-4 w-4" aria-hidden="true" />
+                            Recent Login Activity
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {sessionsLoading ? (
+                            <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : sessions.length > 0 ? (
+                            <ul className="space-y-2" role="list">
+                                {sessions.map((session) => (
+                                    <li
+                                        key={session.id}
+                                        className="flex items-center justify-between p-3 rounded-lg border text-sm"
+                                    >
                                         <div>
-                                            <p className="text-sm font-medium">
-                                                {factor.friendly_name}
+                                            <p className="font-medium truncate max-w-xs">
+                                                {session.user_agent}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                Added {formatDate(factor.created_at)}
+                                                {session.ip} · {formatDate(session.created_at)}
                                             </p>
                                         </div>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setMfaConfirmId(factor.id)}
-                                        disabled={mfaRemoving === factor.id}
-                                        aria-label={`Remove ${factor.friendly_name}`}
-                                    >
-                                        {mfaRemoving === factor.id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        )}
-                                    </Button>
-                                    {mfaConfirmId === factor.id && (
-                                        <div
-                                            className="flex items-center gap-2 mt-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5"
-                                            role="alertdialog"
-                                            aria-label="Confirm MFA removal"
-                                        >
-                                            <p className="text-xs text-destructive flex-1">
-                                                Remove this factor? You will no longer need a code to sign in.
-                                            </p>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() => handleRemoveMfa(factor.id)}
-                                                disabled={mfaRemoving === factor.id}
-                                            >
-                                                Confirm
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setMfaConfirmId(null)}
-                                            >
-                                                Cancel
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </>
-                    ) : (
-                        <div className="text-center py-4 space-y-3">
-                            <p className="text-sm text-muted-foreground">
-                                Add an extra layer of security to your account with an authenticator
-                                app.
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                                No recent login activity recorded.
                             </p>
-                            <Button onClick={() => router.push("/auth/mfa-setup")}>
-                                <Plus className="h-4 w-4" aria-hidden="true" />
-                                Enable Two-Factor Auth
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        )}
+                    </CardContent>
+                </Card>
 
-            {/* Recent Login Activity */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <MonitorSmartphone className="h-4 w-4" aria-hidden="true" />
-                        Recent Login Activity
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {sessionsLoading ? (
-                        <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                {/* Account Info */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Shield className="h-4 w-4" aria-hidden="true" />
+                            Account Information
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Email</span>
+                            <span className="font-medium">{user?.email || "—"}</span>
                         </div>
-                    ) : sessions.length > 0 ? (
-                        <ul className="space-y-2" role="list">
-                            {sessions.map((session) => (
-                                <li
-                                    key={session.id}
-                                    className="flex items-center justify-between p-3 rounded-lg border text-sm"
-                                >
-                                    <div>
-                                        <p className="font-medium truncate max-w-xs">
-                                            {session.user_agent}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {session.ip} · {formatDate(session.created_at)}
-                                        </p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                            No recent login activity recorded.
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Account Info */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <Shield className="h-4 w-4" aria-hidden="true" />
-                        Account Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Email</span>
-                        <span className="font-medium">{user?.email || "—"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Account created</span>
-                        <span className="font-medium">
-                            {user?.created_at ? formatDate(user.created_at) : "—"}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Last sign in</span>
-                        <span className="font-medium">
-                            {user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : "—"}
-                        </span>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Account created</span>
+                            <span className="font-medium">
+                                {user?.created_at ? formatDate(user.created_at) : "—"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Last sign in</span>
+                            <span className="font-medium">
+                                {user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : "—"}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </PermissionGate>
     );
 }

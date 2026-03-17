@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import type { DataExportStatus } from "@/types";
 import { PermissionGate } from "@/components/permission-guard";
-import { useCreateDataExportRequest, useDataExportRequests } from "@/lib/supabase/hooks-pages";
+import { useCreateDataExportRequest, useDataExportRequests } from "@/lib/supabase";
 
 const statusBadge = (status: DataExportStatus) => {
     const variants: Record<

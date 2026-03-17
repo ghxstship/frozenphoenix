@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { TabBar } from "@/components/ui/tab-bar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,7 @@ import {
     Users,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-import { useCrewMembers, useDeals, useProjects } from "@/lib/supabase/hooks";
+import { useCrewMembers, useDeals, useProjects } from "@/lib/supabase";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo } from "react";
 
@@ -220,12 +220,10 @@ export default function ForecastingPage() {
 
     return (
         <PermissionGate resource="forecasting" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Forecasting"
-                    description="Predict revenue, track budget burns, and plan resource needs"
-                />
-
+            <PageShell
+                title="Forecasting"
+                description="Predict revenue, track budget burns, and plan resource needs"
+            >
                 {/* KPI Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
@@ -568,7 +566,7 @@ export default function ForecastingPage() {
                         </Card>
                     </div>
                 )}
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

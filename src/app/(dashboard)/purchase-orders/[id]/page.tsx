@@ -1,11 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import {
-    useDeletePurchaseOrder,
-    usePurchaseOrder,
-    useUpdatePurchaseOrder,
-} from "@/lib/supabase/hooks-pages";
+import { useDeletePurchaseOrder, usePurchaseOrder, useUpdatePurchaseOrder } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { EmptyState } from "@/components/layouts/empty-state";

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,7 +26,7 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { useToast } from "@/components/ui/toast";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { useCustomFieldDefinitions } from "@/lib/supabase/hooks-v2-features";
+import { useCustomFieldDefinitions } from "@/lib/supabase";
 
 interface CustomFieldDefinition {
     id: string;
@@ -97,16 +97,15 @@ export default function CustomFieldsPage() {
 
     return (
         <PermissionGate resource="settings" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Custom Property Fields"
-                    description="Define custom fields on any entity type — projects, companies, assets, events, and more"
-                >
+            <PageShell
+                title="Custom Property Fields"
+                description="Define custom fields on any entity type — projects, companies, assets, events, and more"
+                actions={
                     <Button size="sm" onClick={openCreate}>
                         <Plus className="h-4 w-4" /> New Field
                     </Button>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Custom Fields" value={fields.length} icon={Settings} />
                     <StatCard title="Total Usage" value={totalUsage} icon={Layers} />
@@ -255,7 +254,7 @@ export default function CustomFieldsPage() {
                         </Card>
                     ))}
                 </div>
-            </div>
+            </PageShell>
             <CreateEntityDialog
                 config={CREATE_CUSTOM_FIELD_CONFIG}
                 open={createOpen}

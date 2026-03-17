@@ -8,7 +8,7 @@ import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCrewMembers, useDeals, useProjects, useTasks, useVendors } from "@/lib/supabase/hooks";
+import { useCrewMembers, useDeals, useProjects, useTasks, useVendors } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";

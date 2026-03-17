@@ -9,19 +9,31 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { ModelRegistry } from "@/lib/ai/model-registry";
+import { checkPermission } from "@/app/api/middleware/permissions";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+    // RBAC gate — infrastructure health details are admin-visible only
+    const perm = await checkPermission("settings", "read");
+    if (!perm.authorized) {
+        const status = perm.userId ? 403 : 401;
+        return NextResponse.json(
+            { error: status === 403 ? "Forbidden" : "Unauthorized" },
+            { status }
+        );
+    }
     const checks: Record<string, { status: "ok" | "degraded" | "error"; message?: string }> = {};
 
     // 1. Database connectivity
     const admin = createAdminClient();
     if (admin) {
         const { error } = await admin.from("ai_providers").select("id").limit(1);
-        checks.database = error ? { status: "error", message: error.message } : { status: "ok" };
+        checks.database = error
+            ? { status: "error", message: "Database connectivity check failed" }
+            : { status: "ok" };
     } else {
-        checks.database = { status: "error", message: "Service role key not configured" };
+        checks.database = { status: "error", message: "Database client unavailable" };
     }
 
     // 2. Provider registry

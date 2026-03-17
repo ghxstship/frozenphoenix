@@ -1,10 +1,30 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-    // Allows to automatically instantiate createClient with right options
-    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-    __InternalSupabase: {
-        PostgrestVersion: "14.1";
+    graphql_public: {
+        Tables: {
+            [_ in never]: never;
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            graphql: {
+                Args: {
+                    extensions?: Json;
+                    operationName?: string;
+                    query?: string;
+                    variables?: Json;
+                };
+                Returns: Json;
+            };
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
+        };
     };
     public: {
         Tables: {
@@ -139,6 +159,13 @@ export type Database = {
                         foreignKeyName: "account_health_scores_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "account_health_scores_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -215,6 +242,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "assets";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activation_assets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "activation_assets_organization_id_fkey";
@@ -385,6 +419,13 @@ export type Database = {
                         foreignKeyName: "activations_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "activations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -464,6 +505,13 @@ export type Database = {
                     user_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "active_timers_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "active_timers_organization_id_fkey";
                         columns: ["organization_id"];
@@ -651,6 +699,13 @@ export type Database = {
                         foreignKeyName: "activities_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "activities_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -751,6 +806,13 @@ export type Database = {
                         foreignKeyName: "activity_assets_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "activity_assets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -809,6 +871,13 @@ export type Database = {
                         foreignKeyName: "activity_consumables_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "activity_consumables_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -859,6 +928,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activity_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "activity_log_organization_id_fkey";
@@ -956,6 +1032,13 @@ export type Database = {
                         foreignKeyName: "advance_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "advance_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -999,6 +1082,13 @@ export type Database = {
                     rotated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "ai_api_keys_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "ai_api_keys_org_id_fkey";
                         columns: ["org_id"];
@@ -1062,6 +1152,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "ai_models";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "ai_conversations_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "ai_conversations_org_id_fkey";
@@ -1154,6 +1251,13 @@ export type Database = {
                     total_tokens?: number;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "ai_documents_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "ai_documents_org_id_fkey";
                         columns: ["org_id"];
@@ -1368,6 +1472,13 @@ export type Database = {
                         foreignKeyName: "ai_report_queries_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "ai_report_queries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -1415,6 +1526,13 @@ export type Database = {
                         foreignKeyName: "ai_system_prompts_org_id_fkey";
                         columns: ["org_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "ai_system_prompts_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -1452,6 +1570,13 @@ export type Database = {
                     role_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "ai_usage_limits_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "ai_usage_limits_org_id_fkey";
                         columns: ["org_id"];
@@ -1513,6 +1638,13 @@ export type Database = {
                         foreignKeyName: "ai_usage_logs_org_id_fkey";
                         columns: ["org_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "ai_usage_logs_org_id_fkey";
+                        columns: ["org_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -1561,6 +1693,13 @@ export type Database = {
                         foreignKeyName: "anonymization_queue_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "anonymization_queue_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -1576,6 +1715,69 @@ export type Database = {
                         columns: ["user_profile_id"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            api_keys: {
+                Row: {
+                    created_at: string;
+                    created_by: string | null;
+                    expires_at: string | null;
+                    id: string;
+                    is_active: boolean;
+                    key_hash: string;
+                    key_prefix: string;
+                    last_used_at: string | null;
+                    name: string;
+                    organization_id: string;
+                    rate_limit_rpm: number;
+                    revoked_at: string | null;
+                    scopes: string[];
+                };
+                Insert: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    expires_at?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    key_hash: string;
+                    key_prefix: string;
+                    last_used_at?: string | null;
+                    name: string;
+                    organization_id: string;
+                    rate_limit_rpm?: number;
+                    revoked_at?: string | null;
+                    scopes?: string[];
+                };
+                Update: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    expires_at?: string | null;
+                    id?: string;
+                    is_active?: boolean;
+                    key_hash?: string;
+                    key_prefix?: string;
+                    last_used_at?: string | null;
+                    name?: string;
+                    organization_id?: string;
+                    rate_limit_rpm?: number;
+                    revoked_at?: string | null;
+                    scopes?: string[];
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "api_keys_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "api_keys_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -1639,6 +1841,13 @@ export type Database = {
                     user_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "api_tokens_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "api_tokens_organization_id_fkey";
                         columns: ["organization_id"];
@@ -1826,6 +2035,13 @@ export type Database = {
                         foreignKeyName: "approval_workflows_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "approval_workflows_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -1908,6 +2124,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "approvals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "approvals_organization_id_fkey";
@@ -2019,6 +2242,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_access_controls_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "asset_access_controls_organization_id_fkey";
@@ -2219,6 +2449,13 @@ export type Database = {
                         foreignKeyName: "asset_assignments_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -2362,6 +2599,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_certifications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "asset_certifications_organization_id_fkey";
@@ -2532,6 +2776,13 @@ export type Database = {
                         foreignKeyName: "asset_damage_reports_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_damage_reports_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -2673,6 +2924,13 @@ export type Database = {
                         foreignKeyName: "asset_dependencies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_dependencies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -2748,6 +3006,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_links_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "asset_links_organization_id_fkey";
@@ -2896,6 +3161,13 @@ export type Database = {
                         foreignKeyName: "asset_reconciliation_items_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_reconciliation_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -3013,6 +3285,13 @@ export type Database = {
                         foreignKeyName: "asset_retention_policies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_retention_policies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -3077,6 +3356,13 @@ export type Database = {
                     tag_group?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "asset_tags_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "asset_tags_organization_id_fkey";
                         columns: ["organization_id"];
@@ -3351,6 +3637,13 @@ export type Database = {
                         foreignKeyName: "assets_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "assets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -3473,6 +3766,13 @@ export type Database = {
                         foreignKeyName: "audit_count_items_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "audit_count_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -3481,6 +3781,86 @@ export type Database = {
                         columns: ["warehouse_location_id"];
                         isOneToOne: false;
                         referencedRelation: "warehouse_locations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            automation_dead_letters: {
+                Row: {
+                    automation_id: string;
+                    created_at: string;
+                    entity_id: string;
+                    entity_type: string;
+                    error: string | null;
+                    execution_id: string | null;
+                    id: string;
+                    max_retries: number;
+                    next_retry_at: string | null;
+                    organization_id: string;
+                    payload: Json;
+                    resolved_at: string | null;
+                    retry_count: number;
+                    trigger_type: string;
+                };
+                Insert: {
+                    automation_id: string;
+                    created_at?: string;
+                    entity_id: string;
+                    entity_type: string;
+                    error?: string | null;
+                    execution_id?: string | null;
+                    id?: string;
+                    max_retries?: number;
+                    next_retry_at?: string | null;
+                    organization_id: string;
+                    payload?: Json;
+                    resolved_at?: string | null;
+                    retry_count?: number;
+                    trigger_type: string;
+                };
+                Update: {
+                    automation_id?: string;
+                    created_at?: string;
+                    entity_id?: string;
+                    entity_type?: string;
+                    error?: string | null;
+                    execution_id?: string | null;
+                    id?: string;
+                    max_retries?: number;
+                    next_retry_at?: string | null;
+                    organization_id?: string;
+                    payload?: Json;
+                    resolved_at?: string | null;
+                    retry_count?: number;
+                    trigger_type?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "automation_dead_letters_automation_id_fkey";
+                        columns: ["automation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "automations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "automation_dead_letters_execution_id_fkey";
+                        columns: ["execution_id"];
+                        isOneToOne: false;
+                        referencedRelation: "automation_executions";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "automation_dead_letters_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "automation_dead_letters_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -3532,6 +3912,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "automations";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "automation_executions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "automation_executions_organization_id_fkey";
@@ -3594,49 +3981,67 @@ export type Database = {
             };
             automations: {
                 Row: {
+                    conditions: Json | null;
                     created_at: string | null;
                     created_by: string | null;
                     description: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
+                    error_count: number | null;
                     id: string;
                     is_active: boolean | null;
                     last_triggered_at: string | null;
                     name: string;
+                    next_scheduled_at: string | null;
                     organization_id: string;
                     project_id: string | null;
+                    schedule_cron: string | null;
+                    schedule_timezone: string | null;
                     trigger_count: number | null;
                     updated_at: string | null;
                     updated_by: string | null;
+                    version: number | null;
                 };
                 Insert: {
+                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
+                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
                     name: string;
+                    next_scheduled_at?: string | null;
                     organization_id: string;
                     project_id?: string | null;
+                    schedule_cron?: string | null;
+                    schedule_timezone?: string | null;
                     trigger_count?: number | null;
                     updated_at?: string | null;
                     updated_by?: string | null;
+                    version?: number | null;
                 };
                 Update: {
+                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type?: Database["public"]["Enums"]["entity_type"];
+                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
                     name?: string;
+                    next_scheduled_at?: string | null;
                     organization_id?: string;
                     project_id?: string | null;
+                    schedule_cron?: string | null;
+                    schedule_timezone?: string | null;
                     trigger_count?: number | null;
                     updated_at?: string | null;
                     updated_by?: string | null;
+                    version?: number | null;
                 };
                 Relationships: [
                     {
@@ -3652,6 +4057,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "automations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "automations_organization_id_fkey";
@@ -3703,6 +4115,48 @@ export type Database = {
                         referencedColumns: ["id"];
                     },
                 ];
+            };
+            bluesky_oauth_sessions: {
+                Row: {
+                    created_at: string;
+                    key: string;
+                    session: Json;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    key: string;
+                    session: Json;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    key?: string;
+                    session?: Json;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
+            bluesky_oauth_states: {
+                Row: {
+                    created_at: string;
+                    expires_at: string;
+                    key: string;
+                    state: Json;
+                };
+                Insert: {
+                    created_at?: string;
+                    expires_at?: string;
+                    key: string;
+                    state: Json;
+                };
+                Update: {
+                    created_at?: string;
+                    expires_at?: string;
+                    key?: string;
+                    state?: Json;
+                };
+                Relationships: [];
             };
             bom_lines: {
                 Row: {
@@ -3772,6 +4226,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "boms";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "bom_lines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "bom_lines_organization_id_fkey";
@@ -3873,6 +4334,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "boms_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "boms_organization_id_fkey";
@@ -4092,6 +4560,13 @@ export type Database = {
                         foreignKeyName: "brand_guidelines_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "brand_guidelines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -4192,6 +4667,13 @@ export type Database = {
                         foreignKeyName: "brand_kits_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "brand_kits_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -4283,6 +4765,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "brands_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "brands_organization_id_fkey";
                         columns: ["organization_id"];
@@ -4379,6 +4868,13 @@ export type Database = {
                         foreignKeyName: "brief_deliverables_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "brief_deliverables_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -4444,6 +4940,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "brief_templates_organization_id_fkey";
@@ -4516,6 +5019,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_budget_profitability";
                         referencedColumns: ["budget_id"];
+                    },
+                    {
+                        foreignKeyName: "budget_alerts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "budget_alerts_organization_id_fkey";
@@ -4660,6 +5170,13 @@ export type Database = {
                         foreignKeyName: "budget_approvals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "budget_approvals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -4797,6 +5314,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "gl_accounts";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "budget_line_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "budget_line_items_organization_id_fkey";
@@ -4956,6 +5480,13 @@ export type Database = {
                         foreignKeyName: "budgets_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "budgets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -5083,6 +5614,13 @@ export type Database = {
                         foreignKeyName: "bulk_import_jobs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "bulk_import_jobs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -5148,6 +5686,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "calendar_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "calendar_events_organization_id_fkey";
@@ -5423,6 +5968,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "call_sheets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "call_sheets_organization_id_fkey";
@@ -5962,6 +6514,13 @@ export type Database = {
                         foreignKeyName: "campaigns_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "campaigns_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -6090,6 +6649,13 @@ export type Database = {
                         foreignKeyName: "case_studies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "case_studies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -6212,6 +6778,13 @@ export type Database = {
                         foreignKeyName: "catalog_categories_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "catalog_categories_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -6277,6 +6850,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "catalog_items";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "catalog_item_modifiers_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "catalog_item_modifiers_organization_id_fkey";
@@ -6379,6 +6959,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "catalog_categories";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "catalog_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "catalog_items_organization_id_fkey";
@@ -6498,6 +7085,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "catalog_items";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "catalog_org_overrides_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "catalog_org_overrides_organization_id_fkey";
@@ -6623,6 +7217,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "change_orders";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "change_order_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "change_order_log_organization_id_fkey";
@@ -6797,6 +7398,13 @@ export type Database = {
                         foreignKeyName: "change_orders_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "change_orders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -6939,6 +7547,13 @@ export type Database = {
                         foreignKeyName: "channel_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "channel_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -7001,6 +7616,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "checklist_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "checklist_templates_organization_id_fkey";
@@ -7086,6 +7708,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "classification_assessments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "classification_assessments_organization_id_fkey";
@@ -7284,6 +7913,13 @@ export type Database = {
                         foreignKeyName: "client_invoices_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "client_invoices_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -7424,6 +8060,13 @@ export type Database = {
                         foreignKeyName: "comm_channels_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "comm_channels_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -7542,6 +8185,13 @@ export type Database = {
                         foreignKeyName: "comm_log_entries_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "comm_log_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -7645,6 +8295,13 @@ export type Database = {
                         foreignKeyName: "command_positions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "command_positions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -7729,6 +8386,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "comments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "comments_organization_id_fkey";
@@ -7897,6 +8561,13 @@ export type Database = {
                         foreignKeyName: "companies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "companies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8049,6 +8720,13 @@ export type Database = {
                         foreignKeyName: "compliance_checklists_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "compliance_checklists_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8137,6 +8815,13 @@ export type Database = {
                         foreignKeyName: "compliance_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "compliance_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8183,6 +8868,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "consumables";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "consumable_usage_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "consumable_usage_organization_id_fkey";
@@ -8351,6 +9043,13 @@ export type Database = {
                         foreignKeyName: "consumables_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "consumables_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8508,6 +9207,13 @@ export type Database = {
                         foreignKeyName: "contacts_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "contacts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8630,6 +9336,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "contract_amendments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "contract_amendments_organization_id_fkey";
@@ -8766,6 +9479,13 @@ export type Database = {
                         foreignKeyName: "contract_clauses_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "contract_clauses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -8876,6 +9596,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "contract_obligations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "contract_obligations_organization_id_fkey";
@@ -9070,6 +9797,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "insurance_requirements";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "contracts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "contracts_organization_id_fkey";
@@ -9313,6 +10047,13 @@ export type Database = {
                         foreignKeyName: "conversations_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "conversations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -9540,6 +10281,13 @@ export type Database = {
                         foreignKeyName: "creative_briefs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "creative_briefs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -9647,6 +10395,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "campaign_assets";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "creative_reviews_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "creative_reviews_organization_id_fkey";
@@ -9810,6 +10565,13 @@ export type Database = {
                         foreignKeyName: "credential_assignments_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "credential_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -9925,6 +10687,13 @@ export type Database = {
                         foreignKeyName: "credential_inventory_pools_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "credential_inventory_pools_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -9994,6 +10763,13 @@ export type Database = {
                         foreignKeyName: "credential_scan_log_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "credential_scan_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -10056,6 +10832,13 @@ export type Database = {
                     updated_by?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "credential_types_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "credential_types_organization_id_fkey";
                         columns: ["organization_id"];
@@ -10144,6 +10927,13 @@ export type Database = {
                         foreignKeyName: "credit_notes_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "credit_notes_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -10204,6 +10994,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_time_tracking_compliance";
                         referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_availability_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "crew_availability_organization_id_fkey";
@@ -10379,6 +11176,13 @@ export type Database = {
                     worker_profile_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "crew_members_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "crew_members_organization_id_fkey";
                         columns: ["organization_id"];
@@ -10589,6 +11393,13 @@ export type Database = {
                         foreignKeyName: "crew_shifts_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_shifts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -10721,6 +11532,13 @@ export type Database = {
                         foreignKeyName: "custom_field_definitions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "custom_field_definitions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -10779,6 +11597,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "custom_field_definitions";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "custom_field_values_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "custom_field_values_organization_id_fkey";
@@ -10896,6 +11721,13 @@ export type Database = {
                         foreignKeyName: "dashboards_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "dashboards_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -10956,6 +11788,13 @@ export type Database = {
                     user_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "data_export_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "data_export_requests_organization_id_fkey";
                         columns: ["organization_id"];
@@ -11261,6 +12100,13 @@ export type Database = {
                         foreignKeyName: "deals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "deals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -11361,6 +12207,13 @@ export type Database = {
                         foreignKeyName: "deck_shares_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "deck_shares_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -11439,6 +12292,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "decks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "decks_organization_id_fkey";
                         columns: ["organization_id"];
@@ -11523,6 +12383,13 @@ export type Database = {
                     tasks_total?: number;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "deliverable_progress_snapshots_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "deliverable_progress_snapshots_organization_id_fkey";
                         columns: ["organization_id"];
@@ -11652,6 +12519,13 @@ export type Database = {
                         foreignKeyName: "department_statuses_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "department_statuses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -11728,6 +12602,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "departments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "departments_organization_id_fkey";
@@ -11831,6 +12712,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "gl_accounts";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "depreciation_schedules_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "depreciation_schedules_organization_id_fkey";
@@ -11975,6 +12863,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "digital_assets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "digital_assets_organization_id_fkey";
@@ -12125,6 +13020,13 @@ export type Database = {
                         foreignKeyName: "dispatch_entries_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "dispatch_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -12201,6 +13103,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "document_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "document_templates_organization_id_fkey";
@@ -12355,6 +13264,13 @@ export type Database = {
                         foreignKeyName: "documents_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "documents_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -12457,6 +13373,13 @@ export type Database = {
                         foreignKeyName: "domain_events_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "domain_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -12524,6 +13447,13 @@ export type Database = {
                     user_agent?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "e_signatures_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "e_signatures_organization_id_fkey";
                         columns: ["organization_id"];
@@ -12625,6 +13555,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "email_messages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "email_messages_organization_id_fkey";
@@ -12739,6 +13676,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "engagement_terms_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "engagement_terms_organization_id_fkey";
@@ -12895,6 +13839,13 @@ export type Database = {
                         foreignKeyName: "engineering_approvals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "engineering_approvals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -12989,6 +13940,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "entity_dependencies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "entity_dependencies_organization_id_fkey";
@@ -13104,6 +14062,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "environmental_readings_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "environmental_readings_organization_id_fkey";
@@ -13279,6 +14244,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "equipment_check_ins_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "equipment_check_ins_organization_id_fkey";
@@ -13504,6 +14476,13 @@ export type Database = {
                         foreignKeyName: "estimates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "estimates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -13580,6 +14559,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "events";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "event_assets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "event_assets_organization_id_fkey";
@@ -13673,6 +14659,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "events";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "event_space_overlays_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "event_space_overlays_organization_id_fkey";
@@ -13846,6 +14839,13 @@ export type Database = {
                         foreignKeyName: "events_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -13957,6 +14957,13 @@ export type Database = {
                         foreignKeyName: "exchange_rates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "exchange_rates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -14048,6 +15055,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "expense_reports_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "expense_reports_organization_id_fkey";
@@ -14152,6 +15166,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "expenses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "expenses_organization_id_fkey";
@@ -14265,6 +15286,13 @@ export type Database = {
                     updated_by?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "export_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "export_templates_organization_id_fkey";
                         columns: ["organization_id"];
@@ -14449,6 +15477,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "field_tier_assignments";
                         referencedColumns: ["field_type_id"];
+                    },
+                    {
+                        foreignKeyName: "field_access_overrides_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "field_access_overrides_organization_id_fkey";
@@ -14653,6 +15688,13 @@ export type Database = {
                         foreignKeyName: "field_usage_daily_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "field_usage_daily_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -14693,6 +15735,13 @@ export type Database = {
                     user_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "field_usage_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "field_usage_events_organization_id_fkey";
                         columns: ["organization_id"];
@@ -14756,6 +15805,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "financial_periods_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "financial_periods_organization_id_fkey";
@@ -14828,6 +15884,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "foh_zone_readings_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "foh_zone_readings_organization_id_fkey";
@@ -14923,6 +15986,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "foh_zones_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "foh_zones_organization_id_fkey";
@@ -15029,6 +16099,13 @@ export type Database = {
                         foreignKeyName: "gl_accounts_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "gl_accounts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -15097,6 +16174,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "goals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "goals_organization_id_fkey";
                         columns: ["organization_id"];
@@ -15216,6 +16300,13 @@ export type Database = {
                         foreignKeyName: "goods_receipt_lines_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "goods_receipt_lines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -15312,6 +16403,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "goods_receipts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "goods_receipts_organization_id_fkey";
@@ -15437,6 +16535,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "governance_audit_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "governance_audit_log_organization_id_fkey";
@@ -15571,6 +16676,13 @@ export type Database = {
                         foreignKeyName: "guest_incidents_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "guest_incidents_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -15637,6 +16749,13 @@ export type Database = {
                         foreignKeyName: "idempotency_keys_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "idempotency_keys_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -15696,6 +16815,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "insurance_policies";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_insurance_links_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "incident_insurance_links_organization_id_fkey";
@@ -15929,6 +17055,13 @@ export type Database = {
                         foreignKeyName: "incidents_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "incidents_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -16106,6 +17239,13 @@ export type Database = {
                         foreignKeyName: "insurance_policies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "insurance_policies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -16220,10 +17360,65 @@ export type Database = {
                         foreignKeyName: "insurance_requirements_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "insurance_requirements_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
                 ];
+            };
+            integration_catalog: {
+                Row: {
+                    auth_type: string;
+                    category: string;
+                    created_at: string;
+                    description: string | null;
+                    display_name: string;
+                    documentation_url: string | null;
+                    features: string[] | null;
+                    icon_url: string | null;
+                    id: string;
+                    is_available: boolean;
+                    is_beta: boolean;
+                    provider_type: string;
+                    sort_order: number;
+                };
+                Insert: {
+                    auth_type?: string;
+                    category: string;
+                    created_at?: string;
+                    description?: string | null;
+                    display_name: string;
+                    documentation_url?: string | null;
+                    features?: string[] | null;
+                    icon_url?: string | null;
+                    id?: string;
+                    is_available?: boolean;
+                    is_beta?: boolean;
+                    provider_type: string;
+                    sort_order?: number;
+                };
+                Update: {
+                    auth_type?: string;
+                    category?: string;
+                    created_at?: string;
+                    description?: string | null;
+                    display_name?: string;
+                    documentation_url?: string | null;
+                    features?: string[] | null;
+                    icon_url?: string | null;
+                    id?: string;
+                    is_available?: boolean;
+                    is_beta?: boolean;
+                    provider_type?: string;
+                    sort_order?: number;
+                };
+                Relationships: [];
             };
             integrations: {
                 Row: {
@@ -16260,6 +17455,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "integrations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "integrations_organization_id_fkey";
                         columns: ["organization_id"];
@@ -16375,6 +17577,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "inventory_audits_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "inventory_audits_organization_id_fkey";
@@ -16496,6 +17705,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "events";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "inventory_reservations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "inventory_reservations_organization_id_fkey";
@@ -16643,6 +17859,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "invitations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "invitations_organization_id_fkey";
@@ -16848,6 +18071,13 @@ export type Database = {
                         foreignKeyName: "invoice_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "invoice_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17025,6 +18255,13 @@ export type Database = {
                         foreignKeyName: "invoices_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "invoices_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17160,6 +18397,13 @@ export type Database = {
                         foreignKeyName: "ip_rights_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "ip_rights_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17254,6 +18498,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "job_checklists_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "job_checklists_organization_id_fkey";
@@ -17426,6 +18677,13 @@ export type Database = {
                         foreignKeyName: "job_cost_entries_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "job_cost_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17536,6 +18794,13 @@ export type Database = {
                         foreignKeyName: "kit_items_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "kit_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17607,6 +18872,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "kits_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "kits_organization_id_fkey";
@@ -17749,6 +19021,13 @@ export type Database = {
                         foreignKeyName: "knowledge_articles_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "knowledge_articles_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -17838,6 +19117,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "lead_sources_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "lead_sources_organization_id_fkey";
                         columns: ["organization_id"];
@@ -17987,6 +19273,13 @@ export type Database = {
                         foreignKeyName: "leads_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "leads_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -18045,6 +19338,13 @@ export type Database = {
                     scope_type?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "legal_holds_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "legal_holds_organization_id_fkey";
                         columns: ["organization_id"];
@@ -18217,6 +19517,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "live_crew_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "live_crew_assignments_organization_id_fkey";
@@ -18418,6 +19725,13 @@ export type Database = {
                         foreignKeyName: "live_event_instances_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "live_event_instances_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -18581,6 +19895,13 @@ export type Database = {
                         foreignKeyName: "live_financial_snapshots_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "live_financial_snapshots_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -18697,6 +20018,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "load_plans_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "load_plans_organization_id_fkey";
@@ -18838,6 +20166,13 @@ export type Database = {
                         foreignKeyName: "location_compliance_docs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "location_compliance_docs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -18908,6 +20243,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "location_contacts_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "location_contacts_organization_id_fkey";
@@ -19011,6 +20353,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "location_costs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "location_costs_organization_id_fkey";
@@ -19142,6 +20491,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "location_inspections_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "location_inspections_organization_id_fkey";
@@ -19384,6 +20740,13 @@ export type Database = {
                         foreignKeyName: "locations_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "locations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -19580,6 +20943,13 @@ export type Database = {
                         foreignKeyName: "logistics_events_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "logistics_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -19632,6 +21002,13 @@ export type Database = {
                     organization_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "lost_reasons_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "lost_reasons_organization_id_fkey";
                         columns: ["organization_id"];
@@ -19733,6 +21110,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "maintenance_records_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "maintenance_records_organization_id_fkey";
@@ -19849,6 +21233,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "maintenance_schedules_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "maintenance_schedules_organization_id_fkey";
@@ -20123,6 +21514,13 @@ export type Database = {
                         foreignKeyName: "messages_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "messages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -20201,6 +21599,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "messaging_escalation_rules_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "messaging_escalation_rules_organization_id_fkey";
                         columns: ["organization_id"];
@@ -20304,6 +21709,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "milestones_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "milestones_organization_id_fkey";
@@ -20496,6 +21908,13 @@ export type Database = {
                         foreignKeyName: "notifications_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "notifications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -20650,6 +22069,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "offboarding_step_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "offboarding_step_templates_organization_id_fkey";
                         columns: ["organization_id"];
@@ -20856,6 +22282,13 @@ export type Database = {
                         foreignKeyName: "onboarding_step_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "onboarding_step_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21020,6 +22453,13 @@ export type Database = {
                         foreignKeyName: "opportunities_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "opportunities_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21118,6 +22558,13 @@ export type Database = {
                         foreignKeyName: "opportunity_activities_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "opportunity_activities_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21178,6 +22625,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "field_bundles";
                         referencedColumns: ["bundle_id"];
+                    },
+                    {
+                        foreignKeyName: "org_bundle_subscriptions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "org_bundle_subscriptions_organization_id_fkey";
@@ -21259,6 +22713,13 @@ export type Database = {
                         foreignKeyName: "org_memberships_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "org_memberships_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21328,6 +22789,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "org_subscriptions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: true;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "org_subscriptions_organization_id_fkey";
                         columns: ["organization_id"];
@@ -21548,6 +23016,13 @@ export type Database = {
                         foreignKeyName: "payment_approvals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "payment_approvals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21650,6 +23125,13 @@ export type Database = {
                         foreignKeyName: "payments_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "payments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -21730,6 +23212,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "payroll_batches_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "payroll_batches_organization_id_fkey";
@@ -21992,6 +23481,13 @@ export type Database = {
                         foreignKeyName: "permits_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "permits_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -22088,6 +23584,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "pipelines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "pipelines_organization_id_fkey";
@@ -22319,6 +23822,13 @@ export type Database = {
                         foreignKeyName: "pos_transactions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "pos_transactions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -22488,6 +23998,13 @@ export type Database = {
                         isOneToOne: true;
                         referencedRelation: "live_event_instances";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "post_event_reports_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "post_event_reports_organization_id_fkey";
@@ -22820,6 +24337,13 @@ export type Database = {
                         foreignKeyName: "production_advances_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_advances_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -22967,6 +24491,13 @@ export type Database = {
                         foreignKeyName: "production_budget_lines_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_budget_lines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -23103,6 +24634,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "events";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_checklists_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "production_checklists_organization_id_fkey";
@@ -23304,6 +24842,13 @@ export type Database = {
                         foreignKeyName: "production_expenses_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_expenses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -23489,6 +25034,13 @@ export type Database = {
                         foreignKeyName: "production_milestones_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_milestones_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -23603,6 +25155,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "bom_lines";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_run_inputs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "production_run_inputs_organization_id_fkey";
@@ -23733,6 +25292,13 @@ export type Database = {
                         foreignKeyName: "production_runs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_runs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -23856,6 +25422,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_sops_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "production_sops_organization_id_fkey";
@@ -24059,6 +25632,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "production_tasks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "production_tasks_organization_id_fkey";
@@ -24328,6 +25908,13 @@ export type Database = {
                         foreignKeyName: "production_time_entries_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_time_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -24454,6 +26041,13 @@ export type Database = {
                         foreignKeyName: "production_verticals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "production_verticals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -24552,6 +26146,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_time_tracking_compliance";
                         referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "project_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "project_assignments_organization_id_fkey";
@@ -24674,6 +26275,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "project_locations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "project_locations_organization_id_fkey";
@@ -24870,6 +26478,13 @@ export type Database = {
                         foreignKeyName: "project_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "project_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -24908,6 +26523,8 @@ export type Database = {
                     status: string;
                     sustainability_score: number | null;
                     team_id: string | null;
+                    template_id: string | null;
+                    template_version: number | null;
                     timezone: string;
                     updated_at: string | null;
                     weather_contingency_plan: string | null;
@@ -24944,6 +26561,8 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
+                    template_id?: string | null;
+                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -24980,6 +26599,8 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
+                    template_id?: string | null;
+                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -25045,6 +26666,13 @@ export type Database = {
                         foreignKeyName: "projects_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "projects_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -25081,6 +26709,13 @@ export type Database = {
                         columns: ["team_id"];
                         isOneToOne: false;
                         referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "projects_template_id_fkey";
+                        columns: ["template_id"];
+                        isOneToOne: false;
+                        referencedRelation: "project_templates";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -25353,6 +26988,13 @@ export type Database = {
                         foreignKeyName: "proposals_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "proposals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -25381,6 +27023,7 @@ export type Database = {
             };
             provider_connections: {
                 Row: {
+                    access_token: string | null;
                     api_key: string | null;
                     api_secret: string | null;
                     created_at: string;
@@ -25392,16 +27035,22 @@ export type Database = {
                     is_active: boolean;
                     last_error: string | null;
                     last_sync_at: string | null;
+                    metadata: Json | null;
+                    oauth_state: string | null;
                     organization_id: string;
                     provider_type: string;
                     rate_limit_config: Json | null;
+                    refresh_token: string | null;
+                    scopes: string[] | null;
                     sync_direction: string;
+                    token_expires_at: string | null;
                     updated_at: string;
                     updated_by: string | null;
                     webhook_secret: string | null;
                     webhook_url: string | null;
                 };
                 Insert: {
+                    access_token?: string | null;
                     api_key?: string | null;
                     api_secret?: string | null;
                     created_at?: string;
@@ -25413,16 +27062,22 @@ export type Database = {
                     is_active?: boolean;
                     last_error?: string | null;
                     last_sync_at?: string | null;
+                    metadata?: Json | null;
+                    oauth_state?: string | null;
                     organization_id: string;
                     provider_type: string;
                     rate_limit_config?: Json | null;
+                    refresh_token?: string | null;
+                    scopes?: string[] | null;
                     sync_direction?: string;
+                    token_expires_at?: string | null;
                     updated_at?: string;
                     updated_by?: string | null;
                     webhook_secret?: string | null;
                     webhook_url?: string | null;
                 };
                 Update: {
+                    access_token?: string | null;
                     api_key?: string | null;
                     api_secret?: string | null;
                     created_at?: string;
@@ -25434,10 +27089,15 @@ export type Database = {
                     is_active?: boolean;
                     last_error?: string | null;
                     last_sync_at?: string | null;
+                    metadata?: Json | null;
+                    oauth_state?: string | null;
                     organization_id?: string;
                     provider_type?: string;
                     rate_limit_config?: Json | null;
+                    refresh_token?: string | null;
+                    scopes?: string[] | null;
                     sync_direction?: string;
+                    token_expires_at?: string | null;
                     updated_at?: string;
                     updated_by?: string | null;
                     webhook_secret?: string | null;
@@ -25450,6 +27110,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "events";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "provider_connections_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "provider_connections_organization_id_fkey";
@@ -25523,6 +27190,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "provider_connections";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "provider_ticket_map_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "provider_ticket_map_organization_id_fkey";
@@ -25657,6 +27331,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "contracts";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "purchase_orders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "purchase_orders_organization_id_fkey";
@@ -25838,6 +27519,13 @@ export type Database = {
                         foreignKeyName: "purchase_requisitions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "purchase_requisitions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26002,6 +27690,13 @@ export type Database = {
                         foreignKeyName: "qc_gates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "qc_gates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26112,6 +27807,13 @@ export type Database = {
                         foreignKeyName: "quality_check_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "quality_check_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26177,6 +27879,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "quality_checks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "quality_checks_organization_id_fkey";
@@ -26338,6 +28047,13 @@ export type Database = {
                         foreignKeyName: "rate_cards_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "rate_cards_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26447,6 +28163,13 @@ export type Database = {
                         foreignKeyName: "readiness_gates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "readiness_gates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26533,6 +28256,13 @@ export type Database = {
                         foreignKeyName: "record_activity_log_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "record_activity_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26595,6 +28325,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "record_comments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "record_comments_organization_id_fkey";
@@ -26710,6 +28447,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "recurring_invoices_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "recurring_invoices_organization_id_fkey";
@@ -26854,6 +28598,13 @@ export type Database = {
                         foreignKeyName: "rental_agreement_lines_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "rental_agreement_lines_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -26962,6 +28713,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "rental_agreements_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "rental_agreements_organization_id_fkey";
@@ -27090,6 +28848,13 @@ export type Database = {
                         foreignKeyName: "report_definitions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "report_definitions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -27154,6 +28919,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "resilience_targets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "resilience_targets_organization_id_fkey";
                         columns: ["organization_id"];
@@ -27276,6 +29048,13 @@ export type Database = {
                         foreignKeyName: "resource_bookings_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "resource_bookings_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -27390,6 +29169,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "revenue_recognition_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "revenue_recognition_entries_organization_id_fkey";
@@ -27551,6 +29337,13 @@ export type Database = {
                         foreignKeyName: "revenue_schedules_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "revenue_schedules_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -27671,6 +29464,13 @@ export type Database = {
                         foreignKeyName: "review_cycles_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "review_cycles_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -27723,6 +29523,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "review_feedback_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "review_feedback_requests_organization_id_fkey";
                         columns: ["organization_id"];
@@ -27940,6 +29747,13 @@ export type Database = {
                         foreignKeyName: "rfqs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "rfqs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -28102,8 +29916,22 @@ export type Database = {
                         foreignKeyName: "rights_licenses_licensee_org_id_fkey";
                         columns: ["licensee_org_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "rights_licenses_licensee_org_id_fkey";
+                        columns: ["licensee_org_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "rights_licenses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "rights_licenses_organization_id_fkey";
@@ -28222,6 +30050,13 @@ export type Database = {
                         foreignKeyName: "role_change_log_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "role_change_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -28282,6 +30117,13 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "role_definitions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "role_definitions_organization_id_fkey";
                         columns: ["organization_id"];
@@ -28417,6 +30259,13 @@ export type Database = {
                         foreignKeyName: "ros_cues_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "ros_cues_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -28515,6 +30364,13 @@ export type Database = {
                     visible_columns?: string[] | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "saved_views_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "saved_views_organization_id_fkey";
                         columns: ["organization_id"];
@@ -28642,6 +30498,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "kits";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "scan_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "scan_events_organization_id_fkey";
@@ -28918,6 +30781,13 @@ export type Database = {
                         foreignKeyName: "scenarios_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "scenarios_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -29065,6 +30935,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "schedule_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "schedule_entries_organization_id_fkey";
@@ -29272,6 +31149,13 @@ export type Database = {
                         foreignKeyName: "scopes_of_work_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "scopes_of_work_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -29409,6 +31293,13 @@ export type Database = {
                     uptime_pct?: number;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "service_health_checks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "service_health_checks_organization_id_fkey";
                         columns: ["organization_id"];
@@ -29646,6 +31537,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "service_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "service_requests_organization_id_fkey";
@@ -29914,6 +31812,13 @@ export type Database = {
                         foreignKeyName: "settings_change_requests_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "settings_change_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -30138,6 +32043,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "consumables";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "shipment_items_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "shipment_items_organization_id_fkey";
@@ -30379,6 +32291,13 @@ export type Database = {
                         foreignKeyName: "shipments_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "shipments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -30503,6 +32422,13 @@ export type Database = {
                         foreignKeyName: "sla_definitions_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "sla_definitions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -30573,6 +32499,13 @@ export type Database = {
                         foreignKeyName: "sla_policies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "sla_policies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -30619,6 +32552,13 @@ export type Database = {
                     status?: Database["public"]["Enums"]["sla_status"];
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "sla_tracking_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "sla_tracking_organization_id_fkey";
                         columns: ["organization_id"];
@@ -30714,6 +32654,13 @@ export type Database = {
                         foreignKeyName: "sops_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "sops_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -30776,6 +32723,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "sow_change_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "sow_change_log_organization_id_fkey";
@@ -30941,6 +32895,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "production_milestones";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "sow_deliverables_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "sow_deliverables_organization_id_fkey";
@@ -31112,6 +33073,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "v_location_profitability";
                         referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "space_bookings_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "space_bookings_organization_id_fkey";
@@ -31296,6 +33264,13 @@ export type Database = {
                         foreignKeyName: "stakeholders_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "stakeholders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -31386,6 +33361,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "storage_objects_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "storage_objects_organization_id_fkey";
@@ -31495,6 +33477,13 @@ export type Database = {
                         foreignKeyName: "strike_sequences_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "strike_sequences_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -31578,6 +33567,13 @@ export type Database = {
                     template_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "survey_responses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "survey_responses_organization_id_fkey";
                         columns: ["organization_id"];
@@ -31667,6 +33663,13 @@ export type Database = {
                         foreignKeyName: "survey_templates_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "survey_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -31713,6 +33716,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "provider_connections";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "sync_conflict_policies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "sync_conflict_policies_organization_id_fkey";
@@ -31788,6 +33798,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "provider_connections";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "sync_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "sync_events_organization_id_fkey";
@@ -32062,6 +34079,13 @@ export type Database = {
                         foreignKeyName: "tasks_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tasks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -32258,6 +34282,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "teams_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "teams_organization_id_fkey";
@@ -32484,6 +34515,13 @@ export type Database = {
                         foreignKeyName: "tech_sheets_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tech_sheets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -32605,6 +34643,13 @@ export type Database = {
                         foreignKeyName: "technical_specs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "technical_specs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -32679,6 +34724,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "temporary_access_grants_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "temporary_access_grants_organization_id_fkey";
@@ -32875,6 +34927,13 @@ export type Database = {
                         foreignKeyName: "tier_usage_counters_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tier_usage_counters_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -32983,6 +35042,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "invoice_line_items";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "time_entries_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "time_entries_organization_id_fkey";
@@ -33161,6 +35227,13 @@ export type Database = {
                         foreignKeyName: "time_off_requests_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "time_off_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -33216,6 +35289,13 @@ export type Database = {
                     updated_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "time_tracking_policies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "time_tracking_policies_organization_id_fkey";
                         columns: ["organization_id"];
@@ -33313,6 +35393,13 @@ export type Database = {
                         foreignKeyName: "timesheets_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "timesheets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -33378,6 +35465,13 @@ export type Database = {
                     user_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "upsell_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "upsell_events_organization_id_fkey";
                         columns: ["organization_id"];
@@ -33483,6 +35577,13 @@ export type Database = {
                     user_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "user_certifications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "user_certifications_organization_id_fkey";
                         columns: ["organization_id"];
@@ -33663,9 +35764,11 @@ export type Database = {
             user_profiles: {
                 Row: {
                     anonymized_at: string | null;
+                    atproto_did: string | null;
                     avatar_url: string | null;
                     billing_address: Json | null;
                     bio: string | null;
+                    bluesky_handle: string | null;
                     created_at: string | null;
                     date_format: string;
                     deleted_at: string | null;
@@ -33706,9 +35809,11 @@ export type Database = {
                 };
                 Insert: {
                     anonymized_at?: string | null;
+                    atproto_did?: string | null;
                     avatar_url?: string | null;
                     billing_address?: Json | null;
                     bio?: string | null;
+                    bluesky_handle?: string | null;
                     created_at?: string | null;
                     date_format?: string;
                     deleted_at?: string | null;
@@ -33749,9 +35854,11 @@ export type Database = {
                 };
                 Update: {
                     anonymized_at?: string | null;
+                    atproto_did?: string | null;
                     avatar_url?: string | null;
                     billing_address?: Json | null;
                     bio?: string | null;
+                    bluesky_handle?: string | null;
                     created_at?: string | null;
                     date_format?: string;
                     deleted_at?: string | null;
@@ -33963,6 +36070,13 @@ export type Database = {
                         foreignKeyName: "vault_documents_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vault_documents_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34103,6 +36217,13 @@ export type Database = {
                         foreignKeyName: "vehicles_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vehicles_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34158,6 +36279,13 @@ export type Database = {
                     work_order_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "vendor_communications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "vendor_communications_organization_id_fkey";
                         columns: ["organization_id"];
@@ -34265,6 +36393,13 @@ export type Database = {
                         foreignKeyName: "vendor_portal_tokens_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vendor_portal_tokens_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34346,6 +36481,13 @@ export type Database = {
                         foreignKeyName: "vendor_risk_scores_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vendor_risk_scores_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34398,6 +36540,13 @@ export type Database = {
                     vertical_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "vendor_vertical_capabilities_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "vendor_vertical_capabilities_organization_id_fkey";
                         columns: ["organization_id"];
@@ -34553,6 +36702,13 @@ export type Database = {
                         foreignKeyName: "vendors_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vendors_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34672,6 +36828,13 @@ export type Database = {
                         foreignKeyName: "vip_guests_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vip_guests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34783,6 +36946,13 @@ export type Database = {
                         foreignKeyName: "vip_service_requests_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "vip_service_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -34865,6 +37035,13 @@ export type Database = {
                     zone_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "warehouse_locations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "warehouse_locations_organization_id_fkey";
                         columns: ["organization_id"];
@@ -34953,6 +37130,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "warehouse_zones_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "warehouse_zones_organization_id_fkey";
@@ -35126,6 +37310,13 @@ export type Database = {
                         foreignKeyName: "warehouses_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "warehouses_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -35141,6 +37332,59 @@ export type Database = {
                         columns: ["updated_by"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            webhook_deliveries: {
+                Row: {
+                    attempt_count: number;
+                    created_at: string;
+                    delivered_at: string | null;
+                    event_type: string;
+                    id: string;
+                    max_attempts: number;
+                    next_retry_at: string | null;
+                    payload: Json;
+                    response_body: string | null;
+                    response_status: number | null;
+                    status: string;
+                    subscription_id: string;
+                };
+                Insert: {
+                    attempt_count?: number;
+                    created_at?: string;
+                    delivered_at?: string | null;
+                    event_type: string;
+                    id?: string;
+                    max_attempts?: number;
+                    next_retry_at?: string | null;
+                    payload?: Json;
+                    response_body?: string | null;
+                    response_status?: number | null;
+                    status?: string;
+                    subscription_id: string;
+                };
+                Update: {
+                    attempt_count?: number;
+                    created_at?: string;
+                    delivered_at?: string | null;
+                    event_type?: string;
+                    id?: string;
+                    max_attempts?: number;
+                    next_retry_at?: string | null;
+                    payload?: Json;
+                    response_body?: string | null;
+                    response_status?: number | null;
+                    status?: string;
+                    subscription_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "webhook_deliveries_subscription_id_fkey";
+                        columns: ["subscription_id"];
+                        isOneToOne: false;
+                        referencedRelation: "webhook_subscriptions";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -35206,6 +37450,79 @@ export type Database = {
                         foreignKeyName: "webhook_events_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "webhook_events_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            webhook_subscriptions: {
+                Row: {
+                    created_at: string;
+                    created_by: string | null;
+                    event_types: string[];
+                    failure_count: number;
+                    headers: Json | null;
+                    id: string;
+                    is_active: boolean;
+                    max_failures: number;
+                    name: string;
+                    organization_id: string;
+                    retry_policy: Json | null;
+                    secret: string;
+                    target_url: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    event_types?: string[];
+                    failure_count?: number;
+                    headers?: Json | null;
+                    id?: string;
+                    is_active?: boolean;
+                    max_failures?: number;
+                    name: string;
+                    organization_id: string;
+                    retry_policy?: Json | null;
+                    secret: string;
+                    target_url: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    event_types?: string[];
+                    failure_count?: number;
+                    headers?: Json | null;
+                    id?: string;
+                    is_active?: boolean;
+                    max_failures?: number;
+                    name?: string;
+                    organization_id?: string;
+                    retry_policy?: Json | null;
+                    secret?: string;
+                    target_url?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "webhook_subscriptions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "webhook_subscriptions_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -35264,6 +37581,13 @@ export type Database = {
                     work_order_id?: string;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "work_order_bids_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "work_order_bids_organization_id_fkey";
                         columns: ["organization_id"];
@@ -35471,6 +37795,13 @@ export type Database = {
                         foreignKeyName: "work_orders_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "work_orders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -35612,6 +37943,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "work_packages";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "work_package_dependencies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "work_package_dependencies_organization_id_fkey";
@@ -35783,6 +38121,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "work_packages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "work_packages_organization_id_fkey";
@@ -36006,6 +38351,13 @@ export type Database = {
                         foreignKeyName: "worker_classifications_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "worker_classifications_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36130,6 +38482,13 @@ export type Database = {
                         foreignKeyName: "worker_compliance_docs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "worker_compliance_docs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36243,6 +38602,13 @@ export type Database = {
                         foreignKeyName: "worker_offboarding_runs_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "worker_offboarding_runs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36325,6 +38691,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "worker_onboarding_runs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "worker_onboarding_runs_organization_id_fkey";
@@ -36508,6 +38881,13 @@ export type Database = {
                         foreignKeyName: "worker_profiles_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "worker_profiles_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36639,6 +39019,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "engagement_terms";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "worker_reviews_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "worker_reviews_organization_id_fkey";
@@ -36786,6 +39173,13 @@ export type Database = {
                         foreignKeyName: "workflow_instances_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "workflow_instances_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36912,6 +39306,13 @@ export type Database = {
                         foreignKeyName: "companies_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "companies_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36925,6 +39326,13 @@ export type Database = {
                     total_budget: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "creative_briefs_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "creative_briefs_organization_id_fkey";
                         columns: ["organization_id"];
@@ -36956,6 +39364,13 @@ export type Database = {
                         foreignKeyName: "campaigns_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "campaigns_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -36967,6 +39382,21 @@ export type Database = {
                     new_this_month: number | null;
                     new_this_week: number | null;
                     status: Database["public"]["Enums"]["lead_status"] | null;
+                };
+                Relationships: [];
+            };
+            mv_dashboard_kpis: {
+                Row: {
+                    active_crew_count: number | null;
+                    active_projects_count: number | null;
+                    new_projects_this_month: number | null;
+                    organization_id: string | null;
+                    overdue_approvals_count: number | null;
+                    pipeline_value: number | null;
+                    refreshed_at: string | null;
+                    revenue_won_prev_qtd: number | null;
+                    revenue_won_qtd: number | null;
+                    unread_notifications_count: number | null;
                 };
                 Relationships: [];
             };
@@ -36982,6 +39412,13 @@ export type Database = {
                     weighted_value: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "opportunities_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "opportunities_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37082,6 +39519,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "milestones_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "milestones_organization_id_fkey";
@@ -37320,6 +39764,13 @@ export type Database = {
                         foreignKeyName: "tasks_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tasks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37417,6 +39868,13 @@ export type Database = {
                         foreignKeyName: "revenue_schedules_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "revenue_schedules_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37449,6 +39907,13 @@ export type Database = {
                     updated_at: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "org_memberships_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "org_memberships_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37486,6 +39951,13 @@ export type Database = {
                     version: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "budgets_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "budgets_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37585,6 +40057,13 @@ export type Database = {
                         foreignKeyName: "client_invoices_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "client_invoices_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37637,6 +40116,13 @@ export type Database = {
                     utilization_percent_week: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "crew_members_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "crew_members_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37699,6 +40185,13 @@ export type Database = {
                         foreignKeyName: "invoices_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "invoices_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37730,6 +40223,13 @@ export type Database = {
                     valid_docs: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "locations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "locations_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37773,6 +40273,13 @@ export type Database = {
                         foreignKeyName: "locations_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "locations_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37790,6 +40297,13 @@ export type Database = {
                     weighted_value: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "deals_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "deals_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37820,6 +40334,13 @@ export type Database = {
                     total_work_packages: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "projects_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "projects_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37877,6 +40398,13 @@ export type Database = {
                         foreignKeyName: "projects_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "projects_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37895,6 +40423,13 @@ export type Database = {
                     total_recognized: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "projects_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "projects_organization_id_fkey";
                         columns: ["organization_id"];
@@ -37942,6 +40477,13 @@ export type Database = {
                         foreignKeyName: "service_requests_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "service_requests_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -37978,6 +40520,13 @@ export type Database = {
                     total_price: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "scopes_of_work_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "scopes_of_work_organization_id_fkey";
                         columns: ["organization_id"];
@@ -38051,6 +40600,13 @@ export type Database = {
                         foreignKeyName: "scopes_of_work_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "scopes_of_work_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -38102,6 +40658,54 @@ export type Database = {
                         foreignKeyName: "crew_members_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_members_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            v_user_task_summary: {
+                Row: {
+                    done_count: number | null;
+                    high_priority_count: number | null;
+                    in_progress_count: number | null;
+                    organization_id: string | null;
+                    overdue_count: number | null;
+                    todo_count: number | null;
+                    user_id: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "tasks_assignee_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "tasks_assignee_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "tasks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tasks_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -38123,6 +40727,13 @@ export type Database = {
                     work_package_count: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "work_packages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
                     {
                         foreignKeyName: "work_packages_organization_id_fkey";
                         columns: ["organization_id"];
@@ -38218,6 +40829,13 @@ export type Database = {
                         foreignKeyName: "work_packages_organization_id_fkey";
                         columns: ["organization_id"];
                         isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "work_packages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
                         referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
@@ -38283,6 +40901,7 @@ export type Database = {
                     reason: string;
                 }[];
             };
+            cleanup_expired_bluesky_oauth_states: { Args: never; Returns: undefined };
             convert_currency: {
                 Args: {
                     amount: number;
@@ -38305,6 +40924,7 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            erase_user_data: { Args: { target_user_id: string }; Returns: undefined };
             evaluate_feature_flag: {
                 Args: {
                     p_flag_key: string;
@@ -38321,6 +40941,10 @@ export type Database = {
             };
             generate_proposal_number: { Args: { p_org_id: string }; Returns: string };
             generate_sow_number: { Args: { p_org_id: string }; Returns: string };
+            get_messaging_unread_count: {
+                Args: { p_user_id: string };
+                Returns: number;
+            };
             get_org_pricing_tier: {
                 Args: { p_org_id: string };
                 Returns: Database["public"]["Enums"]["pricing_tier"];
@@ -38331,6 +40955,10 @@ export type Database = {
             get_user_org_ids: { Args: never; Returns: string[] };
             get_user_role: { Args: never; Returns: string };
             get_user_role_in_org: { Args: { org_id: string }; Returns: string };
+            increment_connection_error_count: {
+                Args: { p_connection_id: string; p_error_threshold?: number };
+                Returns: number;
+            };
             is_exec: { Args: never; Returns: boolean };
             is_exec_or_pm: { Args: never; Returns: boolean };
             is_field_accessible: {
@@ -38359,6 +40987,14 @@ export type Database = {
                     token_count: number;
                 }[];
             };
+            purge_expired_data: {
+                Args: never;
+                Returns: {
+                    entity: string;
+                    rows_purged: number;
+                }[];
+            };
+            refresh_dashboard_kpis: { Args: never; Returns: undefined };
             resolve_setting: {
                 Args: {
                     p_category: Database["public"]["Enums"]["setting_category"];
@@ -40241,6 +42877,9 @@ export type CompositeTypes<
       : never;
 
 export const Constants = {
+    graphql_public: {
+        Enums: {},
+    },
     public: {
         Enums: {
             access_grant_status: ["active", "expired", "revoked"],

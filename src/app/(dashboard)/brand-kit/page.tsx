@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
-import { useBrandKits, useProjects } from "@/lib/supabase/hooks";
-import { useCreateBrandKit } from "@/lib/supabase/hooks-pages";
+import { useBrandKits, useProjects } from "@/lib/supabase";
+import { useCreateBrandKit } from "@/lib/supabase";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
@@ -25,6 +25,7 @@ import {
     X,
 } from "lucide-react";
 import { ListPageShell } from "@/components/shells/list-page-shell";
+import { BRAND_KITS_PAGE } from "@/config/list-page-configs";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 // ─── Typed brand kit view ────────────────────────────────────
@@ -489,11 +490,8 @@ export default function BrandKitPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "brand_kit",
+            ...BRAND_KITS_PAGE,
             title: "Brand Kit Library",
-            description: "Client brand guidelines, colors, and assets for consistent deliverables",
-            icon: Palette,
-            searchKeys: ["clientName"],
             stats: [
                 { label: "Brand Kits", icon: Palette, compute: () => brandKits.length },
                 {

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { z } from "zod";
-import { logger } from "@/lib/logger";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const createTemplateSchema = z.object({
     name: z.string().min(1).max(200),
@@ -12,53 +12,58 @@ const createTemplateSchema = z.object({
     is_global: z.boolean().optional(),
 });
 
-export async function GET(req: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/advancing/templates",
+        rbac: { resource: "advancing", action: "read" },
+    },
+    async (req, { supabase, log }) => {
+        const orgId = req.nextUrl.searchParams.get("org_id");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        let query = serverFromTable(supabase, "advance_templates")
+            .select("*")
+            .is("deleted_at", null)
+            .order("name");
 
-    const orgId = req.nextUrl.searchParams.get("org_id");
+        if (orgId) {
+            query = query.or(`organization_id.eq.${orgId},is_global.eq.true`);
+        }
 
-    let query = serverFromTable(supabase!, "advance_templates")
-        .select("*").is("deleted_at", null).order("name");
+        const { data, error } = await query;
+        if (error) {
+            log.error("[GET /api/advancing/templates]", { error });
+            return ApiErrors.internalError("Failed to fetch templates");
+        }
 
-    if (orgId) {
-        query = query.or(`organization_id.eq.${orgId},is_global.eq.true`);
+        return NextResponse.json({ data });
     }
+);
 
-    const { data, error } = await query;
-    if (error) {
-        logger.error("[GET /api/advancing/templates]", { error });
-        return ApiErrors.internalError("Failed to fetch templates");
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/advancing/templates",
+        mutation: true,
+        rbac: { resource: "advancing", action: "write" },
+    },
+    async (req, { supabase, user, log }) => {
+        const parsed = await parseAndValidate(req, createTemplateSchema);
+        if (!parsed.success) return parsed.response;
+
+        const { data, error } = await serverFromTable(supabase, "advance_templates")
+            .insert({
+                ...parsed.data,
+                created_by: user.id,
+            } as Record<string, unknown>)
+            .select()
+            .single();
+
+        if (error) {
+            log.error("[POST /api/advancing/templates]", { error });
+            return ApiErrors.internalError("Failed to create template");
+        }
+
+        return NextResponse.json({ data }, { status: 201 });
     }
-
-    return NextResponse.json({ data });
-}
-
-export async function POST(req: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
-
-    const parsed = await parseAndValidate(req, createTemplateSchema);
-    if (!parsed.success) return parsed.response;
-
-    const { data, error } = await serverFromTable(supabase!, "advance_templates")
-        .insert({
-            ...parsed.data,
-            created_by: user.id,
-        } as Record<string, unknown>)
-        .select()
-        .single();
-
-    if (error) {
-        logger.error("[POST /api/advancing/templates]", { error });
-        return ApiErrors.internalError("Failed to create template");
-    }
-
-    return NextResponse.json({ data }, { status: 201 });
-}
+);

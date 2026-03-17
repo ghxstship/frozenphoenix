@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandlerParams } from "@/lib/api/with-api-handler";
+import { eventChannelCreateSchema, validate } from "@/lib/validation/schemas";
 
 export const POST = withApiHandlerParams(
     {
@@ -16,8 +17,19 @@ export const POST = withApiHandlerParams(
         const admin = createAdminClient();
         if (!admin) return ApiErrors.serviceUnavailable();
 
-        const body = await request.json();
-        const { template_id } = body as { template_id?: string };
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
+
+        const result = validate(eventChannelCreateSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
+        const { template_id } = result.data;
 
         // Get event details
         const { data: event, error: eventErr } = await serverFromTable(

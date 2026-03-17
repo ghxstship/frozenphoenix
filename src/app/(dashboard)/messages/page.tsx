@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatView } from "@/components/messaging/chat-view";
 import { ThreadPanel } from "@/components/messaging/thread-panel";
@@ -26,6 +26,7 @@ import {
     useMessagesRealtime,
 } from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
+import { PermissionGate } from "@/components/permission-guard";
 
 export default function MessagesPage() {
     const searchParams = useSearchParams();
@@ -176,80 +177,57 @@ export default function MessagesPage() {
     );
 
     return (
-        <div className="flex flex-col h-[calc(100vh-theme(spacing.20))]">
-            <PageHeader
+        <PermissionGate resource="messaging">
+            <PageShell
                 title="Messages"
                 description="Conversations, channels, and direct messages"
-            />
-
-            <div className="flex-1 flex border border-border rounded-xl overflow-hidden bg-background mt-4">
-                {/* Conversation sidebar — always visible on desktop, hidden when in chat on mobile */}
-                <div
-                    className={cn(
-                        "w-80 border-r border-border shrink-0",
-                        showChatOrThread ? "hidden lg:block" : "block"
-                    )}
-                >
-                    <ConversationList
-                        conversations={conversations}
-                        activeId={activeConversationId}
-                        searchQuery={searchQuery}
-                        onSearchChange={setSearchQuery}
-                        onSelect={(id) => setActiveConversation(id)}
-                        onCompose={() => setComposing(true)}
-                        isLoading={convLoading}
-                        className="h-full"
-                    />
-                </div>
-
-                {/* Main content area */}
-                <div
-                    className={cn(
-                        "flex-1 flex",
-                        !showChatOrThread && !showSearch && "hidden lg:flex"
-                    )}
-                >
-                    {showSearch && (
-                        <MessageSearch
-                            onSelectResult={handleSearchResultSelect}
-                            className="flex-1"
+                className="h-[calc(100vh-4rem)]"
+            >
+                <div className="flex-1 flex border border-border rounded-xl overflow-hidden bg-background mt-4">
+                    {/* Conversation sidebar — always visible on desktop, hidden when in chat on mobile */}
+                    <div
+                        className={cn(
+                            "w-80 border-r border-border shrink-0",
+                            showChatOrThread ? "hidden lg:block" : "block"
+                        )}
+                    >
+                        <ConversationList
+                            conversations={conversations}
+                            activeId={activeConversationId}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            onSelect={(id) => setActiveConversation(id)}
+                            onCompose={() => setComposing(true)}
+                            isLoading={convLoading}
+                            className="h-full"
                         />
-                    )}
+                    </div>
 
-                    {!showSearch && !activeConversationId && (
-                        <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                            <div className="text-center">
-                                <p className="text-sm">Select a conversation to start messaging</p>
+                    {/* Main content area */}
+                    <div
+                        className={cn(
+                            "flex-1 flex",
+                            !showChatOrThread && !showSearch && "hidden lg:flex"
+                        )}
+                    >
+                        {showSearch && (
+                            <MessageSearch
+                                onSelectResult={handleSearchResultSelect}
+                                className="flex-1"
+                            />
+                        )}
+
+                        {!showSearch && !activeConversationId && (
+                            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                                <div className="text-center">
+                                    <p className="text-sm">
+                                        Select a conversation to start messaging
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {activeConversationId && view !== "thread" && (
-                        <ChatView
-                            conversation={activeConversation}
-                            messages={messages}
-                            currentUserId={currentUserId}
-                            isLoading={msgLoading}
-                            hasMore={hasNextPage}
-                            onLoadMore={() => fetchNextPage()}
-                            onSend={handleSend}
-                            onReact={handleReact}
-                            onPin={handlePin}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onThreadOpen={handleThreadOpen}
-                            onReply={handleReply}
-                            onBack={handleBack}
-                            replyTo={replyTo}
-                            onCancelReply={() => setReplyTo(null)}
-                            draft={drafts[draftKey] ?? ""}
-                            onDraftChange={(text) => setDraft(draftKey, text)}
-                            className="flex-1"
-                        />
-                    )}
-
-                    {view === "thread" && (
-                        <div className="flex flex-1">
+                        {activeConversationId && view !== "thread" && (
                             <ChatView
                                 conversation={activeConversation}
                                 messages={messages}
@@ -271,23 +249,49 @@ export default function MessagesPage() {
                                 onDraftChange={(text) => setDraft(draftKey, text)}
                                 className="flex-1"
                             />
-                            <div className="w-80 border-l border-border shrink-0">
-                                <ThreadPanel
-                                    parentMessage={threadParentMessage}
-                                    className="h-full"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+                        )}
 
-            <NewConversationDialog
-                open={isComposing}
-                onClose={() => setComposing(false)}
-                onCreated={handleConversationCreated}
-                members={orgMembers}
-            />
-        </div>
+                        {view === "thread" && (
+                            <div className="flex flex-1">
+                                <ChatView
+                                    conversation={activeConversation}
+                                    messages={messages}
+                                    currentUserId={currentUserId}
+                                    isLoading={msgLoading}
+                                    hasMore={hasNextPage}
+                                    onLoadMore={() => fetchNextPage()}
+                                    onSend={handleSend}
+                                    onReact={handleReact}
+                                    onPin={handlePin}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    onThreadOpen={handleThreadOpen}
+                                    onReply={handleReply}
+                                    onBack={handleBack}
+                                    replyTo={replyTo}
+                                    onCancelReply={() => setReplyTo(null)}
+                                    draft={drafts[draftKey] ?? ""}
+                                    onDraftChange={(text) => setDraft(draftKey, text)}
+                                    className="flex-1"
+                                />
+                                <div className="w-80 border-l border-border shrink-0">
+                                    <ThreadPanel
+                                        parentMessage={threadParentMessage}
+                                        className="h-full"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <NewConversationDialog
+                    open={isComposing}
+                    onClose={() => setComposing(false)}
+                    onCreated={handleConversationCreated}
+                    members={orgMembers}
+                />
+            </PageShell>
+        </PermissionGate>
     );
 }

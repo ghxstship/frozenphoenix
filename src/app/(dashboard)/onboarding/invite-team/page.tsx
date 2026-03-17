@@ -16,6 +16,7 @@ import {
     UserPlus,
     Users,
 } from "lucide-react";
+import { PermissionGate } from "@/components/permission-guard";
 
 type InviteType = "org_invite" | "referral";
 
@@ -237,164 +238,175 @@ export default function InviteTeamPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-lg space-y-8">
-                {/* Progress indicator */}
-                <div
-                    className="flex items-center gap-2 justify-center"
-                    role="progressbar"
-                    aria-valuenow={2}
-                    aria-valuemin={1}
-                    aria-valuemax={3}
-                    aria-label="Onboarding step 2 of 3"
-                >
-                    <div className="h-2 w-12 rounded-full bg-primary" />
-                    <div className="h-2 w-12 rounded-full bg-primary" />
-                    <div className="h-2 w-12 rounded-full bg-muted" />
-                </div>
-
-                <div className="text-center space-y-2">
-                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-2">
-                        <UserPlus className="h-7 w-7 text-primary" aria-hidden="true" />
-                    </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Invite people</h1>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        {inviteType === "org_invite"
-                            ? `Add team members to ${activeOrg?.organizations?.name || "your organization"}.`
-                            : "Invite people to join the platform — no organization required."}{" "}
-                        You can always invite more people later.
-                    </p>
-                </div>
-
-                {/* Invite type toggle */}
-                <InviteTypeToggle inviteType={inviteType} onChange={setInviteType} />
-
-                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                    {error && (
-                        <div
-                            className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                            role="alert"
-                            aria-live="assertive"
-                        >
-                            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="space-y-3">
-                        {rows.map((row, idx) => (
-                            <div key={row.id} className="flex gap-2 items-center">
-                                <div className="relative flex-1">
-                                    <Mail
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                        aria-hidden="true"
-                                    />
-                                    <Input
-                                        type="email"
-                                        placeholder={
-                                            inviteType === "org_invite"
-                                                ? `teammate${idx + 1}@company.com`
-                                                : `friend${idx + 1}@example.com`
-                                        }
-                                        value={row.email}
-                                        onChange={(e) => updateRow(row.id, "email", e.target.value)}
-                                        className="pl-10"
-                                        aria-label={`Email address ${idx + 1}`}
-                                        disabled={loading}
-                                    />
-                                </div>
-                                {inviteType === "org_invite" && (
-                                    <select
-                                        value={row.role}
-                                        onChange={(e) => updateRow(row.id, "role", e.target.value)}
-                                        className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        aria-label={`Role for invite ${idx + 1}`}
-                                        disabled={loading}
-                                    >
-                                        {ROLE_OPTIONS.map((opt) => (
-                                            <option key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeRow(row.id)}
-                                    disabled={rows.length <= 1 || loading}
-                                    aria-label={`Remove invite row ${idx + 1}`}
-                                    className="shrink-0"
-                                >
-                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addRow}
-                        disabled={loading}
-                        className="w-full"
+        <PermissionGate resource="users">
+            <div className="min-h-screen flex items-center justify-center bg-background p-4">
+                <div className="w-full max-w-lg space-y-8">
+                    {/* Progress indicator */}
+                    <div
+                        className="flex items-center gap-2 justify-center"
+                        role="progressbar"
+                        aria-valuenow={2}
+                        aria-valuemin={1}
+                        aria-valuemax={3}
+                        aria-label="Onboarding step 2 of 3"
                     >
-                        <UserPlus className="h-4 w-4" aria-hidden="true" />
-                        Add another
-                    </Button>
-
-                    <div className="space-y-2">
-                        <label
-                            htmlFor="invite-message"
-                            className="text-sm font-medium leading-none"
-                        >
-                            Personal message{" "}
-                            <span className="text-muted-foreground font-normal">(optional)</span>
-                        </label>
-                        <textarea
-                            id="invite-message"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Hey! Join us on Playbook to collaborate on our upcoming productions."
-                            rows={3}
-                            className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                            disabled={loading}
-                        />
+                        <div className="h-2 w-12 rounded-full bg-primary" />
+                        <div className="h-2 w-12 rounded-full bg-primary" />
+                        <div className="h-2 w-12 rounded-full bg-muted" />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="text-center space-y-2">
+                        <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-2">
+                            <UserPlus className="h-7 w-7 text-primary" aria-hidden="true" />
+                        </div>
+                        <h1 className="text-2xl font-bold tracking-tight">Invite people</h1>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                            {inviteType === "org_invite"
+                                ? `Add team members to ${activeOrg?.organizations?.name || "your organization"}.`
+                                : "Invite people to join the platform — no organization required."}{" "}
+                            You can always invite more people later.
+                        </p>
+                    </div>
+
+                    {/* Invite type toggle */}
+                    <InviteTypeToggle inviteType={inviteType} onChange={setInviteType} />
+
+                    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                        {error && (
+                            <div
+                                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                role="alert"
+                                aria-live="assertive"
+                            >
+                                <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="space-y-3">
+                            {rows.map((row, idx) => (
+                                <div key={row.id} className="flex gap-2 items-center">
+                                    <div className="relative flex-1">
+                                        <Mail
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                            aria-hidden="true"
+                                        />
+                                        <Input
+                                            type="email"
+                                            placeholder={
+                                                inviteType === "org_invite"
+                                                    ? `teammate${idx + 1}@company.com`
+                                                    : `friend${idx + 1}@example.com`
+                                            }
+                                            value={row.email}
+                                            onChange={(e) =>
+                                                updateRow(row.id, "email", e.target.value)
+                                            }
+                                            className="pl-10"
+                                            aria-label={`Email address ${idx + 1}`}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    {inviteType === "org_invite" && (
+                                        <select
+                                            value={row.role}
+                                            onChange={(e) =>
+                                                updateRow(row.id, "role", e.target.value)
+                                            }
+                                            className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            aria-label={`Role for invite ${idx + 1}`}
+                                            disabled={loading}
+                                        >
+                                            {ROLE_OPTIONS.map((opt) => (
+                                                <option key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeRow(row.id)}
+                                        disabled={rows.length <= 1 || loading}
+                                        aria-label={`Remove invite row ${idx + 1}`}
+                                        className="shrink-0"
+                                    >
+                                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+
                         <Button
                             type="button"
-                            variant="ghost"
-                            onClick={handleSkip}
+                            variant="outline"
+                            size="sm"
+                            onClick={addRow}
                             disabled={loading}
-                            className="flex-1"
+                            className="w-full"
                         >
-                            Skip for now
+                            <UserPlus className="h-4 w-4" aria-hidden="true" />
+                            Add another
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1"
-                            aria-busy={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                    Sending…
-                                </>
-                            ) : (
-                                <>
-                                    Send Invitations
-                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </form>
+
+                        <div className="space-y-2">
+                            <label
+                                htmlFor="invite-message"
+                                className="text-sm font-medium leading-none"
+                            >
+                                Personal message{" "}
+                                <span className="text-muted-foreground font-normal">
+                                    (optional)
+                                </span>
+                            </label>
+                            <textarea
+                                id="invite-message"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Hey! Join us on Playbook to collaborate on our upcoming productions."
+                                rows={3}
+                                className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleSkip}
+                                disabled={loading}
+                                className="flex-1"
+                            >
+                                Skip for now
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="flex-1"
+                                aria-busy={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                        />
+                                        Sending…
+                                    </>
+                                ) : (
+                                    <>
+                                        Send Invitations
+                                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </PermissionGate>
     );
 }

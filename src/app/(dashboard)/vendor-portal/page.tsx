@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingState } from "@/components/layouts/loading-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,8 +24,8 @@ import {
     Upload,
 } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-import { useInvoices, useTasks } from "@/lib/supabase/hooks";
-import { useVendorComplianceDocs, useWorkOrders } from "@/lib/supabase/hooks-pages";
+import { useInvoices, useTasks } from "@/lib/supabase";
+import { useVendorComplianceDocuments, useWorkOrders } from "@/lib/supabase";
 
 const TASK_STATUS_COLORS: Record<string, string> = {
     todo: "bg-muted text-muted-foreground",
@@ -70,7 +70,7 @@ function EmptyRow({ message }: { message: string }) {
 export default function VendorPortalPage() {
     const { data: sbTasks, isLoading: tasksLoading } = useTasks();
     const { data: sbWorkOrders, isLoading: woLoading } = useWorkOrders();
-    const { data: sbDocs, isLoading: docsLoading } = useVendorComplianceDocs();
+    const { data: sbDocs, isLoading: docsLoading } = useVendorComplianceDocuments();
     const { data: sbInvoices, isLoading: invLoading } = useInvoices();
 
     const isLoading = tasksLoading || woLoading || docsLoading || invLoading;
@@ -135,7 +135,7 @@ export default function VendorPortalPage() {
     const invoices: InvView[] = (sbInvoices ?? []).map((inv) => ({
         id: inv.id,
         number: `INV-${inv.id.slice(0, 8).toUpperCase()}`,
-        workOrderRef: inv.purchase_orders ? "PO" : "",
+        workOrderRef: inv.purchase_order_id ? "PO" : "",
         amount: Number(inv.amount ?? 0),
         status: (inv.status ?? "draft") as string,
         submittedDate: inv.invoice_date ?? "",
@@ -157,11 +157,10 @@ export default function VendorPortalPage() {
 
     return (
         <PermissionGate resource="vendor_portal" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Vendor Portal"
-                    description="Self-service portal: work orders, invoicing, compliance documents, and scheduling"
-                >
+            <PageShell
+                title="Vendor Portal"
+                description="Self-service portal: work orders, invoicing, compliance documents, and scheduling"
+                actions={
                     <div className="flex items-center gap-2">
                         <Button size="sm" variant="outline">
                             <MessageSquare className="h-4 w-4" /> Messages
@@ -171,8 +170,8 @@ export default function VendorPortalPage() {
                             Vendor View
                         </Badge>
                     </div>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard title="Active Tasks" value={activeTasks} icon={CheckSquare} />
                     <StatCard title="Overdue" value={overdueTasks} icon={Clock} />
@@ -440,7 +439,7 @@ export default function VendorPortalPage() {
                         ))}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

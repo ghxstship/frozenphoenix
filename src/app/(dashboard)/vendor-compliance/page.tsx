@@ -2,7 +2,7 @@
 
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import type { ComplianceRequirement } from "@/types/vendor-lifecycle";
-import { useComplianceRequirements, useVendorComplianceDocs } from "@/lib/supabase/hooks-pages";
+import { useComplianceRequirements, useVendorComplianceDocuments } from "@/lib/supabase";
 import { PermissionGate } from "@/components/permission-guard";
 import type { ComplianceDocStatus, VendorComplianceDoc } from "@/types/vendor-lifecycle";
 
@@ -68,7 +68,7 @@ export default function VendorCompliancePage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    const { data: sbDocs, isLoading, refetch } = useVendorComplianceDocs();
+    const { data: sbDocs, isLoading, refetch } = useVendorComplianceDocuments();
 
     const docs: VendorComplianceDoc[] = (sbDocs ?? []).map(
         (d: Record<string, unknown>) =>
@@ -116,16 +116,15 @@ export default function VendorCompliancePage() {
 
     return (
         <PermissionGate resource="vendor_compliance" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Vendor Compliance"
-                    description="Document tracking, verification status, and compliance requirement management for all vendors"
-                >
+            <PageShell
+                title="Vendor Compliance"
+                description="Document tracking, verification status, and compliance requirement management for all vendors"
+                actions={
                     <Button size="sm" onClick={() => refetch()}>
                         <RefreshCw className="h-4 w-4" /> Sync Status
                     </Button>
-                </PageHeader>
-
+                }
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Approved Docs" value={approved} icon={CheckCircle2} />
                     <StatCard title="Pending Review" value={pendingReview} icon={Clock} />
@@ -351,7 +350,7 @@ export default function VendorCompliancePage() {
                         )}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteEstimate, useEstimate, useUpdateEstimate } from "@/lib/supabase/hooks-pages";
+import { useDeleteEstimate, useEstimate, useUpdateEstimate } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";

@@ -106,6 +106,19 @@ export function useUpdateScopeOfWork() {
     });
 }
 
+export function useDeleteScopeOfWork() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase().from("scopes_of_work").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["scopes_of_work"] });
+        },
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // SOW DELIVERABLES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -279,6 +292,20 @@ export function useUpdateClientInvoice() {
             queryClient.invalidateQueries({ queryKey: ["client_invoices"] });
             queryClient.invalidateQueries({ queryKey: ["client_invoices", variables.id] });
         },
+    });
+}
+
+export function useDeleteClientInvoice() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase()
+                .from("client_invoices")
+                .update({ deleted_at: new Date().toISOString() })
+                .eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["client_invoices"] }),
     });
 }
 

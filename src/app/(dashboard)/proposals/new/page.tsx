@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { PermissionGate } from "@/components/permission-guard";
-import { useCreateProposal } from "@/lib/supabase/hooks-pages";
-import { useAllRateCardItems, useCompanies, useContacts } from "@/lib/supabase/hooks-productive";
-import { useDeals } from "@/lib/supabase/hooks";
+import { useCreateProposal } from "@/lib/supabase";
+import { useAllRateCardItems, useCompanies, useContacts } from "@/lib/supabase";
+import { useDeals } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import {
     ArrowLeft,

@@ -5,7 +5,7 @@ import {
     useDeleteInsurancePolicy,
     useInsurancePolicy,
     useUpdateInsurancePolicy,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,52 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/insurance-policies",
     backLabel: "Insurance Policies",
     chatterRecordType: "insurance_policy",
-    fields: [],
+    fields: [
+        { id: "policy_type", label: "Type", accessorKey: "policy_type", fieldType: "status" },
+        { id: "policy_number", label: "Policy #", accessorKey: "policy_number" },
+        {
+            id: "coverage_amount",
+            label: "Coverage",
+            accessorKey: "coverage_amount",
+            fieldType: "currency",
+            icon: DollarSign,
+        },
+        {
+            id: "effective_date",
+            label: "Effective",
+            accessorKey: "effective_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "expiry_date",
+            label: "Expires",
+            accessorKey: "expiry_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "policy_type", label: "Type", accessorKey: "policy_type", fieldType: "status" },
+        { id: "policy_number", label: "Policy #", accessorKey: "policy_number" },
+        { id: "holder_type", label: "Holder", accessorKey: "holder_type", fieldType: "status" },
+        {
+            id: "coverage_amount",
+            label: "Coverage",
+            accessorKey: "coverage_amount",
+            fieldType: "currency",
+        },
+        { id: "deductible", label: "Deductible", accessorKey: "deductible", fieldType: "currency" },
+        { id: "premium", label: "Premium", accessorKey: "premium", fieldType: "currency" },
+        {
+            id: "effective_date",
+            label: "Effective",
+            accessorKey: "effective_date",
+            fieldType: "date",
+        },
+        { id: "expiry_date", label: "Expires", accessorKey: "expiry_date", fieldType: "date" },
+    ],
     tabs: [],
 };
 
@@ -49,12 +94,12 @@ export default function InsurancePolicyDetailPage() {
     const carrier = (rec?.carrier as string) ?? "";
     const coverageAmount = (rec?.coverage_amount as number) ?? 0;
     const curr = (rec?.currency as string) ?? "USD";
-    const deductible = rec?.deductible as number | null;
-    const premium = rec?.premium as number | null;
-    const policyType = (rec?.policy_type as string) ?? "";
-    const policyNumber = (rec?.policy_number as string) ?? "";
-    const holderType = (rec?.holder_type as string) ?? "";
-    const effectiveDate = (rec?.effective_date as string) ?? "";
+    const _deductible = rec?.deductible as number | null;
+    const _premium = rec?.premium as number | null;
+    const _policyType = (rec?.policy_type as string) ?? "";
+    const _policyNumber = (rec?.policy_number as string) ?? "";
+    const _holderType = (rec?.holder_type as string) ?? "";
+    const _effectiveDate = (rec?.effective_date as string) ?? "";
     const expiryDate = (rec?.expiry_date as string) ?? "";
     const tags = (rec?.tags as string[]) ?? [];
     const documentUrl = (rec?.document_url as string) ?? "";
@@ -72,83 +117,6 @@ export default function InsurancePolicyDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Policy Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant="outline" className="capitalize">
-                            {String(rec?.status ?? "")}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="outline" className="capitalize">
-                            {policyType.replace(/_/g, " ")}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Policy #</span>
-                        <span className="font-mono text-xs">{policyNumber}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Holder</span>
-                        <Badge variant="outline" className="capitalize">
-                            {holderType}
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Coverage</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Amount</span>
-                        <span className="font-bold">{formatCurrency(coverageAmount, curr)}</span>
-                    </div>
-                    {deductible != null && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Deductible</span>
-                            <span className="font-medium">
-                                {formatCurrency(deductible ?? 0, curr)}
-                            </span>
-                        </div>
-                    )}
-                    {premium != null && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Premium</span>
-                            <span className="font-medium">
-                                {formatCurrency(premium ?? 0, curr)}
-                            </span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Dates</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    {effectiveDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Effective</span>
-                            <span className="font-medium">
-                                {formatDate(effectiveDate, "compact")}
-                            </span>
-                        </div>
-                    )}
-                    {expiryDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Expires</span>
-                            <span className="font-medium">{formatDate(expiryDate, "compact")}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Tags</CardTitle>
@@ -172,43 +140,6 @@ export default function InsurancePolicyDetailPage() {
 
     const overviewSlot = (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <DollarSign className="h-5 w-5 text-success" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Coverage</p>
-                                <p className="text-lg font-bold">
-                                    {formatCurrency(coverageAmount, curr)}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Shield className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Carrier</p>
-                                <p className="text-sm font-semibold">{carrier}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-warning" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Days Until Expiry</p>
-                                <p className="text-sm font-semibold">{daysUntilExpiry}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Additional Insured</CardTitle>
@@ -272,6 +203,15 @@ export default function InsurancePolicyDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Coverage",
+                icon: DollarSign,
+                compute: () => formatCurrency(coverageAmount, curr),
+            },
+            { label: "Carrier", icon: Shield, compute: () => carrier },
+            { label: "Days Until Expiry", icon: Calendar, compute: () => daysUntilExpiry },
+        ],
         tabs: [
             {
                 id: "documents",

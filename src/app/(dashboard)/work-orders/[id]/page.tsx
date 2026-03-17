@@ -1,13 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteWorkOrder, useUpdateWorkOrder, useWorkOrder } from "@/lib/supabase/hooks-pages";
+import { useDeleteWorkOrder, useUpdateWorkOrder, useWorkOrder } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getPriorityVariant, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
+import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
@@ -53,7 +53,34 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/work-orders",
     backLabel: "Work Orders",
     chatterRecordType: "work_order",
-    fields: [],
+    fields: [
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "priority", label: "Priority", accessorKey: "priority", fieldType: "status" },
+        {
+            id: "estimated_cost",
+            label: "Est. Cost",
+            accessorKey: "estimated_cost",
+            fieldType: "currency",
+        },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "number", label: "Number", accessorKey: "number" },
+        { id: "priority", label: "Priority", accessorKey: "priority", fieldType: "status" },
+        {
+            id: "estimated_cost",
+            label: "Est. Cost",
+            accessorKey: "estimated_cost",
+            fieldType: "currency",
+        },
+        {
+            id: "scheduled_start",
+            label: "Start",
+            accessorKey: "scheduled_start",
+            fieldType: "date",
+        },
+        { id: "scheduled_end", label: "End", accessorKey: "scheduled_end", fieldType: "date" },
+    ],
     tabs: [],
 };
 
@@ -71,13 +98,13 @@ export default function WorkOrderDetailPage() {
         useDeleteHook: useDeleteWorkOrder,
     });
 
-    const woNumber = (wo?.number as string) ?? "";
-    const woStatus = (wo?.status as string) ?? "draft";
-    const woPriority = (wo?.priority as string) ?? "medium";
+    const _woNumber = (wo?.number as string) ?? "";
+    const _woStatus = (wo?.status as string) ?? "draft";
+    const _woPriority = (wo?.priority as string) ?? "medium";
     const woEstimatedCost = (wo?.estimated_cost as number) ?? (wo?.estimatedCost as number) ?? 0;
     const woScheduledStart =
         (wo?.scheduled_start as string) ?? (wo?.scheduledStart as string) ?? "";
-    const woScheduledEnd = (wo?.scheduled_end as string) ?? (wo?.scheduledEnd as string) ?? "";
+    const _woScheduledEnd = (wo?.scheduled_end as string) ?? (wo?.scheduledEnd as string) ?? "";
     const woVendorName = (wo?.vendor_name as string) ?? (wo?.vendorName as string) ?? "";
     const woLocationName = (wo?.location_name as string) ?? (wo?.locationName as string) ?? "";
     const woDescription = (wo?.description as string) ?? "";
@@ -89,47 +116,6 @@ export default function WorkOrderDetailPage() {
 
     const sidebarSlot = (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Work Order Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    {woNumber && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Number</span>
-                            <span className="font-mono font-medium">{woNumber}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(woStatus)}>
-                            {getStatusLabel(woStatus)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Priority</span>
-                        <Badge variant={getPriorityVariant(woPriority)}>{woPriority}</Badge>
-                    </div>
-                    {woEstimatedCost > 0 && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Est. Cost</span>
-                            <span className="font-bold">{formatCurrency(woEstimatedCost)}</span>
-                        </div>
-                    )}
-                    {woScheduledStart && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Start</span>
-                            <span className="font-medium">{formatDate(woScheduledStart)}</span>
-                        </div>
-                    )}
-                    {woScheduledEnd && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">End</span>
-                            <span className="font-medium">{formatDate(woScheduledEnd)}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Assignment</CardTitle>
@@ -226,6 +212,23 @@ export default function WorkOrderDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Estimated Cost",
+                icon: DollarSign,
+                compute: () => (woEstimatedCost ? formatCurrency(woEstimatedCost) : "TBD"),
+            },
+            {
+                label: "Timeline",
+                icon: Calendar,
+                compute: () => (woScheduledStart ? formatDate(woScheduledStart) : "TBD"),
+            },
+            {
+                label: "Open for Bids",
+                icon: Clock,
+                compute: () => (woIsOpenForBids ? "Yes" : "No"),
+            },
+        ],
         tabs: [
             {
                 id: "bids",

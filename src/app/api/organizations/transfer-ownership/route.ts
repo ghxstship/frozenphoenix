@@ -1,130 +1,133 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient, createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const transferSchema = z.object({
     organization_id: z.string().uuid("Invalid organization ID"),
     new_owner_user_id: z.string().uuid("Invalid user ID"),
 });
 
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
-
-    // Parse & validate
-    let body: unknown;
-    try {
-        body = await request.json();
-    } catch {
-        return ApiErrors.validationError({ body: ["Invalid JSON"] });
-    }
-
-    const parsed = transferSchema.safeParse(body);
-    if (!parsed.success) {
-        const details: Record<string, string[]> = {};
-        for (const issue of parsed.error.issues) {
-            const key = issue.path.join(".");
-            details[key] = [issue.message];
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/organizations/transfer-ownership",
+        mutation: true,
+        rbac: { resource: "organizations", action: "write" },
+    },
+    async (request, { user, log }) => {
+        // Parse & validate
+        let body: unknown;
+        try {
+            body = await request.json();
+        } catch {
+            return ApiErrors.validationError({ body: ["Invalid JSON"] });
         }
-        return ApiErrors.validationError(details);
-    }
 
-    const { organization_id, new_owner_user_id } = parsed.data;
+        const parsed = transferSchema.safeParse(body);
+        if (!parsed.success) {
+            const details: Record<string, string[]> = {};
+            for (const issue of parsed.error.issues) {
+                const key = issue.path.join(".");
+                details[key] = [issue.message];
+            }
+            return ApiErrors.validationError(details);
+        }
 
-    // Verify caller is the current owner
-    const admin = createAdminClient();
-    if (!admin) return ApiErrors.serviceUnavailable();
+        const { organization_id, new_owner_user_id } = parsed.data;
 
-    const { data: callerMembership } = await serverFromTable(admin, "org_memberships")
-        .select("id, is_owner, role")
-        .eq("user_id", user.id)
-        .eq("organization_id", organization_id)
-        .eq("status", "active")
-        .single();
+        // Verify caller is the current owner
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    if (!callerMembership) {
-        return ApiErrors.forbidden("You are not a member of this organization");
-    }
+        const { data: callerMembership } = await serverFromTable(admin, "org_memberships")
+            .select("id, is_owner, role")
+            .eq("user_id", user.id)
+            .eq("organization_id", organization_id)
+            .eq("status", "active")
+            .single();
 
-    if (!(callerMembership as Record<string, unknown>).is_owner) {
-        return ApiErrors.forbidden("Only the organization owner can transfer ownership");
-    }
+        if (!callerMembership) {
+            return ApiErrors.forbidden("You are not a member of this organization");
+        }
 
-    if (user.id === new_owner_user_id) {
-        return ApiErrors.validationError({
-            new_owner_user_id: ["Cannot transfer ownership to yourself"],
-        });
-    }
+        if (!(callerMembership as Record<string, unknown>).is_owner) {
+            return ApiErrors.forbidden("Only the organization owner can transfer ownership");
+        }
 
-    // Verify target is an active internal member
-    const { data: targetMembership } = await serverFromTable(admin, "org_memberships")
-        .select("id, role, status")
-        .eq("user_id", new_owner_user_id)
-        .eq("organization_id", organization_id)
-        .single();
+        if (user.id === new_owner_user_id) {
+            return ApiErrors.validationError({
+                new_owner_user_id: ["Cannot transfer ownership to yourself"],
+            });
+        }
 
-    if (!targetMembership) {
-        return ApiErrors.notFound("Target user is not a member of this organization");
-    }
+        // Verify target is an active internal member
+        const { data: targetMembership } = await serverFromTable(admin, "org_memberships")
+            .select("id, role, status")
+            .eq("user_id", new_owner_user_id)
+            .eq("organization_id", organization_id)
+            .single();
 
-    const targetRole = (targetMembership as Record<string, unknown>).role as string;
-    const targetStatus = (targetMembership as Record<string, unknown>).status as string;
+        if (!targetMembership) {
+            return ApiErrors.notFound("Target user is not a member of this organization");
+        }
 
-    if (targetStatus !== "active") {
-        return ApiErrors.validationError({
-            new_owner_user_id: ["Target user membership is not active"],
-        });
-    }
+        const targetRole = (targetMembership as Record<string, unknown>).role as string;
+        const targetStatus = (targetMembership as Record<string, unknown>).status as string;
 
-    if (!["exec", "director", "pm", "member"].includes(targetRole)) {
-        return ApiErrors.validationError({
-            new_owner_user_id: ["Ownership can only be transferred to an internal role member"],
-        });
-    }
+        if (targetStatus !== "active") {
+            return ApiErrors.validationError({
+                new_owner_user_id: ["Target user membership is not active"],
+            });
+        }
 
-    // Atomic swap: remove from current owner, grant to new owner
-    const { error: removeError } = await serverFromTable(admin, "org_memberships")
-        .update({ is_owner: false } as Record<string, unknown>)
-        .eq("user_id", user.id)
-        .eq("organization_id", organization_id);
+        if (!["exec", "director", "pm", "member"].includes(targetRole)) {
+            return ApiErrors.validationError({
+                new_owner_user_id: ["Ownership can only be transferred to an internal role member"],
+            });
+        }
 
-    if (removeError) {
-        logger.error("[POST /api/organizations/transfer-ownership] remove owner failed", {
-            error: removeError,
-        });
-        return ApiErrors.internalError("Failed to transfer ownership");
-    }
-
-    const { error: grantError } = await serverFromTable(admin, "org_memberships")
-        .update({ is_owner: true } as Record<string, unknown>)
-        .eq("user_id", new_owner_user_id)
-        .eq("organization_id", organization_id);
-
-    if (grantError) {
-        // Rollback: restore original owner
-        await serverFromTable(admin, "org_memberships")
-            .update({ is_owner: true } as Record<string, unknown>)
+        // Atomic swap: remove from current owner, grant to new owner
+        const { error: removeError } = await serverFromTable(admin, "org_memberships")
+            .update({ is_owner: false } as Record<string, unknown>)
             .eq("user_id", user.id)
             .eq("organization_id", organization_id);
 
-        logger.error("[POST /api/organizations/transfer-ownership] grant owner failed", {
-            error: grantError,
+        if (removeError) {
+            log.error("[POST /api/organizations/transfer-ownership] remove owner failed", {
+                error: removeError,
+            });
+            return ApiErrors.internalError("Failed to transfer ownership");
+        }
+
+        const { error: grantError } = await serverFromTable(admin, "org_memberships")
+            .update({ is_owner: true } as Record<string, unknown>)
+            .eq("user_id", new_owner_user_id)
+            .eq("organization_id", organization_id);
+
+        if (grantError) {
+            // Rollback: restore original owner
+            await serverFromTable(admin, "org_memberships")
+                .update({ is_owner: true } as Record<string, unknown>)
+                .eq("user_id", user.id)
+                .eq("organization_id", organization_id);
+
+            log.error("[POST /api/organizations/transfer-ownership] grant owner failed", {
+                error: grantError,
+            });
+            return ApiErrors.internalError("Failed to transfer ownership");
+        }
+
+        log.info("[POST /api/organizations/transfer-ownership] ownership transferred", {
+            organization_id,
+            from_user_id: user.id,
+            to_user_id: new_owner_user_id,
         });
-        return ApiErrors.internalError("Failed to transfer ownership");
+
+        return NextResponse.json(
+            { message: "Ownership transferred successfully" },
+            { status: 200 }
+        );
     }
-
-    logger.info("[POST /api/organizations/transfer-ownership] ownership transferred", {
-        organization_id,
-        from_user_id: user.id,
-        to_user_id: new_owner_user_id,
-    });
-
-    return NextResponse.json({ message: "Ownership transferred successfully" }, { status: 200 });
-}
+);

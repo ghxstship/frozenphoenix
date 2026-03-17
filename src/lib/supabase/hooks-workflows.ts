@@ -110,6 +110,20 @@ export function useUpdateCallSheet() {
     });
 }
 
+export function useDeleteCallSheet() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase()
+                .from("call_sheets")
+                .update({ deleted_at: new Date().toISOString() })
+                .eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["call_sheets"] }),
+    });
+}
+
 export function useCallSheetCrew(callSheetId: string) {
     return useQuery({
         queryKey: ["call_sheet_crew", callSheetId],
@@ -195,6 +209,20 @@ export function useUpdateTechSheet() {
             queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
             queryClient.invalidateQueries({ queryKey: ["tech_sheets", variables.id] });
         },
+    });
+}
+
+export function useDeleteTechSheet() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await getSupabase()
+                .from("tech_sheets")
+                .update({ deleted_at: new Date().toISOString() })
+                .eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tech_sheets"] }),
     });
 }
 

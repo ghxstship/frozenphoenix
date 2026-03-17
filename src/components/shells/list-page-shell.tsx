@@ -470,8 +470,9 @@ export function ListPageShell({
     const importable = config.importable ?? entityConfig != null;
 
     // Fetch data via API (skipped when external data is provided)
+    // Query key aligned with makeListHook pattern: [entityKey, filterParams]
     const { data: rawData, isLoading: apiLoading } = useQuery({
-        queryKey: [config.entityKey, "list"],
+        queryKey: [config.entityKey, undefined],
         queryFn: async () => {
             const res = await apiList<EntityRecord>(basePath);
             return res.data;

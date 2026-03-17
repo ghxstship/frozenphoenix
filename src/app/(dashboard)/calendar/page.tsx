@@ -3,14 +3,14 @@
 import { LoadingState } from "@/components/layouts/loading-state";
 import React, { useCallback, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useApprovals, useProjects, useTasks } from "@/lib/supabase/hooks";
+import { useApprovals, useProjects, useTasks } from "@/lib/supabase";
 import { formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type {
@@ -197,11 +197,10 @@ export default function CalendarPage() {
 
     return (
         <PermissionGate resource="calendar" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Calendar"
-                    description="Unified view of projects, tasks, and milestones"
-                >
+            <PageShell
+                title="Calendar"
+                description="Unified view of projects, tasks, and milestones"
+                actions={
                     <div className="flex items-center gap-2">
                         <SegmentedControl
                             value={view}
@@ -217,8 +216,8 @@ export default function CalendarPage() {
                             Add Event
                         </Button>
                     </div>
-                </PageHeader>
-
+                }
+            >
                 <Card>
                     <CardContent>
                         <div className="flex items-center justify-between mb-6">
@@ -369,7 +368,7 @@ export default function CalendarPage() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </PageShell>
             <CreateEntityDialog
                 config={CREATE_EVENT_CONFIG}
                 open={createOpen}

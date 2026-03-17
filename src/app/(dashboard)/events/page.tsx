@@ -2,21 +2,17 @@
 
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useActivations, useEvents, useLocations, useProjects } from "@/lib/supabase/hooks";
-import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
+import { useActivations, useEvents, useLocations, useProjects } from "@/lib/supabase";
+import { EVENTS_PAGE } from "@/config/list-page-configs";
 import { Calendar, Play, Users } from "lucide-react";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "events",
+    ...EVENTS_PAGE,
     title: "Events",
-    description: "Manage shows, rehearsals, and scheduled activities",
-    icon: Calendar,
-    createConfig: CREATE_EVENT_CONFIG,
     createLabel: "Schedule Event",
     exportable: true,
     importable: true,
-    searchKeys: ["name", "type"],
     stats: [
         { label: "Total Events", icon: Calendar, filter: () => true },
         { label: "Confirmed", icon: Play, filter: (r) => r.status === "confirmed" },

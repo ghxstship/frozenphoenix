@@ -2,17 +2,12 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteLead, useUpdateLead } from "@/lib/supabase/hooks-pages";
-import { useLead } from "@/lib/supabase/hooks-crm";
-import {
-    useCreateRecordComment,
-    useRecordActivityLog,
-    useRecordComments,
-} from "@/lib/supabase/hooks-feature-gaps";
+import { useDeleteLead } from "@/lib/supabase";
+import { useLead, useUpdateLead } from "@/lib/supabase";
+import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
@@ -38,7 +33,42 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/leads",
     backLabel: "Leads",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email", icon: Mail },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone", icon: Phone },
+        { id: "company", label: "Company", accessorKey: "company" },
+        { id: "job_title", label: "Job Title", accessorKey: "job_title" },
+        { id: "source", label: "Source", accessorKey: "source", fieldType: "status" },
+        {
+            id: "project_type",
+            label: "Project Type",
+            accessorKey: "project_type",
+            fieldType: "status",
+        },
+    ],
+    sidebarFields: [
+        { id: "score", label: "Score", accessorKey: "score", fieldType: "number" },
+        { id: "source", label: "Source", accessorKey: "source", fieldType: "status" },
+        {
+            id: "project_type",
+            label: "Project Type",
+            accessorKey: "project_type",
+            fieldType: "status",
+        },
+        { id: "budget_range", label: "Budget", accessorKey: "budget_range" },
+        {
+            id: "created_at",
+            label: "Created",
+            accessorKey: "created_at",
+            fieldType: "relative_time",
+        },
+        {
+            id: "last_contacted_at",
+            label: "Last Contact",
+            accessorKey: "last_contacted_at",
+            fieldType: "relative_time",
+        },
+    ],
     tabs: [],
 };
 
@@ -97,142 +127,46 @@ export default function LeadDetailPage() {
     const initials = lead ? `${lead.first_name[0]}${(lead.last_name ?? " ")[0]}`.trim() : "";
 
     const sidebarSlot = lead ? (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Lead Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Score</span>
-                        <Badge
-                            variant={
-                                (lead.score ?? 0) >= 80
-                                    ? "success"
-                                    : (lead.score ?? 0) >= 50
-                                      ? "warning"
-                                      : "secondary"
-                            }
-                        >
-                            {lead.score ?? 0}
-                        </Badge>
-                    </div>
-                    {lead.source && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Source</span>
-                            <span className="capitalize">{lead.source.replace(/_/g, " ")}</span>
-                        </div>
-                    )}
-                    {lead.project_type && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Project Type</span>
-                            <span className="capitalize">
-                                {lead.project_type.replace(/_/g, " ")}
-                            </span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Budget</span>
-                        <span className="font-medium">
-                            {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ??
-                                lead.budget_range ??
-                                "—"}
-                        </span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Created</span>
-                        <span>{formatRelativeTime(lead.created_at)}</span>
-                    </div>
-                    {lead.last_contacted_at && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Last Contact</span>
-                            <span>{formatRelativeTime(lead.last_contacted_at)}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-sm">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => window.open(`mailto:${lead.email}`)}
+                >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email
+                </Button>
+                {lead.phone && (
                     <Button
                         variant="outline"
                         size="sm"
                         className="w-full justify-start"
-                        onClick={() => window.open(`mailto:${lead.email}`)}
+                        onClick={() => window.open(`tel:${lead.phone}`)}
                     >
-                        {" "}
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Email
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call
                     </Button>
-                    {lead.phone && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start"
-                            onClick={() => window.open(`tel:${lead.phone}`)}
-                        >
-                            <Phone className="h-4 w-4 mr-2" />
-                            Call
-                        </Button>
-                    )}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => router.push(`/deals/new?fromLead=${leadId}`)}
-                    >
-                        <DollarSign className="h-4 w-4 mr-2" />
-                        Convert to Deal
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
+                )}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => router.push(`/deals/new?fromLead=${leadId}`)}
+                >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Convert to Deal
+                </Button>
+            </CardContent>
+        </Card>
     ) : undefined;
 
     const overviewSlot = lead ? (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span className="text-xs">Lead Score</span>
-                        </div>
-                        <p className="text-xl font-bold">{lead.score ?? 0}/100</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs">Budget Range</span>
-                        </div>
-                        <p className="text-xl font-bold">
-                            {(lead.budget_range && LEAD_BUDGET_LABELS[lead.budget_range]) ?? "—"}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Building2 className="h-4 w-4" />
-                            <span className="text-xs">Company</span>
-                        </div>
-                        <p className="text-xl font-bold truncate">{lead.company}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Calendar className="h-4 w-4" />
-                            <span className="text-xs">Created</span>
-                        </div>
-                        <p className="text-xl font-bold">{formatRelativeTime(lead.created_at)}</p>
-                    </CardContent>
-                </Card>
-            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Contact Information</CardTitle>
@@ -279,6 +213,25 @@ export default function LeadDetailPage() {
         subtitleFn: () => `${lead?.job_title ?? ""} at ${lead?.company ?? ""}`,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Lead Score",
+                icon: TrendingUp,
+                compute: (r) => `${Number(r.score ?? 0)}/100`,
+            },
+            {
+                label: "Budget",
+                icon: DollarSign,
+                compute: (r) =>
+                    String((r.budget_range && LEAD_BUDGET_LABELS[r.budget_range as string]) ?? "—"),
+            },
+            { label: "Company", icon: Building2, compute: (r) => String(r.company ?? "—") },
+            {
+                label: "Created",
+                icon: Calendar,
+                compute: (r) => formatRelativeTime(String(r.created_at ?? "")),
+            },
+        ],
         tabs: [
             {
                 id: "activity",

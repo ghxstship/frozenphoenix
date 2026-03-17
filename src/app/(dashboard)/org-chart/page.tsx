@@ -12,12 +12,12 @@ import {
     useSensor,
     useSensors,
 } from "@dnd-kit/core";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GripVertical, User } from "lucide-react";
 import { PermissionGate } from "@/components/permission-guard";
-import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase/hooks";
+import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
 import { LoadingState } from "@/components/layouts/loading-state";
 
 // ─── Types ───
@@ -275,11 +275,10 @@ export default function OrgChartPage() {
 
     return (
         <PermissionGate resource="org_chart" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title="Org Chart"
-                    description="Drag crew members to reorganize the reporting hierarchy"
-                >
+            <PageShell
+                title="Org Chart"
+                description="Drag crew members to reorganize the reporting hierarchy"
+                actions={
                     <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
                         {projects.map((p) => (
                             <option key={String(p.id)} value={String(p.id)}>
@@ -287,8 +286,8 @@ export default function OrgChartPage() {
                             </option>
                         ))}
                     </select>
-                </PageHeader>
-
+                }
+            >
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}
@@ -329,7 +328,7 @@ export default function OrgChartPage() {
                         ) : null}
                     </DragOverlay>
                 </DndContext>
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

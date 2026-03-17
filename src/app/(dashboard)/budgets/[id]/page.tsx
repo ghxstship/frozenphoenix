@@ -3,22 +3,16 @@
 import { useParams, useRouter } from "next/navigation";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_BUDGET_LINE_ITEM_CONFIG } from "@/config/create-entity-configs";
-import {
-    useBudget,
-    useBudgetLines,
-    useDeleteBudget,
-    useUpdateBudget,
-} from "@/lib/supabase/hooks-pages";
+import { useBudget, useBudgetLines, useDeleteBudget, useUpdateBudget } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records/entity-link";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { useProjects } from "@/lib/supabase/hooks";
+import { useProjects } from "@/lib/supabase";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -31,7 +25,49 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/budgets",
     backLabel: "Budgets",
     chatterRecordType: "budget",
-    fields: [],
+    fields: [
+        {
+            id: "effective_date",
+            label: "Effective Date",
+            accessorKey: "effective_date",
+            fieldType: "date",
+        },
+        { id: "currency", label: "Currency", accessorKey: "currency" },
+        {
+            id: "contingency_percent",
+            label: "Contingency",
+            accessorKey: "contingency_percent",
+            fieldType: "percentage",
+        },
+        {
+            id: "markup_percent",
+            label: "Markup",
+            accessorKey: "markup_percent",
+            fieldType: "percentage",
+        },
+    ],
+    sidebarFields: [
+        { id: "version", label: "Version", accessorKey: "version", fieldType: "status" },
+        {
+            id: "effective_date",
+            label: "Effective Date",
+            accessorKey: "effective_date",
+            fieldType: "date",
+        },
+        {
+            id: "contingency_percent",
+            label: "Contingency",
+            accessorKey: "contingency_percent",
+            fieldType: "percentage",
+        },
+        {
+            id: "markup_percent",
+            label: "Markup",
+            accessorKey: "markup_percent",
+            fieldType: "percentage",
+        },
+        { id: "currency", label: "Currency", accessorKey: "currency" },
+    ],
     tabs: [],
 };
 
@@ -57,7 +93,7 @@ export default function BudgetDetailPage() {
         useDeleteHook: useDeleteBudget,
     });
     const { data: budget, isLoading } = useBudget(budgetId);
-    const { data: sbLines } = useBudgetLines(budgetId);
+    const { data: sbLines } = useBudgetLines({ budget_id: budgetId });
     const { data: sbProjects } = useProjects();
 
     const lineItems: BudgetLineView[] = (sbLines ?? []).map((li: Record<string, unknown>) => ({
@@ -75,150 +111,88 @@ export default function BudgetDetailPage() {
           )
         : null;
 
-    const utilization =
+    const _utilization =
         budget && budget.total_budget > 0
             ? Math.round((budget.total_actual / budget.total_budget) * 100)
             : 0;
     const remaining = budget ? budget.total_budget - budget.total_actual : 0;
     const isOverBudget = remaining < 0;
 
-    const sidebarSlot = budget ? (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Budget Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Version</span>
-                        <Badge variant="secondary">v{budget.version}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Effective Date</span>
-                        <span>{formatDate(budget.effective_date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Contingency</span>
-                        <span>{budget.contingency_percent ?? 0}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Markup</span>
-                        <span>{budget.markup_percent ?? 0}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Currency</span>
-                        <span>{budget.currency ?? "USD"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Utilization</span>
-                        <span className="font-medium">{utilization}%</span>
-                    </div>
-                    <ProgressBar
-                        value={utilization}
-                        size="sm"
-                        variant={
-                            isOverBudget ? "destructive" : utilization > 80 ? "warning" : "default"
-                        }
-                    />
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Related Records</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    {project && (
-                        <EntityLink
-                            entityType="project"
-                            entityId={project.id}
-                            entityName={project.name}
-                            status={project.status}
-                        />
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+    const sidebarSlot = project ? (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-sm">Related Records</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                <EntityLink
+                    entityType="project"
+                    entityId={project.id}
+                    entityName={project.name}
+                    status={project.status}
+                />
+            </CardContent>
+        </Card>
     ) : undefined;
 
     const overviewSlot = budget ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatCard
-                    title="Total Budget"
-                    value={formatCurrency(budget.total_budget)}
-                    icon={DollarSign}
-                />
-                <StatCard
-                    title="Actual Spend"
-                    value={formatCurrency(budget.total_actual)}
-                    icon={TrendingUp}
-                />
-                <StatCard
-                    title="Remaining"
-                    value={formatCurrency(remaining)}
-                    icon={isOverBudget ? TrendingDown : TrendingUp}
-                />
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-base">Spend by Category</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {lineItems.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                            No line items yet
-                        </p>
-                    ) : (
-                        <div className="space-y-3">
-                            {Object.entries(
-                                lineItems.reduce<
-                                    Record<string, { budgeted: number; actual: number }>
-                                >((acc, li) => {
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Spend by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {lineItems.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                        No line items yet
+                    </p>
+                ) : (
+                    <div className="space-y-3">
+                        {Object.entries(
+                            lineItems.reduce<Record<string, { budgeted: number; actual: number }>>(
+                                (acc, li) => {
                                     const cat = li.category;
                                     if (!acc[cat]) acc[cat] = { budgeted: 0, actual: 0 };
                                     acc[cat].budgeted += li.budgetedAmount;
                                     acc[cat].actual += li.actualAmount;
                                     return acc;
-                                }, {})
-                            ).map(([cat, totals]) => {
-                                const catConfig =
-                                    BUDGET_CATEGORY_CONFIG[
-                                        cat as keyof typeof BUDGET_CATEGORY_CONFIG
-                                    ];
-                                const pct =
-                                    totals.budgeted > 0
-                                        ? Math.round((totals.actual / totals.budgeted) * 100)
-                                        : 0;
-                                return (
-                                    <div key={cat} className="space-y-1">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium capitalize">
-                                                {catConfig?.label ?? cat}
-                                            </span>
-                                            <span className="text-muted-foreground">
-                                                {formatCurrency(totals.actual)} /{" "}
-                                                {formatCurrency(totals.budgeted)}
-                                            </span>
-                                        </div>
-                                        <ProgressBar
-                                            value={pct}
-                                            size="sm"
-                                            variant={
-                                                pct > 100
-                                                    ? "destructive"
-                                                    : pct > 80
-                                                      ? "warning"
-                                                      : "default"
-                                            }
-                                        />
+                                },
+                                {}
+                            )
+                        ).map(([cat, totals]) => {
+                            const catConfig =
+                                BUDGET_CATEGORY_CONFIG[cat as keyof typeof BUDGET_CATEGORY_CONFIG];
+                            const pct =
+                                totals.budgeted > 0
+                                    ? Math.round((totals.actual / totals.budgeted) * 100)
+                                    : 0;
+                            return (
+                                <div key={cat} className="space-y-1">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="font-medium capitalize">
+                                            {catConfig?.label ?? cat}
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            {formatCurrency(totals.actual)} /{" "}
+                                            {formatCurrency(totals.budgeted)}
+                                        </span>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                                    <ProgressBar
+                                        value={pct}
+                                        size="sm"
+                                        variant={
+                                            pct > 100
+                                                ? "destructive"
+                                                : pct > 80
+                                                  ? "warning"
+                                                  : "default"
+                                        }
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     ) : undefined;
 
     const config: DetailPageConfig = {
@@ -227,6 +201,23 @@ export default function BudgetDetailPage() {
         subtitleFn: () => (budget ? `Version ${budget.version} · ${budget.currency ?? "USD"}` : ""),
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Total Budget",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.total_budget ?? 0)),
+            },
+            {
+                label: "Actual Spend",
+                icon: TrendingUp,
+                compute: (r) => formatCurrency(Number(r.total_actual ?? 0)),
+            },
+            {
+                label: "Remaining",
+                icon: isOverBudget ? TrendingDown : TrendingUp,
+                compute: () => formatCurrency(remaining),
+            },
+        ],
         tabs: [
             {
                 id: "line-items",

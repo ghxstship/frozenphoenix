@@ -1,5 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ApiErrors } from "@/lib/api-utils";
+import { NextResponse } from "next/server";
+import { parseAndValidate } from "@/lib/api-utils";
+import { withApiHandler } from "@/lib/api/with-api-handler";
+import { z } from "zod";
+
+const validatePasswordSchema = z.object({
+    password: z.string().min(1).max(256),
+});
 
 interface PasswordValidationResult {
     valid: boolean;
@@ -23,8 +29,14 @@ function validatePasswordServer(password: string): PasswordValidationResult {
 
     // Check for common patterns
     const commonPasswords = [
-        "password123", "qwerty12345", "letmein1234", "admin12345",
-        "welcome1234", "monkey12345", "dragon12345", "master12345",
+        "password123",
+        "qwerty12345",
+        "letmein1234",
+        "admin12345",
+        "welcome1234",
+        "monkey12345",
+        "dragon12345",
+        "master12345",
     ];
     if (commonPasswords.some((cp) => password.toLowerCase().includes(cp))) {
         errors.push("Password is too common. Please choose a more unique password.");
@@ -59,15 +71,19 @@ function validatePasswordServer(password: string): PasswordValidationResult {
     };
 }
 
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { password } = body;
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/auth/validate-password",
+        authRoute: true,
+        skipAuth: true,
+    },
+    async (request) => {
+        const parsed = await parseAndValidate(request, validatePasswordSchema);
+        if (!parsed.success) return parsed.response;
 
-        const result = validatePasswordServer(password);
+        const result = validatePasswordServer(parsed.data.password);
 
         return NextResponse.json(result);
-    } catch {
-        return ApiErrors.badRequest("Invalid request");
     }
-}
+);

@@ -2,17 +2,18 @@
 
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Clock, ShoppingCart, Ticket, TrendingUp, Users } from "lucide-react";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { formatCurrency } from "@/lib/utils";
 import { useCredentialAssignments } from "@/lib/supabase/hooks-credentialing";
-import { useFohZoneReadings, useFohZones } from "@/lib/supabase/hooks-live-ops";
+import { useFohZoneReadings, useFohZones } from "@/lib/supabase";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+
+type Row = Record<string, unknown>;
 
 interface ZoneView {
     id: string;
@@ -27,6 +28,17 @@ interface ZoneView {
     incidents: number;
 }
 
+const BASE_CONFIG: DashboardPageConfig = {
+    resource: "live_ops",
+    title: "Front of House",
+    description: "Zone occupancy, queue management, sales tracking, and crowd flow",
+    emptyState: {
+        icon: Users,
+        title: "No zones configured",
+        description: "Front of house zones will appear here when configured for an event.",
+    },
+};
+
 export default function FohPage() {
     const { data: zones, isLoading: zonesLoading } = useFohZones();
     const { data: readings, isLoading: readingsLoading } = useFohZoneReadings();
@@ -38,12 +50,12 @@ export default function FohPage() {
 
     const zoneViews: ZoneView[] = useMemo(() => {
         if (!zones) return [];
-        const readingsByZone = new Map<string, Record<string, unknown>>();
-        for (const r of (readings ?? []) as Record<string, unknown>[]) {
+        const readingsByZone = new Map<string, Row>();
+        for (const r of (readings ?? []) as Row[]) {
             const zid = r.zone_id as string;
             if (!readingsByZone.has(zid)) readingsByZone.set(zid, r);
         }
-        return (zones as Record<string, unknown>[]).map((z) => {
+        return (zones as Row[]).map((z) => {
             const r = readingsByZone.get(z.id as string);
             return {
                 id: z.id as string,
@@ -60,9 +72,9 @@ export default function FohPage() {
         });
     }, [zones, readings]);
 
-    if (isLoading) return <LoadingState />;
+    const zoneRows = useMemo(() => (zones ?? []) as Row[], [zones]);
 
-    const credRows = (credentialAssignments ?? []) as Record<string, unknown>[];
+    const credRows = useMemo(() => (credentialAssignments ?? []) as Row[], [credentialAssignments]);
     const credCheckedIn = credRows.filter((r) => r.status === "checked_in").length;
     const credIssued = credRows.filter((r) =>
         ["approved", "issued"].includes(r.status as string)
@@ -73,36 +85,32 @@ export default function FohPage() {
     const totalSales = zoneViews.reduce((s, z) => s + z.salesAmount, 0);
     const totalIncidents = zoneViews.reduce((s, z) => s + z.incidents, 0);
 
-    return (
-        <div className="space-y-6 animate-fade-in">
-            <PageHeader
-                title="Front of House"
-                description="Zone occupancy, queue management, sales tracking, and crowd flow"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                    title="Total Attendance"
-                    value={`${totalOccupancy.toLocaleString()} / ${totalCapacity.toLocaleString()}`}
-                    icon={Users}
-                />
-                <StatCard
-                    title="Occupancy"
-                    value={
+    const config = useMemo<DashboardPageConfig>(
+        () => ({
+            ...BASE_CONFIG,
+            stats: [
+                {
+                    label: "Total Attendance",
+                    icon: Users,
+                    value: `${totalOccupancy.toLocaleString()} / ${totalCapacity.toLocaleString()}`,
+                },
+                {
+                    label: "Occupancy",
+                    icon: TrendingUp,
+                    value:
                         totalCapacity > 0
                             ? `${Math.round((totalOccupancy / totalCapacity) * 100)}%`
-                            : "0%"
-                    }
-                    icon={TrendingUp}
-                />
-                <StatCard
-                    title="Zone Sales"
-                    value={formatCurrency(totalSales)}
-                    icon={ShoppingCart}
-                />
-                <StatCard title="Active Incidents" value={totalIncidents} icon={Clock} />
-            </div>
+                            : "0%",
+                },
+                { label: "Zone Sales", icon: ShoppingCart, value: formatCurrency(totalSales) },
+                { label: "Active Incidents", icon: Clock, value: totalIncidents },
+            ],
+        }),
+        [totalOccupancy, totalCapacity, totalSales, totalIncidents]
+    );
 
+    return (
+        <OperationalDashboardShell config={config} data={zoneRows} isLoading={isLoading}>
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-sm">
@@ -138,7 +146,8 @@ export default function FohPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {zoneViews.map((zone, i) => {
-                    const utilPct = Math.round((zone.occupancy / zone.capacity) * 100);
+                    const utilPct =
+                        zone.capacity > 0 ? Math.round((zone.occupancy / zone.capacity) * 100) : 0;
                     return (
                         <StaggerItem key={zone.id} index={i} stagger="tight">
                             <Card className="hover:shadow-sm transition-all">
@@ -189,6 +198,6 @@ export default function FohPage() {
                     );
                 })}
             </div>
-        </div>
+        </OperationalDashboardShell>
     );
 }

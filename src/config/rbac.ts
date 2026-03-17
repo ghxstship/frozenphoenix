@@ -204,6 +204,11 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "webhook_events", actions: ["read"] },
         { resource: "sync_events", actions: ["read"] },
         { resource: "sync_policies", actions: ["read", "write", "manage"] },
+        { resource: "webhook_subscriptions", actions: ["read", "write", "manage"] },
+        { resource: "webhook_deliveries", actions: ["read"] },
+        { resource: "api_keys", actions: ["read", "write", "manage"] },
+        { resource: "automation_dead_letters", actions: ["read", "write"] },
+        { resource: "integration_catalog", actions: ["read"] },
         { resource: "gate_operations", actions: ["read", "write"] },
         // Messaging
         { resource: "messaging_dm", actions: ["read", "write"] },
@@ -405,6 +410,11 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "webhook_events", actions: ["read"] },
         { resource: "sync_events", actions: ["read"] },
         { resource: "sync_policies", actions: ["read", "write"] },
+        { resource: "webhook_subscriptions", actions: ["read", "write"] },
+        { resource: "webhook_deliveries", actions: ["read"] },
+        { resource: "api_keys", actions: ["read", "write"] },
+        { resource: "automation_dead_letters", actions: ["read"] },
+        { resource: "integration_catalog", actions: ["read"] },
         { resource: "gate_operations", actions: ["read", "write"] },
         // Messaging
         { resource: "messaging_dm", actions: ["read", "write"] },

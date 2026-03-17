@@ -5,11 +5,11 @@
    GET  /api/fields/usage — Retrieve daily usage summaries
    ═══════════════════════════════════════════════════════════════ */
 
-import { NextRequest, NextResponse } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const usageEventSchema = z.object({
     field_type_id: z.string().min(1),
@@ -18,50 +18,46 @@ const usageEventSchema = z.object({
     count: z.number().int().positive().optional().default(1),
 });
 
-export async function POST(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) {
-        return ApiErrors.serviceUnavailable();
-    }
+export const POST = withApiHandler(
+    {
+        method: "POST",
+        route: "/api/fields/usage",
+        mutation: true,
+        rbac: { resource: "fields", action: "write" },
+    },
+    async (request, { supabase, user, log }) => {
+        const { data: membership } = await serverFromTable(supabase, "org_memberships")
+            .select("organization_id")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return ApiErrors.unauthorized();
-    }
-
-    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
-
-    if (!membership) {
-        return ApiErrors.forbidden("No org membership found");
-    }
-
-    let body: unknown;
-    try {
-        body = await request.json();
-    } catch {
-        return ApiErrors.badRequest("Invalid JSON body");
-    }
-
-    const parsed = usageEventSchema.safeParse(body);
-    if (!parsed.success) {
-        const details: Record<string, string[]> = {};
-        for (const issue of parsed.error.issues) {
-            const path = issue.path.join(".") || "_root";
-            if (!details[path]) details[path] = [];
-            details[path]!.push(issue.message);
+        if (!membership) {
+            return ApiErrors.forbidden("No org membership found");
         }
-        return ApiErrors.validationError(details);
-    }
 
-    const { field_type_id, action, resource, count } = parsed.data;
+        let body: unknown;
+        try {
+            body = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
 
-    // Fire-and-forget insert — non-blocking
-    const { error } = await serverFromTable(supabase!, "field_usage_events")
-        .insert({
+        const parsed = usageEventSchema.safeParse(body);
+        if (!parsed.success) {
+            const details: Record<string, string[]> = {};
+            for (const issue of parsed.error.issues) {
+                const path = issue.path.join(".") || "_root";
+                if (!details[path]) details[path] = [];
+                details[path]!.push(issue.message);
+            }
+            return ApiErrors.validationError(details);
+        }
+
+        const { field_type_id, action, resource, count } = parsed.data;
+
+        // Fire-and-forget insert — non-blocking
+        const { error } = await serverFromTable(supabase, "field_usage_events").insert({
             organization_id: membership.organization_id,
             user_id: user.id,
             field_type_id,
@@ -70,54 +66,52 @@ export async function POST(request: NextRequest) {
             count,
         });
 
-    if (error) {
-        // Log but don't fail the request — usage metering is non-critical
-        logger.error("Field usage insert error", { message: error.message });
+        if (error) {
+            // Log but don't fail the request — usage metering is non-critical
+            log.error("Field usage insert error", { message: error.message });
+        }
+
+        return NextResponse.json({ ok: true }, { status: 202 });
     }
+);
 
-    return NextResponse.json({ ok: true }, { status: 202 });
-}
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/fields/usage",
+        rbac: { resource: "fields", action: "read" },
+    },
+    async (request, { supabase, user }) => {
+        const { data: membership } = await serverFromTable(supabase, "org_memberships")
+            .select("organization_id")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-export async function GET(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) {
-        return ApiErrors.serviceUnavailable();
+        if (!membership) {
+            return ApiErrors.forbidden("No org membership found");
+        }
+
+        const orgId = membership.organization_id;
+        const days = parseInt(request.nextUrl.searchParams.get("days") ?? "30", 10);
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+
+        const { data: usage, error } = await serverFromTable(supabase, "field_usage_daily")
+            .select("field_type_id, action, total_count, unique_users, event_date, pricing_tier")
+            .eq("organization_id", orgId)
+            .gte("event_date", since.toISOString().split("T")[0])
+            .order("event_date", { ascending: false })
+            .limit(500);
+
+        if (error) {
+            return ApiErrors.internalError("Failed to fetch usage data");
+        }
+
+        return NextResponse.json({
+            organization_id: orgId,
+            period_days: days,
+            records: usage ?? [],
+        });
     }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return ApiErrors.unauthorized();
-    }
-
-    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
-
-    if (!membership) {
-        return ApiErrors.forbidden("No org membership found");
-    }
-
-    const orgId = membership.organization_id;
-    const days = parseInt(request.nextUrl.searchParams.get("days") ?? "30", 10);
-    const since = new Date();
-    since.setDate(since.getDate() - days);
-
-    const { data: usage, error } = await serverFromTable(supabase!, "field_usage_daily")
-        .select("field_type_id, action, total_count, unique_users, event_date, pricing_tier")
-        .eq("organization_id", orgId)
-        .gte("event_date", since.toISOString().split("T")[0])
-        .order("event_date", { ascending: false })
-        .limit(500);
-
-    if (error) {
-        return ApiErrors.internalError(error.message);
-    }
-
-    return NextResponse.json({
-        organization_id: orgId,
-        period_days: days,
-        records: usage ?? [],
-    });
-}
+);

@@ -32,6 +32,7 @@ export const DEPRECIATION_SCHEDULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── expense_report ───
@@ -61,6 +62,7 @@ export const EXPENSE_REPORTS_PAGE: ListPageConfig = {
         valueKey: "total_amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── invoice_template ───
@@ -77,6 +79,7 @@ export const INVOICE_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_default", header: "Default", accessorKey: "is_default", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── payroll_batch ───
@@ -101,6 +104,7 @@ export const PAYROLL_BATCHES_PAGE: ListPageConfig = {
         cardTitleKey: "name",
         cardSubtitleKey: "period",
     },
+    exportable: true,
 };
 
 // ─── revenue_schedule ───
@@ -123,6 +127,7 @@ export const REVENUE_SCHEDULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "period_start", header: "Start", accessorKey: "period_start", fieldType: "date" },
     ],
+    exportable: true,
 };
 
 // ─── job_cost_entry ───
@@ -148,6 +153,7 @@ export const JOB_COST_ENTRIES_PAGE: ListPageConfig = {
         valueKey: "amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── budget_line_item ───
@@ -183,6 +189,7 @@ export const BUDGET_LINE_ITEMS_PAGE: ListPageConfig = {
         valueKey: "budgeted_amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── pos_transaction ───
@@ -217,6 +224,7 @@ export const POS_TRANSACTIONS_PAGE: ListPageConfig = {
         valueKey: "amount",
         aggregation: "sum",
     },
+    exportable: true,
 };
 
 // ─── revenue_recognition_entry ───
@@ -238,4 +246,5 @@ export const REVENUE_RECOGNITION_ENTRIES_PAGE: ListPageConfig = {
         },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    exportable: true,
 };

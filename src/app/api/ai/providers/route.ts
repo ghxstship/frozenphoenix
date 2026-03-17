@@ -4,56 +4,58 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-    const supabase = await createClient();
-    if (!supabase) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/ai/providers",
+        rbac: { resource: "ai", action: "read" },
+    },
+    async (_request, { supabase, user, log }) => {
+        const admin = createAdminClient();
+        if (!admin) return ApiErrors.serviceUnavailable();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        // Get org
+        const { data: membership } = await supabase
+            .from("org_memberships")
+            .select("organization_id, role")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-    const admin = createAdminClient();
-    if (!admin) return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+        if (!membership || !["exec", "director"].includes(membership.role)) {
+            return ApiErrors.forbidden("Requires exec or director role");
+        }
 
-    // Get org
-    const { data: membership } = await supabase
-        .from("org_memberships")
-        .select("organization_id, role")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+        const { data: providers, error } = await admin
+            .from("ai_providers")
+            .select("id, provider_key, display_name, is_active, api_base_url")
+            .order("display_name");
 
-    if (!membership || !["exec", "director"].includes(membership.role)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        if (error) {
+            log.error("[GET /api/ai/providers]", { error });
+            return ApiErrors.internalError("Failed to fetch AI providers");
+        }
+
+        // Check which providers have API keys configured
+        const { data: keys } = await admin
+            .from("ai_api_keys")
+            .select("provider_id")
+            .eq("org_id", membership.organization_id)
+            .eq("is_valid", true);
+
+        const keyProviderIds = new Set((keys ?? []).map((k) => k.provider_id));
+
+        const enriched = (providers ?? []).map((p) => ({
+            ...p,
+            has_api_key: keyProviderIds.has(p.id),
+        }));
+
+        return NextResponse.json({ providers: enriched });
     }
-
-    const { data: providers, error } = await admin
-        .from("ai_providers")
-        .select("id, provider_key, display_name, is_active, api_base_url")
-        .order("display_name");
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // Check which providers have API keys configured
-    const { data: keys } = await admin
-        .from("ai_api_keys")
-        .select("provider_id")
-        .eq("org_id", membership.organization_id)
-        .eq("is_valid", true);
-
-    const keyProviderIds = new Set((keys ?? []).map((k) => k.provider_id));
-
-    const enriched = (providers ?? []).map((p) => ({
-        ...p,
-        has_api_key: keyProviderIds.has(p.id),
-    }));
-
-    return NextResponse.json({ providers: enriched });
-}
+);

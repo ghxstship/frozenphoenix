@@ -23,13 +23,13 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { CREATE_SURVEY_CONFIG } from "@/config/create-entity-configs";
+import { SURVEYS_PAGE } from "@/config/list-page-configs";
 import {
     useCreateSurveyTemplate,
     useSurveyResponses,
     useSurveyTemplates,
     useUpdateSurveyTemplate,
-} from "@/lib/supabase/hooks-v2-features";
+} from "@/lib/supabase";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
 
@@ -591,14 +591,9 @@ export default function SurveysPage() {
 
     const config: ListPageConfig = useMemo(
         () => ({
-            entityKey: "surveys",
+            ...SURVEYS_PAGE,
             title: "Customer Satisfaction Surveys",
-            description:
-                "Build survey templates, collect responses, and analyze satisfaction metrics",
-            icon: ClipboardList,
-            createConfig: CREATE_SURVEY_CONFIG,
             createLabel: "New Template",
-            searchKeys: ["name", "respondentName"],
             stats: [
                 { label: "Total Responses", icon: MessageSquare, compute: () => responses.length },
                 { label: "Avg. Rating", icon: Star, compute: () => avgRating.toFixed(1) },

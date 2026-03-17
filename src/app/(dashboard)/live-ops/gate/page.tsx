@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,12 +136,10 @@ export default function GateScannerPage() {
 
     return (
         <PermissionGate resource="gate_operations" action="read">
-            <div className="space-y-6 animate-fade-in">
-                <PageHeader
-                    title={S.title}
-                    description="Scan credentials for check-in / check-out at entry points"
-                />
-
+            <PageShell
+                title={S.title}
+                description="Scan credentials for check-in / check-out at entry points"
+            >
                 <OfflineIndicator
                     isOnline={isOnline}
                     pendingCount={pendingCount}
@@ -328,7 +326,7 @@ export default function GateScannerPage() {
 
                 {/* Scan detail sheet (slide-over) */}
                 <GateScanSheet result={lastResult} open={sheetOpen} onOpenChange={setSheetOpen} />
-            </div>
+            </PageShell>
         </PermissionGate>
     );
 }

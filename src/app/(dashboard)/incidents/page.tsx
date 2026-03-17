@@ -2,21 +2,17 @@
 
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useIncidents, useLocations, useProjects } from "@/lib/supabase/hooks";
-import { CREATE_INCIDENT_CONFIG } from "@/config/create-entity-configs";
+import { useIncidents, useLocations, useProjects } from "@/lib/supabase";
+import { INCIDENTS_PAGE } from "@/config/list-page-configs";
 import { AlertTriangle, Shield } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "incidents",
+    ...INCIDENTS_PAGE,
     title: "Incidents",
-    description: "Track and manage safety incidents, issues, and resolutions",
-    icon: AlertTriangle,
-    createConfig: CREATE_INCIDENT_CONFIG,
     createLabel: "Report Incident",
     exportable: true,
-    searchKeys: ["title", "number"],
     stats: [
         { label: "Total Incidents", icon: AlertTriangle, filter: () => true },
         {

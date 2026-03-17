@@ -20,14 +20,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { PermissionGate } from "@/components/permission-guard";
-import {
-    useApprovals,
-    useCrewMembers,
-    useDeals,
-    useProjects,
-    useTasks,
-} from "@/lib/supabase/hooks";
-import { useActivities } from "@/lib/supabase/hooks-extended";
+import { useApprovals, useCrewMembers, useDeals, useProjects, useTasks } from "@/lib/supabase";
+import { useActivities } from "@/lib/supabase";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo } from "react";
 

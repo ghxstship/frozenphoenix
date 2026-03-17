@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSupabase, type ServerClient, serverFromTable } from "@/lib/supabase/server";
 import { withPermission } from "@/app/api/middleware/permissions";
 import { ApiErrors } from "@/lib/api-utils";
+import { automationExecuteSchema, validate } from "@/lib/validation/schemas";
 
 interface AutomationAction {
     type: string;
@@ -49,6 +50,31 @@ async function evaluateConditions(
     });
 }
 
+// ─── SSRF Guard ─────────────────────────────────────────────
+// Blocks requests to internal/private networks and non-HTTPS URLs.
+const BLOCKED_HOST_PATTERNS = [
+    /^localhost$/i,
+    /^127\.\d+\.\d+\.\d+$/,
+    /^10\.\d+\.\d+\.\d+$/,
+    /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
+    /^192\.168\.\d+\.\d+$/,
+    /^0\.0\.0\.0$/,
+    /^169\.254\.\d+\.\d+$/,
+    /^\[::1\]$/,
+    /^metadata\.google\.internal$/i,
+];
+
+function isAllowedOutboundUrl(raw: string): boolean {
+    try {
+        const url = new URL(raw);
+        if (url.protocol !== "https:") return false;
+        const host = url.hostname;
+        return !BLOCKED_HOST_PATTERNS.some((p) => p.test(host));
+    } catch {
+        return false;
+    }
+}
+
 async function executeActions(
     supabase: ServerClient,
     actions: AutomationAction[],
@@ -79,11 +105,46 @@ async function executeActions(
                     break;
                 }
                 case "send_email": {
-                    results.push({
-                        action: "send_email",
-                        status: "success",
-                        detail: "Email queued",
-                    });
+                    const emailUserId =
+                        (action.config.user_id as string) ||
+                        (triggerRecord.assigned_to as string) ||
+                        (triggerRecord.created_by as string);
+                    if (emailUserId) {
+                        try {
+                            // Insert notification directly via Supabase client (no HTTP round-trip)
+                            const { error: notifErr } = await serverFromTable(
+                                supabase,
+                                "notifications"
+                            ).insert({
+                                user_id: emailUserId,
+                                type: "automation",
+                                title:
+                                    (action.config.subject as string) || "Automation Notification",
+                                message:
+                                    (action.config.body as string) ||
+                                    `An automation was triggered for ${triggerRecord.name || triggerRecord.title || "a record"}.`,
+                            });
+                            results.push({
+                                action: "send_email",
+                                status: notifErr ? "failed" : "success",
+                                detail: notifErr
+                                    ? "Notification insert failed"
+                                    : "Email dispatched",
+                            });
+                        } catch {
+                            results.push({
+                                action: "send_email",
+                                status: "failed",
+                                detail: "Notification dispatch error",
+                            });
+                        }
+                    } else {
+                        results.push({
+                            action: "send_email",
+                            status: "skipped",
+                            detail: "No target user",
+                        });
+                    }
                     break;
                 }
                 case "update_field": {
@@ -145,6 +206,113 @@ async function executeActions(
                     results.push({ action: "move_stage", status: "success" });
                     break;
                 }
+                case "webhook": {
+                    const webhookUrl = action.config.url as string;
+                    if (!webhookUrl) {
+                        results.push({
+                            action: "webhook",
+                            status: "failed",
+                            detail: "No webhook URL",
+                        });
+                        break;
+                    }
+                    if (!isAllowedOutboundUrl(webhookUrl)) {
+                        results.push({
+                            action: "webhook",
+                            status: "failed",
+                            detail: "URL not allowed (must be HTTPS, public host)",
+                        });
+                        break;
+                    }
+                    try {
+                        const whPayload = {
+                            event: "automation",
+                            entity_type: triggerRecord.entity_type || "",
+                            entity_id: triggerRecord.id,
+                            data: triggerRecord,
+                            triggered_at: new Date().toISOString(),
+                        };
+                        const whRes = await fetch(webhookUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(whPayload),
+                            signal: AbortSignal.timeout(10_000),
+                        });
+                        results.push({
+                            action: "webhook",
+                            status: whRes.ok ? "success" : "failed",
+                            detail: `HTTP ${whRes.status}`,
+                        });
+                    } catch {
+                        results.push({
+                            action: "webhook",
+                            status: "failed",
+                            detail: "Webhook request failed",
+                        });
+                    }
+                    break;
+                }
+                case "slack_message": {
+                    const slackUrl = action.config.webhook_url as string;
+                    if (!slackUrl) {
+                        results.push({
+                            action: "slack_message",
+                            status: "failed",
+                            detail: "No Slack webhook URL",
+                        });
+                        break;
+                    }
+                    if (!isAllowedOutboundUrl(slackUrl)) {
+                        results.push({
+                            action: "slack_message",
+                            status: "failed",
+                            detail: "URL not allowed (must be HTTPS, public host)",
+                        });
+                        break;
+                    }
+                    try {
+                        const slackPayload = {
+                            text:
+                                (action.config.text as string) ||
+                                `Automation triggered: ${triggerRecord.name || triggerRecord.title || triggerRecord.id}`,
+                            channel: (action.config.channel as string) || undefined,
+                            username: (action.config.username as string) || "Playbook Automations",
+                            icon_emoji: ":zap:",
+                        };
+                        const slackRes = await fetch(slackUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(slackPayload),
+                            signal: AbortSignal.timeout(10_000),
+                        });
+                        results.push({
+                            action: "slack_message",
+                            status: slackRes.ok ? "success" : "failed",
+                            detail: slackRes.ok ? "Slack message sent" : `HTTP ${slackRes.status}`,
+                        });
+                    } catch {
+                        results.push({
+                            action: "slack_message",
+                            status: "failed",
+                            detail: "Slack request failed",
+                        });
+                    }
+                    break;
+                }
+                case "add_comment": {
+                    await serverFromTable(supabase, "record_comments").insert({
+                        entity_type:
+                            (action.config.entity_type as string) ||
+                            triggerRecord.entity_type ||
+                            "",
+                        entity_id: triggerRecord.id,
+                        body: (action.config.body as string) || "Automated comment",
+                        is_system: true,
+                        organization_id: orgId,
+                    });
+                    results.push({ action: "add_comment", status: "success" });
+                    break;
+                }
                 default:
                     results.push({
                         action: action.type,
@@ -152,8 +320,12 @@ async function executeActions(
                         detail: "Unknown action type",
                     });
             }
-        } catch (err) {
-            results.push({ action: action.type, status: "failed", detail: String(err) });
+        } catch {
+            results.push({
+                action: action.type,
+                status: "failed",
+                detail: "Action execution error",
+            });
         }
     }
     return results;
@@ -165,16 +337,19 @@ export const POST = withPermission("automations", "manage", async (request, { or
     const supabase = await getServerSupabase();
 
     try {
-        const body = await request.json();
-        const { trigger_type, entity_type, record } = body as {
-            trigger_type: string;
-            entity_type: string;
-            record: Record<string, unknown>;
-        };
-
-        if (!trigger_type || !entity_type || !record) {
-            return ApiErrors.badRequest("Missing trigger_type, entity_type, or record");
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
         }
+
+        const result = validate(automationExecuteSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
+
+        const { trigger_type, entity_type, record } = result.data;
 
         // Fetch matching active automations scoped to user's org
         const { data: automations, error: fetchErr } = await serverFromTable(
@@ -274,7 +449,7 @@ export const POST = withPermission("automations", "manage", async (request, { or
             total_duration_ms: Date.now() - startTime,
             results,
         });
-    } catch (error) {
-        return ApiErrors.internalError(`Automation execution failed: ${String(error)}`);
+    } catch (_error) {
+        return ApiErrors.internalError("Automation execution failed");
     }
 });

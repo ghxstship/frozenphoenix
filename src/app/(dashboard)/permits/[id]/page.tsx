@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useDeletePermit, useUpdatePermit } from "@/lib/supabase/hooks-pages";
+import { useDeletePermit, useUpdatePermit } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
-import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
+
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -23,7 +23,7 @@ import {
     ScrollText,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { usePermit } from "@/lib/supabase/hooks-pages";
+import { usePermit } from "@/lib/supabase";
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "permits",
@@ -33,7 +33,18 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/permits",
     backLabel: "Permits",
     chatter: false,
-    fields: [],
+    fields: [
+        { id: "permit_type", label: "Type", accessorKey: "permit_type", fieldType: "status" },
+        { id: "permit_number", label: "Number", accessorKey: "permit_number" },
+        { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+        { id: "jurisdiction", label: "Jurisdiction", accessorKey: "jurisdiction" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "permit_type", label: "Type", accessorKey: "permit_type", fieldType: "status" },
+        { id: "permit_number", label: "Number", accessorKey: "permit_number" },
+        { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+    ],
     tabs: [],
 };
 
@@ -58,38 +69,6 @@ export default function PermitDetailPage() {
 
     const sidebarSlot = permit ? (
         <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Permit Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(permit.status)}>
-                            {getStatusLabel(permit.status)}
-                        </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="outline" className="capitalize">
-                            {permit.permit_type.replace(/_/g, " ")}
-                        </Badge>
-                    </div>
-                    {permit.permit_number && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Number</span>
-                            <span className="font-mono text-xs">{permit.permit_number}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Entity</span>
-                        <Badge variant="outline" className="capitalize">
-                            {permit.entity_type}
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Jurisdiction</CardTitle>
@@ -295,6 +274,23 @@ export default function PermitDetailPage() {
             `${permit?.jurisdiction ?? ""} - ${(permit?.permit_type ?? "").replace(/_/g, " ")}`,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Total Cost",
+                icon: DollarSign,
+                compute: () => (permit?.total_cost ? formatCurrency(permit.total_cost) : "N/A"),
+            },
+            {
+                label: "Jurisdiction",
+                icon: MapPin,
+                compute: () => (permit?.jurisdiction as string) ?? "—",
+            },
+            {
+                label: "Blocks Entity",
+                icon: AlertTriangle,
+                compute: () => (permit?.blocks_entity === true ? "Yes" : "No"),
+            },
+        ],
         tabs: [
             {
                 id: "inspections",

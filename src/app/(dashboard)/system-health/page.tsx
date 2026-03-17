@@ -27,7 +27,7 @@ import {
     useResilienceTargets,
     useServiceHealthChecks,
     useSlaDefinitions,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 
 type HealthStatus = "healthy" | "degraded" | "down";
 type AlertSeverity = "info" | "warning" | "critical";

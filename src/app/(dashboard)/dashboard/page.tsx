@@ -3,7 +3,7 @@
 import { LoadingState } from "@/components/layouts/loading-state";
 import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
 import React from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,8 @@ import {
     useMyTasks,
     useNotifications,
     useProjects,
-} from "@/lib/supabase/hooks";
-import { useMyDocuments } from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
+import { useDocuments } from "@/lib/supabase";
 import { TaskRow } from "@/components/home/task-row";
 import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
 import type { DocumentType, TaskPriority, TaskStatus } from "@/types";
@@ -46,7 +46,7 @@ export default function DashboardPage() {
     const { data: sbCrew } = useCrewMembers();
     const { data: myTasks } = useMyTasks();
     const { data: myTaskCounts } = useMyTaskCounts();
-    const { data: myDocs } = useMyDocuments();
+    const { data: myDocs } = useDocuments();
 
     const isLoading = loadingProjects || loadingDeals;
 
@@ -122,13 +122,11 @@ export default function DashboardPage() {
     return (
         <PermissionGate resource="dashboard" action="read">
             <SkeletonCrossfade isLoading={isLoading} skeleton={<LoadingState />}>
-                <div className="space-y-6 motion-safe:animate-fade-in">
-                    <OnboardingChecklist />
-                    <PageHeader
-                        title="Command Center"
-                        description="Real-time overview of your production ecosystem"
-                    />
-
+                <OnboardingChecklist />
+                <PageShell
+                    title="Command Center"
+                    description="Real-time overview of your production ecosystem"
+                >
                     {/* KPI Row */}
                     <StaggerContainer
                         stagger="tight"
@@ -415,7 +413,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </ScrollReveal>
-                </div>
+                </PageShell>
             </SkeletonCrossfade>
         </PermissionGate>
     );

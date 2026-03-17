@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { PROJECT_PHASES, PROJECT_STATUSES } from "@/config/domain-config";
-import { useCreateProject } from "@/lib/supabase/hooks";
+import { useCreateProject } from "@/lib/supabase";
 import { FormPageShell } from "@/components/shells/form-page-shell";
 import type { FormPageConfig } from "@/types/form-page-config";
 

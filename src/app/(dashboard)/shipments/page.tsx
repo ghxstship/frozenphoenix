@@ -2,21 +2,17 @@
 
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useLocations, useProjects, useShipments } from "@/lib/supabase/hooks";
-import { CREATE_SHIPMENT_CONFIG } from "@/config/create-entity-configs";
+import { useLocations, useProjects, useShipments } from "@/lib/supabase";
+import { SHIPMENTS_PAGE } from "@/config/list-page-configs";
 import { Package, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "shipments",
+    ...SHIPMENTS_PAGE,
     title: "Shipments",
-    description: "Track and manage logistics and freight",
-    icon: Truck,
-    createConfig: CREATE_SHIPMENT_CONFIG,
     createLabel: "New Shipment",
     exportable: true,
-    searchKeys: ["number", "description", "carrier_name"],
     stats: [
         { label: "Total Shipments", icon: Truck, filter: () => true },
         {
@@ -49,17 +45,6 @@ const config: ListPageConfig = {
                 { value: "delivered", label: "Delivered" },
             ],
         },
-    ],
-    columns: [
-        { id: "number", header: "Number", accessorKey: "number" },
-        { id: "description", header: "Description", accessorKey: "description" },
-        { id: "type", header: "Type", accessorKey: "type" },
-        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "priority", header: "Priority", accessorKey: "priority", fieldType: "priority" },
-        { id: "carrier_name", header: "Carrier", accessorKey: "carrier_name" },
-        { id: "pickup_date", header: "Pickup", accessorKey: "pickup_date", fieldType: "date" },
-        { id: "total_pieces", header: "Pieces", accessorKey: "total_pieces" },
-        { id: "cost", header: "Cost", accessorKey: "cost", fieldType: "currency" },
     ],
 };
 

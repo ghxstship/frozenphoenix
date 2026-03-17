@@ -6,8 +6,8 @@
    role and org pricing tier.
    ═══════════════════════════════════════════════════════════════ */
 
-import { NextRequest, NextResponse } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import {
     type FieldAccessRule,
@@ -19,167 +19,167 @@ import {
     type Visibility,
 } from "@/lib/permissions/field-resolver";
 import type { PermissionLevel } from "@/types";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
-export async function GET(request: NextRequest) {
-    const supabase = await createClient();
-    if (!supabase) {
-        return ApiErrors.serviceUnavailable();
-    }
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/fields/access",
+        rbac: { resource: "fields", action: "read" },
+    },
+    async (request, { supabase, user }) => {
+        const resource = request.nextUrl.searchParams.get("resource");
+        const projectId = request.nextUrl.searchParams.get("project_id") ?? undefined;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-        return ApiErrors.unauthorized();
-    }
+        if (!resource) {
+            return ApiErrors.validationError({ resource: ["resource query param is required"] });
+        }
 
-    const resource = request.nextUrl.searchParams.get("resource");
-    const projectId = request.nextUrl.searchParams.get("project_id") ?? undefined;
+        // Resolve user's org and role
+        const { data: membership } = await serverFromTable(supabase, "org_memberships")
+            .select("organization_id, role")
+            .eq("user_id", user.id)
+            .limit(1)
+            .single();
 
-    if (!resource) {
-        return ApiErrors.validationError({ resource: ["resource query param is required"] });
-    }
+        if (!membership) {
+            return ApiErrors.forbidden("No org membership found");
+        }
 
-    // Resolve user's org and role
-    const { data: membership } = await serverFromTable(supabase!, "org_memberships")
-        .select("organization_id, role")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+        const orgId = membership.organization_id;
+        const userRole = (membership.role ?? "vendor") as PermissionLevel;
 
-    if (!membership) {
-        return ApiErrors.forbidden("No org membership found");
-    }
+        // Resolve org pricing tier
+        const { data: subscription } = await serverFromTable(supabase, "org_subscriptions")
+            .select("pricing_tier")
+            .eq("organization_id", orgId)
+            .eq("status", "active")
+            .limit(1)
+            .single();
 
-    const orgId = membership.organization_id;
-    const userRole = (membership.role ?? "vendor") as PermissionLevel;
+        const orgTier = (subscription?.pricing_tier ?? "core") as PricingTier;
 
-    // Resolve org pricing tier
-    const { data: subscription } = await serverFromTable(supabase!, "org_subscriptions")
-        .select("pricing_tier")
-        .eq("organization_id", orgId)
-        .eq("status", "active")
-        .limit(1)
-        .single();
+        // Load field tier assignments
+        const { data: fieldAssignments } = await serverFromTable(
+            supabase,
+            "field_tier_assignments"
+        ).select("field_type_id, category, pricing_tier, safety_critical");
 
-    const orgTier = (subscription?.pricing_tier ?? "core") as PricingTier;
+        if (!fieldAssignments?.length) {
+            return ApiErrors.internalError("No field assignments configured");
+        }
 
-    // Load field tier assignments
-    const { data: fieldAssignments } = await serverFromTable(supabase!, "field_tier_assignments")
-        .select("field_type_id, category, pricing_tier, safety_critical");
+        // Load role access rules for user's role
+        const { data: roleAccess } = await serverFromTable(supabase, "field_role_access")
+            .select(
+                "field_type_id, role_key, visibility, write_access, exportable, api_accessible, audit_logged, override_allowed"
+            )
+            .eq("role_key", userRole);
 
-    if (!fieldAssignments?.length) {
-        return ApiErrors.internalError("No field assignments configured");
-    }
+        const roleAccessMap = new Map<string, Record<string, unknown>>(
+            (roleAccess ?? []).map((r: Record<string, unknown>) => [r.field_type_id as string, r])
+        );
 
-    // Load role access rules for user's role
-    const { data: roleAccess } = await serverFromTable(supabase!, "field_role_access")
-        .select(
-            "field_type_id, role_key, visibility, write_access, exportable, api_accessible, audit_logged, override_allowed"
-        )
-        .eq("role_key", userRole);
+        // Load overrides for this org
+        const { data: overrides } = await serverFromTable(supabase, "field_access_overrides")
+            .select(
+                "field_type_id, granted_visibility, granted_write, scope_type, scope_id, expires_at"
+            )
+            .eq("organization_id", orgId)
+            .eq("role_key", userRole)
+            .eq("is_active", true);
 
-    const roleAccessMap = new Map<string, Record<string, unknown>>(
-        (roleAccess ?? []).map((r: Record<string, unknown>) => [r.field_type_id as string, r])
-    );
+        const fieldOverrides: FieldOverride[] = (overrides ?? []).map(
+            (o: Record<string, unknown>) => ({
+                fieldTypeId: o.field_type_id,
+                grantedVisibility: o.granted_visibility as Visibility,
+                grantedWrite: (o.granted_write ?? "none") as FieldWriteAccess,
+                scopeType: o.scope_type as "global" | "org" | "project",
+                scopeId: o.scope_id as string | undefined,
+                expiresAt: o.expires_at as string | undefined,
+            })
+        );
 
-    // Load overrides for this org
-    const { data: overrides } = await serverFromTable(supabase!, "field_access_overrides")
-        .select(
-            "field_type_id, granted_visibility, granted_write, scope_type, scope_id, expires_at"
-        )
-        .eq("organization_id", orgId)
-        .eq("role_key", userRole)
-        .eq("is_active", true);
-
-    const fieldOverrides: FieldOverride[] = (overrides ?? []).map((o: Record<string, unknown>) => ({
-        fieldTypeId: o.field_type_id,
-        grantedVisibility: o.granted_visibility as Visibility,
-        grantedWrite: (o.granted_write ?? "none") as FieldWriteAccess,
-        scopeType: o.scope_type as "global" | "org" | "project",
-        scopeId: o.scope_id as string | undefined,
-        expiresAt: o.expires_at as string | undefined,
-    }));
-
-    // Build context
-    const context: FieldResolutionContext = {
-        userRole,
-        orgPricingTier: orgTier,
-        projectId,
-        fieldOverrides,
-    };
-
-    // Resolve access for each field type
-    const results = fieldAssignments.map((fa: Record<string, unknown>) => {
-        const ra = roleAccessMap.get(fa.field_type_id as string);
-
-        const rule: FieldAccessRule = {
-            fieldTypeId: fa.field_type_id as string,
-            category: fa.category as string,
-            pricingTier: fa.pricing_tier as PricingTier,
-            safetyCritical: fa.safety_critical as boolean,
-            roleAccess: {
-                exec: {
-                    visibility: "VISIBLE" as Visibility,
-                    write: "manage" as FieldWriteAccess,
-                    exportable: true,
-                    apiAccessible: true,
-                },
-                director: {
-                    visibility: "VISIBLE" as Visibility,
-                    write: "write" as FieldWriteAccess,
-                    exportable: true,
-                    apiAccessible: true,
-                },
-                pm: {
-                    visibility: "VISIBLE" as Visibility,
-                    write: "write" as FieldWriteAccess,
-                    exportable: true,
-                    apiAccessible: true,
-                },
-                member: {
-                    visibility: "VISIBLE" as Visibility,
-                    write: "write" as FieldWriteAccess,
-                    exportable: false,
-                    apiAccessible: true,
-                },
-                client: {
-                    visibility: "VISIBLE" as Visibility,
-                    write: "none" as FieldWriteAccess,
-                    exportable: false,
-                    apiAccessible: true,
-                },
-                collaborator: {
-                    visibility: "HIDDEN" as Visibility,
-                    write: "none" as FieldWriteAccess,
-                    exportable: false,
-                    apiAccessible: false,
-                },
-                ...(ra
-                    ? {
-                          [userRole]: {
-                              visibility: ra.visibility as Visibility,
-                              write: (ra.write_access ?? "none") as FieldWriteAccess,
-                              exportable: ra.exportable as boolean,
-                              apiAccessible: ra.api_accessible as boolean,
-                          },
-                      }
-                    : {}),
-            },
-            auditLogged: (ra?.audit_logged ?? false) as boolean,
-            rlsEnforced: true,
-            overrideAllowed: (ra?.override_allowed ?? false) as boolean,
+        // Build context
+        const context: FieldResolutionContext = {
+            userRole,
+            orgPricingTier: orgTier,
+            projectId,
+            fieldOverrides,
         };
 
-        return resolveFieldAccess(rule, context);
-    });
+        // Resolve access for each field type
+        const results = fieldAssignments.map((fa: Record<string, unknown>) => {
+            const ra = roleAccessMap.get(fa.field_type_id as string);
 
-    return NextResponse.json({
-        resource,
-        userRole,
-        orgTier,
-        projectId: projectId ?? null,
-        fieldCount: results.length,
-        fields: results,
-    });
-}
+            const rule: FieldAccessRule = {
+                fieldTypeId: fa.field_type_id as string,
+                category: fa.category as string,
+                pricingTier: fa.pricing_tier as PricingTier,
+                safetyCritical: fa.safety_critical as boolean,
+                roleAccess: {
+                    exec: {
+                        visibility: "VISIBLE" as Visibility,
+                        write: "manage" as FieldWriteAccess,
+                        exportable: true,
+                        apiAccessible: true,
+                    },
+                    director: {
+                        visibility: "VISIBLE" as Visibility,
+                        write: "write" as FieldWriteAccess,
+                        exportable: true,
+                        apiAccessible: true,
+                    },
+                    pm: {
+                        visibility: "VISIBLE" as Visibility,
+                        write: "write" as FieldWriteAccess,
+                        exportable: true,
+                        apiAccessible: true,
+                    },
+                    member: {
+                        visibility: "VISIBLE" as Visibility,
+                        write: "write" as FieldWriteAccess,
+                        exportable: false,
+                        apiAccessible: true,
+                    },
+                    client: {
+                        visibility: "VISIBLE" as Visibility,
+                        write: "none" as FieldWriteAccess,
+                        exportable: false,
+                        apiAccessible: true,
+                    },
+                    collaborator: {
+                        visibility: "HIDDEN" as Visibility,
+                        write: "none" as FieldWriteAccess,
+                        exportable: false,
+                        apiAccessible: false,
+                    },
+                    ...(ra
+                        ? {
+                              [userRole]: {
+                                  visibility: ra.visibility as Visibility,
+                                  write: (ra.write_access ?? "none") as FieldWriteAccess,
+                                  exportable: ra.exportable as boolean,
+                                  apiAccessible: ra.api_accessible as boolean,
+                              },
+                          }
+                        : {}),
+                },
+                auditLogged: (ra?.audit_logged ?? false) as boolean,
+                rlsEnforced: true,
+                overrideAllowed: (ra?.override_allowed ?? false) as boolean,
+            };
+
+            return resolveFieldAccess(rule, context);
+        });
+
+        return NextResponse.json({
+            resource,
+            userRole,
+            orgTier,
+            projectId: projectId ?? null,
+            fieldCount: results.length,
+            fields: results,
+        });
+    }
+);

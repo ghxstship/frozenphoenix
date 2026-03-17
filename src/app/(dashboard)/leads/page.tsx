@@ -1,21 +1,17 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
-import { useLeads } from "@/lib/supabase/hooks-crm";
-import { CREATE_LEAD_CONFIG } from "@/config/create-entity-configs";
+import { useLeads } from "@/lib/supabase";
+import { LEADS_PAGE } from "@/config/list-page-configs";
 import { Clock, DollarSign, TrendingUp, Users } from "lucide-react";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "leads",
+    ...LEADS_PAGE,
     title: "Leads",
-    description: "Manage incoming leads and opportunities",
-    icon: Users,
-    createConfig: CREATE_LEAD_CONFIG,
     createLabel: "Add Lead",
     exportable: true,
     importable: true,
-    searchKeys: ["first_name", "last_name", "email", "company"],
     stats: [
         { label: "Total Leads", icon: Users, filter: () => true },
         { label: "New (Uncontacted)", icon: Clock, filter: (r) => r.status === "new" },
@@ -50,17 +46,6 @@ const config: ListPageConfig = {
                 { value: "lost", label: "Lost" },
             ],
         },
-    ],
-    columns: [
-        { id: "first_name", header: "First Name", accessorKey: "first_name" },
-        { id: "last_name", header: "Last Name", accessorKey: "last_name" },
-        { id: "company", header: "Company", accessorKey: "company" },
-        { id: "email", header: "Email", accessorKey: "email" },
-        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
-        { id: "score", header: "Score", accessorKey: "score" },
-        { id: "source", header: "Source", accessorKey: "source" },
-        { id: "budget_range", header: "Budget", accessorKey: "budget_range" },
-        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
 };
 

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { serverFromTable } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
-import { logger } from "@/lib/logger";
+import { withApiHandlerParams } from "@/lib/api/with-api-handler";
+import { assetNfcRegisterSchema, validate } from "@/lib/validation/schemas";
 
 /**
  * POST /api/assets/[id]/nfc
@@ -10,86 +11,92 @@ import { logger } from "@/lib/logger";
  * successfully writing the asset barcode to an NFC tag, to store
  * the tag's serial number on the asset record.
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const POST = withApiHandlerParams(
+    {
+        method: "POST",
+        route: "/api/assets/[id]/nfc",
+        mutation: true,
+        rbac: { resource: "assets", action: "write" },
+    },
+    async (request, { supabase, log }, { params }) => {
+        const { id } = await params;
+        let rawBody: unknown;
+        try {
+            rawBody = await request.json();
+        } catch {
+            return ApiErrors.badRequest("Invalid JSON body");
+        }
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const result = validate(assetNfcRegisterSchema, rawBody);
+        if (!result.success) {
+            return ApiErrors.validationError(result.errors);
+        }
 
-    const { id } = await params;
-    const body = await request.json();
-    const { nfc_serial } = body as { nfc_serial: string };
+        const { nfc_serial } = result.data;
 
-    if (!nfc_serial || typeof nfc_serial !== "string") {
-        return ApiErrors.badRequest("nfc_serial is required");
+        // Verify asset exists
+        const { data: asset, error: fetchError } = await serverFromTable(supabase, "assets")
+            .select("id, name, nfc_serial")
+            .eq("id", id)
+            .maybeSingle();
+
+        if (fetchError || !asset) {
+            return ApiErrors.notFound("Asset");
+        }
+
+        // Update nfc_serial on the asset
+        const { error: updateError } = await serverFromTable(supabase, "assets")
+            .update({ nfc_serial } as Record<string, unknown>)
+            .eq("id", id);
+
+        if (updateError) {
+            log.error("[assets/nfc] failed to update nfc_serial", { error: updateError });
+            return ApiErrors.internalError("Failed to update NFC serial");
+        }
+
+        const rec = asset as Record<string, unknown>;
+
+        return NextResponse.json({
+            asset_id: rec.id,
+            asset_name: rec.name,
+            nfc_serial,
+            previous_nfc_serial: rec.nfc_serial ?? null,
+            message: "NFC serial registered",
+        });
     }
-
-    // Verify asset exists
-    const { data: asset, error: fetchError } = await serverFromTable(supabase, "assets")
-        .select("id, name, nfc_serial")
-        .eq("id", id)
-        .maybeSingle();
-
-    if (fetchError || !asset) {
-        return NextResponse.json({ error: "Asset not found" }, { status: 404 });
-    }
-
-    // Update nfc_serial on the asset
-    const { error: updateError } = await serverFromTable(supabase, "assets")
-        .update({ nfc_serial } as Record<string, unknown>)
-        .eq("id", id);
-
-    if (updateError) {
-        logger.error("[assets/nfc] failed to update nfc_serial", { error: updateError });
-        return NextResponse.json({ error: "Failed to update NFC serial" }, { status: 500 });
-    }
-
-    const rec = asset as Record<string, unknown>;
-
-    return NextResponse.json({
-        asset_id: rec.id,
-        asset_name: rec.name,
-        nfc_serial,
-        previous_nfc_serial: rec.nfc_serial ?? null,
-        message: "NFC serial registered",
-    });
-}
+);
 
 /**
  * GET /api/assets/[id]/nfc
  *
  * Get the NFC serial number for an asset.
  */
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const supabase = await createClient();
-    if (!supabase) return ApiErrors.serviceUnavailable();
+export const GET = withApiHandlerParams(
+    {
+        method: "GET",
+        route: "/api/assets/[id]/nfc",
+        rbac: { resource: "assets", action: "read" },
+    },
+    async (_request, { supabase }, { params }) => {
+        const { id } = await params;
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return ApiErrors.unauthorized();
+        const { data: asset, error } = await serverFromTable(supabase, "assets")
+            .select("id, name, nfc_serial, barcode")
+            .eq("id", id)
+            .maybeSingle();
 
-    const { id } = await params;
+        if (error || !asset) {
+            return ApiErrors.notFound("Asset");
+        }
 
-    const { data: asset, error } = await serverFromTable(supabase, "assets")
-        .select("id, name, nfc_serial, barcode")
-        .eq("id", id)
-        .maybeSingle();
+        const rec = asset as Record<string, unknown>;
 
-    if (error || !asset) {
-        return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+        return NextResponse.json({
+            asset_id: rec.id,
+            asset_name: rec.name,
+            nfc_serial: rec.nfc_serial ?? null,
+            barcode: rec.barcode ?? null,
+            has_nfc: !!rec.nfc_serial,
+        });
     }
-
-    const rec = asset as Record<string, unknown>;
-
-    return NextResponse.json({
-        asset_id: rec.id,
-        asset_name: rec.name,
-        nfc_serial: rec.nfc_serial ?? null,
-        barcode: rec.barcode ?? null,
-        has_nfc: !!rec.nfc_serial,
-    });
-}
+);

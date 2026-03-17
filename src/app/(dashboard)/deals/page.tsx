@@ -1,22 +1,18 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
-import { useDeals } from "@/lib/supabase/hooks";
-import { CREATE_DEAL_CONFIG } from "@/config/create-entity-configs";
+import { useDeals } from "@/lib/supabase";
+import { DEALS_PAGE } from "@/config/list-page-configs";
 import { Building2, DollarSign, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";
 
 const config: ListPageConfig = {
-    entityKey: "deals",
+    ...DEALS_PAGE,
     title: "Deals",
-    description: "Track and manage your sales pipeline",
-    icon: DollarSign,
-    createConfig: CREATE_DEAL_CONFIG,
     createLabel: "New Deal",
     exportable: true,
     importable: true,
-    searchKeys: ["title", "company", "assigned_to"],
     stats: [
         {
             label: "Total Pipeline",

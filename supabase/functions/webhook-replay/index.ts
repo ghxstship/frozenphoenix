@@ -14,6 +14,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleHealthCheck } from "../_shared/health.ts";
+import { timingSafeEqual } from "../_shared/webhook-utils.ts";
 
 const PROVIDER_FUNCTION_MAP: Record<string, string> = {
     eventbrite: "webhook-eventbrite",
@@ -36,26 +37,27 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
     if (!supabaseUrl || !serviceKey) {
-        return new Response(
-            JSON.stringify({ error: "Missing Supabase configuration" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: "Missing Supabase configuration" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // ─── Auth: require service role or admin user ───────────────
     const authHeader = req.headers.get("authorization") ?? "";
-    if (!authHeader.includes(serviceKey)) {
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!timingSafeEqual(token, serviceKey)) {
         // Fall back to user auth — check if user is exec/director
-        const { data: { user } } = await supabase.auth.getUser(
-            authHeader.replace("Bearer ", ""),
-        );
+        const {
+            data: { user },
+        } = await supabase.auth.getUser(token);
         if (!user) {
-            return new Response(
-                JSON.stringify({ error: "Unauthorized" }),
-                { status: 401, headers: { "Content-Type": "application/json" } },
-            );
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+                headers: { "Content-Type": "application/json" },
+            });
         }
 
         const { data: membership } = await supabase
@@ -66,10 +68,10 @@ Deno.serve(async (req: Request) => {
             .single();
 
         if (!membership || !["exec", "director"].includes(membership.role)) {
-            return new Response(
-                JSON.stringify({ error: "Forbidden — admin role required" }),
-                { status: 403, headers: { "Content-Type": "application/json" } },
-            );
+            return new Response(JSON.stringify({ error: "Forbidden — admin role required" }), {
+                status: 403,
+                headers: { "Content-Type": "application/json" },
+            });
         }
     }
 
@@ -78,17 +80,17 @@ Deno.serve(async (req: Request) => {
     try {
         body = await req.json();
     } catch {
-        return new Response(
-            JSON.stringify({ error: "Invalid JSON body" }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
     if (!body.event_id) {
-        return new Response(
-            JSON.stringify({ error: "event_id is required" }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: "event_id is required" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
     // ─── Fetch the failed event ─────────────────────────────────
@@ -99,16 +101,16 @@ Deno.serve(async (req: Request) => {
         .single();
 
     if (fetchError || !event) {
-        return new Response(
-            JSON.stringify({ error: "Webhook event not found" }),
-            { status: 404, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: "Webhook event not found" }), {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
     if (event.status === "processed") {
         return new Response(
             JSON.stringify({ error: "Event already processed successfully", event_id: event.id }),
-            { status: 409, headers: { "Content-Type": "application/json" } },
+            { status: 409, headers: { "Content-Type": "application/json" } }
         );
     }
 
@@ -120,7 +122,7 @@ Deno.serve(async (req: Request) => {
                 error: `No replay handler for provider "${event.provider_name}"`,
                 supported_providers: Object.keys(PROVIDER_FUNCTION_MAP),
             }),
-            { status: 422, headers: { "Content-Type": "application/json" } },
+            { status: 422, headers: { "Content-Type": "application/json" } }
         );
     }
 
@@ -158,7 +160,7 @@ Deno.serve(async (req: Request) => {
                     replay_status: response.status,
                     message: "Event replayed successfully",
                 }),
-                { status: 200, headers: { "Content-Type": "application/json" } },
+                { status: 200, headers: { "Content-Type": "application/json" } }
             );
         }
 
@@ -176,18 +178,18 @@ Deno.serve(async (req: Request) => {
                 success: false,
                 event_id: event.id,
                 replay_status: response.status,
-                error: resultBody.slice(0, 500),
+                error: "Replay target returned an error",
             }),
-            { status: 502, headers: { "Content-Type": "application/json" } },
+            { status: 502, headers: { "Content-Type": "application/json" } }
         );
     } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error("Webhook replay error:", err instanceof Error ? err.message : err);
 
         await supabase
             .from("webhook_events")
             .update({
                 status: "failed",
-                error_message: `Replay error: ${errorMsg}`,
+                error_message: "Replay dispatch failed",
             })
             .eq("id", event.id);
 
@@ -195,9 +197,9 @@ Deno.serve(async (req: Request) => {
             JSON.stringify({
                 success: false,
                 event_id: event.id,
-                error: errorMsg,
+                error: "Replay dispatch failed",
             }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
+            { status: 500, headers: { "Content-Type": "application/json" } }
         );
     }
 });

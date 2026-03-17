@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/layouts/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +27,7 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useToast } from "@/components/ui/toast";
-import { useEmailMessages } from "@/lib/supabase/hooks-v2-features";
+import { useEmailMessages } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_EMAIL_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
 
@@ -148,11 +148,10 @@ export default function EmailIntegrationPage() {
     return (
         <>
             <PermissionGate resource="settings" action="read">
-                <div className="space-y-6 animate-fade-in">
-                    <PageHeader
-                        title="Email Integration"
-                        description="Bi-directional email sync with automatic record linking"
-                    >
+                <PageShell
+                    title="Email Integration"
+                    description="Bi-directional email sync with automatic record linking"
+                    actions={
                         <Button
                             size="sm"
                             onClick={() =>
@@ -165,8 +164,8 @@ export default function EmailIntegrationPage() {
                         >
                             <RefreshCw className="h-4 w-4" /> Sync Now
                         </Button>
-                    </PageHeader>
-
+                    }
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title="Unread" value={unreadCount} icon={Mail} />
                         <StatCard title="Linked to Records" value={linkedCount} icon={Link2} />
@@ -415,7 +414,7 @@ export default function EmailIntegrationPage() {
                             ))}
                         </div>
                     </TabPanel>
-                </div>
+                </PageShell>
             </PermissionGate>
             <CreateEntityDialog
                 config={CREATE_EMAIL_ACCOUNT_CONFIG}

@@ -5,7 +5,7 @@ import {
     useDeleteRecurringInvoice,
     useRecurringInvoice,
     useUpdateRecurringInvoice,
-} from "@/lib/supabase/hooks-pages";
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,16 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/recurring-invoices",
     backLabel: "Recurring Invoices",
     chatterRecordType: "recurring_invoice",
-    fields: [],
+    fields: [
+        { id: "frequency", label: "Frequency", accessorKey: "frequency", fieldType: "status" },
+        { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+    ],
+    sidebarFields: [
+        { id: "frequency", label: "Frequency", accessorKey: "frequency", fieldType: "status" },
+        { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+        { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+        { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+    ],
     tabs: [],
 };
 
@@ -88,10 +97,10 @@ export default function RecurringInvoiceDetailPage() {
         useDeleteHook: useDeleteRecurringInvoice,
     });
 
-    const frequency = (ri?.frequency as string) ?? "monthly";
+    const _frequency = (ri?.frequency as string) ?? "monthly";
     const dayOfMonth = (ri?.day_of_month as number) ?? (ri?.dayOfMonth as number) ?? null;
-    const startDate = (ri?.start_date as string) ?? (ri?.startDate as string) ?? "";
-    const endDate = (ri?.end_date as string) ?? (ri?.endDate as string) ?? "";
+    const _startDate = (ri?.start_date as string) ?? (ri?.startDate as string) ?? "";
+    const _endDate = (ri?.end_date as string) ?? (ri?.endDate as string) ?? "";
     const nextInvoiceDate =
         (ri?.next_invoice_date as string) ?? (ri?.nextInvoiceDate as string) ?? "";
     const lastInvoiceDate =
@@ -117,12 +126,6 @@ export default function RecurringInvoiceDetailPage() {
                             {isActive ? "Active" : "Paused"}
                         </Badge>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Frequency</span>
-                        <Badge variant="outline" className="capitalize">
-                            {frequency}
-                        </Badge>
-                    </div>
                     {dayOfMonth && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Day</span>
@@ -145,10 +148,6 @@ export default function RecurringInvoiceDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Amount</span>
-                        <span className="font-bold">{formatCurrency(amount, currency)}</span>
-                    </div>
-                    <div className="flex justify-between">
                         <span className="text-muted-foreground">Generated</span>
                         <span className="font-medium">{invoicesGenerated} invoices</span>
                     </div>
@@ -165,18 +164,6 @@ export default function RecurringInvoiceDetailPage() {
                     <CardTitle className="text-sm">Period</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                    {startDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Start</span>
-                            <span className="font-medium">{formatDate(startDate, "compact")}</span>
-                        </div>
-                    )}
-                    {endDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">End</span>
-                            <span className="font-medium">{formatDate(endDate, "compact")}</span>
-                        </div>
-                    )}
                     {lastInvoiceDate && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Last Sent</span>
@@ -193,6 +180,19 @@ export default function RecurringInvoiceDetailPage() {
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
         sidebarSlot,
+        stats: [
+            {
+                label: "Per Invoice",
+                icon: DollarSign,
+                compute: () => formatCurrency(amount, currency),
+            },
+            { label: "Generated", icon: RefreshCw, compute: () => `${invoicesGenerated} invoices` },
+            {
+                label: "Next Invoice",
+                icon: RefreshCw,
+                compute: () => (nextInvoiceDate ? formatDate(nextInvoiceDate, "compact") : "TBD"),
+            },
+        ],
         overviewSlot: (
             <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

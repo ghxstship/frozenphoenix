@@ -1,17 +1,12 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    useCertification,
-    useDeleteCertification,
-    useUpdateCertification,
-} from "@/lib/supabase/hooks-pages";
+import { useCertification, useDeleteCertification, useUpdateCertification } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CERT_TYPE_LABELS, getStatusLabel, getStatusVariant } from "@/config/ui-variants";
+import { CERT_TYPE_LABELS } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText } from "lucide-react";
@@ -29,7 +24,52 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/certifications",
     backLabel: "Certifications",
     chatterRecordType: "certification",
-    fields: [],
+    fields: [
+        { id: "cert_type", label: "Type", accessorKey: "cert_type", fieldType: "status" },
+        { id: "cert_number", label: "Cert #", accessorKey: "cert_number" },
+        {
+            id: "blocks_usage",
+            label: "Blocks Usage",
+            accessorKey: "blocks_usage",
+            fieldType: "status",
+        },
+        {
+            id: "issued_date",
+            label: "Issued",
+            accessorKey: "issued_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        {
+            id: "expiry_date",
+            label: "Expires",
+            accessorKey: "expiry_date",
+            fieldType: "date",
+            icon: Calendar,
+        },
+        { id: "issued_by", label: "Issued By", accessorKey: "issued_by" },
+    ],
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "cert_type", label: "Type", accessorKey: "cert_type", fieldType: "status" },
+        { id: "cert_number", label: "Cert #", accessorKey: "cert_number" },
+        {
+            id: "blocks_usage",
+            label: "Blocks Usage",
+            accessorKey: "blocks_usage",
+            fieldType: "status",
+        },
+        { id: "issued_by", label: "Issued By", accessorKey: "issued_by" },
+        { id: "issuer_license", label: "License", accessorKey: "issuer_license" },
+        { id: "issued_date", label: "Issued", accessorKey: "issued_date", fieldType: "date" },
+        { id: "expiry_date", label: "Expires", accessorKey: "expiry_date", fieldType: "date" },
+        {
+            id: "next_inspection_date",
+            label: "Next Inspection",
+            accessorKey: "next_inspection_date",
+            fieldType: "date",
+        },
+    ],
     tabs: [],
 };
 
@@ -55,145 +95,25 @@ export default function CertificationDetailPage() {
     const issuedBy = String(rec?.issued_by ?? "");
     const issuerLicense = String(rec?.issuer_license ?? "");
     const issuedDate = String(rec?.issued_date ?? "");
-    const expiryDate = String(rec?.expiry_date ?? "");
-    const nextInspection = String(rec?.next_inspection_date ?? "");
+    const _expiryDate = String(rec?.expiry_date ?? "");
+    const _nextInspection = String(rec?.next_inspection_date ?? "");
     const documentUrl = String(rec?.document_url ?? "");
     const notes = String(rec?.notes ?? "");
 
     const sidebarSlot = (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Certification Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={getStatusVariant(status)}>{getStatusLabel(status)}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant="outline">{CERT_TYPE_LABELS[certType] ?? certType}</Badge>
-                    </div>
-                    {certNumber && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Cert #</span>
-                            <span className="font-mono text-xs">{certNumber}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Blocks Usage</span>
-                        <Badge variant={blocksUsage ? "destructive" : "ghost"}>
-                            {blocksUsage ? "Yes" : "No"}
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Asset</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                    <p className="font-medium">{assetId}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{assetId}</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Issuer</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Issued By</span>
-                        <span className="font-medium text-xs text-right max-w-[140px]">
-                            {issuedBy}
-                        </span>
-                    </div>
-                    {issuerLicense && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">License</span>
-                            <span className="font-mono text-xs">{issuerLicense}</span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Dates</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    {issuedDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Issued</span>
-                            <span className="font-medium">{formatDate(issuedDate, "compact")}</span>
-                        </div>
-                    )}
-                    {expiryDate && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Expires</span>
-                            <span className="font-medium">{formatDate(expiryDate, "compact")}</span>
-                        </div>
-                    )}
-                    {nextInspection && (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Next Inspection</span>
-                            <span className="font-medium">
-                                {formatDate(nextInspection, "compact")}
-                            </span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-sm">Asset</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+                <p className="font-medium">{assetId}</p>
+                <p className="text-xs text-muted-foreground mt-1">{assetId}</p>
+            </CardContent>
+        </Card>
     );
 
     const overviewSlot = (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <BadgeCheck className="h-5 w-5 text-success" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Status</p>
-                                <p className="text-sm font-bold capitalize">
-                                    {status.replace(/_/g, " ")}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-info" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Issued</p>
-                                <p className="text-sm font-semibold">
-                                    {issuedDate ? formatDate(issuedDate, "compact") : "\u2014"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            {blocksUsage ? (
-                                <AlertTriangle className="h-5 w-5 text-destructive" />
-                            ) : (
-                                <CheckCircle2 className="h-5 w-5 text-success" />
-                            )}
-                            <div>
-                                <p className="text-xs text-muted-foreground">Blocks Usage</p>
-                                <p className="text-sm font-semibold">
-                                    {blocksUsage ? "Yes \u2014 Blocking" : "No"}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Issuer Details</CardTitle>
@@ -234,6 +154,19 @@ export default function CertificationDetailPage() {
         ...BASE_CONFIG,
         sidebarSlot,
         overviewSlot,
+        stats: [
+            { label: "Status", icon: BadgeCheck, compute: () => status.replace(/_/g, " ") },
+            {
+                label: "Issued",
+                icon: Calendar,
+                compute: () => (issuedDate ? formatDate(issuedDate, "compact") : "—"),
+            },
+            {
+                label: "Blocks Usage",
+                icon: blocksUsage ? AlertTriangle : CheckCircle2,
+                compute: () => (blocksUsage ? "Yes — Blocking" : "No"),
+            },
+        ],
         tabs: [
             {
                 id: "documents",

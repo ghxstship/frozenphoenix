@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCompany, useDeleteCompany, useUpdateCompany } from "@/lib/supabase/hooks-pages";
-import { useProjects } from "@/lib/supabase/hooks";
+import { useCompany, useDeleteCompany, useUpdateCompany } from "@/lib/supabase";
+import { useProjects } from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -16,23 +16,21 @@ import {
     DollarSign,
     ExternalLink,
     FolderOpen,
-    Globe,
     Mail,
-    MapPin,
     Phone,
     Star,
     User,
     Users,
 } from "lucide-react";
 
-const statusVariants: Record<string, "success" | "info" | "ghost" | "destructive"> = {
+const _statusVariants: Record<string, "success" | "info" | "ghost" | "destructive"> = {
     active: "success",
     prospect: "info",
     inactive: "ghost",
     churned: "destructive",
 };
 
-const typeVariants: Record<string, "default" | "warning" | "info" | "secondary"> = {
+const _typeVariants: Record<string, "default" | "warning" | "info" | "secondary"> = {
     client: "default",
     brand: "warning",
     agency: "info",
@@ -47,7 +45,20 @@ const BASE_CONFIG: DetailPageConfig = {
     backHref: "/companies",
     backLabel: "Companies",
     chatterRecordType: "company",
-    fields: [],
+    fields: [
+        { id: "company_type", label: "Type", accessorKey: "company_type", fieldType: "status" },
+        { id: "industry", label: "Industry", accessorKey: "industry" },
+        { id: "legal_name", label: "Legal Name", accessorKey: "legal_name" },
+        { id: "website", label: "Website", accessorKey: "website", fieldType: "url" },
+        { id: "phone", label: "Phone", accessorKey: "phone", fieldType: "phone" },
+        { id: "email", label: "Email", accessorKey: "email", fieldType: "email" },
+    ],
+    sidebarFields: [
+        { id: "company_type", label: "Type", accessorKey: "company_type", fieldType: "status" },
+        { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "industry", label: "Industry", accessorKey: "industry" },
+        { id: "legal_name", label: "Legal Name", accessorKey: "legal_name" },
+    ],
     tabs: [],
 };
 
@@ -60,18 +71,18 @@ export default function CompanyDetailPage() {
     const { data: sbProjects } = useProjects();
 
     const _companyName = (co?.name as string) ?? "";
-    const legalName = (co?.legal_name as string) ?? "";
+    const _legalName = (co?.legal_name as string) ?? "";
     const industry = (co?.industry as string) ?? "";
-    const website = (co?.website as string) ?? "";
-    const companyPhone = (co?.phone as string) ?? "";
-    const companyEmail = (co?.email as string) ?? "";
-    const companyType = (co?.company_type as string) ?? "";
-    const companyStatus = (co?.status as string) ?? "active";
+    const _website = (co?.website as string) ?? "";
+    const _companyPhone = (co?.phone as string) ?? "";
+    const _companyEmail = (co?.email as string) ?? "";
+    const _companyType = (co?.company_type as string) ?? "";
+    const _companyStatus = (co?.status as string) ?? "active";
     const accountManagerName = (co?.account_manager_name as string) ?? "";
     const city = (co?.city as string) ?? "";
     const state = (co?.state as string) ?? "";
-    const address = (co?.address as string) ?? "";
-    const totalRevenue = (co?.total_revenue as number) ?? 0;
+    const _address = (co?.address as string) ?? "";
+    const _totalRevenue = (co?.total_revenue as number) ?? 0;
     const tags = (co?.tags as string[]) ?? [];
     const companyNotes = (co?.notes as string) ?? "";
 
@@ -91,67 +102,6 @@ export default function CompanyDetailPage() {
         <div className="space-y-4">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm">Company Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <Badge variant={typeVariants[companyType]}>{companyType}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant={statusVariants[companyStatus]}>{companyStatus}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Industry</span>
-                        <span className="font-medium">{industry}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Legal Name</span>
-                        <span className="font-medium">{legalName}</span>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Contact Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    {website && (
-                        <div className="flex items-center gap-2">
-                            <Globe className="h-4 w-4 text-muted-foreground" />
-                            <a
-                                href={website}
-                                className="text-primary hover:underline text-xs"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {website.replace("https://", "")}
-                            </a>
-                        </div>
-                    )}
-                    {companyPhone && (
-                        <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-xs">{companyPhone}</span>
-                        </div>
-                    )}
-                    {companyEmail && (
-                        <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-xs">{companyEmail}</span>
-                        </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs">
-                            {[address, city, state].filter(Boolean).join(", ")}
-                        </span>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
                     <CardTitle className="text-sm">Account Manager</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm">
@@ -166,86 +116,50 @@ export default function CompanyDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm">Tags</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-wrap gap-1.5">
-                        {tags.map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-[10px]">
-                                {tag}
-                            </Badge>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-
-    const overviewSlot = (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <DollarSign className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Total Revenue</p>
-                                <p className="text-lg font-bold">{formatCurrency(totalRevenue)}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center">
-                                <FolderOpen className="h-5 w-5 text-info" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Projects</p>
-                                <p className="text-lg font-bold">{companyProjects.length}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="pt-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                                <Star className="h-5 w-5 text-warning" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">Tier</p>
-                                <p className="text-lg font-bold">Tier 1</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            {!!companyNotes && (
+            {tags.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Notes</CardTitle>
+                        <CardTitle className="text-sm">Tags</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            {companyNotes}
-                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {tags.map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-[10px]">
+                                    {tag}
+                                </Badge>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             )}
         </div>
     );
 
+    const overviewSlot = companyNotes ? (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">{companyNotes}</p>
+            </CardContent>
+        </Card>
+    ) : undefined;
+
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
         subtitleFn: () => [industry, city, state].filter(Boolean).join(" · "),
         sidebarSlot,
         overviewSlot,
+        stats: [
+            {
+                label: "Total Revenue",
+                icon: DollarSign,
+                compute: (r) => formatCurrency(Number(r.total_revenue ?? 0)),
+            },
+            { label: "Projects", icon: FolderOpen, compute: () => companyProjects.length },
+            { label: "Tier", icon: Star, compute: () => "Tier 1" },
+        ],
         tabs: [
             {
                 id: "projects",

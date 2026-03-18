@@ -48,7 +48,7 @@ const DialogContent = React.forwardRef<
             <DialogPrimitive.Content
                 ref={ref}
                 className={cn(
-                    "fixed inset-0 z-50 m-auto w-full h-fit",
+                    "fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2",
                     "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150",
                     "border border-[var(--glass-surface-border)] rounded-xl p-6",
                     "glass-noise glass-edge-glow",

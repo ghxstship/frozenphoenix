@@ -86,7 +86,7 @@ import type {
     ListPageConfig,
     ListRowActionDef,
 } from "@/types/list-page-config";
-import { apiDelete } from "@/lib/api/client";
+import { apiCreate, apiDelete } from "@/lib/api/client";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -1011,6 +1011,10 @@ export function ListPageShell({
                     config={config.createConfig}
                     open={createOpen}
                     onClose={closeCreate}
+                    onSubmit={async (values) => {
+                        await apiCreate(basePath, values);
+                        window.location.reload();
+                    }}
                 />
             )}
 

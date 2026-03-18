@@ -39,6 +39,9 @@ Deno.serve(async (req: Request) => {
         overdue: 0,
         dead_letter_retries: 0,
         webhook_retries: 0,
+        cert_expiry_alerts: 0,
+        contract_renewal_alerts: 0,
+        budget_burn_alerts: 0,
         errors: [] as string[],
     };
 
@@ -348,6 +351,135 @@ Deno.serve(async (req: Request) => {
         }
     } catch (err) {
         results.errors.push(`Webhook retry scan: ${(err as Error).message}`);
+    }
+
+    // -----------------------------------------------------------------------
+    // 6. Certification expiry alerts (I5)
+    // Notify crew members whose certifications expire within renewal_reminder_days
+    // -----------------------------------------------------------------------
+    try {
+        const { data: expiringCerts } = await supabase
+            .from("certifications")
+            .select("id, label, expiry_date, renewal_reminder_days, crew_member_id")
+            .gte("expiry_date", now.toISOString().split("T")[0])
+            .lte(
+                "expiry_date",
+                new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+            );
+
+        if (expiringCerts && expiringCerts.length > 0) {
+            for (const cert of expiringCerts) {
+                const reminderDays = (cert.renewal_reminder_days as number) ?? 30;
+                const expiryDate = new Date(cert.expiry_date as string);
+                const reminderDate = new Date(
+                    expiryDate.getTime() - reminderDays * 24 * 60 * 60 * 1000
+                );
+
+                if (now >= reminderDate && now < expiryDate) {
+                    const daysUntilExpiry = Math.ceil(
+                        (expiryDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+                    );
+                    // Look up user_id from crew_member
+                    const { data: crew } = await supabase
+                        .from("crew_members")
+                        .select("user_id")
+                        .eq("id", cert.crew_member_id)
+                        .single();
+
+                    if (crew?.user_id) {
+                        await supabase.from("notifications").insert({
+                            user_id: crew.user_id,
+                            type: "deadline",
+                            title: "Certification expiring soon",
+                            message: `Your ${cert.label} certification expires in ${daysUntilExpiry} days (${cert.expiry_date}).`,
+                            action_url: `/certifications/${cert.id}`,
+                        });
+                        results.cert_expiry_alerts++;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        results.errors.push(`Cert expiry scan: ${(err as Error).message}`);
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. Contract renewal reminders (I6)
+    // Notify when contracts are within 30 days of end_date
+    // -----------------------------------------------------------------------
+    try {
+        const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const { data: expiringContracts } = await supabase
+            .from("contracts")
+            .select("id, title, end_date, created_by, organization_id")
+            .not("status", "in", '("completed","cancelled","terminated")')
+            .gte("end_date", now.toISOString().split("T")[0])
+            .lte("end_date", thirtyDaysFromNow.toISOString().split("T")[0]);
+
+        if (expiringContracts && expiringContracts.length > 0) {
+            for (const contract of expiringContracts) {
+                const endDate = new Date(contract.end_date as string);
+                const daysLeft = Math.ceil(
+                    (endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+                );
+
+                if (contract.created_by) {
+                    await supabase.from("notifications").insert({
+                        user_id: contract.created_by,
+                        type: "deadline",
+                        title: "Contract renewal reminder",
+                        message: `Contract "${contract.title}" ends in ${daysLeft} days (${contract.end_date}). Consider renewal.`,
+                        action_url: `/contracts/${contract.id}`,
+                        organization_id: contract.organization_id,
+                    });
+                    results.contract_renewal_alerts++;
+                }
+            }
+        }
+    } catch (err) {
+        results.errors.push(`Contract renewal scan: ${(err as Error).message}`);
+    }
+
+    // -----------------------------------------------------------------------
+    // 8. Budget burn alerts (I7)
+    // Notify when budget_line_items committed_amount exceeds 90% of estimated_amount
+    // -----------------------------------------------------------------------
+    try {
+        const { data: budgetLines } = await supabase
+            .from("budget_line_items")
+            .select(
+                "id, name, estimated_amount, committed_amount, budget_id, budgets!inner(project_id, projects!inner(manager_id, organization_id))"
+            )
+            .not("estimated_amount", "is", null)
+            .gt("estimated_amount", 0);
+
+        if (budgetLines && budgetLines.length > 0) {
+            for (const line of budgetLines) {
+                const estimated = (line.estimated_amount as number) ?? 0;
+                const committed = (line.committed_amount as number) ?? 0;
+                if (estimated > 0 && committed >= estimated * 0.9) {
+                    const pct = Math.round((committed / estimated) * 100);
+                    const budgets = line.budgets as Record<string, unknown> | null;
+                    const projects = budgets?.projects as Record<string, unknown> | null;
+                    const managerId = projects?.manager_id as string | null;
+                    const orgId = projects?.organization_id as string | null;
+
+                    if (managerId) {
+                        await supabase.from("notifications").insert({
+                            user_id: managerId,
+                            type: "warning",
+                            title: "Budget threshold exceeded",
+                            message: `Budget line "${line.name}" is at ${pct}% ($${committed.toLocaleString()} of $${estimated.toLocaleString()}).`,
+                            action_url: `/budgets/${line.budget_id}`,
+                            organization_id: orgId,
+                        });
+                        results.budget_burn_alerts++;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        results.errors.push(`Budget burn scan: ${(err as Error).message}`);
     }
 
     console.log("Automation scheduler results:", JSON.stringify(results));

@@ -86,7 +86,7 @@ import type {
     ListPageConfig,
     ListRowActionDef,
 } from "@/types/list-page-config";
-import { apiCreate, apiDelete } from "@/lib/api/client";
+import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -175,6 +175,7 @@ interface ViewContentProps {
     handleRowClick: (record: EntityRecord) => void;
     renderRowActions?: (row: EntityRecord) => React.ReactNode;
     renderRowActionItems?: (row: EntityRecord) => React.ReactNode;
+    onBoardDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
 }
 
 function ViewContent({
@@ -189,6 +190,7 @@ function ViewContent({
     handleRowClick,
     renderRowActions,
     renderRowActionItems,
+    onBoardDragEnd,
 }: ViewContentProps) {
     // ─── Table ───
     if (viewMode === "table") {
@@ -239,6 +241,7 @@ function ViewContent({
                 cardFields={[]}
                 actions={renderRowActions}
                 onCardClick={handleRowClick}
+                onDragEnd={onBoardDragEnd}
             />
         );
     }
@@ -987,6 +990,24 @@ export function ListPageShell({
                                 handleRowClick={handleRowClick}
                                 renderRowActions={renderRowActions}
                                 renderRowActionItems={renderRowActionItems}
+                                onBoardDragEnd={
+                                    config.boardConfig
+                                        ? async (
+                                              itemId: string,
+                                              _from: string,
+                                              toColumn: string
+                                          ) => {
+                                              try {
+                                                  await apiUpdate(basePath, itemId, {
+                                                      [config.boardConfig!.groupByKey]: toColumn,
+                                                  });
+                                                  window.location.reload();
+                                              } catch {
+                                                  // API errors surface via toast
+                                              }
+                                          }
+                                        : undefined
+                                }
                             />
                         ))}
 

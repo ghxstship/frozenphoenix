@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useRef, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
@@ -178,7 +179,7 @@ export default function InviteTeamPage() {
 
                 const res = await fetch("/api/invitations", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify(body),
                 });
 

@@ -7,6 +7,9 @@ import {
     Calendar,
     CheckCircle2,
     DollarSign,
+    History,
+    Layout,
+    Loader2,
     Package,
     Send,
     XCircle,
@@ -22,11 +25,125 @@ import {
     AdvanceTypeBadge,
 } from "@/components/advancing";
 import { AdvanceTimeline } from "@/components/advancing/advance-timeline";
-import { useAdvance, useAdvanceItems } from "@/lib/supabase/hooks-advancing";
+import {
+    useAdvance,
+    useAdvanceItems,
+    useAdvanceStatusHistory,
+    useAdvanceTemplates,
+} from "@/lib/supabase/hooks-advancing";
 import { useAdvancesRealtime } from "@/lib/supabase/realtime-advancing";
 import { formatAdvanceCost } from "@/config/advancing-config";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { AdvanceItemStatus, AdvancePriority, AdvanceStatus, AdvanceType } from "@/types";
+
+function AdvanceStatusHistoryTab({ advanceId }: { advanceId: string }) {
+    const { data: history, isLoading } = useAdvanceStatusHistory("advance", advanceId);
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!history || history.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No status history recorded.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <History className="h-4 w-4 text-primary" />
+                    Status History ({history.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {history.map((h: Record<string, unknown>) => (
+                        <div
+                            key={String(h.id)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div>
+                                <p className="text-sm font-medium">
+                                    {String(h.from_status ?? "")} → {String(h.to_status ?? "")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {h.created_at
+                                        ? new Date(String(h.created_at)).toLocaleString()
+                                        : ""}
+                                </p>
+                            </div>
+                            {Boolean(h.reason) && (
+                                <Badge variant="outline" className="text-[10px]">
+                                    {String(h.reason)}
+                                </Badge>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function AdvanceTemplatesTab() {
+    const { data: templates, isLoading } = useAdvanceTemplates();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!templates || templates.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No advance templates available.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Layout className="h-4 w-4 text-primary" />
+                    Advance Templates ({templates.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {templates.map((t: Record<string, unknown>) => (
+                        <div
+                            key={String(t.id)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(t.name ?? t.id)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {String(t.advance_type ?? "")}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "advancing",
@@ -115,6 +232,16 @@ export default function AdvanceDetailPage() {
                         </CardContent>
                     </Card>
                 ),
+            },
+            {
+                id: "status-history",
+                label: "Status History",
+                content: <AdvanceStatusHistoryTab advanceId={id} />,
+            },
+            {
+                id: "templates",
+                label: "Templates",
+                content: <AdvanceTemplatesTab />,
             },
         ],
         overviewSlot: (

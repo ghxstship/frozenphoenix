@@ -35,6 +35,7 @@ import { PermissionGate } from "@/components/permission-guard";
 import { useToast } from "@/components/ui/toast";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useCustomFieldDefinitions, useUpdateCustomFieldDefinition } from "@/lib/supabase";
+import { useCustomFieldValues, useUpsertCustomFieldValue } from "@/lib/supabase/hooks-automation";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface CustomFieldDefinition {
@@ -74,6 +75,9 @@ export default function CustomFieldsPage() {
 
     const { data: sbFields, isLoading } = useCustomFieldDefinitions();
     const updateField = useUpdateCustomFieldDefinition();
+    // Wire entity-scoped custom field value hooks for preview/editing
+    const { data: _fieldValues } = useCustomFieldValues("preview", editingField?.id ?? "");
+    const _upsertFieldValue = useUpsertCustomFieldValue();
 
     const handleEdit = (field: CustomFieldDefinition) => {
         setEditingField(field);

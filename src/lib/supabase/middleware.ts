@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./config";
+import { CSRF_COOKIE_NAME, generateCsrfToken } from "@/lib/csrf";
 
 // ─── Performance: Static constants hoisted out of request path ──────
 const PUBLIC_EXACT_PATHS = new Set(["/", "/login", "/signup", "/forgot-password"]);
@@ -293,7 +294,7 @@ export async function updateSession(request: NextRequest) {
 
                     const onlyDefault = orgMemberships.length === 1 && orgSlug === "default";
 
-                    if (onlyDefault && firstMembership?.role === "exec") {
+                    if (onlyDefault) {
                         const url = request.nextUrl.clone();
                         url.pathname = "/onboarding/org-setup";
                         return NextResponse.redirect(url);
@@ -357,6 +358,17 @@ export async function updateSession(request: NextRequest) {
                 }
             }
         }
+    }
+
+    // ─── CSRF: set double-submit cookie for authenticated users ───
+    if (user && !request.cookies.get(CSRF_COOKIE_NAME)?.value) {
+        response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), {
+            httpOnly: false, // JS must read this to send as header
+            secure: IS_PROD,
+            sameSite: "lax",
+            path: "/",
+            maxAge: COOKIE_TTL_DAY,
+        });
     }
 
     // ─── Security headers (applied once from pre-computed array) ───

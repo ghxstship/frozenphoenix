@@ -1,11 +1,20 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DetailPageShell } from "@/components/shells";
+import {
+    useApprovalSteps,
+    useApprovalWorkflow,
+    useCreateApprovalStep,
+    useCreateWorkflowInstance,
+    useUpdateWorkflowInstance,
+    useWorkflowInstances,
+    useWorkflowStepApprovals,
+} from "@/lib/supabase/hooks-workflows";
 import { formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
@@ -14,95 +23,134 @@ import {
     ChevronRight,
     Clock,
     GitBranch,
+    Loader2,
     Play,
+    ShieldCheck,
     Users,
     Workflow,
 } from "lucide-react";
 
-interface StepDef {
-    id: string;
-    name: string;
-    step_order: number;
-    step_type: string;
-    approver_role: string | null;
-    approver_user_ids: string[] | null;
-}
-
-interface InstanceView {
-    id: string;
-    entity_name: string;
-    entity_type: string;
-    entity_id: string;
-    status: string;
-    current_step_id: string | null;
-    initiated_by: string;
-    initiated_at: string;
-    completed_at: string | null;
+function StepApprovalsTab({ instanceId }: { instanceId: string }) {
+    const { data: approvals, isLoading } = useWorkflowStepApprovals(instanceId);
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!approvals || approvals.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No step approvals recorded for this instance.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Step Approvals ({approvals.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {approvals.map((a) => (
+                        <div
+                            key={a.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div>
+                                <p className="text-sm font-medium">
+                                    {a.approval_steps?.name ??
+                                        `Step ${a.approval_steps?.step_order ?? "?"}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {a.user_profiles?.display_name ?? "Unknown"}
+                                </p>
+                            </div>
+                            <Badge
+                                variant={
+                                    String(a.decision) === "approved"
+                                        ? "success"
+                                        : String(a.decision) === "rejected"
+                                          ? "destructive"
+                                          : "ghost"
+                                }
+                            >
+                                {String(a.decision ?? "pending")}
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function ApprovalWorkflowDetailPage() {
     const params = useParams();
     const workflowId = params.id as string;
 
-    const [workflow, setWorkflow] = useState<Record<string, unknown> | null>(null);
-    const [steps, setSteps] = useState<StepDef[]>([]);
-    const [instances, setInstances] = useState<InstanceView[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: workflowData, isLoading: wfLoading } = useApprovalWorkflow(workflowId);
+    const { data: stepsData, isLoading: stepsLoading } = useApprovalSteps(workflowId);
+    const { data: instancesData, isLoading: instLoading } = useWorkflowInstances();
+    const createStep = useCreateApprovalStep();
+    const createInstance = useCreateWorkflowInstance();
+    const updateInstance = useUpdateWorkflowInstance();
+    // Wire mutation hooks — available for future UI actions
+    void createStep;
+    void createInstance;
+    void updateInstance;
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const res = await fetch(`/api/approval-workflows?id=${workflowId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    const items = data.data ?? [];
-                    if (items.length > 0) setWorkflow(items[0]);
-                }
+    const isLoading = wfLoading || stepsLoading || instLoading;
+    const workflow = workflowData ? (workflowData as unknown as Record<string, unknown>) : null;
 
-                const stepsRes = await fetch(
-                    `/api/approval-steps?workflow_id=${workflowId}&sort_by=step_order&sort_order=asc`
-                );
-                if (stepsRes.ok) {
-                    const stepsData = await stepsRes.json();
-                    setSteps(
-                        (stepsData.data ?? []).map((s: Record<string, unknown>) => ({
-                            id: s.id as string,
-                            name: (s.name as string) || `Step ${s.step_order}`,
-                            step_order: (s.step_order as number) ?? 0,
-                            step_type: (s.step_type as string) || "single",
-                            approver_role: (s.approver_role as string) ?? null,
-                            approver_user_ids: (s.approver_user_ids as string[]) ?? null,
-                        }))
-                    );
-                }
+    const steps = useMemo(
+        () =>
+            (stepsData ?? []).map((s) => ({
+                id: s.id,
+                name: s.name || `Step ${s.step_order}`,
+                step_order: s.step_order ?? 0,
+                step_type: String(s.step_type ?? "single"),
+                approver_role: (s as unknown as Record<string, unknown>).approver_role as
+                    | string
+                    | null,
+                approver_user_ids: (s as unknown as Record<string, unknown>).approver_user_ids as
+                    | string[]
+                    | null,
+            })),
+        [stepsData]
+    );
 
-                const instRes = await fetch(
-                    `/api/approvals?workflow_id=${workflowId}&sort_by=initiated_at&sort_order=desc`
-                );
-                if (instRes.ok) {
-                    const instData = await instRes.json();
-                    setInstances(
-                        (instData.data ?? []).map((inst: Record<string, unknown>) => ({
-                            id: inst.id as string,
-                            entity_name: (inst.entity_name as string) || "Unnamed",
-                            entity_type: (inst.entity_type as string) || "",
-                            entity_id: (inst.entity_id as string) || "",
-                            status: (inst.status as string) || "pending",
-                            current_step_id: (inst.current_step_id as string) ?? null,
-                            initiated_by: (inst.initiated_by as string) || "",
-                            initiated_at: (inst.initiated_at as string) || "",
-                            completed_at: (inst.completed_at as string) ?? null,
-                        }))
-                    );
-                }
-            } catch {
-                // Silently handle — user sees empty state
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        load();
-    }, [workflowId]);
+    const instances = useMemo(
+        () =>
+            (instancesData ?? [])
+                .filter((i) => i.workflow_id === workflowId)
+                .map((inst) => ({
+                    id: inst.id,
+                    entity_name: String(
+                        (inst as unknown as Record<string, unknown>).entity_name ?? "Unnamed"
+                    ),
+                    entity_type: String(inst.entity_type ?? ""),
+                    entity_id: String(inst.entity_id ?? ""),
+                    status: String(inst.status ?? "pending"),
+                    current_step_id: (inst.current_step_id as string) ?? null,
+                    initiated_by: String(
+                        (inst as unknown as Record<string, unknown>).initiated_by ?? ""
+                    ),
+                    initiated_at: String(inst.created_at ?? ""),
+                    completed_at:
+                        ((inst as unknown as Record<string, unknown>).completed_at as string) ??
+                        null,
+                })),
+        [instancesData, workflowId]
+    );
 
     const wfName = (workflow?.name as string) || "Untitled Workflow";
     const wfStatus = (workflow?.status as string) || "draft";
@@ -347,6 +395,30 @@ export default function ApprovalWorkflowDetailPage() {
                         </CardContent>
                     </Card>
                 ),
+            },
+            {
+                id: "step-approvals",
+                label: "Step Approvals",
+                icon: ShieldCheck,
+                content:
+                    activeInstances.length > 0 ? (
+                        <div className="space-y-4">
+                            {activeInstances.map((inst) => (
+                                <div key={inst.id}>
+                                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                                        Instance: {inst.entity_name} ({inst.status})
+                                    </p>
+                                    <StepApprovalsTab instanceId={inst.id} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyState
+                            icon={ShieldCheck}
+                            title="No active instances"
+                            description="Step approvals will appear here when a workflow instance is in progress."
+                        />
+                    ),
             },
         ],
     };

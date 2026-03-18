@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useCallback, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -33,6 +33,13 @@ function SignupForm() {
     const [success, setSuccess] = useState(false);
 
     const botProtection = useBotProtection();
+    const firstNameRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus first name field (delayed so screen readers announce heading first)
+    useEffect(() => {
+        const timer = setTimeout(() => firstNameRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     const validate = useCallback((): boolean => {
         const errors: Record<string, string> = {};
@@ -75,6 +82,7 @@ function SignupForm() {
                             invite_token: inviteToken || undefined,
                         },
                         emailRedirectTo: `${window.location.origin}/auth/callback`,
+                        ...(botProtection.token ? { captchaToken: botProtection.token } : {}),
                     },
                 });
 
@@ -102,7 +110,17 @@ function SignupForm() {
                 setLoading(false);
             }
         },
-        [email, password, firstName, lastName, orgName, inviteToken, router, validate]
+        [
+            email,
+            password,
+            firstName,
+            lastName,
+            orgName,
+            inviteToken,
+            router,
+            validate,
+            botProtection.token,
+        ]
     );
 
     const handleOAuthLogin = useCallback(
@@ -215,6 +233,7 @@ function SignupForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <AuthFormField
+                        ref={firstNameRef}
                         fieldId="signup-first-name"
                         label="First Name"
                         type="text"

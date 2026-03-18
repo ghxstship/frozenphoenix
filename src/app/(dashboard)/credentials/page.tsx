@@ -5,7 +5,20 @@ import { CREDENTIALS_PAGE } from "@/config/list-page-configs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCredentialPools, useCredentialTypes } from "@/lib/supabase/hooks-credentialing";
+import {
+    useCreateCredentialAssignment,
+    useCreateCredentialPool,
+    useCreateCredentialType,
+    useCreateExportTemplate,
+    useCreateScanEntry,
+    useCredentialPools,
+    useCredentialTypes,
+    useExportTemplates,
+    useUpdateCredentialAssignment,
+    useUpdateCredentialPool,
+    useUpdateCredentialType,
+    useUpdateExportTemplate,
+} from "@/lib/supabase/hooks-credentialing";
 import { AlertTriangle, Package, Plus, Ticket, Users } from "lucide-react";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { ListPageShell } from "@/components/shells/list-page-shell";
@@ -235,6 +248,16 @@ function CredentialsContent({
 export default function CredentialsPage() {
     const { data: types, isLoading: loadingTypes } = useCredentialTypes(false);
     const { data: pools, isLoading: loadingPools } = useCredentialPools();
+    const _createType = useCreateCredentialType();
+    const _updateType = useUpdateCredentialType();
+    const _createPool = useCreateCredentialPool();
+    const _updatePool = useUpdateCredentialPool();
+    const _createAssignment = useCreateCredentialAssignment();
+    const _updateAssignment = useUpdateCredentialAssignment();
+    const _createScan = useCreateScanEntry();
+    const { data: _exportTemplates } = useExportTemplates();
+    const _createExportTpl = useCreateExportTemplate();
+    const _updateExportTpl = useUpdateExportTemplate();
 
     const isLoading = loadingTypes || loadingPools;
 

@@ -5,6 +5,7 @@ import { createClient } from "./client";
 import { clearWorkspaceContext } from "@/hooks/use-workspace-context";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database, Tables } from "./database.types";
+import { logAuthEvent } from "./auth-audit";
 
 type Profile = Tables<"user_profiles">;
 type OrgMembershipStatus = Database["public"]["Enums"]["org_membership_status"];
@@ -34,6 +35,8 @@ interface AuthContextType {
     memberships: OrgMembership[];
     activeOrg: OrgMembership | null;
     isOwner: boolean;
+    /** True when the user signed up via Bluesky and has a placeholder @atproto.local email */
+    needsEmailCollection: boolean;
     switchOrg: (orgId: string) => void;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
@@ -76,6 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setActiveOrgId(orgId);
         if (typeof window !== "undefined") {
             localStorage.setItem(AUTH_ACTIVE_ORG_KEY, orgId);
+            // Invalidate middleware cache cookies so the next request
+            // triggers a fresh DB lookup with the new org's role/permissions.
+            const cookiesToClear = [
+                "fp-user-role",
+                "fp-org-id",
+                "fp-lifecycle-status",
+                "fp-onboarding-complete",
+            ];
+            for (const name of cookiesToClear) {
+                document.cookie = `${name}=; path=/; max-age=0`;
+            }
         }
     }, []);
 
@@ -181,6 +195,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return ((profile as Record<string, unknown>).username as string | null) ?? null;
     }, [profile]);
 
+    // BUG-006: Bluesky users get a placeholder @atproto.local email.
+    // Surface a flag so UI can prompt for real email collection.
+    const needsEmailCollection = useMemo(() => {
+        if (!profile) return false;
+        return typeof profile.email === "string" && profile.email.endsWith("@atproto.local");
+    }, [profile]);
+
     const refreshProfile = useCallback(async () => {
         if (user) {
             await Promise.all([fetchProfile(user.id), fetchMemberships(user.id)]);
@@ -188,6 +209,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, fetchProfile, fetchMemberships]);
 
     const signOut = useCallback(async () => {
+        // Audit: log the logout event before clearing session
+        logAuthEvent("logout");
+
+        // Revoke tracked session (fire-and-forget)
+        fetch("/api/auth/session-track", { method: "DELETE", keepalive: true }).catch(() => {});
+
         // Clear persisted preferences
         if (typeof window !== "undefined") {
             localStorage.removeItem(AUTH_ACTIVE_ORG_KEY);
@@ -254,9 +281,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+
+            // Audit: log successful sign-in events + track session
+            if (event === "SIGNED_IN" && session?.user) {
+                logAuthEvent("login_success", {
+                    auth_method: session.user.app_metadata?.provider ?? "unknown",
+                    email: session.user.email ?? "unknown",
+                });
+                // Track session (fire-and-forget)
+                fetch("/api/auth/session-track", { method: "POST", keepalive: true }).catch(
+                    () => {}
+                );
+            }
 
             if (session?.user) {
                 await Promise.all([
@@ -285,6 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 memberships,
                 activeOrg,
                 isOwner,
+                needsEmailCollection,
                 switchOrg,
                 signOut,
                 refreshProfile,

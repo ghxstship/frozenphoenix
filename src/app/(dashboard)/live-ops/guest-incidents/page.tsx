@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { useGuestIncidents } from "@/lib/supabase";
+import { useCreateGuestIncident, useUpdateGuestIncident } from "@/lib/supabase/hooks-live-ops";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
@@ -97,6 +98,8 @@ const CONFIG: DashboardPageConfig = {
 
 export default function GuestIncidentsPage() {
     const { data, isLoading } = useGuestIncidents();
+    const _createIncident = useCreateGuestIncident();
+    const _updateIncident = useUpdateGuestIncident();
 
     return (
         <OperationalDashboardShell

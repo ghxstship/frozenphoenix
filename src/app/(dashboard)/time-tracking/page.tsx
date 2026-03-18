@@ -35,6 +35,8 @@ import {
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useSubmitTimeEntries } from "@/lib/supabase";
 import { useCreateTimeEntry, useTimeEntries } from "@/lib/supabase";
+import { useActiveTimer, useStartTimer, useStopTimer } from "@/lib/supabase";
+import { useAuth } from "@/lib/supabase/auth-context";
 import { PermissionGate } from "@/components/permission-guard";
 
 type TimeEntryStatus = "draft" | "submitted" | "approved" | "rejected";
@@ -324,10 +326,34 @@ export default function TimeTrackingPage() {
         validValues: TRACKING_MODES,
     });
     const [search, setSearch] = useState("");
+    const { user } = useAuth();
+    const userId = user?.id ?? "";
+    const { data: activeTimerRecord } = useActiveTimer(userId);
+    const startTimerMutation = useStartTimer();
+    const stopTimerMutation = useStopTimer();
+
     const [timerRunning, setTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
     const [timerProject, _setTimerProject] = useState("");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hydratedRef = useRef(false);
+
+    // Hydrate once from DB active timer using requestAnimationFrame to avoid
+    // the eslint "setState in effect" cascading-render warning
+    const dbStartedAt = activeTimerRecord
+        ? new Date(
+              String((activeTimerRecord as Record<string, unknown>).started_at ?? "")
+          ).getTime()
+        : 0;
+    useEffect(() => {
+        if (dbStartedAt > 0 && !hydratedRef.current) {
+            hydratedRef.current = true;
+            requestAnimationFrame(() => {
+                setTimerRunning(true);
+                setTimerSeconds(Math.floor((Date.now() - dbStartedAt) / 1000));
+            });
+        }
+    }, [dbStartedAt]);
 
     useEffect(() => {
         if (timerRunning) {
@@ -339,6 +365,22 @@ export default function TimeTrackingPage() {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [timerRunning]);
+
+    const handleStartTimer = () => {
+        setTimerRunning(true);
+        setTimerSeconds(0);
+        startTimerMutation.mutate({
+            user_id: userId,
+            started_at: new Date().toISOString(),
+        } as never);
+    };
+
+    const handleStopTimer = () => {
+        setTimerRunning(false);
+        if (activeTimerRecord) {
+            stopTimerMutation.mutate((activeTimerRecord as Record<string, unknown>).id as string);
+        }
+    };
 
     const createEntry = useCreateTimeEntry();
     const submitEntries = useSubmitTimeEntries();
@@ -397,13 +439,16 @@ export default function TimeTrackingPage() {
                 description="Track hours, manage timesheets, and monitor billable utilization"
                 actions={
                     <>
-                        <Button variant="outline" onClick={() => setTimerRunning(!timerRunning)}>
+                        <Button
+                            variant="outline"
+                            onClick={() => (timerRunning ? handleStopTimer() : handleStartTimer())}
+                        >
                             {timerRunning ? (
                                 <Pause className="mr-2 h-4 w-4" />
                             ) : (
                                 <Play className="mr-2 h-4 w-4" />
                             )}
-                            {timerRunning ? "Pause" : "Start"} Timer
+                            {timerRunning ? "Stop" : "Start"} Timer
                         </Button>
                         <Button
                             onClick={() =>
@@ -448,7 +493,7 @@ export default function TimeTrackingPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setTimerRunning(false)}
+                                    onClick={() => handleStopTimer()}
                                 >
                                     <Square className="mr-1 h-3 w-3" /> Stop
                                 </Button>
@@ -802,21 +847,23 @@ export default function TimeTrackingPage() {
                                 <div className="flex justify-center gap-3">
                                     <Button
                                         size="lg"
-                                        onClick={() => setTimerRunning(!timerRunning)}
+                                        onClick={() =>
+                                            timerRunning ? handleStopTimer() : handleStartTimer()
+                                        }
                                     >
                                         {timerRunning ? (
                                             <Pause className="mr-2 h-5 w-5" />
                                         ) : (
                                             <Play className="mr-2 h-5 w-5" />
                                         )}
-                                        {timerRunning ? "Pause" : "Start"}
+                                        {timerRunning ? "Stop" : "Start"}
                                     </Button>
                                     <Button
                                         variant="outline"
                                         size="lg"
                                         disabled={createEntry.isPending}
                                         onClick={() => {
-                                            setTimerRunning(false);
+                                            handleStopTimer();
                                             if (timerSeconds > 0) {
                                                 createEntry.mutate({
                                                     entry_date: today,

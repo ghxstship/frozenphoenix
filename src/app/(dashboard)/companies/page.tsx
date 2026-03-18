@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCompanies, useDeleteCompany } from "@/lib/supabase";
+import { useCreateCompany } from "@/lib/supabase/hooks-crm";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import { COMPANIES_PAGE } from "@/config/list-page-configs";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -286,6 +287,7 @@ function CompaniesContent({
 export default function CompaniesPage() {
     const { data: sbCompanies, isLoading } = useCompanies();
     const deleteMutation = useDeleteCompany();
+    const _createCompany = useCreateCompany();
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
     const handleRequestDelete = useCallback((id: string, name: string) => {

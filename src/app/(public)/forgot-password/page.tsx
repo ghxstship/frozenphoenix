@@ -17,6 +17,13 @@ export default function ForgotPasswordPage() {
 
     const botProtection = useBotProtection();
     const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const emailRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus email field (delayed so screen readers announce heading first)
+    useEffect(() => {
+        const timer = setTimeout(() => emailRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -45,6 +52,7 @@ export default function ForgotPasswordPage() {
 
                 const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/auth/reset-password`,
+                    ...(botProtection.token ? { captchaToken: botProtection.token } : {}),
                 });
 
                 if (resetError) {
@@ -60,7 +68,7 @@ export default function ForgotPasswordPage() {
                 setLoading(false);
             }
         },
-        [email]
+        [email, botProtection.token]
     );
 
     const handleResend = useCallback(() => {
@@ -135,6 +143,7 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <AuthFormField
+                    ref={emailRef}
                     fieldId="forgot-email"
                     label="Email"
                     type="email"

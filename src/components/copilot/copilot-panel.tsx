@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { cn } from "@/lib/utils";
 import { SlidePanel } from "@/components/ui/slide-panel";
 import { useCopilot } from "@/hooks/use-copilot";
@@ -82,7 +83,7 @@ export function CopilotPanel() {
             try {
                 const res = await fetch("/api/ai/chat", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({
                         message: content,
                         conversation_id: useCopilot.getState().activeConversationId,

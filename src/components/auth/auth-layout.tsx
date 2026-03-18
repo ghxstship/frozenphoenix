@@ -23,6 +23,13 @@ const TRUST_SIGNALS = [
 export function AuthLayout({ children, title, subtitle, className }: AuthLayoutProps) {
     return (
         <div className="min-h-screen flex bg-background">
+            {/* Skip-nav link — WCAG 2.2 AA §2.4.1 */}
+            <a
+                href="#auth-main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+                Skip to main content
+            </a>
             {/* Left: Branded Panel (hidden on mobile) */}
             <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] shrink-0 flex-col justify-between bg-gradient-to-br from-primary/10 via-background to-accent/10 border-r border-border p-10">
                 <div>
@@ -63,7 +70,10 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
             </div>
 
             {/* Right: Auth Form */}
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+            <main
+                id="auth-main-content"
+                className="flex-1 flex items-center justify-center p-4 sm:p-8"
+            >
                 <div className={cn("w-full max-w-md space-y-6", className)}>
                     {/* Mobile-only brand header */}
                     <div className="text-center lg:hidden">
@@ -104,7 +114,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                         .
                     </p>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

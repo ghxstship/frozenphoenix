@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DetailPageShell } from "@/components/shells";
 import { useAutomations } from "@/lib/supabase";
 import { useAutomationLogs } from "@/lib/supabase";
+import { useAutomationWithRules } from "@/lib/supabase/hooks-automation";
 import { WORKFLOW_STATUS_MAP, type WorkflowStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -95,12 +96,17 @@ export default function AutomationDetailPage() {
     const params = useParams();
     const automationId = params.id as string;
 
-    const { data: allAutomations, isLoading } = useAutomations();
+    const { data: allAutomations, isLoading: isListLoading } = useAutomations();
+    const { data: automationDetail, isLoading: isDetailLoading } =
+        useAutomationWithRules(automationId);
     const { data: logs } = useAutomationLogs(automationId);
 
-    const automation = (allAutomations ?? []).find(
-        (a: Record<string, unknown>) => a.id === automationId
-    ) as Record<string, unknown> | undefined;
+    const isLoading = isListLoading || isDetailLoading;
+    const automation = automationDetail
+        ? (automationDetail as Record<string, unknown>)
+        : ((allAutomations ?? []).find((a: Record<string, unknown>) => a.id === automationId) as
+              | Record<string, unknown>
+              | undefined);
 
     const [rules, setRules] = useState<RuleBlock[]>([
         {

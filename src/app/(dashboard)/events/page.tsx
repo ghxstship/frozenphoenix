@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useActivations, useEvents, useLocations, useProjects } from "@/lib/supabase";
+import { useCreateEvent } from "@/lib/supabase/hooks-core";
 import { EVENTS_PAGE } from "@/config/list-page-configs";
 import { Calendar, Play, Users } from "lucide-react";
 import type { ListPageConfig } from "@/types/list-page-config";
@@ -62,6 +63,7 @@ export default function EventsPage() {
     const { data: sbLocations } = useLocations();
     const { data: sbActivations } = useActivations();
     const { data: sbProjects } = useProjects();
+    const _createEvent = useCreateEvent();
 
     const data = useMemo(() => {
         const locations = new Map((sbLocations ?? []).map((l) => [l.id, l.name]));

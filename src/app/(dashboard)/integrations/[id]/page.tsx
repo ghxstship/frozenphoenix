@@ -10,12 +10,15 @@ import { DetailPageShell } from "@/components/shells";
 import { formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
+    useCreateProviderConnection,
     useCreateSyncConflictPolicy,
     useDeleteProviderConnection,
     useProviderConnection,
+    useProviderTicketMap,
     useSyncConflictPolicies,
     useSyncEvents,
     useUpdateProviderConnection,
+    useUpdateSyncConflictPolicy,
     useWebhookEvents,
 } from "@/lib/supabase/hooks-external-sync";
 import {
@@ -47,6 +50,9 @@ export default function IntegrationDetailPage() {
     const updateConnection = useUpdateProviderConnection();
     const deleteConnection = useDeleteProviderConnection();
     const createPolicy = useCreateSyncConflictPolicy();
+    const _createConnection = useCreateProviderConnection();
+    const { data: _ticketMap } = useProviderTicketMap(id);
+    const _updatePolicy = useUpdateSyncConflictPolicy();
 
     const [newPolicyEntity, setNewPolicyEntity] = useState("");
     const [newPolicyField, setNewPolicyField] = useState("");

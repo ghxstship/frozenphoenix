@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { AlertCircle, CheckCircle, Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -139,7 +140,7 @@ export function CsvExportDialog({
         try {
             const response = await fetch("/api/csv/export", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     entity,
                     filters,
@@ -175,7 +176,7 @@ export function CsvExportDialog({
         try {
             const response = await fetch("/api/csv/export", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     entity,
                     filters,

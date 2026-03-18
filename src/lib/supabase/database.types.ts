@@ -1,6 +1,11 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+    // Allows to automatically instantiate createClient with right options
+    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+    __InternalSupabase: {
+        PostgrestVersion: "14.1";
+    };
     graphql_public: {
         Tables: {
             [_ in never]: never;
@@ -3785,6 +3790,33 @@ export type Database = {
                     },
                 ];
             };
+            auth_rate_limits: {
+                Row: {
+                    attempts: number;
+                    blocked_until: string | null;
+                    created_at: string;
+                    id: string;
+                    key: string;
+                    window_start: string;
+                };
+                Insert: {
+                    attempts?: number;
+                    blocked_until?: string | null;
+                    created_at?: string;
+                    id?: string;
+                    key: string;
+                    window_start?: string;
+                };
+                Update: {
+                    attempts?: number;
+                    blocked_until?: string | null;
+                    created_at?: string;
+                    id?: string;
+                    key?: string;
+                    window_start?: string;
+                };
+                Relationships: [];
+            };
             automation_dead_letters: {
                 Row: {
                     automation_id: string;
@@ -3981,12 +4013,10 @@ export type Database = {
             };
             automations: {
                 Row: {
-                    conditions: Json | null;
                     created_at: string | null;
                     created_by: string | null;
                     description: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
-                    error_count: number | null;
                     id: string;
                     is_active: boolean | null;
                     last_triggered_at: string | null;
@@ -4002,12 +4032,10 @@ export type Database = {
                     version: number | null;
                 };
                 Insert: {
-                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
-                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -4023,12 +4051,10 @@ export type Database = {
                     version?: number | null;
                 };
                 Update: {
-                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type?: Database["public"]["Enums"]["entity_type"];
-                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -14119,6 +14145,58 @@ export type Database = {
                     },
                 ];
             };
+            entity_tag_assignments: {
+                Row: {
+                    created_at: string;
+                    created_by: string | null;
+                    entity_id: string;
+                    entity_type: string;
+                    id: string;
+                    organization_id: string;
+                    tag_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    entity_id: string;
+                    entity_type: string;
+                    id?: string;
+                    organization_id: string;
+                    tag_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    entity_id?: string;
+                    entity_type?: string;
+                    id?: string;
+                    organization_id?: string;
+                    tag_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "entity_tag_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "entity_tag_assignments_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "entity_tag_assignments_tag_id_fkey";
+                        columns: ["tag_id"];
+                        isOneToOne: false;
+                        referencedRelation: "tags";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             environmental_readings: {
                 Row: {
                     created_at: string | null;
@@ -20971,11 +21049,13 @@ export type Database = {
                     created_at: string | null;
                     device_fingerprint: string | null;
                     email: string | null;
+                    error_code: string | null;
                     event_type: Database["public"]["Enums"]["login_event_type"];
                     failure_reason: string | null;
                     id: string;
                     ip_address: unknown;
                     metadata: Json | null;
+                    organization_id: string | null;
                     session_id: string | null;
                     success: boolean;
                     user_agent: string | null;
@@ -20988,11 +21068,13 @@ export type Database = {
                     created_at?: string | null;
                     device_fingerprint?: string | null;
                     email?: string | null;
+                    error_code?: string | null;
                     event_type: Database["public"]["Enums"]["login_event_type"];
                     failure_reason?: string | null;
                     id?: string;
                     ip_address?: unknown;
                     metadata?: Json | null;
+                    organization_id?: string | null;
                     session_id?: string | null;
                     success?: boolean;
                     user_agent?: string | null;
@@ -21005,17 +21087,33 @@ export type Database = {
                     created_at?: string | null;
                     device_fingerprint?: string | null;
                     email?: string | null;
+                    error_code?: string | null;
                     event_type?: Database["public"]["Enums"]["login_event_type"];
                     failure_reason?: string | null;
                     id?: string;
                     ip_address?: unknown;
                     metadata?: Json | null;
+                    organization_id?: string | null;
                     session_id?: string | null;
                     success?: boolean;
                     user_agent?: string | null;
                     user_id?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: "login_audit_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "login_audit_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
                     {
                         foreignKeyName: "login_audit_log_user_id_fkey";
                         columns: ["user_id"];
@@ -21745,6 +21843,45 @@ export type Database = {
                         columns: ["organization_id"];
                         isOneToOne: false;
                         referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            mfa_recovery_codes: {
+                Row: {
+                    code_hash: string;
+                    created_at: string;
+                    id: string;
+                    used_at: string | null;
+                    user_id: string;
+                };
+                Insert: {
+                    code_hash: string;
+                    created_at?: string;
+                    id?: string;
+                    used_at?: string | null;
+                    user_id: string;
+                };
+                Update: {
+                    code_hash?: string;
+                    created_at?: string;
+                    id?: string;
+                    used_at?: string | null;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "mfa_recovery_codes_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "mfa_recovery_codes_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -27233,8 +27370,6 @@ export type Database = {
                     status: string;
                     sustainability_score: number | null;
                     team_id: string | null;
-                    template_id: string | null;
-                    template_version: number | null;
                     timezone: string;
                     updated_at: string | null;
                     weather_contingency_plan: string | null;
@@ -27271,8 +27406,6 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
-                    template_id?: string | null;
-                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -27309,8 +27442,6 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
-                    template_id?: string | null;
-                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -27419,13 +27550,6 @@ export type Database = {
                         columns: ["team_id"];
                         isOneToOne: false;
                         referencedRelation: "teams";
-                        referencedColumns: ["id"];
-                    },
-                    {
-                        foreignKeyName: "projects_template_id_fkey";
-                        columns: ["template_id"];
-                        isOneToOne: false;
-                        referencedRelation: "project_templates";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -34525,6 +34649,63 @@ export type Database = {
                     },
                 ];
             };
+            tags: {
+                Row: {
+                    category: string | null;
+                    color: string | null;
+                    created_at: string;
+                    created_by: string | null;
+                    description: string | null;
+                    id: string;
+                    name: string;
+                    organization_id: string;
+                    slug: string;
+                    updated_at: string;
+                    usage_count: number;
+                };
+                Insert: {
+                    category?: string | null;
+                    color?: string | null;
+                    created_at?: string;
+                    created_by?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    name: string;
+                    organization_id: string;
+                    slug: string;
+                    updated_at?: string;
+                    usage_count?: number;
+                };
+                Update: {
+                    category?: string | null;
+                    color?: string | null;
+                    created_at?: string;
+                    created_by?: string | null;
+                    description?: string | null;
+                    id?: string;
+                    name?: string;
+                    organization_id?: string;
+                    slug?: string;
+                    updated_at?: string;
+                    usage_count?: number;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "tags_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "tags_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             task_dependencies: {
                 Row: {
                     created_at: string | null;
@@ -34934,63 +35115,6 @@ export type Database = {
                         columns: ["user_id"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
-                        referencedColumns: ["id"];
-                    },
-                ];
-            };
-            tags: {
-                Row: {
-                    id: string;
-                    organization_id: string;
-                    name: string;
-                    slug: string;
-                    color: string | null;
-                    description: string | null;
-                    category: string | null;
-                    usage_count: number;
-                    created_at: string;
-                    updated_at: string;
-                    created_by: string | null;
-                };
-                Insert: {
-                    id?: string;
-                    organization_id: string;
-                    name: string;
-                    slug: string;
-                    color?: string | null;
-                    description?: string | null;
-                    category?: string | null;
-                    usage_count?: number;
-                    created_at?: string;
-                    updated_at?: string;
-                    created_by?: string | null;
-                };
-                Update: {
-                    id?: string;
-                    organization_id?: string;
-                    name?: string;
-                    slug?: string;
-                    color?: string | null;
-                    description?: string | null;
-                    category?: string | null;
-                    usage_count?: number;
-                    created_at?: string;
-                    updated_at?: string;
-                    created_by?: string | null;
-                };
-                Relationships: [
-                    {
-                        foreignKeyName: "tags_created_by_fkey";
-                        columns: ["created_by"];
-                        isOneToOne: false;
-                        referencedRelation: "users";
-                        referencedColumns: ["id"];
-                    },
-                    {
-                        foreignKeyName: "tags_organization_id_fkey";
-                        columns: ["organization_id"];
-                        isOneToOne: false;
-                        referencedRelation: "organizations";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -36202,83 +36326,90 @@ export type Database = {
             };
             transfer_orders: {
                 Row: {
-                    id: string;
-                    organization_id: string;
-                    transfer_number: string;
-                    status: Database["public"]["Enums"]["transfer_order_status"];
-                    origin_location_id: string | null;
-                    destination_location_id: string | null;
-                    requested_by: string | null;
-                    approved_by: string | null;
-                    requested_date: string | null;
-                    expected_arrival_date: string | null;
                     actual_arrival_date: string | null;
-                    notes: string | null;
-                    priority: string | null;
-                    total_items: number;
+                    approved_by: string | null;
                     created_at: string;
-                    updated_at: string;
                     created_by: string | null;
+                    destination_location_id: string | null;
+                    expected_arrival_date: string | null;
+                    id: string;
+                    notes: string | null;
+                    organization_id: string;
+                    origin_location_id: string | null;
+                    priority: string | null;
+                    requested_by: string | null;
+                    requested_date: string | null;
+                    status: Database["public"]["Enums"]["transfer_order_status"];
+                    total_items: number | null;
+                    transfer_number: string;
+                    updated_at: string;
                 };
                 Insert: {
-                    id?: string;
-                    organization_id: string;
-                    transfer_number: string;
-                    status?: Database["public"]["Enums"]["transfer_order_status"];
-                    origin_location_id?: string | null;
-                    destination_location_id?: string | null;
-                    requested_by?: string | null;
-                    approved_by?: string | null;
-                    requested_date?: string | null;
-                    expected_arrival_date?: string | null;
                     actual_arrival_date?: string | null;
-                    notes?: string | null;
-                    priority?: string | null;
-                    total_items?: number;
+                    approved_by?: string | null;
                     created_at?: string;
-                    updated_at?: string;
                     created_by?: string | null;
+                    destination_location_id?: string | null;
+                    expected_arrival_date?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    organization_id: string;
+                    origin_location_id?: string | null;
+                    priority?: string | null;
+                    requested_by?: string | null;
+                    requested_date?: string | null;
+                    status?: Database["public"]["Enums"]["transfer_order_status"];
+                    total_items?: number | null;
+                    transfer_number: string;
+                    updated_at?: string;
                 };
                 Update: {
-                    id?: string;
-                    organization_id?: string;
-                    transfer_number?: string;
-                    status?: Database["public"]["Enums"]["transfer_order_status"];
-                    origin_location_id?: string | null;
-                    destination_location_id?: string | null;
-                    requested_by?: string | null;
-                    approved_by?: string | null;
-                    requested_date?: string | null;
-                    expected_arrival_date?: string | null;
                     actual_arrival_date?: string | null;
-                    notes?: string | null;
-                    priority?: string | null;
-                    total_items?: number;
+                    approved_by?: string | null;
                     created_at?: string;
-                    updated_at?: string;
                     created_by?: string | null;
+                    destination_location_id?: string | null;
+                    expected_arrival_date?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    organization_id?: string;
+                    origin_location_id?: string | null;
+                    priority?: string | null;
+                    requested_by?: string | null;
+                    requested_date?: string | null;
+                    status?: Database["public"]["Enums"]["transfer_order_status"];
+                    total_items?: number | null;
+                    transfer_number?: string;
+                    updated_at?: string;
                 };
                 Relationships: [
-                    {
-                        foreignKeyName: "transfer_orders_approved_by_fkey";
-                        columns: ["approved_by"];
-                        isOneToOne: false;
-                        referencedRelation: "users";
-                        referencedColumns: ["id"];
-                    },
-                    {
-                        foreignKeyName: "transfer_orders_created_by_fkey";
-                        columns: ["created_by"];
-                        isOneToOne: false;
-                        referencedRelation: "users";
-                        referencedColumns: ["id"];
-                    },
                     {
                         foreignKeyName: "transfer_orders_destination_location_id_fkey";
                         columns: ["destination_location_id"];
                         isOneToOne: false;
                         referencedRelation: "locations";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_destination_location_id_fkey";
+                        columns: ["destination_location_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_location_compliance_summary";
+                        referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_destination_location_id_fkey";
+                        columns: ["destination_location_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_location_profitability";
+                        referencedColumns: ["location_id"];
+                    },
+                    {
+                        foreignKeyName: "transfer_orders_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
                     },
                     {
                         foreignKeyName: "transfer_orders_organization_id_fkey";
@@ -36295,63 +36426,18 @@ export type Database = {
                         referencedColumns: ["id"];
                     },
                     {
-                        foreignKeyName: "transfer_orders_requested_by_fkey";
-                        columns: ["requested_by"];
+                        foreignKeyName: "transfer_orders_origin_location_id_fkey";
+                        columns: ["origin_location_id"];
                         isOneToOne: false;
-                        referencedRelation: "users";
-                        referencedColumns: ["id"];
-                    },
-                ];
-            };
-            entity_tag_assignments: {
-                Row: {
-                    id: string;
-                    organization_id: string;
-                    tag_id: string;
-                    entity_type: string;
-                    entity_id: string;
-                    created_at: string;
-                    created_by: string | null;
-                };
-                Insert: {
-                    id?: string;
-                    organization_id: string;
-                    tag_id: string;
-                    entity_type: string;
-                    entity_id: string;
-                    created_at?: string;
-                    created_by?: string | null;
-                };
-                Update: {
-                    id?: string;
-                    organization_id?: string;
-                    tag_id?: string;
-                    entity_type?: string;
-                    entity_id?: string;
-                    created_at?: string;
-                    created_by?: string | null;
-                };
-                Relationships: [
-                    {
-                        foreignKeyName: "entity_tag_assignments_created_by_fkey";
-                        columns: ["created_by"];
-                        isOneToOne: false;
-                        referencedRelation: "users";
-                        referencedColumns: ["id"];
+                        referencedRelation: "v_location_compliance_summary";
+                        referencedColumns: ["location_id"];
                     },
                     {
-                        foreignKeyName: "entity_tag_assignments_organization_id_fkey";
-                        columns: ["organization_id"];
+                        foreignKeyName: "transfer_orders_origin_location_id_fkey";
+                        columns: ["origin_location_id"];
                         isOneToOne: false;
-                        referencedRelation: "organizations";
-                        referencedColumns: ["id"];
-                    },
-                    {
-                        foreignKeyName: "entity_tag_assignments_tag_id_fkey";
-                        columns: ["tag_id"];
-                        isOneToOne: false;
-                        referencedRelation: "tags";
-                        referencedColumns: ["id"];
+                        referencedRelation: "v_location_profitability";
+                        referencedColumns: ["location_id"];
                     },
                 ];
             };
@@ -40240,6 +40326,31 @@ export type Database = {
                     },
                 ];
             };
+            auth_failed_login_alerts: {
+                Row: {
+                    error_codes: string[] | null;
+                    failed_count: number | null;
+                    last_failure_at: string | null;
+                    source_ips: string[] | null;
+                    user_id: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "login_audit_log_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "login_audit_log_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             brief_pipeline: {
                 Row: {
                     brief_count: number | null;
@@ -41823,6 +41934,7 @@ export type Database = {
                     reason: string;
                 }[];
             };
+            cleanup_auth_rate_limits: { Args: never; Returns: undefined };
             cleanup_expired_bluesky_oauth_states: { Args: never; Returns: undefined };
             convert_currency: {
                 Args: {
@@ -41845,6 +41957,15 @@ export type Database = {
                     p_user_id?: string;
                 };
                 Returns: Json;
+            };
+            detect_session_anomalies: {
+                Args: { p_user_id: string };
+                Returns: {
+                    anomaly_type: string;
+                    detail: string;
+                    detected_at: string;
+                    session_id: string;
+                }[];
             };
             erase_user_data: { Args: { target_user_id: string }; Returns: undefined };
             evaluate_feature_flag: {
@@ -41907,13 +42028,6 @@ export type Database = {
                     similarity: number;
                     source_type: string;
                     token_count: number;
-                }[];
-            };
-            purge_expired_data: {
-                Args: never;
-                Returns: {
-                    entity: string;
-                    rows_purged: number;
                 }[];
             };
             refresh_dashboard_kpis: { Args: never; Returns: undefined };
@@ -43547,14 +43661,6 @@ export type Database = {
                 | "foreign"
                 | "exempt";
             testimonial_status: "pending" | "approved" | "featured" | "archived";
-            transfer_order_status:
-                | "draft"
-                | "requested"
-                | "approved"
-                | "in_transit"
-                | "partially_received"
-                | "received"
-                | "cancelled";
             three_way_match_status:
                 | "not_applicable"
                 | "pending_receipt"
@@ -43574,6 +43680,14 @@ export type Database = {
                 | "holiday"
                 | "unpaid"
                 | "other";
+            transfer_order_status:
+                | "draft"
+                | "requested"
+                | "approved"
+                | "in_transit"
+                | "partially_received"
+                | "received"
+                | "cancelled";
             user_certification_type:
                 | "first_aid"
                 | "cpr"
@@ -45548,6 +45662,15 @@ export const Constants = {
                 "holiday",
                 "unpaid",
                 "other",
+            ],
+            transfer_order_status: [
+                "draft",
+                "requested",
+                "approved",
+                "in_transit",
+                "partially_received",
+                "received",
+                "cancelled",
             ],
             user_certification_type: [
                 "first_aid",

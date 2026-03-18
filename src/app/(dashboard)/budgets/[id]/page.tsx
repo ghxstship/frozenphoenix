@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_BUDGET_LINE_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { useBudget, useBudgetLines, useDeleteBudget, useUpdateBudget } from "@/lib/supabase";
+import { useBudgetApprovals, useProductionBudgetLines } from "@/lib/supabase/hooks-finance";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,145 @@ import { useProjects } from "@/lib/supabase";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { CheckCircle, DollarSign, Edit, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import {
+    ClipboardList,
+    DollarSign,
+    Edit,
+    FileText,
+    Loader2,
+    ShieldCheck,
+    TrendingDown,
+    TrendingUp,
+} from "lucide-react";
+
+function ProductionBudgetLinesTab() {
+    const { data: lines, isLoading } = useProductionBudgetLines();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!lines || lines.length === 0) {
+        return (
+            <EmptyState
+                icon={ClipboardList}
+                title="No production budget lines"
+                description="Production-specific budget lines will appear here."
+            />
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4 text-primary" />
+                    Production Budget Lines ({lines.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {lines.map((line) => (
+                        <div
+                            key={line.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(
+                                        (line as unknown as Record<string, unknown>).description ??
+                                            line.id
+                                    )}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {String(
+                                        (line as unknown as Record<string, unknown>).category ?? ""
+                                    )}
+                                </p>
+                            </div>
+                            <span className="text-sm font-semibold tabular-nums">
+                                {formatCurrency(
+                                    Number(
+                                        (line as unknown as Record<string, unknown>)
+                                            .estimated_amount ?? 0
+                                    )
+                                )}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function BudgetApprovalsTab({ budgetId }: { budgetId: string }) {
+    const { data: approvals, isLoading } = useBudgetApprovals({ budget_id: budgetId });
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!approvals || approvals.length === 0) {
+        return (
+            <EmptyState
+                icon={ShieldCheck}
+                title="No approval records"
+                description="Budget approval records will appear here."
+            />
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Budget Approvals ({approvals.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {approvals.map((a) => (
+                        <div
+                            key={a.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div>
+                                <p className="text-sm font-medium">
+                                    {String(
+                                        (a as unknown as Record<string, unknown>).approver_name ??
+                                            "Approver"
+                                    )}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {a.created_at ? formatDate(a.created_at) : ""}
+                                </p>
+                            </div>
+                            <Badge
+                                variant={
+                                    String(a.status) === "approved"
+                                        ? "success"
+                                        : String(a.status) === "rejected"
+                                          ? "destructive"
+                                          : "ghost"
+                                }
+                            >
+                                {String(a.status ?? "pending")}
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "budgets",
@@ -305,29 +444,14 @@ export default function BudgetDetailPage() {
                 ),
             },
             {
+                id: "production-lines",
+                label: "Production Lines",
+                content: <ProductionBudgetLinesTab />,
+            },
+            {
                 id: "approvals",
                 label: "Approvals",
-                content: (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Approval History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-4 p-3 rounded-lg bg-success/10">
-                                    <CheckCircle className="h-5 w-5 text-success shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-medium">Budget Approved</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Approved by Jordan Lee ·{" "}
-                                            {budget ? formatDate(budget.effective_date) : ""}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ),
+                content: <BudgetApprovalsTab budgetId={budgetId} />,
             },
         ],
     };

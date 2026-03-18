@@ -30,6 +30,11 @@ import {
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useAutomations } from "@/lib/supabase";
 import { useAutomationLogs } from "@/lib/supabase";
+import {
+    useCreateAutomation,
+    useDeleteAutomation,
+    useUpdateAutomation,
+} from "@/lib/supabase/hooks-automation";
 import { PermissionGate } from "@/components/permission-guard";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -129,6 +134,9 @@ export default function AutomationsPage() {
 
     const { data: sbAutomations, isLoading } = useAutomations();
     const { data: sbLogs } = useAutomationLogs();
+    const _createAutomation = useCreateAutomation();
+    const _updateAutomation = useUpdateAutomation();
+    const _deleteAutomation = useDeleteAutomation();
 
     const automations: AutomationListItem[] = (sbAutomations ?? []).map(
         (a: Record<string, unknown>) => ({

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
@@ -112,7 +113,7 @@ export function OnboardingChecklist() {
             try {
                 const res = await fetch("/api/onboarding/progress", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ step_definition_id: stepId, status: "completed" }),
                 });
 

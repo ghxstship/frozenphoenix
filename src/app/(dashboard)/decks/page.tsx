@@ -7,6 +7,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects } from "@/lib/supabase";
+import { useCreateDeck } from "@/lib/supabase/hooks-documents";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
@@ -371,6 +372,7 @@ function DecksContent({ decks, projects }: { decks: Deck[]; projects: Project[] 
 export default function DecksPage() {
     const { data: sbDecks, isLoading: loadingDecks } = useDecks();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
+    const _createDeck = useCreateDeck();
 
     const decks: Deck[] = useMemo(
         () =>

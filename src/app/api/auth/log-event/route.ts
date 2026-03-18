@@ -14,7 +14,7 @@ export const POST = withApiHandler(
         const validated = await parseAndValidate(request, logEventSchema);
         if (!validated.success) return validated.response;
 
-        const { event_type, metadata } = validated.data;
+        const { event_type, metadata, error_code, organization_id } = validated.data;
 
         const ip =
             request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -30,6 +30,8 @@ export const POST = withApiHandler(
             ip_address: ip,
             user_agent: userAgent,
             metadata: (metadata || {}) as Record<string, string | number | boolean | null>,
+            ...(error_code ? { error_code } : {}),
+            ...(organization_id ? { organization_id } : {}),
         });
 
         if (error) {

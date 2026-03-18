@@ -36,6 +36,8 @@ export const logEventSchema = z.object({
         "org_security_updated",
     ]),
     metadata: z.record(z.string(), z.unknown()).optional().default({}),
+    error_code: z.string().max(64).optional(),
+    organization_id: z.string().uuid().optional(),
 });
 
 // ─── PATCH /api/organizations/[id]/security ──────────────────

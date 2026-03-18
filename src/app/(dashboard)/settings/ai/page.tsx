@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -807,6 +808,7 @@ function KnowledgeBasePanel() {
 
                 const res = await fetch("/api/ai/documents/upload", {
                     method: "POST",
+                    headers: csrfHeaders(),
                     body: formData,
                 });
 

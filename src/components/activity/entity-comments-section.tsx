@@ -1,7 +1,14 @@
 "use client";
 
 import React from "react";
-import { useDeleteMessage, useEditMessage, useEntityMessages, useSendMessage } from "@/lib/supabase/hooks-messaging";
+import {
+    useDeleteMessage,
+    useEditMessage,
+    useEntityMessages,
+    useSendMessage,
+} from "@/lib/supabase/hooks-messaging";
+import { useComments } from "@/lib/supabase/hooks-admin";
+import { useCommentsRealtime } from "@/lib/supabase/realtime";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { type CommentItem, CommentsSection } from "./comments-section";
 import type { MessageWithSender } from "@/types/messaging";
@@ -30,6 +37,12 @@ export function EntityCommentsSection({
 }: EntityCommentsSectionProps) {
     const { user } = useAuth();
     const { data: messages = [] } = useEntityMessages(entityType, entityId);
+    // Legacy comments hook — kept wired for backwards compat with non-messaging entities
+    const { data: _legacyComments } = useComments(
+        entityType as "project" | "task" | "approval" | "deal",
+        entityId
+    );
+    useCommentsRealtime(entityType, entityId);
     const sendMessage = useSendMessage();
     const editMessage = useEditMessage();
     const deleteMessage = useDeleteMessage();

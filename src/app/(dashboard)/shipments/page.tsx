@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useLocations, useProjects, useShipments } from "@/lib/supabase";
+import { useCreateShipment } from "@/lib/supabase/hooks-assets-inventory";
 import { SHIPMENTS_PAGE } from "@/config/list-page-configs";
 import { Package, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -52,6 +53,7 @@ export default function ShipmentsPage() {
     const { data: sbShipments, isLoading: loadingShipments } = useShipments();
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
+    const _createShipment = useCreateShipment();
 
     const data = useMemo(() => {
         const locations = new Map((sbLocations ?? []).map((l) => [l.id, l.name]));

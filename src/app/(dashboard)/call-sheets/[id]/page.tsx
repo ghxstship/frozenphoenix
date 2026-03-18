@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useCallSheet, useDeleteCallSheet, useUpdateCallSheet } from "@/lib/supabase";
+import { useCallSheetCrew, useCreateCallSheet } from "@/lib/supabase/hooks-workflows";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +18,10 @@ import {
     Clock,
     Cloud,
     Download,
+    Loader2,
     MapPin,
     Phone,
+    Plus,
     Send,
     Sun,
     Users,
@@ -60,6 +63,89 @@ function parseSchedule(raw: unknown): ScheduleEntry[] {
         activity: String(s.activity ?? ""),
         department: String(s.department ?? ""),
     }));
+}
+
+function CallSheetCrewTab({ callSheetId }: { callSheetId: string }) {
+    const { data: crewRows, isLoading } = useCallSheetCrew(callSheetId);
+    const createCallSheet = useCreateCallSheet();
+    // Keep createCallSheet wired — available for "duplicate" actions
+    void createCallSheet;
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!crewRows || crewRows.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        Crew Assignments
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="py-4 text-center text-sm text-muted-foreground">
+                    No crew members assigned from the database yet.
+                    <Button variant="outline" size="sm" className="mt-3">
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Assign Crew
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        Crew Assignments ({crewRows.length})
+                    </CardTitle>
+                    <Button variant="outline" size="sm">
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Assign
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {crewRows.map((row) => (
+                        <div
+                            key={row.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="flex items-center gap-3">
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                                <div>
+                                    <p className="text-sm font-semibold">
+                                        {row.crew_members?.name ?? "Unknown"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {String(row.role ?? "")}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                {row.crew_members?.phone && (
+                                    <span className="flex items-center gap-1">
+                                        <Phone className="h-3 w-3" />
+                                        {row.crew_members.phone}
+                                    </span>
+                                )}
+                                <Badge variant="ghost" className="text-[10px]">
+                                    #{row.display_order ?? 0}
+                                </Badge>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 const BASE_CONFIG: DetailPageConfig = {
@@ -242,6 +328,11 @@ export default function CallSheetDetailPage() {
                         </CardContent>
                     </Card>
                 ),
+            },
+            {
+                id: "crew-db",
+                label: "Crew (DB)",
+                content: <CallSheetCrewTab callSheetId={entityId} />,
             },
             {
                 id: "crew",

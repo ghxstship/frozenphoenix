@@ -26,6 +26,7 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useRevenueRecognitionEntries, useRevenueRecognitionSummary } from "@/lib/supabase";
+import { useCreateRevenueRecognition } from "@/lib/supabase/hooks-finance";
 
 type RevRecTab = "entries" | "summary" | "schedules";
 
@@ -76,6 +77,7 @@ export default function RevenueRecognitionPage() {
 
     const { data: sbEntries, isLoading: loadingEntries } = useRevenueRecognitionEntries();
     const { data: sbSummary, isLoading: loadingSummary } = useRevenueRecognitionSummary();
+    const _createRevRec = useCreateRevenueRecognition();
 
     const entries: RevenueEntry[] = useMemo(
         () =>

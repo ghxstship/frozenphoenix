@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useCallback, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +18,13 @@ function ResetPasswordForm() {
     const [confirmError, setConfirmError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const passwordRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus password field (delayed so screen readers announce heading first)
+    useEffect(() => {
+        const timer = setTimeout(() => passwordRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleUpdatePassword = useCallback(
         async (e: React.FormEvent) => {
@@ -112,6 +119,7 @@ function ResetPasswordForm() {
                         </span>
                     </label>
                     <PasswordInput
+                        ref={passwordRef}
                         id="reset-password"
                         placeholder="••••••••"
                         value={password}

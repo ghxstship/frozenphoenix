@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -188,7 +189,7 @@ function BillingForm({
             if (billingStepId) {
                 await fetch("/api/onboarding/progress", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({
                         step_definition_id: billingStepId,
                         status: "completed",
@@ -198,7 +199,7 @@ function BillingForm({
         } catch {
             // Non-critical — navigate regardless
         }
-        router.push("/dashboard");
+        router.push("/onboarding/complete");
     }, [billingStepId, router, selectedTier, billingCycle, selectPlan]);
 
     const skipAndNavigate = useCallback(async () => {
@@ -207,7 +208,7 @@ function BillingForm({
             if (billingStepId) {
                 await fetch("/api/onboarding/progress", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({
                         step_definition_id: billingStepId,
                         status: "completed",
@@ -217,7 +218,7 @@ function BillingForm({
         } catch {
             // Non-critical — navigate regardless
         }
-        router.push("/dashboard");
+        router.push("/onboarding/complete");
     }, [billingStepId, router]);
 
     const annualSavings = useMemo(() => {

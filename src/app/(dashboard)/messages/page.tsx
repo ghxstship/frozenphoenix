@@ -15,13 +15,16 @@ import {
     useConversations,
     useDeleteMessage,
     useEditMessage,
+    useMarkRead,
     useMessages,
     useOrgMembers,
     usePinMessage,
+    usePinnedMessages,
     useSendMessage,
     useSendVoiceMessage,
     useToggleReaction,
     useTranslateMessage,
+    useUpdateConversation,
 } from "@/lib/supabase/hooks-messaging";
 import type { AISummaryResult } from "@/lib/supabase/hooks-messaging";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
@@ -32,6 +35,8 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import {
     useConversationsRealtime,
     useMessagesRealtime,
+    usePresence,
+    useTypingIndicator,
 } from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
 import { PermissionGate } from "@/components/permission-guard";
@@ -67,6 +72,12 @@ export default function MessagesPage() {
     // Realtime subscriptions
     useConversationsRealtime();
     useMessagesRealtime(activeConversationId ?? undefined);
+    const {
+        typingUsers: _typingUsers,
+        sendTyping: _sendTyping,
+        sendStopTyping: _sendStopTyping,
+    } = useTypingIndicator(activeConversationId ?? undefined);
+    const { onlineUsers: _onlineUsers } = usePresence();
 
     const { data: conversations = [], isLoading: convLoading } = useConversations();
     const { data: orgMembers = [] } = useOrgMembers();
@@ -100,6 +111,18 @@ export default function MessagesPage() {
     const editMessage = useEditMessage();
     const deleteMessage = useDeleteMessage();
     const translateMessage = useTranslateMessage();
+    const markRead = useMarkRead();
+    const { data: _pinnedMessages } = usePinnedMessages(activeConversationId ?? undefined);
+    const _updateConversation = useUpdateConversation(activeConversationId ?? "");
+
+    // Mark last message as read when conversation is opened
+    const lastMessageId = messages[0]?.id;
+    React.useEffect(() => {
+        if (activeConversationId && lastMessageId) {
+            markRead.mutate({ messageId: lastMessageId, conversationId: activeConversationId });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeConversationId, lastMessageId]);
     const { voiceEnabled, aiSummaryEnabled } = useMessagingEnabled();
     const [summaryResult, setSummaryResult] = React.useState<AISummaryResult | null>(null);
     const [summaryError, setSummaryError] = React.useState<string | null>(null);

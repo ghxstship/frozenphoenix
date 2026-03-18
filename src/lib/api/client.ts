@@ -15,6 +15,8 @@
    - ERROR:  { error: { message, code?, details? } }
    ═══════════════════════════════════════════════════════════════ */
 
+import { CSRF_HEADER_NAME, getCsrfToken } from "@/lib/csrf";
+
 // ─── Response Types ─────────────────────────────────────────
 
 export interface ApiPagination {
@@ -85,10 +87,16 @@ class ApiError extends Error {
 export { ApiError };
 
 export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+    // Auto-inject CSRF header on state-mutating requests
+    const method = (options?.method ?? "GET").toUpperCase();
+    const isMutating = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+    const csrfToken = isMutating ? getCsrfToken() : null;
+
     const res = await fetch(url, {
         ...options,
         headers: {
             "Content-Type": "application/json",
+            ...(csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : {}),
             ...options?.headers,
         },
     });

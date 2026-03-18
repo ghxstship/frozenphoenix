@@ -44,12 +44,17 @@ export async function GET(request: Request) {
                         if (admin) {
                             const { data: inv } = await admin
                                 .from("invitations")
-                                .select("id, organization_id, role, status, invite_type")
+                                .select(
+                                    "id, organization_id, role, status, invite_type, expires_at"
+                                )
                                 .eq("token", inviteToken)
                                 .eq("status", "pending")
                                 .single();
 
-                            if (inv) {
+                            const isExpired =
+                                inv?.expires_at && new Date(inv.expires_at) < new Date();
+
+                            if (inv && !isExpired) {
                                 const isOrgInvite =
                                     inv.invite_type !== "referral" && inv.organization_id;
                                 if (isOrgInvite && inv.organization_id) {

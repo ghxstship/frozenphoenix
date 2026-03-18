@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,7 @@ export default function DeveloperPortalPage() {
         try {
             const res = await fetch("/api/api-keys", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({ name: newKeyName, scopes: ["read", "write"] }),
             });
             if (res.ok) {

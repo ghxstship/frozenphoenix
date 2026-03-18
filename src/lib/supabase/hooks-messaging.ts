@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { csrfHeaders } from "@/lib/csrf";
 import { getSupabase } from "./client";
 import type {
     Conversation,
@@ -271,7 +272,7 @@ export function useCreateConversation() {
         mutationFn: async (payload: CreateConversationPayload): Promise<Conversation | null> => {
             const res = await fetch("/api/conversations", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify(payload),
             });
             if (!res.ok) return null;

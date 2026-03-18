@@ -20,19 +20,32 @@ import { Input } from "@/components/ui/input";
 import { ConditionBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
-import { useAssets, useCreateAssetAssignment, useUpdateAsset } from "@/lib/supabase";
+import {
+    useAssetAssignments,
+    useAssets,
+    useAssetTags,
+    useAssetVersions,
+    useCreateAssetAssignment,
+    useCreateMaintenanceRecord,
+    useMaintenanceRecords,
+    useUpdateAsset,
+} from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     Calendar,
+    ClipboardList,
     Clock,
     DollarSign,
     Edit,
+    GitBranch,
     Loader2,
     MapPin,
     Package,
     ScanBarcode,
+    Tag,
+    Wrench,
 } from "lucide-react";
 import { QRDisplay, QrGeneratorDialog } from "@/components/scanning";
 import { useAssetScanHistory } from "@/lib/supabase/hooks-scanning";
@@ -115,6 +128,299 @@ function AssetScanHistoryTab({ assetId }: { assetId: string }) {
                         );
                     })}
                 </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function AssetAssignmentsTab({ assetId }: { assetId: string }) {
+    const { data: assignments, isLoading } = useAssetAssignments({ asset_id: assetId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!assignments || assignments.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <ClipboardList className="h-5 w-5" />
+                        Assignments
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ClipboardList}
+                        title="No assignments"
+                        description="Check out this asset to a project to create an assignment"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5" />
+                    Assignments ({assignments.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {assignments.map((a) => {
+                        const rec = a as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.status ?? "assigned").replace("_", " ")}
+                                    </p>
+                                    {rec.project_id ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            Project: {String(rec.project_id)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    {typeof rec.created_at === "string"
+                                        ? formatDate(rec.created_at)
+                                        : "—"}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function AssetVersionsTab({ assetId }: { assetId: string }) {
+    const { data: versions, isLoading } = useAssetVersions({ asset_id: assetId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!versions || versions.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <GitBranch className="h-5 w-5" />
+                        Versions
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={GitBranch}
+                        title="No versions"
+                        description="Asset version history will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <GitBranch className="h-5 w-5" />
+                    Versions ({versions.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {versions.map((v) => {
+                        const rec = v as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        v{String(rec.version_number ?? "—")}
+                                    </p>
+                                    {rec.change_summary ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {String(rec.change_summary)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    {typeof rec.created_at === "string"
+                                        ? formatDate(rec.created_at)
+                                        : "—"}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function AssetTagsTab({ assetId }: { assetId: string }) {
+    const { data: tags, isLoading } = useAssetTags({ asset_id: assetId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!tags || tags.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Tag className="h-5 w-5" />
+                        Tags
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={Tag}
+                        title="No tags"
+                        description="Add tags to categorize this asset"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    Tags ({tags.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-wrap gap-2">
+                    {tags.map((t) => {
+                        const rec = t as Record<string, unknown>;
+                        return (
+                            <span
+                                key={String(rec.id)}
+                                className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                            >
+                                {String(rec.tag_name ?? rec.name ?? "—")}
+                            </span>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function AssetMaintenanceTab({ assetId }: { assetId: string }) {
+    const { data: records, isLoading } = useMaintenanceRecords({ asset_id: assetId });
+    const createRecord = useCreateMaintenanceRecord();
+    const [note, setNote] = useState("");
+
+    const handleCreate = async () => {
+        try {
+            await createRecord.mutateAsync({
+                asset_id: assetId,
+                description: note || "Maintenance performed",
+                maintenance_type: "routine",
+                status: "completed",
+            } as unknown as Parameters<typeof createRecord.mutateAsync>[0]);
+            setNote("");
+        } catch (error) {
+            logger.error("Failed to create maintenance record", { error });
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Wrench className="h-5 w-5" />
+                    Maintenance Records {records?.length ? `(${records.length})` : ""}
+                </CardTitle>
+                <Button size="sm" onClick={handleCreate} disabled={createRecord.isPending}>
+                    {createRecord.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Log Maintenance
+                </Button>
+            </CardHeader>
+            <CardContent>
+                {!records || records.length === 0 ? (
+                    <EmptyState
+                        icon={Wrench}
+                        title="No maintenance records"
+                        description="Log maintenance activities to track asset health"
+                    />
+                ) : (
+                    <div className="space-y-2">
+                        {records.map((r) => {
+                            const rec = r as Record<string, unknown>;
+                            return (
+                                <div
+                                    key={String(rec.id)}
+                                    className="flex items-center justify-between p-3 rounded-lg border"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium">
+                                            {String(rec.maintenance_type ?? "routine").replace(
+                                                "_",
+                                                " "
+                                            )}
+                                        </p>
+                                        {rec.description ? (
+                                            <p className="text-xs text-muted-foreground">
+                                                {String(rec.description)}
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {typeof rec.created_at === "string"
+                                            ? formatDate(rec.created_at)
+                                            : "—"}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
@@ -352,34 +658,29 @@ export default function AssetDetailPage() {
         ],
         tabs: [
             {
-                id: "history",
-                label: "History",
-                content: <AssetScanHistoryTab assetId={assetId} />,
+                id: "assignments",
+                label: "Assignments",
+                content: <AssetAssignmentsTab assetId={assetId} />,
             },
             {
                 id: "maintenance",
                 label: "Maintenance",
-                content: (
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="text-base">Maintenance Records</CardTitle>
-                            <Button size="sm" onClick={() => setMaintenanceOpen(true)}>
-                                Log Maintenance
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                            <EmptyState
-                                icon={Package}
-                                title="No maintenance records"
-                                description="Log maintenance activities to track asset health"
-                                action={{
-                                    label: "Log Maintenance",
-                                    onClick: () => setMaintenanceOpen(true),
-                                }}
-                            />
-                        </CardContent>
-                    </Card>
-                ),
+                content: <AssetMaintenanceTab assetId={assetId} />,
+            },
+            {
+                id: "versions",
+                label: "Versions",
+                content: <AssetVersionsTab assetId={assetId} />,
+            },
+            {
+                id: "tags",
+                label: "Tags",
+                content: <AssetTagsTab assetId={assetId} />,
+            },
+            {
+                id: "history",
+                label: "Scan History",
+                content: <AssetScanHistoryTab assetId={assetId} />,
             },
         ],
     };

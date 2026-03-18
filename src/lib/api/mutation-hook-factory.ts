@@ -1,5 +1,7 @@
 "use client";
 
+import { CSRF_HEADER_NAME, getCsrfToken } from "@/lib/csrf";
+
 /* ═══════════════════════════════════════════════════════════════
    MUTATION HOOK FACTORY — P0.4 Foundation Infrastructure
    
@@ -90,10 +92,16 @@ function generateIdempotencyKey(): string {
 // ─── API Fetch Helper ────────────────────────────────────────
 
 async function apiFetch<T = unknown>(url: string, options: RequestInit): Promise<T> {
+    // Auto-inject CSRF header on state-mutating requests
+    const method = (options.method ?? "GET").toUpperCase();
+    const isMutating = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+    const csrfToken = isMutating ? getCsrfToken() : null;
+
     const response = await fetch(url, {
         ...options,
         headers: {
             "Content-Type": "application/json",
+            ...(csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : {}),
             ...options.headers,
         },
     });

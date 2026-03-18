@@ -7,7 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/lib/auth-utils";
-import { AlertCircle, ArrowRight, Check, CheckCircle2, Copy, Loader2 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf";
+import {
+    AlertCircle,
+    ArrowRight,
+    Check,
+    CheckCircle2,
+    Copy,
+    Download,
+    Loader2,
+    ShieldCheck,
+} from "lucide-react";
 
 interface MfaEnrollment {
     id: string;
@@ -28,6 +38,8 @@ function MfaSetupForm() {
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+    const [codesAcknowledged, setCodesAcknowledged] = useState(false);
     const [copied, setCopied] = useState(false);
     const [qrError, setQrError] = useState(false);
 
@@ -106,6 +118,20 @@ function MfaSetupForm() {
                     return;
                 }
 
+                // Generate recovery codes after successful verification
+                try {
+                    const res = await fetch("/api/auth/mfa-recovery-codes", {
+                        method: "POST",
+                        headers: csrfHeaders(),
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.codes) setRecoveryCodes(data.codes);
+                    }
+                } catch {
+                    // Recovery codes are best-effort — don't block MFA success
+                }
+
                 setSuccess(true);
             } catch {
                 setError("Something went wrong. Please try again.");
@@ -123,7 +149,83 @@ function MfaSetupForm() {
         setTimeout(() => setCopied(false), 2000);
     }, [enrollment]);
 
+    const downloadRecoveryCodes = useCallback(() => {
+        const content = [
+            "FrozenPhoenix MFA Recovery Codes",
+            `Generated: ${new Date().toISOString()}`,
+            "",
+            "Each code can only be used once.",
+            "Store these codes in a safe place.",
+            "",
+            ...recoveryCodes.map((code, i) => `${i + 1}. ${code}`),
+        ].join("\n");
+
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "frozenphoenix-recovery-codes.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [recoveryCodes]);
+
     if (success) {
+        // Show recovery codes first, then allow navigating to dashboard
+        if (recoveryCodes.length > 0 && !codesAcknowledged) {
+            return (
+                <AuthLayout
+                    title="Save your recovery codes"
+                    subtitle="These codes can be used if you lose access to your authenticator"
+                >
+                    <div className="space-y-4 py-2">
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning text-sm">
+                            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                            <span>Save these codes now. They won&apos;t be shown again.</span>
+                        </div>
+                        <div
+                            className="grid grid-cols-2 gap-2 p-4 bg-muted rounded-xl"
+                            role="list"
+                            aria-label="Recovery codes"
+                        >
+                            {recoveryCodes.map((code, i) => (
+                                <code
+                                    key={i}
+                                    role="listitem"
+                                    className="text-sm font-mono tracking-wider text-center py-1.5 px-2 bg-background rounded-lg border"
+                                >
+                                    {code}
+                                </code>
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={downloadRecoveryCodes}
+                            >
+                                <Download className="h-4 w-4" aria-hidden="true" />
+                                Download
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(recoveryCodes.join("\n"));
+                                }}
+                            >
+                                <Copy className="h-4 w-4" aria-hidden="true" />
+                                Copy All
+                            </Button>
+                        </div>
+                        <Button className="w-full" onClick={() => setCodesAcknowledged(true)}>
+                            I&apos;ve saved these codes
+                            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                    </div>
+                </AuthLayout>
+            );
+        }
+
         return (
             <AuthLayout title="MFA enabled" subtitle="Your account is now more secure">
                 <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
@@ -182,7 +284,8 @@ function MfaSetupForm() {
                                 {qrError ? (
                                     <div className="w-48 h-48 flex items-center justify-center text-center p-4">
                                         <p className="text-sm text-muted-foreground">
-                                            QR code failed to load. Use the secret key below to set up your authenticator manually.
+                                            QR code failed to load. Use the secret key below to set
+                                            up your authenticator manually.
                                         </p>
                                     </div>
                                 ) : (
@@ -210,10 +313,15 @@ function MfaSetupForm() {
                                         size="icon"
                                         className="h-6 w-6"
                                         onClick={copySecret}
-                                        aria-label={copied ? "Secret key copied" : "Copy secret key"}
+                                        aria-label={
+                                            copied ? "Secret key copied" : "Copy secret key"
+                                        }
                                     >
                                         {copied ? (
-                                            <Check className="h-3 w-3 text-success" aria-hidden="true" />
+                                            <Check
+                                                className="h-3 w-3 text-success"
+                                                aria-hidden="true"
+                                            />
                                         ) : (
                                             <Copy className="h-3 w-3" aria-hidden="true" />
                                         )}

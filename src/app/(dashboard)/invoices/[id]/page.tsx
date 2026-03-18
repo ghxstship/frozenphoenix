@@ -2,7 +2,15 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteInvoice, useInvoice, useUpdateInvoice } from "@/lib/supabase";
+import {
+    useClientInvoiceAging,
+    useDeleteInvoice,
+    useGenerateInvoiceFromTime,
+    useInvoice,
+    useInvoiceLineItems,
+    useInvoiceTimeEntries,
+    useUpdateInvoice,
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";
@@ -14,6 +22,8 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { DetailPageConfig } from "@/types/detail-page-config";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/layouts/empty-state";
 import {
     Building2,
     Calendar,
@@ -23,7 +33,10 @@ import {
     DollarSign,
     Download,
     FileText,
+    Loader2,
     Send,
+    Timer,
+    TrendingDown,
 } from "lucide-react";
 
 interface InvoiceLineItem {
@@ -40,6 +53,251 @@ interface PaymentRecord {
     amount: number;
     method: string;
     reference: string;
+}
+
+function InvoiceLineItemsTab({ invoiceId }: { invoiceId: string }) {
+    const { data: items, isLoading } = useInvoiceLineItems(invoiceId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!items || items.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Line Items
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={FileText}
+                        title="No line items"
+                        description="Invoice line items from the database will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Line Items ({items.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {items.map((item) => {
+                        const rec = item as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.description ?? rec.name ?? "Line Item")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Qty: {String(rec.quantity ?? 0)} ×{" "}
+                                        {formatCurrency(Number(rec.unit_price ?? 0))}
+                                    </p>
+                                </div>
+                                <p className="text-sm font-bold">
+                                    {formatCurrency(Number(rec.total ?? rec.amount ?? 0))}
+                                </p>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function InvoiceTimeEntriesTab({ invoiceId }: { invoiceId: string }) {
+    const { data: entries, isLoading } = useInvoiceTimeEntries(invoiceId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!entries || entries.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Timer className="h-5 w-5" />
+                        Time Entries
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={Timer}
+                        title="No time entries"
+                        description="Time entries linked to this invoice will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Timer className="h-5 w-5" />
+                    Time Entries ({entries.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {entries.map((e) => {
+                        const rec = e as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.description ?? rec.task_name ?? "Time Entry")}
+                                    </p>
+                                    {typeof rec.date === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDate(rec.date)} ·{" "}
+                                            {String(rec.hours ?? rec.duration ?? 0)}h
+                                        </p>
+                                    ) : null}
+                                </div>
+                                {typeof rec.billable_amount === "number" ? (
+                                    <p className="text-sm font-bold">
+                                        {formatCurrency(rec.billable_amount)}
+                                    </p>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function InvoiceAgingTab() {
+    const { data: aging, isLoading } = useClientInvoiceAging();
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!aging || aging.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingDown className="h-5 w-5" />
+                        Aging Report
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={TrendingDown}
+                        title="No aging data"
+                        description="Client invoice aging data will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5" />
+                    Aging Report ({aging.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {aging.map((row, idx) => {
+                        const rec = row as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id ?? idx)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.client_name ?? rec.company_name ?? "Client")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {String(rec.aging_bucket ?? rec.days_outstanding ?? "")}{" "}
+                                        days
+                                    </p>
+                                </div>
+                                <Badge
+                                    variant={
+                                        Number(rec.days_outstanding ?? 0) > 60
+                                            ? "destructive"
+                                            : "warning"
+                                    }
+                                >
+                                    {formatCurrency(
+                                        Number(rec.outstanding_amount ?? rec.balance ?? 0)
+                                    )}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function GenerateFromTimeAction() {
+    const generateFromTime = useGenerateInvoiceFromTime();
+    return (
+        <Button
+            size="sm"
+            variant="outline"
+            disabled={generateFromTime.isPending}
+            onClick={() => generateFromTime.mutate({} as never)}
+        >
+            {generateFromTime.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+                <Timer className="h-4 w-4 mr-1" />
+            )}
+            Generate from Time
+        </Button>
+    );
 }
 
 const BASE_CONFIG: DetailPageConfig = {
@@ -265,6 +523,21 @@ export default function InvoiceDetailPage() {
             { label: "Balance", icon: CreditCard, compute: () => formatCurrency(balance) },
         ],
         tabs: [
+            {
+                id: "db-line-items",
+                label: "DB Line Items",
+                content: <InvoiceLineItemsTab invoiceId={entityId} />,
+            },
+            {
+                id: "time-entries",
+                label: "Time Entries",
+                content: <InvoiceTimeEntriesTab invoiceId={entityId} />,
+            },
+            {
+                id: "aging",
+                label: "Aging",
+                content: <InvoiceAgingTab />,
+            },
             {
                 id: "payments",
                 label: "Payments",

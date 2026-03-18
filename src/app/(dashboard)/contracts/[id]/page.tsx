@@ -3,7 +3,13 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useContract, useDeleteContract, useUpdateContract } from "@/lib/supabase";
+import {
+    useContract,
+    useContractAmendments,
+    useDeleteContract,
+    useESignatures,
+    useUpdateContract,
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +26,7 @@ import {
 } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
+import { EmptyState } from "@/components/layouts/empty-state";
 import {
     AlertTriangle,
     Building2,
@@ -30,6 +37,7 @@ import {
     Download,
     FileSignature,
     FileText,
+    Loader2,
     PenTool,
     Send,
     Shield,
@@ -91,6 +99,157 @@ function parseDocs(raw: unknown): DocItem[] {
         type: (d.type as string) ?? "",
         uploadedAt: (d.uploaded_at as string) ?? (d.uploadedAt as string) ?? "",
     }));
+}
+
+function ContractAmendmentsTab({ contractId }: { contractId: string }) {
+    const { data: amendments, isLoading } = useContractAmendments({ contract_id: contractId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!amendments || amendments.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <FileSignature className="h-5 w-5" />
+                        Amendments
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={FileSignature}
+                        title="No amendments"
+                        description="Contract amendments will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <FileSignature className="h-5 w-5" />
+                    Amendments ({amendments.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {amendments.map((a) => {
+                        const rec = a as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.title ?? rec.amendment_type ?? "Amendment")}
+                                    </p>
+                                    {typeof rec.effective_date === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            Effective: {formatDate(rec.effective_date)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                {typeof rec.value_change === "number" ? (
+                                    <p className="text-sm font-bold">
+                                        {formatCurrency(rec.value_change)}
+                                    </p>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function ContractESignaturesTab({ contractId }: { contractId: string }) {
+    const { data: sigs, isLoading } = useESignatures("contract", contractId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!sigs || sigs.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <PenTool className="h-5 w-5" />
+                        E-Signatures
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={PenTool}
+                        title="No e-signatures"
+                        description="Electronic signature requests will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <PenTool className="h-5 w-5" />
+                    E-Signatures ({sigs.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {sigs.map((s) => {
+                        const rec = s as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.signer_name ?? rec.signer_email ?? "Signer")}
+                                    </p>
+                                    {typeof rec.signed_at === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            Signed: {formatDate(rec.signed_at)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant={rec.status === "signed" ? "success" : "warning"}>
+                                    {rec.status === "signed" ? (
+                                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                                    ) : (
+                                        <Clock className="mr-1 h-3 w-3" />
+                                    )}
+                                    {String(rec.status ?? "pending")}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 const BASE_CONFIG: DetailPageConfig = {
@@ -298,6 +457,16 @@ export default function ContractDetailPage() {
             },
         ],
         tabs: [
+            {
+                id: "amendments",
+                label: "Amendments",
+                content: <ContractAmendmentsTab contractId={entityId} />,
+            },
+            {
+                id: "e-signatures",
+                label: "E-Signatures",
+                content: <ContractESignaturesTab contractId={entityId} />,
+            },
             {
                 id: "signatures",
                 label: "Signatures",

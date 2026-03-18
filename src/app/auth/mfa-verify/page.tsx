@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/lib/auth-utils";
+import { csrfHeaders } from "@/lib/csrf";
 import { AlertCircle, Loader2, Shield } from "lucide-react";
 
 function MfaVerifyForm() {
@@ -165,7 +166,10 @@ function MfaVerifyForm() {
                     size="sm"
                     onClick={async () => {
                         try {
-                            await fetch("/api/auth/signout", { method: "POST" });
+                            await fetch("/api/auth/signout", {
+                                method: "POST",
+                                headers: csrfHeaders(),
+                            });
                         } catch {
                             // Best-effort
                         }

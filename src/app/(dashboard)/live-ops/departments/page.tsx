@@ -5,6 +5,10 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { AlertTriangle, CheckCircle2, LayoutList, Users } from "lucide-react";
 import { useDepartmentStatuses } from "@/lib/supabase";
+import {
+    useCreateDepartmentStatus,
+    useUpdateDepartmentStatus,
+} from "@/lib/supabase/hooks-live-ops";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
@@ -80,6 +84,8 @@ const CONFIG: DashboardPageConfig = {
 
 export default function DepartmentStatusPage() {
     const { data, isLoading } = useDepartmentStatuses();
+    const _createDeptStatus = useCreateDepartmentStatus();
+    const _updateDeptStatus = useUpdateDepartmentStatus();
 
     return (
         <OperationalDashboardShell

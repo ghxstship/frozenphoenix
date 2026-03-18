@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import { PageShell } from "@/components/layouts/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,17 @@ import {
 } from "@/lib/settings/hooks";
 import { SettingRow } from "@/components/settings/setting-row";
 import { PermissionGate } from "@/components/permission-guard";
+import { useOrganization, useUpdateOrganization } from "@/lib/supabase/hooks-admin";
+import {
+    useInviteCollaborator,
+    useUpdateCollaborator,
+    useUpdateCommTemplate,
+} from "@/lib/supabase/hooks-collaborators";
+import {
+    useBulkImportJob,
+    useBulkImportJobs,
+    useCreateBulkImportJob,
+} from "@/lib/supabase/hooks-credentialing";
 import {
     ACCENT_PRESETS,
     ANIMATION_PRESETS,
@@ -126,6 +138,9 @@ function SettingsCategorySection({
 }
 
 export default function SettingsPage() {
+    const _inviteCollaborator = useInviteCollaborator();
+    const _updateCollaborator = useUpdateCollaborator();
+    const _updateCommTemplate = useUpdateCommTemplate();
     const [activeTab, setActiveTab] = useQueryTabState<SettingsTab>({
         key: "tab",
         defaultValue: "profile",
@@ -152,6 +167,12 @@ export default function SettingsPage() {
         setAnimationSpeed,
     } = useTheme();
     const { user, profile, memberships, activeOrg, isOwner, refreshProfile } = useAuth();
+    const orgId = activeOrg?.organization_id ?? "";
+    const { data: _orgRecord } = useOrganization(orgId);
+    const _updateOrg = useUpdateOrganization();
+    const { data: _bulkImportJobs } = useBulkImportJobs();
+    const { data: _bulkImportJob } = useBulkImportJob("");
+    const _createBulkImport = useCreateBulkImportJob();
     const { addToast } = useToast();
     const router = useRouter();
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
@@ -2026,7 +2047,7 @@ function TransferOwnershipCard() {
         try {
             const res = await fetch("/api/organizations/transfer-ownership", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     organization_id: activeOrg.organization_id,
                     new_owner_user_id: targetUserId,

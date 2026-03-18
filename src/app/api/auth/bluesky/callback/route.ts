@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { getBlueskyOAuthClient } from "@/lib/auth/bluesky-client";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
@@ -12,26 +13,33 @@ function getPublicUrl(): string {
     );
 }
 
-export async function GET(request: NextRequest) {
-    const publicUrl = getPublicUrl();
+export const GET = withApiHandler(
+    {
+        method: "GET",
+        route: "/api/auth/bluesky/callback",
+        skipAuth: true,
+        authRoute: true,
+    },
+    async (request, { log }) => {
+        const publicUrl = getPublicUrl();
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-        return NextResponse.redirect(new URL("/login?error=bluesky_unavailable", publicUrl));
-    }
+        if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+            log.warn("Bluesky callback: Supabase not configured");
+            return NextResponse.redirect(new URL("/login?error=bluesky_unavailable", publicUrl));
+        }
 
-    try {
         const params = request.nextUrl.searchParams;
         const client = await getBlueskyOAuthClient();
 
         // Exchange the authorization code for an AT Protocol session
         const { session: atpSession } = await client.callback(params);
         const did = atpSession.did;
+        log.info("Bluesky callback: DID resolved", { did });
 
         // The DID is the primary identifier. Handle resolution is best-effort
         // via the AT Protocol handle resolution endpoint.
         let blueskyHandle: string | null = null;
         try {
-            const resolveUrl = `https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=`;
             // Reverse lookup: resolve DID → handle via the PLC directory
             const plcRes = await fetch(`https://plc.directory/${encodeURIComponent(did)}`, {
                 signal: AbortSignal.timeout(5000),
@@ -47,14 +55,13 @@ export async function GET(request: NextRequest) {
                     }
                 }
             }
-            void resolveUrl;
         } catch {
-            // Handle resolution failed — non-critical, continue without it
+            log.warn("Bluesky callback: handle resolution failed (non-critical)", { did });
         }
 
         // ─── Bridge into Supabase Auth ──────────────────────────
         // Use service role to find or create a Supabase user linked to this DID.
-        const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        const adminSupabase = createSupabaseAdmin(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
             auth: { persistSession: false },
         });
 
@@ -76,6 +83,7 @@ export async function GET(request: NextRequest) {
                     .update({ bluesky_handle: blueskyHandle })
                     .eq("id", userId);
             }
+            log.info("Bluesky callback: existing user linked", { userId });
         } else {
             // New user — create a Supabase auth user + profile via admin API.
             // AT Protocol doesn't give us an email, so we generate a placeholder
@@ -97,7 +105,9 @@ export async function GET(request: NextRequest) {
             );
 
             if (createError || !newUser.user) {
-                void createError;
+                log.error("Bluesky callback: user creation failed", {
+                    error: createError?.message,
+                });
                 return NextResponse.redirect(
                     new URL("/login?error=bluesky_account_creation_failed", publicUrl)
                 );
@@ -117,6 +127,7 @@ export async function GET(request: NextRequest) {
                 },
                 { onConflict: "id" }
             );
+            log.info("Bluesky callback: new user created", { userId });
         }
 
         // Generate a Supabase magic link token for this user so they get a real session.
@@ -133,7 +144,9 @@ export async function GET(request: NextRequest) {
         });
 
         if (linkError || !linkData) {
-            void linkError;
+            log.error("Bluesky callback: magic link generation failed", {
+                error: linkError?.message,
+            });
             return NextResponse.redirect(new URL("/login?error=bluesky_session_failed", publicUrl));
         }
 
@@ -150,8 +163,5 @@ export async function GET(request: NextRequest) {
 
         // Fallback: redirect to login with success indication
         return NextResponse.redirect(new URL("/login?bluesky=linked", publicUrl));
-    } catch (error) {
-        void error;
-        return NextResponse.redirect(new URL("/login?error=bluesky_callback_failed", publicUrl));
     }
-}
+);

@@ -27,6 +27,7 @@ import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
 import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, validateCsrf } from "@/lib/csrf";
 
 // ─── Shared Mutation Rate Limiter ────────────────────────────
 // 30 mutations per minute per client across all custom endpoints
@@ -175,6 +176,19 @@ export function withApiHandler(
                 cachedOrgId
             );
 
+            // CSRF validation for state-mutating requests
+            if (options.mutation && options.method !== "GET") {
+                const csrfCookie = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+                const csrfHeader = request.headers.get(CSRF_HEADER_NAME);
+                if (!validateCsrf(csrfCookie, csrfHeader)) {
+                    log.warn("CSRF validation failed");
+                    return NextResponse.json(
+                        { error: "CSRF token invalid or missing" },
+                        { status: 403 }
+                    );
+                }
+            }
+
             // RBAC
             if (options.rbac) {
                 if (!hasPermission(role, options.rbac.resource, options.rbac.action)) {
@@ -257,6 +271,19 @@ export function withApiHandlerParams(
                 cachedRole,
                 cachedOrgId
             );
+
+            // CSRF validation for state-mutating requests
+            if (options.mutation && options.method !== "GET") {
+                const csrfCookie = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+                const csrfHeader = request.headers.get(CSRF_HEADER_NAME);
+                if (!validateCsrf(csrfCookie, csrfHeader)) {
+                    log.warn("CSRF validation failed");
+                    return NextResponse.json(
+                        { error: "CSRF token invalid or missing" },
+                        { status: 403 }
+                    );
+                }
+            }
 
             // RBAC
             if (options.rbac) {

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteProposal, useProposal, useUpdateProposal } from "@/lib/supabase";
+import { useProposalWithItems } from "@/lib/supabase/hooks-crm";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,12 +32,72 @@ import {
     FileText,
     GripVertical,
     Link2,
+    Loader2,
+    Package,
     PenLine,
     Plus,
     Send,
     Shield,
     Trash2,
 } from "lucide-react";
+
+function ProposalItemsTab({ proposalId }: { proposalId: string }) {
+    const { data: proposalData, isLoading } = useProposalWithItems(proposalId);
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    const items = Array.isArray((proposalData as Record<string, unknown> | null)?.proposal_items)
+        ? ((proposalData as Record<string, unknown>).proposal_items as Record<string, unknown>[])
+        : [];
+    if (items.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No proposal items from the database.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
+                    Proposal Items (DB) ({items.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {items.map((item, i) => (
+                        <div
+                            key={String(item.id ?? i)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(item.description ?? item.name ?? `Item ${i + 1}`)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Qty: {String(item.quantity ?? 1)} ×{" "}
+                                    {formatCurrency(Number(item.unit_price ?? 0))}
+                                </p>
+                            </div>
+                            <span className="text-sm font-semibold tabular-nums">
+                                {formatCurrency(Number(item.total ?? 0))}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const brandConfig = getActiveBrand();
 
@@ -700,6 +761,11 @@ export default function ProposalDetailPage() {
                         </CardContent>
                     </Card>
                 ),
+            },
+            {
+                id: "items-db",
+                label: "Items (DB)",
+                content: <ProposalItemsTab proposalId={proposalId} />,
             },
             {
                 id: "chatter",

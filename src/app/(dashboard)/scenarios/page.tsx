@@ -33,6 +33,11 @@ import { LoadingState } from "@/components/layouts/loading-state";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SCENARIO_CONFIG } from "@/config/create-entity-configs";
 import { useScenarios } from "@/lib/supabase";
+import {
+    useCreateScenario,
+    useDeleteScenario,
+    useUpdateScenario,
+} from "@/lib/supabase/hooks-production";
 
 type ScenarioStatus = "draft" | "active" | "archived" | "selected";
 type ScenarioType = "budget" | "revenue" | "resource" | "pricing" | "hiring" | "combined";
@@ -199,6 +204,9 @@ function VariableSlider({
 }
 
 export default function ScenariosPage() {
+    const _createScenario = useCreateScenario();
+    const _updateScenario = useUpdateScenario();
+    const _deleteScenario = useDeleteScenario();
     const [search, setSearch] = useState("");
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const TYPE_FILTERS = [

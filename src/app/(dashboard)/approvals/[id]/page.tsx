@@ -4,10 +4,17 @@ import { useParams } from "next/navigation";
 import { useApproval } from "@/lib/supabase";
 import { useUpdateApproval } from "@/lib/supabase";
 import { useDeleteApproval } from "@/lib/supabase";
+import {
+    useApprovalDecision,
+    useApprovalInstanceStatus,
+    useCancelApproval,
+    useEscalateApproval,
+    useInitiateApproval,
+} from "@/lib/supabase/hooks-approval-engine";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Shield } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Loader2, Shield, XCircle } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
@@ -50,8 +57,17 @@ export default function ApprovalDetailPage() {
         useDeleteHook: useDeleteApproval,
     });
 
+    const approvalDecision = useApprovalDecision();
+    const escalateApproval = useEscalateApproval();
+    const cancelApproval = useCancelApproval();
+    const _initiateApproval = useInitiateApproval();
+    const isBusy =
+        approvalDecision.isPending || escalateApproval.isPending || cancelApproval.isPending;
+
     const rec = approval as Record<string, unknown> | null;
     const status = rec?.status as string | undefined;
+    const instanceId = (rec?.approval_instance_id as string) ?? "";
+    const { data: _instanceStatus } = useApprovalInstanceStatus(instanceId || undefined);
 
     return (
         <DetailPageShell
@@ -59,7 +75,29 @@ export default function ApprovalDetailPage() {
             id={entityId}
             record={rec}
             isLoading={isLoading}
-            menuItems={crudMenuItems}
+            menuItems={[
+                ...(status === "pending" && instanceId
+                    ? [
+                          {
+                              label: "Escalate",
+                              onClick: () =>
+                                  escalateApproval.mutate({
+                                      instance_id: instanceId,
+                                      reason: "Escalated by reviewer",
+                                  } as never),
+                          },
+                          {
+                              label: "Cancel Approval",
+                              onClick: () =>
+                                  cancelApproval.mutate({
+                                      instance_id: instanceId,
+                                      reason: "Cancelled by reviewer",
+                                  } as never),
+                          },
+                      ]
+                    : []),
+                ...crudMenuItems,
+            ]}
             avatar={
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                     <Shield className="h-7 w-7 text-primary-foreground" />
@@ -67,10 +105,55 @@ export default function ApprovalDetailPage() {
             }
             actions={
                 status === "pending" ? (
-                    <Button size="sm">
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
-                        Approve
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() =>
+                                approvalDecision.mutate({
+                                    instance_id: instanceId,
+                                    decision: "approved",
+                                    comment: "",
+                                } as never)
+                            }
+                        >
+                            {approvalDecision.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                                <CheckCircle2 className="h-4 w-4 mr-1" />
+                            )}
+                            Approve
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() =>
+                                approvalDecision.mutate({
+                                    instance_id: instanceId,
+                                    decision: "rejected",
+                                    comment: "",
+                                } as never)
+                            }
+                        >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() =>
+                                escalateApproval.mutate({
+                                    instance_id: instanceId,
+                                    reason: "Escalated by reviewer",
+                                } as never)
+                            }
+                        >
+                            <ArrowUpRight className="h-4 w-4 mr-1" />
+                            Escalate
+                        </Button>
+                    </div>
                 ) : undefined
             }
         />

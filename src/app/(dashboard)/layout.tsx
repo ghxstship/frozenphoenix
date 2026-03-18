@@ -10,6 +10,7 @@ import { SIDEBAR_WIDTH, useSidebar } from "@/hooks/use-sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { EmailCollectionBanner } from "@/components/auth";
 import { PageTransition } from "@/components/ui/page-transition";
 import { useCopilotContext } from "@/hooks/use-copilot-context";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
@@ -72,6 +73,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                     {/* Banner landmark */}
                     <Topbar />
+
+                    {/* Bluesky email collection prompt */}
+                    <EmailCollectionBanner />
 
                     {/* Main content landmark (WCAG 1.3.1) */}
                     <main

@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useCertification, useDeleteCertification, useUpdateCertification } from "@/lib/supabase";
+import { useHrCertifications, useUserCertifications } from "@/lib/supabase/hooks-workforce";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,120 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CERT_TYPE_LABELS } from "@/config/ui-variants";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { AlertTriangle, BadgeCheck, Calendar, CheckCircle2, FileText } from "lucide-react";
+import {
+    AlertTriangle,
+    BadgeCheck,
+    Calendar,
+    CheckCircle2,
+    FileText,
+    Loader2,
+    Users,
+} from "lucide-react";
+
+function HrCertificationsTab() {
+    const { data: certs, isLoading } = useHrCertifications();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!certs || certs.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No HR certifications found.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <BadgeCheck className="h-4 w-4 text-primary" />
+                    HR Certifications ({certs.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {certs.map((c) => (
+                        <div
+                            key={c.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(c.title ?? c.id)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {c.expiry_date
+                                        ? `Expires ${formatDate(c.expiry_date, "compact")}`
+                                        : "No expiry"}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function UserCertificationsTab() {
+    // Wire with current user ID — placeholder "u1" until auth context is wired
+    const { data: userCerts, isLoading } = useUserCertifications("u1");
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!userCerts || userCerts.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No user certifications found.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    User Certifications ({userCerts.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {userCerts.map((uc: Record<string, unknown>) => (
+                        <div
+                            key={String(uc.id)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(uc.certification_name ?? uc.id)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {String(uc.status ?? "active")}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "certifications",
@@ -168,6 +282,16 @@ export default function CertificationDetailPage() {
             },
         ],
         tabs: [
+            {
+                id: "hr-certs",
+                label: "HR Certs",
+                content: <HrCertificationsTab />,
+            },
+            {
+                id: "user-certs",
+                label: "User Certs",
+                content: <UserCertificationsTab />,
+            },
             {
                 id: "documents",
                 label: "Documents",

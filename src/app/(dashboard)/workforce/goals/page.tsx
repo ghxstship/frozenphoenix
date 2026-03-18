@@ -29,6 +29,7 @@ import {
 import { PermissionGate } from "@/components/permission-guard";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useGoals, useUpdateGoal } from "@/lib/supabase";
+import { useCreateGoal } from "@/lib/supabase/hooks-feature-gaps";
 
 type GoalStatus = "not_started" | "on_track" | "at_risk" | "behind" | "completed" | "cancelled";
 type GoalCategory = "performance" | "development" | "project" | "team" | "personal";
@@ -95,6 +96,7 @@ export default function GoalsPage() {
 
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const updateGoal = useUpdateGoal();
+    const _createGoal = useCreateGoal();
 
     const { data: sbGoals, isLoading } = useGoals();
 

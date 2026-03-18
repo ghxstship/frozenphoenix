@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 import Papa from "papaparse";
 import {
     AlertCircle,
@@ -22,15 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import {
-    autoMapHeaders,
-    downloadCsvBlob,
-    mapCsvRowsToRecords,
-} from "@/lib/csv/csv-utils";
-import {
-    getEntityTemplate,
-    getImportableFields,
-} from "@/lib/csv/csv-templates";
+import { autoMapHeaders, downloadCsvBlob, mapCsvRowsToRecords } from "@/lib/csv/csv-utils";
+import { getEntityTemplate, getImportableFields } from "@/lib/csv/csv-templates";
 import type { CsvFieldDef } from "@/lib/csv/csv-templates";
 import {
     generateErrorReportCsv,
@@ -85,9 +79,7 @@ export function CsvImportDialog({
     const [file, setFile] = useState<File | null>(null);
     const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
     const [csvRows, setCsvRows] = useState<string[][]>([]);
-    const [headerMapping, setHeaderMapping] = useState<Map<number, string>>(
-        new Map()
-    );
+    const [headerMapping, setHeaderMapping] = useState<Map<number, string>>(new Map());
     const [validation, setValidation] = useState<ValidationResult | null>(null);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
     const [parseError, setParseError] = useState<string | null>(null);
@@ -133,10 +125,7 @@ export function CsvImportDialog({
                 return;
             }
 
-            if (
-                !selectedFile.name.endsWith(".csv") &&
-                !selectedFile.type.includes("csv")
-            ) {
+            if (!selectedFile.name.endsWith(".csv") && !selectedFile.type.includes("csv")) {
                 setParseError("Please select a CSV file.");
                 return;
             }
@@ -155,9 +144,7 @@ export function CsvImportDialog({
 
                     const allRows = results.data;
                     if (allRows.length < 2) {
-                        setParseError(
-                            "CSV must have at least a header row and one data row."
-                        );
+                        setParseError("CSV must have at least a header row and one data row.");
                         return;
                     }
 
@@ -212,30 +199,22 @@ export function CsvImportDialog({
 
     // ─── Step 2: Column Mapping ───
 
-    const handleMappingChange = useCallback(
-        (csvIndex: number, dbColumn: string) => {
-            setHeaderMapping((prev) => {
-                const next = new Map(prev);
-                if (dbColumn === "") {
-                    next.delete(csvIndex);
-                } else {
-                    next.set(csvIndex, dbColumn);
-                }
-                return next;
-            });
-        },
-        []
-    );
+    const handleMappingChange = useCallback((csvIndex: number, dbColumn: string) => {
+        setHeaderMapping((prev) => {
+            const next = new Map(prev);
+            if (dbColumn === "") {
+                next.delete(csvIndex);
+            } else {
+                next.set(csvIndex, dbColumn);
+            }
+            return next;
+        });
+    }, []);
 
-    const mappedDbColumns = useMemo(
-        () => new Set(headerMapping.values()),
-        [headerMapping]
-    );
+    const mappedDbColumns = useMemo(() => new Set(headerMapping.values()), [headerMapping]);
 
     const unmappedRequired = useMemo(() => {
-        return importableFields.filter(
-            (f) => f.required && !mappedDbColumns.has(f.dbColumn)
-        );
+        return importableFields.filter((f) => f.required && !mappedDbColumns.has(f.dbColumn));
     }, [importableFields, mappedDbColumns]);
 
     // ─── Step 3: Validate ───
@@ -258,7 +237,7 @@ export function CsvImportDialog({
         try {
             const response = await fetch("/api/csv/import", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     entity,
                     rows: validation.validRecords,
@@ -294,9 +273,7 @@ export function CsvImportDialog({
             addToast({
                 title: "Import failed",
                 description:
-                    error instanceof Error
-                        ? error.message
-                        : "An unexpected error occurred",
+                    error instanceof Error ? error.message : "An unexpected error occurred",
                 variant: "destructive",
             });
             setStep("validation");
@@ -336,9 +313,7 @@ export function CsvImportDialog({
                         ] as const
                     ).map(([s, label], i) => (
                         <React.Fragment key={s}>
-                            {i > 0 && (
-                                <div className="h-px w-4 bg-border" />
-                            )}
+                            {i > 0 && <div className="h-px w-4 bg-border" />}
                             <span
                                 className={cn(
                                     "px-2 py-1 rounded-md",
@@ -370,9 +345,7 @@ export function CsvImportDialog({
                             aria-label="Click to select a CSV file for import"
                         >
                             <Upload className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                            <p className="text-sm font-medium">
-                                Click to select a CSV file
-                            </p>
+                            <p className="text-sm font-medium">Click to select a CSV file</p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Maximum {MAX_FILE_SIZE_MB}MB. UTF-8 encoded.
                             </p>
@@ -397,11 +370,7 @@ export function CsvImportDialog({
                         )}
 
                         <DialogFooter>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleDownloadTemplate}
-                            >
+                            <Button variant="ghost" size="sm" onClick={handleDownloadTemplate}>
                                 <Download className="h-4 w-4" />
                                 Download template
                             </Button>
@@ -437,10 +406,7 @@ export function CsvImportDialog({
                                 </thead>
                                 <tbody>
                                     {csvRows.slice(0, MAX_PREVIEW_ROWS).map((row, ri) => (
-                                        <tr
-                                            key={ri}
-                                            className="border-b last:border-0"
-                                        >
+                                        <tr key={ri} className="border-b last:border-0">
                                             {row.map((cell, ci) => (
                                                 <td
                                                     key={ci}
@@ -457,12 +423,10 @@ export function CsvImportDialog({
 
                         {/* Column mapping */}
                         <div className="space-y-2">
-                            <h4 className="text-sm font-medium">
-                                Column mapping
-                            </h4>
+                            <h4 className="text-sm font-medium">Column mapping</h4>
                             <p className="text-xs text-muted-foreground">
-                                Map each CSV column to a database field. Unmapped
-                                columns will be skipped.
+                                Map each CSV column to a database field. Unmapped columns will be
+                                skipped.
                             </p>
                             <div className="border rounded-lg divide-y max-h-60 overflow-y-auto">
                                 {csvHeaders.map((header, i) => (
@@ -470,9 +434,7 @@ export function CsvImportDialog({
                                         key={i}
                                         csvHeader={header}
                                         csvIndex={i}
-                                        selectedDbColumn={
-                                            headerMapping.get(i) ?? ""
-                                        }
+                                        selectedDbColumn={headerMapping.get(i) ?? ""}
                                         importableFields={importableFields}
                                         usedDbColumns={mappedDbColumns}
                                         onChange={handleMappingChange}
@@ -489,13 +451,9 @@ export function CsvImportDialog({
                             >
                                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                                 <div>
-                                    <p className="font-medium">
-                                        Required fields not mapped:
-                                    </p>
+                                    <p className="font-medium">Required fields not mapped:</p>
                                     <p className="text-xs mt-1">
-                                        {unmappedRequired
-                                            .map((f) => f.csvHeader)
-                                            .join(", ")}
+                                        {unmappedRequired.map((f) => f.csvHeader).join(", ")}
                                     </p>
                                 </div>
                             </div>
@@ -513,10 +471,7 @@ export function CsvImportDialog({
                             </Button>
                             <Button
                                 onClick={handleValidate}
-                                disabled={
-                                    headerMapping.size === 0 ||
-                                    unmappedRequired.length > 0
-                                }
+                                disabled={headerMapping.size === 0 || unmappedRequired.length > 0}
                             >
                                 Validate
                             </Button>
@@ -544,9 +499,7 @@ export function CsvImportDialog({
                                 <AlertCircle className="h-5 w-5 shrink-0" />
                             )}
                             <div>
-                                <p className="font-medium">
-                                    {validationSummary(validation)}
-                                </p>
+                                <p className="font-medium">{validationSummary(validation)}</p>
                                 {validation.valid && (
                                     <p className="text-xs mt-1 opacity-80">
                                         All rows are ready for import.
@@ -575,49 +528,33 @@ export function CsvImportDialog({
                                     <table className="w-full text-xs">
                                         <thead>
                                             <tr className="border-b bg-muted/50">
-                                                <th className="px-3 py-2 text-left">
-                                                    Row
-                                                </th>
-                                                <th className="px-3 py-2 text-left">
-                                                    Field
-                                                </th>
-                                                <th className="px-3 py-2 text-left">
-                                                    Value
-                                                </th>
-                                                <th className="px-3 py-2 text-left">
-                                                    Error
-                                                </th>
+                                                <th className="px-3 py-2 text-left">Row</th>
+                                                <th className="px-3 py-2 text-left">Field</th>
+                                                <th className="px-3 py-2 text-left">Value</th>
+                                                <th className="px-3 py-2 text-left">Error</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {validation.errors
-                                                .slice(0, 50)
-                                                .map((err, i) => (
-                                                    <tr
-                                                        key={i}
-                                                        className="border-b last:border-0"
-                                                    >
-                                                        <td className="px-3 py-1.5">
-                                                            {err.row}
-                                                        </td>
-                                                        <td className="px-3 py-1.5 font-medium">
-                                                            {err.header}
-                                                        </td>
-                                                        <td className="px-3 py-1.5 max-w-[150px] truncate text-muted-foreground">
-                                                            {err.value || "(empty)"}
-                                                        </td>
-                                                        <td className="px-3 py-1.5 text-destructive">
-                                                            {err.message}
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                            {validation.errors.slice(0, 50).map((err, i) => (
+                                                <tr key={i} className="border-b last:border-0">
+                                                    <td className="px-3 py-1.5">{err.row}</td>
+                                                    <td className="px-3 py-1.5 font-medium">
+                                                        {err.header}
+                                                    </td>
+                                                    <td className="px-3 py-1.5 max-w-[150px] truncate text-muted-foreground">
+                                                        {err.value || "(empty)"}
+                                                    </td>
+                                                    <td className="px-3 py-1.5 text-destructive">
+                                                        {err.message}
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
                                 {validation.errors.length > 50 && (
                                     <p className="text-xs text-muted-foreground">
-                                        Showing first 50 of{" "}
-                                        {validation.errors.length} errors.
+                                        Showing first 50 of {validation.errors.length} errors.
                                         Download the full report above.
                                     </p>
                                 )}
@@ -625,10 +562,7 @@ export function CsvImportDialog({
                         )}
 
                         <DialogFooter>
-                            <Button
-                                variant="ghost"
-                                onClick={() => setStep("mapping")}
-                            >
+                            <Button variant="ghost" onClick={() => setStep("mapping")}>
                                 Back
                             </Button>
                             <Button
@@ -645,9 +579,7 @@ export function CsvImportDialog({
                 {step === "importing" && (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="text-sm font-medium">
-                            Importing records...
-                        </p>
+                        <p className="text-sm font-medium">Importing records...</p>
                         <p className="text-xs text-muted-foreground">
                             This may take a moment for large datasets.
                         </p>
@@ -685,8 +617,8 @@ export function CsvImportDialog({
                                           : "Import failed"}
                                 </p>
                                 <p className="text-xs mt-1 opacity-80">
-                                    {importResult.imported_rows} of{" "}
-                                    {importResult.total_rows} records imported.
+                                    {importResult.imported_rows} of {importResult.total_rows}{" "}
+                                    records imported.
                                     {(importResult.skipped_rows ?? 0) > 0 &&
                                         ` ${importResult.skipped_rows} skipped.`}
                                 </p>
@@ -694,11 +626,7 @@ export function CsvImportDialog({
                         </div>
 
                         {importResult.errors && importResult.errors.length > 0 && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleDownloadErrors}
-                            >
+                            <Button variant="outline" size="sm" onClick={handleDownloadErrors}>
                                 <Download className="h-4 w-4" />
                                 Download error report
                             </Button>
@@ -708,10 +636,7 @@ export function CsvImportDialog({
                             <Button variant="ghost" onClick={handleClose}>
                                 Close
                             </Button>
-                            <Button
-                                variant="outline"
-                                onClick={resetState}
-                            >
+                            <Button variant="outline" onClick={resetState}>
                                 Import more
                             </Button>
                         </DialogFooter>
@@ -742,9 +667,7 @@ function MappingRow({
     onChange,
 }: MappingRowProps) {
     const isMapped = selectedDbColumn !== "";
-    const selectedField = importableFields.find(
-        (f) => f.dbColumn === selectedDbColumn
-    );
+    const selectedField = importableFields.find((f) => f.dbColumn === selectedDbColumn);
 
     return (
         <div className="flex items-center gap-3 px-3 py-2">
@@ -773,14 +696,9 @@ function MappingRow({
                     <option value="">Skip this column</option>
                     {importableFields.map((f) => {
                         const isUsed =
-                            usedDbColumns.has(f.dbColumn) &&
-                            f.dbColumn !== selectedDbColumn;
+                            usedDbColumns.has(f.dbColumn) && f.dbColumn !== selectedDbColumn;
                         return (
-                            <option
-                                key={f.dbColumn}
-                                value={f.dbColumn}
-                                disabled={isUsed}
-                            >
+                            <option key={f.dbColumn} value={f.dbColumn} disabled={isUsed}>
                                 {f.csvHeader}
                                 {f.required ? " *" : ""}
                                 {isUsed ? " (already mapped)" : ""}

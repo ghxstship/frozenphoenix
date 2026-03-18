@@ -9,6 +9,11 @@ import {
     useRecordActivityLog,
     useRecordComments,
 } from "@/lib/supabase";
+import {
+    useArticleLinks,
+    useKnowledgeArticles,
+    useLinkArticle,
+} from "@/lib/supabase/hooks-feature-gaps";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +32,7 @@ import {
     Edit,
     FileText,
     Link2,
+    Loader2,
     Plus,
     Save,
     Shield,
@@ -43,6 +49,144 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     policy: Shield,
     training: Users,
 };
+
+function RelatedArticlesTab({ category }: { category: string }) {
+    const { data: articles, isLoading } = useKnowledgeArticles(category || undefined);
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!articles || articles.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No related articles in this category.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    Related Articles ({articles.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {articles.map((a) => (
+                        <div
+                            key={String(a.id)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(a.title ?? "")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    v{String(a.version ?? 1)} · {String(a.status ?? "draft")}
+                                </p>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">
+                                {String(a.category ?? "")}
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function ArticleLinksTab({ articleId }: { articleId: string }) {
+    const { data: links, isLoading } = useArticleLinks("kb_article", articleId);
+    const linkArticle = useLinkArticle();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!links || links.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Link2 className="h-4 w-4 text-primary" />
+                        Linked Articles
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="py-4 text-center text-sm text-muted-foreground">
+                    No linked articles yet.
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        disabled={linkArticle.isPending}
+                        onClick={() => {
+                            /* placeholder for link dialog */
+                        }}
+                    >
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Link Article
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Link2 className="h-4 w-4 text-primary" />
+                        Linked Articles ({links.length})
+                    </CardTitle>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={linkArticle.isPending}
+                        onClick={() => {
+                            /* placeholder for link dialog */
+                        }}
+                    >
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Link
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {links.map((link) => (
+                        <div
+                            key={String(link.id)}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                    {link.knowledge_articles?.title ?? link.article_id.slice(0, 8)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {link.entity_type} · {link.entity_id.slice(0, 8)}
+                                </p>
+                            </div>
+                            <Badge variant="ghost" className="text-[10px]">
+                                linked
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "knowledge_base",
@@ -398,6 +542,16 @@ export default function KBArticleDetailPage() {
                         </Card>
                     </div>
                 ),
+            },
+            {
+                id: "related-articles",
+                label: "Related",
+                content: <RelatedArticlesTab category={article?.category ?? ""} />,
+            },
+            {
+                id: "article-links",
+                label: "Article Links",
+                content: <ArticleLinksTab articleId={articleId} />,
             },
             {
                 id: "chatter",

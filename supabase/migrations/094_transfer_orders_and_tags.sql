@@ -6,6 +6,9 @@
 --   2. tags — cross-entity tagging definitions (WS-10.7)
 -- ═══════════════════════════════════════════════════════════════
 
+-- ─── ENABLE MODDATETIME EXTENSION ─────────────────────────────
+CREATE EXTENSION IF NOT EXISTS moddatetime WITH SCHEMA extensions;
+
 -- ─── TRANSFER ORDER STATUS ENUM ─────────────────────────────
 CREATE TYPE public.transfer_order_status AS ENUM (
     'draft',
@@ -57,7 +60,7 @@ CREATE POLICY transfer_orders_delete ON public.transfer_orders
 
 CREATE TRIGGER set_updated_at_transfer_orders
     BEFORE UPDATE ON public.transfer_orders
-    FOR EACH ROW EXECUTE FUNCTION public.moddatetime(updated_at);
+    FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
 
 -- ─── TAGS TABLE (cross-entity tagging) ──────────────────────
 CREATE TABLE public.tags (
@@ -92,7 +95,7 @@ CREATE POLICY tags_delete ON public.tags
 
 CREATE TRIGGER set_updated_at_tags
     BEFORE UPDATE ON public.tags
-    FOR EACH ROW EXECUTE FUNCTION public.moddatetime(updated_at);
+    FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
 
 -- ─── ENTITY TAG ASSIGNMENTS (polymorphic join) ──────────────
 CREATE TABLE public.entity_tag_assignments (

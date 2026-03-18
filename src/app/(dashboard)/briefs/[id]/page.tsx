@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDeleteBrief, useUpdateBrief } from "@/lib/supabase";
+import { useBriefTemplates } from "@/lib/supabase/hooks-documents";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,16 @@ import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { Calendar, CheckCircle2, DollarSign, FileText, Send, Target } from "lucide-react";
+import {
+    Calendar,
+    CheckCircle2,
+    DollarSign,
+    FileText,
+    Layout,
+    Loader2,
+    Send,
+    Target,
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import { useBrief } from "@/lib/supabase";
 
@@ -63,6 +73,62 @@ const BASE_CONFIG: DetailPageConfig = {
     ],
     tabs: [],
 };
+
+function BriefTemplatesTab() {
+    const { data: templates, isLoading } = useBriefTemplates();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!templates || templates.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No brief templates available.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Layout className="h-4 w-4 text-primary" />
+                    Brief Templates ({templates.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {templates.map((t) => (
+                        <div
+                            key={t.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">
+                                    {String(t.name ?? t.id)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {String(
+                                        (t as unknown as Record<string, unknown>).brief_type ?? ""
+                                    )}
+                                </p>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">
+                                template
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BRIEF_TYPE_ICONS: Record<string, string> = {
     brand: "🎨",
@@ -409,6 +475,11 @@ export default function BriefDetailPage() {
                         </CardContent>
                     </Card>
                 ) : null,
+            },
+            {
+                id: "templates",
+                label: "Templates",
+                content: <BriefTemplatesTab />,
             },
             {
                 id: "chatter",

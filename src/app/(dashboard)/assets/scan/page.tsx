@@ -23,6 +23,7 @@ import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type AssetScanAction,
     type AssetScanResult,
+    useAssetLookup,
     useAssetScan,
 } from "@/lib/supabase/hooks-scanning";
 import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
@@ -55,6 +56,7 @@ export default function AssetScannerPage() {
     const [scanAction, setScanAction] = useState<AssetScanAction>("verify");
     const [lastResult, setLastResult] = useState<AssetScanResult | null>(null);
     const [history, setHistory] = useState<AssetScanResult[]>([]);
+    const { data: _assetLookup } = useAssetLookup(null);
     const [feedback, setFeedback] = useState({
         visible: false,
         result: "info" as ScanFeedbackResult,

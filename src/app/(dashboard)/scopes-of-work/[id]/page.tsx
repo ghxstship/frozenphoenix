@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteScopeOfWork, useScopeOfWork, useUpdateScopeOfWork } from "@/lib/supabase";
+import {
+    useDeleteScopeOfWork,
+    useScopeOfWork,
+    useSOWChangeLog,
+    useSOWDeliverables,
+    useSOWDeliverableSummary,
+    useUpdateScopeOfWork,
+} from "@/lib/supabase";
+import { useCollaboratorRequirements } from "@/lib/supabase/hooks-collaborators";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +23,304 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { Building2, Calendar, CheckCircle2, Clock, DollarSign, FileText, Send } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import {
+    Building2,
+    Calendar,
+    CheckCircle2,
+    ClipboardCheck,
+    Clock,
+    DollarSign,
+    FileText,
+    History,
+    Loader2,
+    PieChart,
+    Send,
+    Users,
+} from "lucide-react";
+
+function SOWDeliverablesTab({ sowId }: { sowId: string }) {
+    const { data: deliverables, isLoading } = useSOWDeliverables(sowId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!deliverables || deliverables.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <ClipboardCheck className="h-5 w-5" />
+                        DB Deliverables
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ClipboardCheck}
+                        title="No deliverables"
+                        description="SOW deliverables from the database will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ClipboardCheck className="h-5 w-5" />
+                    DB Deliverables ({deliverables.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {deliverables.map((d) => {
+                        const rec = d as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.name ?? rec.title ?? "Deliverable")}
+                                    </p>
+                                    {typeof rec.due_date === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            Due: {formatDate(rec.due_date, "compact")}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant={getStatusVariant(String(rec.status ?? "pending"))}>
+                                    {getStatusLabel(String(rec.status ?? "pending"))}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function SOWChangeLogTab({ sowId }: { sowId: string }) {
+    const { data: changes, isLoading } = useSOWChangeLog(sowId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!changes || changes.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <History className="h-5 w-5" />
+                        Change Log
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={History}
+                        title="No changes"
+                        description="SOW change history will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <History className="h-5 w-5" />
+                    Change Log ({changes.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {changes.map((c) => {
+                        const rec = c as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.change_type ?? rec.action ?? "Change")}
+                                    </p>
+                                    {typeof rec.created_at === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDate(rec.created_at, "compact")}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                {rec.changed_by ? (
+                                    <span className="text-xs text-muted-foreground">
+                                        {String(rec.changed_by)}
+                                    </span>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function SOWDeliverableSummaryTab({ sowId }: { sowId: string }) {
+    const { data: summary, isLoading } = useSOWDeliverableSummary(sowId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!summary || summary.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <PieChart className="h-5 w-5" />
+                        Deliverable Summary
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={PieChart}
+                        title="No summary data"
+                        description="Deliverable summary metrics will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    Deliverable Summary
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {summary.map((s, idx) => {
+                        const rec = s as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id ?? idx)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <p className="text-sm font-medium">
+                                    {String(rec.status ?? rec.label ?? "Category")}
+                                </p>
+                                <Badge variant="secondary">
+                                    {String(rec.count ?? rec.total ?? 0)}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function CollaboratorRequirementsTab({ sowId }: { sowId: string }) {
+    const { data: reqs, isLoading } = useCollaboratorRequirements(sowId, "");
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!reqs || reqs.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Collaborator Requirements
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={Users}
+                        title="No requirements"
+                        description="Collaborator requirements will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Collaborator Requirements ({reqs.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {reqs.map((r) => {
+                        const rec = r as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.requirement ?? rec.skill ?? "Requirement")}
+                                    </p>
+                                    {rec.priority ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            Priority: {String(rec.priority)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant={rec.fulfilled ? "success" : "warning"}>
+                                    {rec.fulfilled ? "Fulfilled" : "Needed"}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "scopes-of-work",
@@ -287,6 +592,26 @@ export default function ScopeOfWorkDetailPage() {
             },
         ],
         tabs: [
+            {
+                id: "db-deliverables",
+                label: "DB Deliverables",
+                content: <SOWDeliverablesTab sowId={entityId} />,
+            },
+            {
+                id: "change-log",
+                label: "Change Log",
+                content: <SOWChangeLogTab sowId={entityId} />,
+            },
+            {
+                id: "deliverable-summary",
+                label: "Summary",
+                content: <SOWDeliverableSummaryTab sowId={entityId} />,
+            },
+            {
+                id: "collab-requirements",
+                label: "Requirements",
+                content: <CollaboratorRequirementsTab sowId={entityId} />,
+            },
             {
                 id: "deliverables",
                 label: "Deliverables",

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useLocations, useProjects } from "@/lib/supabase";
+import { useCreateLocation } from "@/lib/supabase/hooks-core";
 import { LOCATIONS_PAGE } from "@/config/list-page-configs";
 import { Building, DollarSign, MapPin, Warehouse } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -62,6 +63,7 @@ const config: ListPageConfig = {
 export default function LocationsPage() {
     const { data: sbLocations, isLoading: loadingLocations } = useLocations();
     const { data: sbProjects } = useProjects();
+    const _createLocation = useCreateLocation();
 
     const data = useMemo(() => {
         const projects = new Map((sbProjects ?? []).map((p) => [p.id, p.name]));

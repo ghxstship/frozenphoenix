@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { csrfHeaders } from "@/lib/csrf";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ export function useAssetScan() {
         mutationFn: async (payload: AssetScanPayload): Promise<AssetScanResult> => {
             const res = await fetch("/api/assets/scan", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify(payload),
             });
             if (!res.ok) {

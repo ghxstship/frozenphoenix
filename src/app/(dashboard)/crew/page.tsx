@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers } from "@/lib/supabase";
+import { useLiveCrewAssignmentsPage } from "@/lib/supabase/hooks-admin";
+import { useCrewSubmissions } from "@/lib/supabase/hooks-collaborators";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { AlertTriangle, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import { CREW_PAGE } from "@/config/list-page-configs";
@@ -322,6 +324,8 @@ function CrewContent({ crew }: { crew: CrewMember[] }) {
 // ─── Page ────────────────────────────────────────────────────
 export default function CrewPage() {
     const { data: sbCrew, isLoading } = useCrewMembers();
+    const { data: _liveAssignments } = useLiveCrewAssignmentsPage();
+    const { data: _crewSubmissions } = useCrewSubmissions("");
 
     const crew: CrewMember[] = useMemo(
         () =>

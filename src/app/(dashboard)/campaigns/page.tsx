@@ -23,6 +23,7 @@ import {
     useCampaigns,
     useUpdateCampaign,
 } from "@/lib/supabase";
+import { useCreateCampaign } from "@/lib/supabase/hooks-documents";
 import type { Campaign, CampaignStatus } from "@/types";
 import {
     Archive,
@@ -488,6 +489,7 @@ export default function CampaignsPage() {
     const { data: sbCampaigns, isLoading } = useCampaigns();
     const { data: sbChannels } = useCampaignChannels();
     const { data: sbAssets } = useCampaignAssets();
+    const _createCampaign = useCreateCampaign();
     const { data: sbKpis } = useCampaignKPIs();
 
     const campaigns = useMemo(() => (sbCampaigns ?? []) as unknown as Campaign[], [sbCampaigns]);

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useIncidents, useLocations, useProjects } from "@/lib/supabase";
+import { useCreateIncident } from "@/lib/supabase/hooks-core";
 import { INCIDENTS_PAGE } from "@/config/list-page-configs";
 import { AlertTriangle, Shield } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -70,6 +71,7 @@ export default function IncidentsPage() {
     const { data: sbIncidents, isLoading: loadingIncidents } = useIncidents();
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
+    const _createIncident = useCreateIncident();
 
     const data = useMemo(() => {
         const locations = new Map((sbLocations ?? []).map((l) => [l.id, l.name]));

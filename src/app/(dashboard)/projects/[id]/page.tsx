@@ -27,11 +27,18 @@ import {
     useCreateTask,
     useDeleteProject,
     useProject,
+    useProjectAssignments,
+    useStakeholderProjects,
     useStakeholders,
     useTasks,
     useUpdateProject,
 } from "@/lib/supabase";
-import { useProjectCollaborators } from "@/lib/supabase/hooks-collaborators";
+import {
+    useIssueContract,
+    useProjectCollaborators,
+    useProjectCommTemplates,
+    useRequestCoi,
+} from "@/lib/supabase/hooks-collaborators";
 import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -39,15 +46,241 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
     CheckSquare,
+    ClipboardList,
     Clock,
     DollarSign,
     Edit,
+    FileText,
     FolderKanban,
     Handshake,
+    Link2,
     Loader2,
     TrendingUp,
     Users,
 } from "lucide-react";
+
+function ProjectAssignmentsTab({ projectId }: { projectId: string }) {
+    const { data: assignments, isLoading } = useProjectAssignments({ project_id: projectId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!assignments || assignments.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <ClipboardList className="h-5 w-5" />
+                        Assignments
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ClipboardList}
+                        title="No assignments"
+                        description="Resource assignments for this project will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5" />
+                    Assignments ({assignments.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {assignments.map((a) => {
+                        const rec = a as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.role ?? rec.assignment_type ?? "Assignment")}
+                                    </p>
+                                    {typeof rec.start_date === "string" ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDate(rec.start_date)}
+                                            {typeof rec.end_date === "string"
+                                                ? ` — ${formatDate(rec.end_date)}`
+                                                : ""}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant={rec.status === "active" ? "success" : "secondary"}>
+                                    {String(rec.status ?? "assigned")}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function StakeholderProjectsTab({ projectId }: { projectId: string }) {
+    const { data: links, isLoading } = useStakeholderProjects({ project_id: projectId });
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!links || links.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Link2 className="h-5 w-5" />
+                        Stakeholder Links
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={Link2}
+                        title="No stakeholder links"
+                        description="Stakeholder-project associations will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Link2 className="h-5 w-5" />
+                    Stakeholder Links ({links.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {links.map((l) => {
+                        const rec = l as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(
+                                            rec.stakeholder_name ??
+                                                rec.stakeholder_id ??
+                                                "Stakeholder"
+                                        )}
+                                    </p>
+                                    {rec.role ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {String(rec.role)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                {typeof rec.created_at === "string" ? (
+                                    <span className="text-xs text-muted-foreground">
+                                        {formatDate(rec.created_at)}
+                                    </span>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function CommTemplatesTab({ projectId }: { projectId: string }) {
+    const { data: templates, isLoading } = useProjectCommTemplates(projectId);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!templates || templates.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Communication Templates
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={FileText}
+                        title="No templates"
+                        description="Communication templates for this project will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Communication Templates ({templates.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {templates.map((t) => {
+                        const rec = t as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.name ?? rec.template_name ?? "Template")}
+                                    </p>
+                                    {rec.channel ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {String(rec.channel)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant="secondary">{String(rec.status ?? "draft")}</Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "projects",
@@ -141,6 +374,8 @@ export default function ProjectDetailPage() {
     const { data: sbTasks } = useTasks({ project_id: projectId });
     const { data: sbCollaborators } = useProjectCollaborators(projectId);
     const projectCollaborators = (sbCollaborators ?? []) as Record<string, unknown>[];
+    const issueContract = useIssueContract();
+    const requestCoi = useRequestCoi();
     const { data: sbBudgetLines } = useBudgetLineItems({ project_id: projectId });
     const { data: sbApprovals } = useApprovals();
     const { data: sbStakeholders } = useStakeholders();
@@ -511,20 +746,50 @@ export default function ProjectDetailPage() {
                                                             ` · ${completedReqs}/${totalReqs} requirements complete`}
                                                     </p>
                                                 </div>
-                                                <Badge
-                                                    variant={
-                                                        collab.status === "active"
-                                                            ? "success"
-                                                            : collab.status === "onboarding"
-                                                              ? "info"
-                                                              : collab.status === "suspended" ||
-                                                                  collab.status === "terminated"
-                                                                ? "destructive"
-                                                                : "warning"
-                                                    }
-                                                >
-                                                    {String(collab.status ?? "invited")}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-xs h-7"
+                                                        disabled={issueContract.isPending}
+                                                        onClick={() =>
+                                                            issueContract.mutate({
+                                                                projectId,
+                                                                collabId: String(collab.id),
+                                                            })
+                                                        }
+                                                    >
+                                                        Issue Contract
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-xs h-7"
+                                                        disabled={requestCoi.isPending}
+                                                        onClick={() =>
+                                                            requestCoi.mutate({
+                                                                projectId,
+                                                                collabId: String(collab.id),
+                                                            })
+                                                        }
+                                                    >
+                                                        Request COI
+                                                    </Button>
+                                                    <Badge
+                                                        variant={
+                                                            collab.status === "active"
+                                                                ? "success"
+                                                                : collab.status === "onboarding"
+                                                                  ? "info"
+                                                                  : collab.status === "suspended" ||
+                                                                      collab.status === "terminated"
+                                                                    ? "destructive"
+                                                                    : "warning"
+                                                        }
+                                                    >
+                                                        {String(collab.status ?? "invited")}
+                                                    </Badge>
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -658,6 +923,21 @@ export default function ProjectDetailPage() {
                         </CardContent>
                     </Card>
                 ),
+            },
+            {
+                id: "assignments",
+                label: "Assignments",
+                content: <ProjectAssignmentsTab projectId={projectId} />,
+            },
+            {
+                id: "stakeholder-links",
+                label: "Stakeholder Links",
+                content: <StakeholderProjectsTab projectId={projectId} />,
+            },
+            {
+                id: "comm-templates",
+                label: "Comm Templates",
+                content: <CommTemplatesTab projectId={projectId} />,
             },
             {
                 id: "chatter",

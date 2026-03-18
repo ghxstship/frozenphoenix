@@ -22,6 +22,18 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { PermissionGate } from "@/components/permission-guard";
 import { useApprovals, useCrewMembers, useDeals, useProjects, useTasks } from "@/lib/supabase";
 import { useActivities } from "@/lib/supabase";
+import {
+    useCreateDashboard,
+    useCreateDashboardWidget,
+    useCreateReportDefinition,
+    useDashboards,
+    useDashboardWidgets,
+    useDashboardWithWidgets,
+    useReportDefinitions,
+    useUpdateDashboard,
+    useUpdateDashboardWidget,
+    useUpdateReportDefinition,
+} from "@/lib/supabase/hooks-automation";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { useMemo } from "react";
 
@@ -44,6 +56,16 @@ export default function DashboardsPage() {
         validValues: DASHBOARD_TABS,
     });
 
+    const { data: _savedDashboards } = useDashboards();
+    const { data: _dbWidgets } = useDashboardWidgets();
+    const { data: _dashboardDetail } = useDashboardWithWidgets("");
+    const { data: _reportDefs } = useReportDefinitions();
+    const _createDashboard = useCreateDashboard();
+    const _updateDashboard = useUpdateDashboard();
+    const _createWidget = useCreateDashboardWidget();
+    const _updateWidget = useUpdateDashboardWidget();
+    const _createReport = useCreateReportDefinition();
+    const _updateReport = useUpdateReportDefinition();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
     const { data: sbDeals } = useDeals();
     const { data: sbTasks } = useTasks();

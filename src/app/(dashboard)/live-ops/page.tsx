@@ -9,6 +9,10 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Activity, AlertTriangle, CheckCircle2, Clock, Radio, Users } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLiveEventInstances } from "@/lib/supabase";
+import {
+    useCreateLiveCrewAssignment,
+    useCreateLiveEventInstance,
+} from "@/lib/supabase/hooks-live-ops";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
@@ -48,6 +52,8 @@ const PHASES = [
 export default function LiveOpsPage() {
     const [phaseFilter, setPhaseFilter] = useState("all");
     const { data: events, isLoading } = useLiveEventInstances();
+    const _createEvent = useCreateLiveEventInstance();
+    const _createAssignment = useCreateLiveCrewAssignment();
 
     const rows = useMemo(() => (events ?? []) as Row[], [events]);
 

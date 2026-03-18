@@ -5,3 +5,4 @@ export type { AuthFormFieldProps } from "./auth-form-field";
 export { AuthLayout } from "./auth-layout";
 export { OAuthButtons } from "./oauth-buttons";
 export { BotProtection, useBotProtection } from "./bot-protection";
+export { EmailCollectionBanner } from "./email-collection-banner";

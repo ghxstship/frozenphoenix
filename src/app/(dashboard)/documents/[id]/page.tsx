@@ -2,11 +2,73 @@
 
 import { useParams } from "next/navigation";
 import { useDeleteDocument, useDocument, useUpdateDocument } from "@/lib/supabase";
+import { useDocumentVersions } from "@/lib/supabase/hooks-documents";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, FileText, History, Loader2 } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
+
+function DocumentVersionsTab() {
+    const { data: versions, isLoading } = useDocumentVersions();
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-8 flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+    if (!versions || versions.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    No document versions found.
+                </CardContent>
+            </Card>
+        );
+    }
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <History className="h-4 w-4 text-primary" />
+                    Document Versions ({versions.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {versions.map((v) => (
+                        <div
+                            key={v.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"
+                        >
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium">
+                                    v{String(v.version_number ?? "?")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {String(
+                                        (v as unknown as Record<string, unknown>).change_summary ??
+                                            ""
+                                    )}
+                                </p>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">
+                                {String(
+                                    (v as unknown as Record<string, unknown>).created_by ?? ""
+                                ).slice(0, 8)}
+                            </Badge>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 const CONFIG: DetailPageConfig = {
     entityKey: "documents",
@@ -30,6 +92,13 @@ const CONFIG: DetailPageConfig = {
         { id: "uploaded_by", label: "Uploaded By", accessorKey: "uploaded_by" },
         { id: "url", label: "File URL", accessorKey: "url" },
         { id: "expiring_link_url", label: "Expiring Link", accessorKey: "expiring_link_url" },
+    ],
+    tabs: [
+        {
+            id: "versions",
+            label: "Versions",
+            content: <DocumentVersionsTab />,
+        },
     ],
 };
 

@@ -2,9 +2,17 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDeleteLead } from "@/lib/supabase";
-import { useLead, useUpdateLead } from "@/lib/supabase";
-import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
+import {
+    useConvertLeadToDeal,
+    useCreateLeadActivity,
+    useCreateRecordComment,
+    useDeleteLead,
+    useLead,
+    useLeadPipelineStats,
+    useRecordActivityLog,
+    useRecordComments,
+    useUpdateLead,
+} from "@/lib/supabase";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,16 +22,111 @@ import type { ActivityItem, CommentItem } from "@/components/activity";
 import { LEAD_BUDGET_LABELS } from "@/config/ui-variants";
 import { formatRelativeTime } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/layouts/empty-state";
 import {
+    BarChart3,
     Building2,
     Calendar,
     DollarSign,
     Edit,
+    Loader2,
     Mail,
     Phone,
+    Plus,
     TrendingUp,
     Users,
 } from "lucide-react";
+
+function LeadPipelineStatsTab() {
+    const { data: stats, isLoading } = useLeadPipelineStats();
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!stats || stats.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Pipeline Stats
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={BarChart3}
+                        title="No pipeline stats"
+                        description="Lead pipeline statistics will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Pipeline Stats
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {stats.map((s, idx) => {
+                        const rec = s as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id ?? rec.stage ?? idx)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <p className="text-sm font-medium">
+                                    {String(rec.stage ?? rec.status ?? "Stage")}
+                                </p>
+                                <Badge variant="secondary">
+                                    {String(rec.count ?? rec.total ?? 0)} leads
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function ConvertLeadAction({ leadId }: { leadId: string }) {
+    const convertLead = useConvertLeadToDeal();
+    const createLeadActivity = useCreateLeadActivity();
+
+    const handleConvert = async () => {
+        await convertLead.mutateAsync({ lead_id: leadId } as never);
+        await createLeadActivity.mutateAsync({
+            lead_id: leadId,
+            activity_type: "converted",
+            description: "Lead converted to deal",
+        } as never);
+    };
+
+    return (
+        <Button size="sm" disabled={convertLead.isPending} onClick={handleConvert}>
+            {convertLead.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+                <Plus className="h-4 w-4 mr-1" />
+            )}
+            Convert to Deal
+        </Button>
+    );
+}
 
 const BASE_CONFIG: DetailPageConfig = {
     entityKey: "leads",
@@ -233,6 +336,28 @@ export default function LeadDetailPage() {
             },
         ],
         tabs: [
+            {
+                id: "pipeline-stats",
+                label: "Pipeline Stats",
+                content: <LeadPipelineStatsTab />,
+            },
+            {
+                id: "convert",
+                label: "Convert",
+                content: (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Convert Lead</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Convert this lead into a deal to begin the sales pipeline.
+                            </p>
+                            <ConvertLeadAction leadId={leadId} />
+                        </CardContent>
+                    </Card>
+                ),
+            },
             {
                 id: "activity",
                 label: "Activity",

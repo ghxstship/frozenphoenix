@@ -22,13 +22,163 @@ import {
     useCreateComment,
     useCreateProject,
     useDeals,
+    useLostReasons,
+    usePipelines,
     useRecordActivityLog,
     useUpdateDeal,
 } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
-import { Calendar, Clock, DollarSign, Edit, FolderKanban, Loader2, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+    Calendar,
+    Clock,
+    DollarSign,
+    Edit,
+    FolderKanban,
+    GitBranch,
+    Loader2,
+    ThumbsDown,
+    TrendingUp,
+} from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
+
+function PipelinesTab() {
+    const { data: pipelines, isLoading } = usePipelines();
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!pipelines || pipelines.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <GitBranch className="h-5 w-5" />
+                        Pipelines
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={GitBranch}
+                        title="No pipelines"
+                        description="Sales pipelines will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <GitBranch className="h-5 w-5" />
+                    Pipelines ({pipelines.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {pipelines.map((p) => {
+                        const rec = p as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {String(rec.name ?? "Pipeline")}
+                                    </p>
+                                    {rec.description ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            {String(rec.description)}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <Badge variant={rec.is_default ? "success" : "secondary"}>
+                                    {rec.is_default ? "Default" : "Custom"}
+                                </Badge>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function LostReasonsTab() {
+    const { data: reasons, isLoading } = useLostReasons();
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="py-12 flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!reasons || reasons.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <ThumbsDown className="h-5 w-5" />
+                        Lost Reasons
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ThumbsDown}
+                        title="No lost reasons"
+                        description="Deal lost reasons will appear here"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <ThumbsDown className="h-5 w-5" />
+                    Lost Reasons ({reasons.length})
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {reasons.map((r) => {
+                        const rec = r as Record<string, unknown>;
+                        return (
+                            <div
+                                key={String(rec.id)}
+                                className="flex items-center justify-between p-3 rounded-lg border"
+                            >
+                                <p className="text-sm font-medium">
+                                    {String(rec.name ?? rec.reason ?? "Reason")}
+                                </p>
+                                {typeof rec.count === "number" ? (
+                                    <Badge variant="secondary">{rec.count} deals</Badge>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 function computeDaysToClose(dateStr: string): number {
     return Math.max(
@@ -309,6 +459,16 @@ export default function DealDetailPage() {
             { label: "Days to Close", icon: Calendar, compute: () => daysToClose },
         ],
         tabs: [
+            {
+                id: "pipelines",
+                label: "Pipelines",
+                content: <PipelinesTab />,
+            },
+            {
+                id: "lost-reasons",
+                label: "Lost Reasons",
+                content: <LostReasonsTab />,
+            },
             {
                 id: "activity",
                 label: "Activity",

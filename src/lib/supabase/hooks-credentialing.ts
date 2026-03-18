@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { csrfHeaders } from "@/lib/csrf";
 import { getSupabase } from "./client";
 import type {
     AssignCredentialRequest,
@@ -376,7 +377,7 @@ export function useGateScan() {
         mutationFn: async (payload: GateScanPayload): Promise<GateScanResult> => {
             const res = await fetch("/api/credentials/scan", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify(payload),
             });
             if (!res.ok) {

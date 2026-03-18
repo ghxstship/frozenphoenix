@@ -1018,7 +1018,7 @@ export function Topbar() {
 
     useEffect(() => {
         if (reducedMotion) return;
-        const shell = document.getElementById("shell-main-content")?.parentElement;
+        const shell = document.getElementById("shell-main-content");
         const target = shell || window;
 
         let rafId = 0;

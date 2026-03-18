@@ -220,25 +220,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        const getSession = async () => {
+        const initSession = async () => {
+            // getUser() validates the token server-side and refreshes it if
+            // expired. getSession() only reads from local storage and will
+            // return a stale/expired token after a hard refresh, causing the
+            // user to be kicked out.
             const {
-                data: { session },
-            } = await supabase.auth.getSession();
+                data: { user: validatedUser },
+            } = await supabase.auth.getUser();
 
-            setSession(session);
-            setUser(session?.user ?? null);
+            if (validatedUser) {
+                // Token is now refreshed — getSession() will return the fresh session.
+                const {
+                    data: { session: freshSession },
+                } = await supabase.auth.getSession();
 
-            if (session?.user) {
+                setSession(freshSession);
+                setUser(validatedUser);
+
                 await Promise.all([
-                    fetchProfile(session.user.id),
-                    fetchMemberships(session.user.id),
+                    fetchProfile(validatedUser.id),
+                    fetchMemberships(validatedUser.id),
                 ]);
+            } else {
+                setSession(null);
+                setUser(null);
             }
 
             setLoading(false);
         };
 
-        getSession();
+        initSession();
 
         const {
             data: { subscription },

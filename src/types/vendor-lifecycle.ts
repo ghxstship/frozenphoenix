@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLAYBOOK — Vendor/Contractor/Subcontractor Lifecycle Types
+// ATLVS — Vendor/Contractor/Subcontractor Lifecycle Types
 // HeyPros + Jobber feature parity for creative/experiential production
 // Maintains 3NF compliance and SSOT principles
 // ═══════════════════════════════════════════════════════════════════════════
@@ -8,23 +8,56 @@
 // VENDOR PROFILE EXTENSIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type VendorType = 'vendor' | 'subcontractor' | 'independent_contractor' | 'freelancer' | 'agency' | 'supplier';
+export type VendorType =
+    | "vendor"
+    | "subcontractor"
+    | "independent_contractor"
+    | "freelancer"
+    | "agency"
+    | "supplier";
 
 export type OnboardingStatus =
-    | 'invited' | 'application_submitted' | 'under_review' | 'documents_pending'
-    | 'documents_received' | 'background_check' | 'approved' | 'rejected' | 'archived';
+    | "invited"
+    | "application_submitted"
+    | "under_review"
+    | "documents_pending"
+    | "documents_received"
+    | "background_check"
+    | "approved"
+    | "rejected"
+    | "archived";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPLIANCE DOCUMENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ComplianceDocType =
-    | 'coi' | 'w9' | 'w8ben' | 'nda' | 'msa' | 'business_license' | 'workers_comp'
-    | 'auto_insurance' | 'professional_license' | 'union_card' | 'background_check'
-    | 'drug_test' | 'safety_cert' | 'equipment_cert' | 'diversity_cert' | 'tax_exempt'
-    | 'bank_info' | 'other';
+    | "coi"
+    | "w9"
+    | "w8ben"
+    | "nda"
+    | "msa"
+    | "business_license"
+    | "workers_comp"
+    | "auto_insurance"
+    | "professional_license"
+    | "union_card"
+    | "background_check"
+    | "drug_test"
+    | "safety_cert"
+    | "equipment_cert"
+    | "diversity_cert"
+    | "tax_exempt"
+    | "bank_info"
+    | "other";
 
-export type ComplianceDocStatus = 'not_submitted' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'expiring_soon';
+export type ComplianceDocStatus =
+    | "not_submitted"
+    | "pending_review"
+    | "approved"
+    | "rejected"
+    | "expired"
+    | "expiring_soon";
 
 export interface ComplianceRequirement {
     id: string;
@@ -67,10 +100,21 @@ export interface VendorComplianceDoc {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type WorkOrderStatus =
-    | 'draft' | 'posted' | 'bidding' | 'assigned' | 'accepted' | 'scheduled'
-    | 'in_progress' | 'on_hold' | 'completed' | 'verified' | 'invoiced' | 'cancelled' | 'disputed';
+    | "draft"
+    | "posted"
+    | "bidding"
+    | "assigned"
+    | "accepted"
+    | "scheduled"
+    | "in_progress"
+    | "on_hold"
+    | "completed"
+    | "verified"
+    | "invoiced"
+    | "cancelled"
+    | "disputed";
 
-export type WorkOrderPriority = 'low' | 'normal' | 'high' | 'urgent' | 'emergency';
+export type WorkOrderPriority = "low" | "normal" | "high" | "urgent" | "emergency";
 
 export interface WorkOrderFull {
     id: string;
@@ -114,7 +158,7 @@ export interface WorkOrderFull {
 // WORK ORDER BIDS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type BidStatus = 'submitted' | 'under_review' | 'accepted' | 'rejected' | 'withdrawn';
+export type BidStatus = "submitted" | "under_review" | "accepted" | "rejected" | "withdrawn";
 
 export interface WorkOrderBid {
     id: string;
@@ -135,8 +179,15 @@ export interface WorkOrderBid {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DispatchStatus =
-    | 'unassigned' | 'offered' | 'accepted' | 'declined' | 'en_route'
-    | 'on_site' | 'in_progress' | 'completed' | 'no_show';
+    | "unassigned"
+    | "offered"
+    | "accepted"
+    | "declined"
+    | "en_route"
+    | "on_site"
+    | "in_progress"
+    | "completed"
+    | "no_show";
 
 export interface DispatchEntry {
     id: string;
@@ -161,7 +212,7 @@ export interface DispatchEntry {
 // VENDOR REVIEWS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type VendorReviewType = 'project_completion' | 'periodic' | 'incident' | 'self_assessment';
+export type VendorReviewType = "project_completion" | "periodic" | "incident" | "self_assessment";
 
 export interface VendorReview {
     id: string;
@@ -191,7 +242,12 @@ export interface VendorReview {
 // JOB CHECKLISTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type JobChecklistStatus = 'not_started' | 'in_progress' | 'completed' | 'skipped' | 'blocked';
+export type JobChecklistStatus =
+    | "not_started"
+    | "in_progress"
+    | "completed"
+    | "skipped"
+    | "blocked";
 
 export interface ChecklistTemplate {
     id: string;
@@ -244,7 +300,14 @@ export interface ChecklistItem {
 // ESTIMATES / QUOTES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type EstimateStatus = 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired' | 'converted';
+export type EstimateStatus =
+    | "draft"
+    | "sent"
+    | "viewed"
+    | "accepted"
+    | "rejected"
+    | "expired"
+    | "converted";
 
 export interface Estimate {
     id: string;
@@ -296,7 +359,13 @@ export interface EstimateLineItem {
 // JOB COSTING
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type JobCostType = 'labor' | 'material' | 'equipment' | 'subcontractor' | 'expense' | 'overhead';
+export type JobCostType =
+    | "labor"
+    | "material"
+    | "equipment"
+    | "subcontractor"
+    | "expense"
+    | "overhead";
 
 export interface JobCostEntry {
     id: string;
@@ -323,8 +392,8 @@ export interface JobCostEntry {
 // VENDOR COMMUNICATION
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type CommChannel = 'in_app' | 'email' | 'sms' | 'phone' | 'portal';
-export type CommDirection = 'inbound' | 'outbound';
+export type CommChannel = "in_app" | "email" | "sms" | "phone" | "portal";
+export type CommDirection = "inbound" | "outbound";
 
 export interface VendorCommunication {
     id: string;
@@ -347,14 +416,29 @@ export interface VendorCommunication {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ServiceRequestStatus =
-    | 'new' | 'acknowledged' | 'assessment_scheduled' | 'quoted' | 'approved'
-    | 'converted' | 'declined' | 'cancelled' | 'archived';
+    | "new"
+    | "acknowledged"
+    | "assessment_scheduled"
+    | "quoted"
+    | "approved"
+    | "converted"
+    | "declined"
+    | "cancelled"
+    | "archived";
 
 export type ServiceRequestSource =
-    | 'client_portal' | 'online_booking' | 'phone' | 'email' | 'walk_in'
-    | 'referral' | 'social_media' | 'website_form' | 'vendor_portal' | 'internal';
+    | "client_portal"
+    | "online_booking"
+    | "phone"
+    | "email"
+    | "walk_in"
+    | "referral"
+    | "social_media"
+    | "website_form"
+    | "vendor_portal"
+    | "internal";
 
-export type ServiceRequestPriority = 'low' | 'normal' | 'high' | 'urgent' | 'emergency';
+export type ServiceRequestPriority = "low" | "normal" | "high" | "urgent" | "emergency";
 
 export interface ServiceRequest {
     id: string;
@@ -383,7 +467,7 @@ export interface ServiceRequest {
     assessmentNotes?: string;
     assessedByName?: string;
     attachmentUrls: string[];
-    convertedToType?: 'estimate' | 'work_order' | 'project' | 'deal';
+    convertedToType?: "estimate" | "work_order" | "project" | "deal";
     convertedToId?: string;
     convertedAt?: string;
     assignedToId?: string;

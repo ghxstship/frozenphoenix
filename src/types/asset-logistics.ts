@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Asset, Inventory, Logistics & Warehousing Types
+   ATLVS — Asset, Inventory, Logistics & Warehousing Types
    Migration 018: asset lifecycle, warehouse hierarchy, logistics
    ═══════════════════════════════════════════════════════════════ */
 

@@ -1,6 +1,6 @@
 {
-  "name": "Playbook - Production Management",
-  "short_name": "Playbook",
+  "name": "ATLVS — Production Management",
+  "short_name": "ATLVS",
   "description": "Enterprise creative & experiential production management platform",
   "start_url": "/dashboard",
   "display": "standalone",

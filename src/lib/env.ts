@@ -12,7 +12,7 @@ import { z } from "zod/v4";
 const clientSchema = z.object({
     NEXT_PUBLIC_SUPABASE_URL: z.url().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-    NEXT_PUBLIC_BRAND_ID: z.string().default("playbook"),
+    NEXT_PUBLIC_BRAND_ID: z.string().default("atlvs"),
     NEXT_PUBLIC_BRAND_NAME: z.string().optional(),
     NEXT_PUBLIC_BRAND_TAGLINE: z.string().optional(),
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),

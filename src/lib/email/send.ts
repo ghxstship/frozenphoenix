@@ -42,7 +42,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     if (process.env.RESEND_API_KEY) {
         try {
             const body: Record<string, unknown> = {
-                from: from || process.env.RESEND_FROM_EMAIL || "Playbook <noreply@playbook.app>",
+                from: from || process.env.RESEND_FROM_EMAIL || "ATLVS <noreply@atlvs.io>",
                 to: recipients,
                 subject,
                 html,

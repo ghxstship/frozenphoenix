@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLAYBOOK — Productive.io Feature Types
+// ATLVS — Productive.io Feature Types
 // CRM, Resource Planning, Billing, Dashboards, Documents, and Automations
 // Maintains 3NF compliance and SSOT principles
 // ═══════════════════════════════════════════════════════════════════════════

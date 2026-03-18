@@ -106,7 +106,7 @@ export async function getBlueskyOAuthClient(): Promise<NodeOAuthClient> {
             clientMetadata: {
                 client_id: `${publicUrl}/api/auth/bluesky/client-metadata`,
                 application_type: "web" as const,
-                client_name: "Playbook",
+                client_name: "ATLVS",
                 client_uri: publicUrl,
                 dpop_bound_access_tokens: true,
                 grant_types: ["authorization_code", "refresh_token"] as const,

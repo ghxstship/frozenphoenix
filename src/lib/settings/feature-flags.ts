@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Feature Flag Evaluation Engine
+   ATLVS — Feature Flag Evaluation Engine
    Client-side evaluation with server-side fallback via Supabase RPC
    ═══════════════════════════════════════════════════════════════ */
 
@@ -39,9 +39,10 @@ export function evaluateFlag(
     // Check user-specific override first (most specific)
     if (context.userId) {
         const userOverride = overrides.find(
-            (o) => o.scope_type === "user"
-                && o.scope_id === context.userId
-                && (!o.expires_at || new Date(o.expires_at) > now)
+            (o) =>
+                o.scope_type === "user" &&
+                o.scope_id === context.userId &&
+                (!o.expires_at || new Date(o.expires_at) > now)
         );
         if (userOverride) return userOverride.value;
 
@@ -59,9 +60,10 @@ export function evaluateFlag(
     // Check org override
     if (context.orgId) {
         const orgOverride = overrides.find(
-            (o) => o.scope_type === "organization"
-                && o.scope_id === context.orgId
-                && (!o.expires_at || new Date(o.expires_at) > now)
+            (o) =>
+                o.scope_type === "organization" &&
+                o.scope_id === context.orgId &&
+                (!o.expires_at || new Date(o.expires_at) > now)
         );
         if (orgOverride) return orgOverride.value;
 
@@ -84,7 +86,7 @@ export function evaluateFlag(
     // Percentage rollout (deterministic by userId hash)
     if (flag.flag_type === "percentage" && context.userId) {
         const hash = deterministicHash(context.userId + flag.key);
-        if ((hash % 100) < flag.rollout_percentage) {
+        if (hash % 100 < flag.rollout_percentage) {
             return true;
         }
         return false;
@@ -133,7 +135,7 @@ function deterministicHash(str: string): number {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
+        hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash);

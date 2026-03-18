@@ -1,8 +1,8 @@
 # ═══════════════════════════════════════════════════════════════
 # FIND-036: Multi-stage Dockerfile for Next.js standalone output
 # ═══════════════════════════════════════════════════════════════
-# Build:  docker build -t playbook .
-# Run:    docker run -p 3000:3000 --env-file .env.local playbook
+# Build:  docker build -t atlvs .
+# Run:    docker run -p 3000:3000 --env-file .env.local atlvs
 
 # ─── Stage 1: Dependencies ────────────────────────────────────
 FROM node:20-alpine AS deps
@@ -19,7 +19,7 @@ COPY . .
 # Build arguments for environment variables needed at build time
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ARG NEXT_PUBLIC_BRAND_ID=playbook
+ARG NEXT_PUBLIC_BRAND_ID=atlvs
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL

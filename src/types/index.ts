@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Core Type Definitions
+   ATLVS — Core Type Definitions
    ═══════════════════════════════════════════════════════════════ */
 
 // Re-export Productive.io feature types

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — CRM & Revenue Pipeline Types
+   ATLVS — CRM & Revenue Pipeline Types
    Migration 013 entities
    ═══════════════════════════════════════════════════════════════ */
 
@@ -16,11 +16,7 @@ export type OpportunityStage =
     | "lost"
     | "on_hold";
 
-export type OpportunityType =
-    | "new_business"
-    | "expansion"
-    | "renewal"
-    | "upsell";
+export type OpportunityType = "new_business" | "expansion" | "renewal" | "upsell";
 
 export type OpportunityActivityType =
     | "call"
@@ -65,11 +61,7 @@ export type RevenueScheduleStatus =
 
 // ─── Account Health Enums ───
 
-export type AccountRiskLevel =
-    | "low"
-    | "medium"
-    | "high"
-    | "critical";
+export type AccountRiskLevel = "low" | "medium" | "high" | "critical";
 
 // ─── Opportunity ───
 

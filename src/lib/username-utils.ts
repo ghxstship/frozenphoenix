@@ -65,6 +65,7 @@ export const RESERVED_USERNAMES = new Set([
     "users",
     "webhooks",
     "www",
+    "atlvs",
     "playbook",
 
     "frozenphoenix",

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Server-Side Permission Check Middleware
+   ATLVS — Server-Side Permission Check Middleware
    Validates RBAC at the API route level before processing requests
    ═══════════════════════════════════════════════════════════════ */
 

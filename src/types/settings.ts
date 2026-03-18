@@ -1,39 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Settings, Feature Flags & RBAC Types
+   ATLVS — Settings, Feature Flags & RBAC Types
    ═══════════════════════════════════════════════════════════════ */
 
 // ─── Setting Scope ───
 export type SettingScope =
-    | 'platform'
-    | 'environment'
-    | 'organization'
-    | 'brand'
-    | 'department'
-    | 'project'
-    | 'activation'
-    | 'team'
-    | 'role'
-    | 'user';
+    | "platform"
+    | "environment"
+    | "organization"
+    | "brand"
+    | "department"
+    | "project"
+    | "activation"
+    | "team"
+    | "role"
+    | "user";
 
 // ─── Setting Value Type ───
 export type SettingValueType =
-    | 'boolean'
-    | 'integer'
-    | 'float'
-    | 'text'
-    | 'enum'
-    | 'text_array'
-    | 'jsonb';
+    | "boolean"
+    | "integer"
+    | "float"
+    | "text"
+    | "enum"
+    | "text_array"
+    | "jsonb";
 
 // ─── Setting Category ───
 export type SettingCategory =
-    | 'governance'
-    | 'security'
-    | 'operational'
-    | 'branding'
-    | 'feature_access'
-    | 'notifications'
-    | 'preferences';
+    | "governance"
+    | "security"
+    | "operational"
+    | "branding"
+    | "feature_access"
+    | "notifications"
+    | "preferences";
 
 // ─── Setting Definition ───
 export interface SettingDefinition {
@@ -110,8 +110,8 @@ export interface SettingWithDefinition extends SettingValue {
 }
 
 // ─── Feature Flag Type ───
-export type FeatureFlagType = 'boolean' | 'percentage' | 'variant';
-export type FeatureFlagOverrideScope = 'organization' | 'project' | 'user' | 'role';
+export type FeatureFlagType = "boolean" | "percentage" | "variant";
+export type FeatureFlagOverrideScope = "organization" | "project" | "user" | "role";
 
 // ─── Feature Flag ───
 export interface FeatureFlag {
@@ -166,8 +166,8 @@ export interface RoleDefinition {
 }
 
 // ─── Permission Grant ───
-export type PermissionAction = 'read' | 'write' | 'delete' | 'manage';
-export type PermissionScopeType = 'global' | 'organization' | 'project' | 'activation' | 'team';
+export type PermissionAction = "read" | "write" | "delete" | "manage";
+export type PermissionScopeType = "global" | "organization" | "project" | "activation" | "team";
 
 export interface PermissionGrant {
     id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Settings & Feature Flag React Query Hooks
+   ATLVS — Settings & Feature Flag React Query Hooks
    Supabase-backed CRUD for settings, feature flags, roles, brands
    ═══════════════════════════════════════════════════════════════ */
 

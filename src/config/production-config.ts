@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLAYBOOK — Production Domain Configuration
+// ATLVS — Production Domain Configuration
 // Single Source of Truth for all production lifecycle enums, labels, and mappings
 // ═══════════════════════════════════════════════════════════════════════════
 

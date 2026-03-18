@@ -188,7 +188,7 @@ export const useThemeStore = create<ThemeStore>()(
             shadowIntensity: "default",
             glassEffect: "on",
             animationSpeed: "default",
-            brandId: "playbook",
+            brandId: "atlvs",
             orgTokens: null,
             projectTokens: null,
             userTokens: null,
@@ -266,7 +266,7 @@ const ThemeContext = createContext<ThemeContextValue>({
     shadowIntensity: "default",
     glassEffect: "on",
     animationSpeed: "default",
-    brandId: "playbook",
+    brandId: "atlvs",
     setColorMode: () => {},
     setAccentColor: () => {},
     setDensity: () => {},
@@ -544,7 +544,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             document.cookie = `pb-theme-resolved=${resolved};path=/;max-age=31536000;SameSite=Lax`;
 
             // Apply brand attribute
-            if (brandId !== "playbook") {
+            if (brandId !== "atlvs") {
                 html.setAttribute("data-brand", brandId);
             } else {
                 html.removeAttribute("data-brand");

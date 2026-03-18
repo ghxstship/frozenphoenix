@@ -1,4 +1,4 @@
-# Contributing to FrozenPhoenix / Playbook
+# Contributing to FrozenPhoenix / ATLVS
 
 ## Getting Started
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Location Spatial Hierarchy Types
+   ATLVS — Location Spatial Hierarchy Types
    Migration 020: Location Spatial Hierarchy & Lifecycle
    Architecture: docs/LOCATION_SPATIAL_HIERARCHY_ARCHITECTURE.md
    ═══════════════════════════════════════════════════════════════ */

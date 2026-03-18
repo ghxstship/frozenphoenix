@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Legal, Compliance, Finance & Procurement Types
+   ATLVS — Legal, Compliance, Finance & Procurement Types
    Migration 015: governance entities
    ═══════════════════════════════════════════════════════════════ */
 
 // ─── GL Accounts ───
 
-export type GLAccountType = 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
-export type CapexOpex = 'capex' | 'opex';
+export type GLAccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
+export type CapexOpex = "capex" | "opex";
 
 export interface GLAccount {
     id: string;
@@ -28,16 +28,31 @@ export interface GLAccount {
 // ─── Insurance ───
 
 export type InsurancePolicyType =
-    | 'general_liability' | 'professional_liability' | 'workers_compensation'
-    | 'auto_liability' | 'equipment_floater' | 'event_liability'
-    | 'umbrella' | 'property' | 'cyber' | 'directors_officers'
-    | 'event_cancellation' | 'riggers_liability' | 'pollution' | 'other';
+    | "general_liability"
+    | "professional_liability"
+    | "workers_compensation"
+    | "auto_liability"
+    | "equipment_floater"
+    | "event_liability"
+    | "umbrella"
+    | "property"
+    | "cyber"
+    | "directors_officers"
+    | "event_cancellation"
+    | "riggers_liability"
+    | "pollution"
+    | "other";
 
 export type InsurancePolicyStatus =
-    | 'draft' | 'pending_verification' | 'active' | 'expiring_soon'
-    | 'expired' | 'cancelled' | 'suspended';
+    | "draft"
+    | "pending_verification"
+    | "active"
+    | "expiring_soon"
+    | "expired"
+    | "cancelled"
+    | "suspended";
 
-export type InsuranceHolderType = 'organization' | 'vendor' | 'location' | 'subcontractor';
+export type InsuranceHolderType = "organization" | "vendor" | "location" | "subcontractor";
 
 export interface InsuranceRequirement {
     id: string;
@@ -92,15 +107,35 @@ export interface InsurancePolicy {
 // ─── Contracts (Enhanced) ───
 
 export type ContractCategory =
-    | 'msa' | 'sow' | 'nda' | 'venue_agreement' | 'sponsorship'
-    | 'talent_agreement' | 'vendor_agreement' | 'subcontractor_agreement'
-    | 'equipment_rental' | 'license_agreement' | 'insurance_addendum'
-    | 'employment' | 'independent_contractor' | 'partnership' | 'other';
+    | "msa"
+    | "sow"
+    | "nda"
+    | "venue_agreement"
+    | "sponsorship"
+    | "talent_agreement"
+    | "vendor_agreement"
+    | "subcontractor_agreement"
+    | "equipment_rental"
+    | "license_agreement"
+    | "insurance_addendum"
+    | "employment"
+    | "independent_contractor"
+    | "partnership"
+    | "other";
 
-export type ContractConfidentiality = 'public' | 'internal' | 'confidential' | 'highly_confidential';
+export type ContractConfidentiality =
+    | "public"
+    | "internal"
+    | "confidential"
+    | "highly_confidential";
 
 export type ContractAmendmentStatus =
-    | 'draft' | 'pending_review' | 'pending_signature' | 'executed' | 'rejected' | 'void';
+    | "draft"
+    | "pending_review"
+    | "pending_signature"
+    | "executed"
+    | "rejected"
+    | "void";
 
 export interface ContractAmendment {
     id: string;
@@ -133,14 +168,31 @@ export interface ContractAmendment {
 // ─── Contract Clauses ───
 
 export type ClauseType =
-    | 'indemnification' | 'limitation_of_liability' | 'insurance_requirements'
-    | 'ip_ownership' | 'ip_usage_rights' | 'confidentiality' | 'non_compete'
-    | 'force_majeure' | 'termination' | 'payment_terms' | 'dispute_resolution'
-    | 'data_privacy' | 'cancellation' | 'weather_contingency' | 'warranty'
-    | 'representations' | 'governing_law' | 'assignment' | 'severability'
-    | 'entire_agreement' | 'amendments' | 'notices' | 'other';
+    | "indemnification"
+    | "limitation_of_liability"
+    | "insurance_requirements"
+    | "ip_ownership"
+    | "ip_usage_rights"
+    | "confidentiality"
+    | "non_compete"
+    | "force_majeure"
+    | "termination"
+    | "payment_terms"
+    | "dispute_resolution"
+    | "data_privacy"
+    | "cancellation"
+    | "weather_contingency"
+    | "warranty"
+    | "representations"
+    | "governing_law"
+    | "assignment"
+    | "severability"
+    | "entire_agreement"
+    | "amendments"
+    | "notices"
+    | "other";
 
-export type ClauseRiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type ClauseRiskLevel = "low" | "medium" | "high" | "critical";
 
 export interface ContractClause {
     id: string;
@@ -164,8 +216,14 @@ export interface ContractClause {
 
 // ─── Contract Obligations ───
 
-export type ObligationParty = 'us' | 'counterparty' | 'mutual' | 'third_party';
-export type ObligationStatus = 'pending' | 'in_progress' | 'fulfilled' | 'breached' | 'waived' | 'expired';
+export type ObligationParty = "us" | "counterparty" | "mutual" | "third_party";
+export type ObligationStatus =
+    | "pending"
+    | "in_progress"
+    | "fulfilled"
+    | "breached"
+    | "waived"
+    | "expired";
 
 export interface ContractObligation {
     id: string;
@@ -194,12 +252,27 @@ export interface ContractObligation {
 // ─── IP Rights ───
 
 export type IPAssetType =
-    | 'logo' | 'trademark' | 'design' | 'photograph' | 'video' | 'music'
-    | 'software' | 'content' | 'invention' | 'trade_secret' | 'other';
+    | "logo"
+    | "trademark"
+    | "design"
+    | "photograph"
+    | "video"
+    | "music"
+    | "software"
+    | "content"
+    | "invention"
+    | "trade_secret"
+    | "other";
 
 export type IPLicenseType =
-    | 'exclusive' | 'non_exclusive' | 'sole' | 'sublicensable'
-    | 'work_for_hire' | 'assignment' | 'creative_commons' | 'other';
+    | "exclusive"
+    | "non_exclusive"
+    | "sole"
+    | "sublicensable"
+    | "work_for_hire"
+    | "assignment"
+    | "creative_commons"
+    | "other";
 
 export interface IPRight {
     id: string;
@@ -230,25 +303,50 @@ export interface IPRight {
 // ─── Permits ───
 
 export type PermitType =
-    | 'business_license' | 'reseller_permit' | 'employer_registration'
-    | 'temporary_event' | 'street_closure' | 'environmental_impact'
-    | 'fire' | 'building' | 'electrical' | 'noise' | 'health'
-    | 'liquor' | 'signage' | 'ada_variance' | 'structural_approval'
-    | 'plumbing' | 'amusement' | 'crowd_gathering' | 'pyrotechnics'
-    | 'drone' | 'broadcast' | 'food_service' | 'other';
+    | "business_license"
+    | "reseller_permit"
+    | "employer_registration"
+    | "temporary_event"
+    | "street_closure"
+    | "environmental_impact"
+    | "fire"
+    | "building"
+    | "electrical"
+    | "noise"
+    | "health"
+    | "liquor"
+    | "signage"
+    | "ada_variance"
+    | "structural_approval"
+    | "plumbing"
+    | "amusement"
+    | "crowd_gathering"
+    | "pyrotechnics"
+    | "drone"
+    | "broadcast"
+    | "food_service"
+    | "other";
 
 export type PermitStatus =
-    | 'required' | 'application_draft' | 'submitted' | 'under_review'
-    | 'conditions_issued' | 'approved' | 'active' | 'expired'
-    | 'revoked' | 'renewed' | 'not_required';
+    | "required"
+    | "application_draft"
+    | "submitted"
+    | "under_review"
+    | "conditions_issued"
+    | "approved"
+    | "active"
+    | "expired"
+    | "revoked"
+    | "renewed"
+    | "not_required";
 
-export type PermitEntityType = 'organization' | 'project' | 'location' | 'activation' | 'event';
+export type PermitEntityType = "organization" | "project" | "location" | "activation" | "event";
 
 export interface Permit {
     id: string;
     permit_type: PermitType;
     jurisdiction: string;
-    jurisdiction_level: 'local' | 'county' | 'state' | 'federal' | 'international';
+    jurisdiction_level: "local" | "county" | "state" | "federal" | "international";
     issuing_authority?: string;
     entity_type: PermitEntityType;
     entity_id: string;
@@ -285,17 +383,29 @@ export interface Permit {
 
 // ─── Engineering Approvals ───
 
-export type EngineeringApprovalType = 'structural' | 'electrical' | 'mechanical' | 'fire_safety' | 'rigging';
+export type EngineeringApprovalType =
+    | "structural"
+    | "electrical"
+    | "mechanical"
+    | "fire_safety"
+    | "rigging";
 
 export type EngineeringApprovalStatus =
-    | 'pending' | 'submitted' | 'under_review' | 'conditions_issued'
-    | 'approved' | 'rejected' | 'expired' | 'inspection_required'
-    | 'inspection_passed' | 'inspection_failed';
+    | "pending"
+    | "submitted"
+    | "under_review"
+    | "conditions_issued"
+    | "approved"
+    | "rejected"
+    | "expired"
+    | "inspection_required"
+    | "inspection_passed"
+    | "inspection_failed";
 
 export interface EngineeringApproval {
     id: string;
     approval_type: EngineeringApprovalType;
-    entity_type: 'activation' | 'location' | 'asset' | 'event';
+    entity_type: "activation" | "location" | "asset" | "event";
     entity_id: string;
     engineer_name: string;
     engineer_license_number?: string;
@@ -324,18 +434,30 @@ export interface EngineeringApproval {
 // ─── Compliance Checklists ───
 
 export type ComplianceChecklistType =
-    | 'ada' | 'osha' | 'fire_safety' | 'health_safety' | 'noise'
-    | 'environmental' | 'electrical_safety' | 'crowd_management'
-    | 'food_safety' | 'alcohol_service' | 'general';
+    | "ada"
+    | "osha"
+    | "fire_safety"
+    | "health_safety"
+    | "noise"
+    | "environmental"
+    | "electrical_safety"
+    | "crowd_management"
+    | "food_safety"
+    | "alcohol_service"
+    | "general";
 
 export type ComplianceChecklistStatus =
-    | 'not_started' | 'in_progress' | 'completed' | 'failed'
-    | 'requires_remediation' | 'waived';
+    | "not_started"
+    | "in_progress"
+    | "completed"
+    | "failed"
+    | "requires_remediation"
+    | "waived";
 
 export interface ComplianceChecklist {
     id: string;
     checklist_type: ComplianceChecklistType;
-    entity_type: 'location' | 'activation' | 'event' | 'project' | 'asset';
+    entity_type: "location" | "activation" | "event" | "project" | "asset";
     entity_id: string;
     title: string;
     description?: string;
@@ -362,12 +484,23 @@ export interface ComplianceChecklist {
 // ─── Asset Certifications ───
 
 export type AssetCertificationType =
-    | 'structural_integrity' | 'electrical_safety' | 'fire_resistance'
-    | 'rigging_inspection' | 'pressure_vessel' | 'load_test'
-    | 'calibration' | 'safety_inspection' | 'dot_inspection' | 'other';
+    | "structural_integrity"
+    | "electrical_safety"
+    | "fire_resistance"
+    | "rigging_inspection"
+    | "pressure_vessel"
+    | "load_test"
+    | "calibration"
+    | "safety_inspection"
+    | "dot_inspection"
+    | "other";
 
 export type AssetCertificationStatus =
-    | 'current' | 'expiring_soon' | 'expired' | 'pending_inspection' | 'failed';
+    | "current"
+    | "expiring_soon"
+    | "expired"
+    | "pending_inspection"
+    | "failed";
 
 export interface AssetCertification {
     id: string;
@@ -393,12 +526,23 @@ export interface AssetCertification {
 // ─── Budget Approvals ───
 
 export type ApprovalStatus =
-    | 'pending' | 'approved' | 'rejected' | 'revision_requested'
-    | 'escalated' | 'expired' | 'delegated';
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "revision_requested"
+    | "escalated"
+    | "expired"
+    | "delegated";
 
 export type ApprovalEntityType =
-    | 'budget' | 'budget_line_item' | 'change_order' | 'purchase_order'
-    | 'expense' | 'payment' | 'contract' | 'permit_waiver';
+    | "budget"
+    | "budget_line_item"
+    | "change_order"
+    | "purchase_order"
+    | "expense"
+    | "payment"
+    | "contract"
+    | "permit_waiver";
 
 export interface BudgetApproval {
     id: string;
@@ -428,7 +572,11 @@ export interface BudgetApproval {
 // ─── Payment Approvals ───
 
 export type PaymentApprovalType =
-    | 'vendor_invoice' | 'expense_reimbursement' | 'payroll' | 'advance' | 'refund';
+    | "vendor_invoice"
+    | "expense_reimbursement"
+    | "payroll"
+    | "advance"
+    | "refund";
 
 export interface PaymentApproval {
     id: string;
@@ -459,10 +607,14 @@ export interface PaymentApproval {
 // ─── Purchase Requisitions ───
 
 export type RequisitionStatus =
-    | 'draft' | 'pending_approval' | 'approved' | 'rejected'
-    | 'converted_to_po' | 'cancelled';
+    | "draft"
+    | "pending_approval"
+    | "approved"
+    | "rejected"
+    | "converted_to_po"
+    | "cancelled";
 
-export type RequisitionUrgency = 'low' | 'normal' | 'high' | 'critical';
+export type RequisitionUrgency = "low" | "normal" | "high" | "critical";
 
 export interface PurchaseRequisition {
     id: string;
@@ -494,7 +646,7 @@ export interface PurchaseRequisition {
 
 // ─── Goods Receipts ───
 
-export type GoodsReceiptStatus = 'pending' | 'partial' | 'complete' | 'rejected' | 'discrepancy';
+export type GoodsReceiptStatus = "pending" | "partial" | "complete" | "rejected" | "discrepancy";
 
 export interface GoodsReceipt {
     id: string;
@@ -522,12 +674,16 @@ export interface GoodsReceipt {
 // ─── 3-Way Match ───
 
 export type ThreeWayMatchStatus =
-    | 'not_applicable' | 'pending_receipt' | 'pending_invoice'
-    | 'matched' | 'variance_flagged' | 'override_approved';
+    | "not_applicable"
+    | "pending_receipt"
+    | "pending_invoice"
+    | "matched"
+    | "variance_flagged"
+    | "override_approved";
 
 // ─── Vendor Risk Scores ───
 
-export type VendorRiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type VendorRiskLevel = "low" | "medium" | "high" | "critical";
 
 export interface VendorRiskScore {
     id: string;
@@ -553,8 +709,13 @@ export interface VendorRiskScore {
 
 // ─── Entity Dependencies ───
 
-export type GovernanceDependencyType = 'hard_block' | 'soft_warning';
-export type GovernanceDependencyStatus = 'pending' | 'satisfied' | 'waived' | 'expired' | 'not_applicable';
+export type GovernanceDependencyType = "hard_block" | "soft_warning";
+export type GovernanceDependencyStatus =
+    | "pending"
+    | "satisfied"
+    | "waived"
+    | "expired"
+    | "not_applicable";
 
 export interface EntityDependency {
     id: string;
@@ -579,12 +740,24 @@ export interface EntityDependency {
 
 // ─── Governance Audit Log ───
 
-export type GovernanceDomain = 'legal' | 'compliance' | 'finance' | 'procurement';
+export type GovernanceDomain = "legal" | "compliance" | "finance" | "procurement";
 
 export type GovernanceAction =
-    | 'created' | 'updated' | 'approved' | 'rejected' | 'expired'
-    | 'renewed' | 'waived' | 'suspended' | 'verified' | 'submitted'
-    | 'matched' | 'released' | 'escalated' | 'delegated' | 'revoked';
+    | "created"
+    | "updated"
+    | "approved"
+    | "rejected"
+    | "expired"
+    | "renewed"
+    | "waived"
+    | "suspended"
+    | "verified"
+    | "submitted"
+    | "matched"
+    | "released"
+    | "escalated"
+    | "delegated"
+    | "revoked";
 
 export interface GovernanceAuditLogEntry {
     id: string;

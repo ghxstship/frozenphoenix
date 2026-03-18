@@ -1,7 +1,7 @@
 "use client";
 
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Settings & Feature Flag Provider
+   ATLVS — Settings & Feature Flag Provider
    Provides hierarchical settings + feature flags via React context
    Resolves inheritance chain: User > Team > Project > Org > Platform
    ═══════════════════════════════════════════════════════════════ */

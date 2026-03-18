@@ -9,7 +9,7 @@ describe("env validation", () => {
     it("provides default values when env vars are missing", async () => {
         vi.stubEnv("NODE_ENV", "test");
         const { env } = await import("@/lib/env");
-        expect(env.NEXT_PUBLIC_BRAND_ID).toBe("playbook");
+        expect(env.NEXT_PUBLIC_BRAND_ID).toBe("atlvs");
         expect(env.NODE_ENV).toBe("test");
     });
 

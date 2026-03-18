@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLAYBOOK — Unified Workforce Lifecycle Types
+// ATLVS — Unified Workforce Lifecycle Types
 // Resolves SSOT violations between crew_members and vendors.
 // Single identity model for all worker classifications.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -9,25 +9,60 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type WorkerLifecycleStatus =
-    | 'prospect' | 'onboarding' | 'active' | 'on_leave'
-    | 'suspended' | 'offboarding' | 'alumni' | 'do_not_engage';
+    | "prospect"
+    | "onboarding"
+    | "active"
+    | "on_leave"
+    | "suspended"
+    | "offboarding"
+    | "alumni"
+    | "do_not_engage";
 
 export type WorkerClassification =
-    | 'full_time_employee' | 'part_time_employee' | 'seasonal_employee'
-    | 'contract_employee' | 'independent_contractor' | 'subcontractor'
-    | 'freelancer' | 'agency_worker' | 'temp_worker' | 'intern' | 'volunteer';
+    | "full_time_employee"
+    | "part_time_employee"
+    | "seasonal_employee"
+    | "contract_employee"
+    | "independent_contractor"
+    | "subcontractor"
+    | "freelancer"
+    | "agency_worker"
+    | "temp_worker"
+    | "intern"
+    | "volunteer";
 
-export type TaxClassification = 'w2' | 'w2_seasonal' | '1099' | 'corp_to_corp' | 'foreign' | 'exempt';
+export type TaxClassification =
+    | "w2"
+    | "w2_seasonal"
+    | "1099"
+    | "corp_to_corp"
+    | "foreign"
+    | "exempt";
 
-export type LifecycleStepStatus = 'not_started' | 'in_progress' | 'completed' | 'skipped' | 'blocked' | 'overdue';
+export type LifecycleStepStatus =
+    | "not_started"
+    | "in_progress"
+    | "completed"
+    | "skipped"
+    | "blocked"
+    | "overdue";
 
-export type ReviewTargetType = 'employee' | 'contractor' | 'vendor' | 'freelancer' | 'intern';
+export type ReviewTargetType = "employee" | "contractor" | "vendor" | "freelancer" | "intern";
 
-export type ComplianceScope = 'employment' | 'vendor' | 'universal';
+export type ComplianceScope = "employment" | "vendor" | "universal";
 
-export type ICAssessmentMethod = 'irs_20_factor' | 'abc_test' | 'economic_reality' | 'common_law' | 'custom';
+export type ICAssessmentMethod =
+    | "irs_20_factor"
+    | "abc_test"
+    | "economic_reality"
+    | "common_law"
+    | "custom";
 
-export type ICAssessmentResult = 'properly_classified' | 'at_risk' | 'misclassified' | 'needs_review';
+export type ICAssessmentResult =
+    | "properly_classified"
+    | "at_risk"
+    | "misclassified"
+    | "needs_review";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WORKER PROFILES

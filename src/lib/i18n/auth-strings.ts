@@ -173,7 +173,7 @@ export const AUTH_STRINGS = {
         addAnother: "Add another",
         messageLabel: "Personal message",
         messageOptional: "(optional)",
-        messagePlaceholder: "Hey! Join us on Playbook to collaborate on our upcoming productions.",
+        messagePlaceholder: "Hey! Join us on ATLVS to collaborate on our upcoming productions.",
         sendButton: "Send Invitations",
         sendingButton: "Sending…",
         sentTitle: "{count} invitation{s} sent!",

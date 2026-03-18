@@ -276,7 +276,7 @@ async function executeActions(
                                 (action.config.text as string) ||
                                 `Automation triggered: ${triggerRecord.name || triggerRecord.title || triggerRecord.id}`,
                             channel: (action.config.channel as string) || undefined,
-                            username: (action.config.username as string) || "Playbook Automations",
+                            username: (action.config.username as string) || "ATLVS Automations",
                             icon_emoji: ":zap:",
                         };
                         const slackRes = await fetch(slackUrl, {

@@ -366,7 +366,7 @@ export default function InviteTeamPage() {
                                 id="invite-message"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Hey! Join us on Playbook to collaborate on our upcoming productions."
+                                placeholder="Hey! Join us on ATLVS to collaborate on our upcoming productions."
                                 rows={3}
                                 className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                                 disabled={loading}

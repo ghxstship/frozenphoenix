@@ -1,7 +1,7 @@
 "use client";
 
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — Setting Row Component
+   ATLVS — Setting Row Component
    Renders a single setting with type-aware input, lock badge,
    inheritance indicator, and edit/save controls
    ═══════════════════════════════════════════════════════════════ */

@@ -57,7 +57,7 @@ export const POST = withApiHandler(
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        from: process.env.RESEND_FROM_EMAIL || "ATLVS <noreply@atlvs.io>",
+                        from: process.env.RESEND_FROM_EMAIL || "ATLVS <noreply@atlvs.one>",
                         to: [to],
                         subject: `You're invited to join ${orgName}`,
                         html: buildInvitationEmail({

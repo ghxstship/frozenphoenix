@@ -38,9 +38,7 @@ export const POST = withApiHandler(
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
         const appUrl =
             process.env.NEXT_PUBLIC_APP_URL ??
-            (process.env.VERCEL_URL
-                ? `https://${process.env.VERCEL_URL}`
-                : "http://localhost:3000");
+            (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://atlvs.one");
         const signingUrl = `${appUrl}/sign/${signingToken}`;
 
         const { data: sig, error: sigErr } = await serverFromTable(supabase, "e_signatures")

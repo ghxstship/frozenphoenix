@@ -60,8 +60,8 @@ export const ATLVS_BRAND: BrandConfig = {
     },
 
     support: {
-        email: "support@atlvs.io",
-        url: "https://atlvs.io/support",
+        email: "support@atlvs.one",
+        url: "https://atlvs.one/support",
     },
 
     features: {

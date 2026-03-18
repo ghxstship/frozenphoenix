@@ -9,7 +9,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 function getPublicUrl(): string {
     return (
         process.env.NEXT_PUBLIC_APP_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://127.0.0.1:3000")
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://atlvs.one")
     );
 }
 

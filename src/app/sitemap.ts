@@ -5,7 +5,7 @@ import type { MetadataRoute } from "next";
  * Dashboard routes are excluded (require auth).
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://app.atlvs.io";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://atlvs.one";
 
     return [
         {

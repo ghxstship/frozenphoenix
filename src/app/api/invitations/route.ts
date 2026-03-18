@@ -134,7 +134,7 @@ function sendInviteEmails(
 ) {
     if (data) {
         // Use trusted server-side env var — never derive URLs from user-controlled headers
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://atlvs.one";
 
         Promise.allSettled(
             data.map(async (inv) => {

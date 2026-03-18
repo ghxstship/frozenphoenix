@@ -51,9 +51,8 @@ export const POST = withApiHandler(
         // Generate a unique payment token
         const paymentToken = `pay_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
         const appUrl =
-            (process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL)
-                ? `https://${process.env.VERCEL_URL}`
-                : "http://localhost:3000";
+            process.env.NEXT_PUBLIC_APP_URL ??
+            (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://atlvs.one");
         const paymentUrl = `${appUrl}/pay/${paymentToken}`;
 
         // Store the payment link on the invoice

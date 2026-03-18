@@ -178,7 +178,8 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
  */
 export function getOAuthRedirectUri(providerType: string): string {
     const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000";
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://atlvs.one");
     const origin = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
     return `${origin}/api/integrations/oauth/callback/${providerType}`;
 }

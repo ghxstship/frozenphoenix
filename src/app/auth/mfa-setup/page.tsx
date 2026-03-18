@@ -183,7 +183,7 @@ function MfaSetupForm() {
                             <span>Save these codes now. They won&apos;t be shown again.</span>
                         </div>
                         <div
-                            className="grid grid-cols-2 gap-2 p-4 bg-muted rounded-xl"
+                            className="grid grid-cols-1 gap-2 p-4 bg-muted rounded-xl sm:grid-cols-2"
                             role="list"
                             aria-label="Recovery codes"
                         >

@@ -225,7 +225,7 @@ export default function NotificationSettingsPage() {
                             }
                         />
                         {getBool("quiet_hours_enabled") && (
-                            <div className="grid grid-cols-3 gap-4 pl-10">
+                            <div className="grid grid-cols-1 gap-4 pl-10 sm:grid-cols-3">
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-medium">Start</label>
                                     <Input

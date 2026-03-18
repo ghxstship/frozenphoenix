@@ -57,7 +57,7 @@ function HrCertificationsTab() {
                         >
                             <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium truncate">
-                                    {String(c.title ?? c.id)}
+                                    {String(c.label ?? c.id)}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {c.expiry_date
@@ -85,7 +85,8 @@ function UserCertificationsTab() {
             </Card>
         );
     }
-    if (!userCerts || userCerts.length === 0) {
+    const items = userCerts?.data ?? [];
+    if (items.length === 0) {
         return (
             <Card>
                 <CardContent className="py-8 text-center text-sm text-muted-foreground">
@@ -99,12 +100,12 @@ function UserCertificationsTab() {
             <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                     <Users className="h-4 w-4 text-primary" />
-                    User Certifications ({userCerts.length})
+                    User Certifications ({items.length})
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="space-y-2">
-                    {userCerts.map((uc: Record<string, unknown>) => (
+                    {items.map((uc: Record<string, unknown>) => (
                         <div
                             key={String(uc.id)}
                             className="flex items-center justify-between p-3 rounded-lg bg-secondary/20"

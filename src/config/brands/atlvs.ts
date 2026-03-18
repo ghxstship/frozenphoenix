@@ -1,38 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLAYBOOK — White-Label Ready Brand Template
-   Neutral, brand-agnostic configuration for resellers and agencies
-   deploying the platform under their own identity.
+   ATLVS — Primary Product Brand Configuration
+   The hero brand identity for the ATLVS platform product.
    ═══════════════════════════════════════════════════════════════ */
 
 import type { BrandConfig } from "./types";
 
-export const PLAYBOOK_BRAND: BrandConfig = {
-    id: "playbook",
-    name: "Playbook",
-    shortName: "PB",
-    tagline: "Production Management Platform",
+export const ATLVS_BRAND: BrandConfig = {
+    id: "atlvs",
+    name: "ATLVS",
+    shortName: "AV",
+    tagline: "Experiential Project Management System",
     description:
-        "White-label production management platform for live events, fabrication, and experiential marketing.",
+        "Enterprise-grade production management platform for live events, fabrication, and experiential marketing.",
 
     colors: {
         light: {
-            primary: "215 16% 47%",
+            primary: "220 70% 50%",
             primaryForeground: "0 0% 100%",
             secondary: "220 14% 96%",
             secondaryForeground: "220 30% 10%",
             accent: "220 14% 93%",
             accentForeground: "220 30% 10%",
-            background: "0 0% 98%",
+            background: "220 20% 97%",
             foreground: "220 30% 10%",
             muted: "220 14% 96%",
             mutedForeground: "215 16% 47%",
             card: "0 0% 100%",
             cardForeground: "220 30% 10%",
             border: "220 13% 91%",
-            ring: "215 16% 47%",
+            ring: "220 70% 50%",
         },
         dark: {
-            primary: "215 20% 65%",
+            primary: "220 70% 60%",
             primaryForeground: "222 30% 7%",
             secondary: "220 20% 16%",
             secondaryForeground: "220 14% 93%",
@@ -45,7 +44,7 @@ export const PLAYBOOK_BRAND: BrandConfig = {
             card: "222 25% 10%",
             cardForeground: "220 14% 93%",
             border: "220 18% 18%",
-            ring: "215 20% 65%",
+            ring: "220 70% 60%",
         },
     },
 
@@ -55,14 +54,14 @@ export const PLAYBOOK_BRAND: BrandConfig = {
     },
 
     assets: {
-        logoIcon: "/brands/playbook/logo-icon.svg",
-        logoWordmark: "/brands/playbook/logo-wordmark.svg",
-        favicon: "/brands/playbook/favicon.ico",
+        logoIcon: "/logo-icon.svg",
+        logoWordmark: "/logo-wordmark.svg",
+        favicon: "/favicon.ico",
     },
 
     support: {
-        email: "support@example.com",
-        url: "https://example.com/support",
+        email: "support@atlvs.io",
+        url: "https://atlvs.io/support",
     },
 
     features: {

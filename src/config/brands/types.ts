@@ -73,4 +73,4 @@ export interface BrandConfig {
     };
 }
 
-export type BrandId = "playbook";
+export type BrandId = "atlvs" | "playbook";

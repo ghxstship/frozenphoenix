@@ -196,6 +196,42 @@ export function useCatalogOrgOverride(organizationId: string, catalogItemId: str
 }
 
 // ═══════════════════════════════════════════════════════════════
+// CATALOG PRICING TIERS
+// ═══════════════════════════════════════════════════════════════
+
+export function useCatalogPricingTiers(catalogItemId: string) {
+    return useQuery({
+        queryKey: ["catalog_pricing_tiers", catalogItemId],
+        queryFn: async () => {
+            const { data, error } = await getSupabase()
+                .from("catalog_pricing_tiers")
+                .select("*")
+                .eq("catalog_item_id", catalogItemId)
+                .order("tier", { ascending: true });
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!catalogItemId,
+    });
+}
+
+export function useCatalogPricingTiersBatch(catalogItemIds: string[]) {
+    return useQuery({
+        queryKey: ["catalog_pricing_tiers", "batch", catalogItemIds],
+        queryFn: async () => {
+            const { data, error } = await getSupabase()
+                .from("catalog_pricing_tiers")
+                .select("*")
+                .in("catalog_item_id", catalogItemIds)
+                .order("tier", { ascending: true });
+            if (error) throw error;
+            return data;
+        },
+        enabled: catalogItemIds.length > 0,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // PRODUCTION ADVANCES
 // ═══════════════════════════════════════════════════════════════
 

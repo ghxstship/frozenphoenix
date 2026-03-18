@@ -11,13 +11,27 @@ export type CatalogCategoryType =
     | "technical"
     | "hospitality"
     | "travel"
-    | "custom";
+    | "custom"
+    | "site"
+    | "food_beverage"
+    | "retail"
+    | "workplace"
+    | "labor";
 
 export type CatalogItemStatus = "active" | "discontinued" | "out_of_stock" | "seasonal" | "draft";
 
 export type ModifierType = "single_select" | "multi_select" | "quantity" | "text" | "boolean";
 
 export type PriceAdjustmentType = "flat" | "percentage" | "per_unit";
+
+export type WeatherRating =
+    | "indoor_only"
+    | "sheltered"
+    | "outdoor_rated"
+    | "all_weather"
+    | "not_applicable";
+
+export type PricingTier = "basic" | "standard" | "premium";
 
 // ─── Advance Enums ───
 
@@ -63,6 +77,11 @@ export interface CatalogCategory {
     depth: number;
     item_count: number;
     is_active: boolean;
+    unspsc_code: string | null;
+    nigp_code: string | null;
+    naics_code: string | null;
+    category_code: string | null;
+    subcategory_code: string | null;
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
@@ -85,10 +104,28 @@ export interface CatalogItem {
     name: string;
     description: string | null;
     sku: string | null;
+    hierarchical_sku: string | null;
+    common_name: string | null;
     make: string | null;
     model: string | null;
     specifications: CatalogItemSpecifications;
     tags: string[];
+    search_aliases: string[];
+    options: string[];
+    modifiers_summary: string | null;
+    prerequisites: string | null;
+    pricing_unit: string | null;
+    lead_time_hours: number;
+    setup_time: string | null;
+    strike_time: string | null;
+    crew_required: string | null;
+    power_requirements: string | null;
+    footprint: string | null;
+    truck_space: string | null;
+    weather: WeatherRating;
+    compliance_tags: string[];
+    sustainability_tags: string[];
+    unspsc_code: string | null;
     default_unit_cost: number;
     currency: string;
     unit_of_measure: string;
@@ -151,6 +188,17 @@ export interface CatalogOrgOverride {
     lead_time_days: number;
     minimum_order_quantity: number;
     deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CatalogPricingTier {
+    id: string;
+    catalog_item_id: string;
+    tier: PricingTier;
+    currency: string;
+    price_low: number;
+    price_high: number;
     created_at: string;
     updated_at: string;
 }

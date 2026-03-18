@@ -6,31 +6,6 @@ export type Database = {
     __InternalSupabase: {
         PostgrestVersion: "14.1";
     };
-    graphql_public: {
-        Tables: {
-            [_ in never]: never;
-        };
-        Views: {
-            [_ in never]: never;
-        };
-        Functions: {
-            graphql: {
-                Args: {
-                    extensions?: Json;
-                    operationName?: string;
-                    query?: string;
-                    variables?: Json;
-                };
-                Returns: Json;
-            };
-        };
-        Enums: {
-            [_ in never]: never;
-        };
-        CompositeTypes: {
-            [_ in never]: never;
-        };
-    };
     public: {
         Tables: {
             access_audit_log: {
@@ -6749,6 +6724,7 @@ export type Database = {
             };
             catalog_categories: {
                 Row: {
+                    category_code: string | null;
                     category_type: Database["public"]["Enums"]["catalog_category_type"];
                     created_at: string;
                     deleted_at: string | null;
@@ -6758,14 +6734,19 @@ export type Database = {
                     id: string;
                     is_active: boolean;
                     item_count: number;
+                    naics_code: string | null;
                     name: string;
+                    nigp_code: string | null;
                     organization_id: string | null;
                     parent_id: string | null;
                     slug: string;
                     sort_order: number;
+                    subcategory_code: string | null;
+                    unspsc_code: string | null;
                     updated_at: string;
                 };
                 Insert: {
+                    category_code?: string | null;
                     category_type?: Database["public"]["Enums"]["catalog_category_type"];
                     created_at?: string;
                     deleted_at?: string | null;
@@ -6775,14 +6756,19 @@ export type Database = {
                     id?: string;
                     is_active?: boolean;
                     item_count?: number;
+                    naics_code?: string | null;
                     name: string;
+                    nigp_code?: string | null;
                     organization_id?: string | null;
                     parent_id?: string | null;
                     slug: string;
                     sort_order?: number;
+                    subcategory_code?: string | null;
+                    unspsc_code?: string | null;
                     updated_at?: string;
                 };
                 Update: {
+                    category_code?: string | null;
                     category_type?: Database["public"]["Enums"]["catalog_category_type"];
                     created_at?: string;
                     deleted_at?: string | null;
@@ -6792,11 +6778,15 @@ export type Database = {
                     id?: string;
                     is_active?: boolean;
                     item_count?: number;
+                    naics_code?: string | null;
                     name?: string;
+                    nigp_code?: string | null;
                     organization_id?: string | null;
                     parent_id?: string | null;
                     slug?: string;
                     sort_order?: number;
+                    subcategory_code?: string | null;
+                    unspsc_code?: string | null;
                     updated_at?: string;
                 };
                 Relationships: [
@@ -6898,85 +6888,139 @@ export type Database = {
                     available_quantity: number | null;
                     category_id: string;
                     client_visible: boolean;
+                    common_name: string | null;
+                    compliance_tags: string[] | null;
                     created_at: string;
+                    crew_required: string | null;
                     currency: string;
                     default_unit_cost: number | null;
                     deleted_at: string | null;
                     description: string | null;
+                    footprint: string | null;
+                    hierarchical_sku: string | null;
                     id: string;
                     image_url: string | null;
                     is_critical_path: boolean;
                     is_custom: boolean;
+                    lead_time_hours: number | null;
                     make: string | null;
                     min_lead_time_days: number | null;
                     model: string | null;
+                    modifiers_summary: string | null;
                     name: string;
+                    options: string[] | null;
                     organization_id: string | null;
+                    power_requirements: string | null;
+                    prerequisites: string | null;
+                    pricing_unit: string | null;
+                    search_aliases: string[] | null;
                     search_vector: unknown;
+                    setup_time: string | null;
                     sku: string | null;
                     sort_order: number;
                     specifications: Json | null;
                     status: Database["public"]["Enums"]["catalog_item_status"];
+                    strike_time: string | null;
+                    sustainability_tags: string[] | null;
                     tags: string[] | null;
                     thumbnail_url: string | null;
+                    truck_space: string | null;
                     unit_of_measure: string;
+                    unspsc_code: string | null;
                     updated_at: string;
+                    weather: Database["public"]["Enums"]["weather_rating"] | null;
                 };
                 Insert: {
                     available_quantity?: number | null;
                     category_id: string;
                     client_visible?: boolean;
+                    common_name?: string | null;
+                    compliance_tags?: string[] | null;
                     created_at?: string;
+                    crew_required?: string | null;
                     currency?: string;
                     default_unit_cost?: number | null;
                     deleted_at?: string | null;
                     description?: string | null;
+                    footprint?: string | null;
+                    hierarchical_sku?: string | null;
                     id?: string;
                     image_url?: string | null;
                     is_critical_path?: boolean;
                     is_custom?: boolean;
+                    lead_time_hours?: number | null;
                     make?: string | null;
                     min_lead_time_days?: number | null;
                     model?: string | null;
+                    modifiers_summary?: string | null;
                     name: string;
+                    options?: string[] | null;
                     organization_id?: string | null;
+                    power_requirements?: string | null;
+                    prerequisites?: string | null;
+                    pricing_unit?: string | null;
+                    search_aliases?: string[] | null;
                     search_vector?: unknown;
+                    setup_time?: string | null;
                     sku?: string | null;
                     sort_order?: number;
                     specifications?: Json | null;
                     status?: Database["public"]["Enums"]["catalog_item_status"];
+                    strike_time?: string | null;
+                    sustainability_tags?: string[] | null;
                     tags?: string[] | null;
                     thumbnail_url?: string | null;
+                    truck_space?: string | null;
                     unit_of_measure?: string;
+                    unspsc_code?: string | null;
                     updated_at?: string;
+                    weather?: Database["public"]["Enums"]["weather_rating"] | null;
                 };
                 Update: {
                     available_quantity?: number | null;
                     category_id?: string;
                     client_visible?: boolean;
+                    common_name?: string | null;
+                    compliance_tags?: string[] | null;
                     created_at?: string;
+                    crew_required?: string | null;
                     currency?: string;
                     default_unit_cost?: number | null;
                     deleted_at?: string | null;
                     description?: string | null;
+                    footprint?: string | null;
+                    hierarchical_sku?: string | null;
                     id?: string;
                     image_url?: string | null;
                     is_critical_path?: boolean;
                     is_custom?: boolean;
+                    lead_time_hours?: number | null;
                     make?: string | null;
                     min_lead_time_days?: number | null;
                     model?: string | null;
+                    modifiers_summary?: string | null;
                     name?: string;
+                    options?: string[] | null;
                     organization_id?: string | null;
+                    power_requirements?: string | null;
+                    prerequisites?: string | null;
+                    pricing_unit?: string | null;
+                    search_aliases?: string[] | null;
                     search_vector?: unknown;
+                    setup_time?: string | null;
                     sku?: string | null;
                     sort_order?: number;
                     specifications?: Json | null;
                     status?: Database["public"]["Enums"]["catalog_item_status"];
+                    strike_time?: string | null;
+                    sustainability_tags?: string[] | null;
                     tags?: string[] | null;
                     thumbnail_url?: string | null;
+                    truck_space?: string | null;
                     unit_of_measure?: string;
+                    unspsc_code?: string | null;
                     updated_at?: string;
+                    weather?: Database["public"]["Enums"]["weather_rating"] | null;
                 };
                 Relationships: [
                     {
@@ -7131,6 +7175,47 @@ export type Database = {
                         columns: ["preferred_vendor_id"];
                         isOneToOne: false;
                         referencedRelation: "vendors";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            catalog_pricing_tiers: {
+                Row: {
+                    catalog_item_id: string;
+                    created_at: string;
+                    currency: string;
+                    id: string;
+                    price_high: number;
+                    price_low: number;
+                    tier: Database["public"]["Enums"]["pricing_tier"];
+                    updated_at: string;
+                };
+                Insert: {
+                    catalog_item_id: string;
+                    created_at?: string;
+                    currency?: string;
+                    id?: string;
+                    price_high: number;
+                    price_low: number;
+                    tier: Database["public"]["Enums"]["pricing_tier"];
+                    updated_at?: string;
+                };
+                Update: {
+                    catalog_item_id?: string;
+                    created_at?: string;
+                    currency?: string;
+                    id?: string;
+                    price_high?: number;
+                    price_low?: number;
+                    tier?: Database["public"]["Enums"]["pricing_tier"];
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "catalog_pricing_tiers_catalog_item_id_fkey";
+                        columns: ["catalog_item_id"];
+                        isOneToOne: false;
+                        referencedRelation: "catalog_items";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -42378,7 +42463,12 @@ export type Database = {
                 | "technical"
                 | "hospitality"
                 | "travel"
-                | "custom";
+                | "custom"
+                | "site"
+                | "food_beverage"
+                | "retail"
+                | "workplace"
+                | "labor";
             catalog_item_status: "active" | "discontinued" | "out_of_stock" | "seasonal" | "draft";
             certification_type:
                 | "osha_10"
@@ -43286,7 +43376,15 @@ export type Database = {
                 | "privacy"
                 | "integrations";
             price_adjustment_type: "flat" | "percentage" | "per_unit";
-            pricing_tier: "starter" | "core" | "team" | "pro" | "enterprise";
+            pricing_tier:
+                | "starter"
+                | "core"
+                | "team"
+                | "pro"
+                | "enterprise"
+                | "basic"
+                | "standard"
+                | "premium";
             procurement_status:
                 | "draft"
                 | "pending_approval"
@@ -43756,6 +43854,12 @@ export type Database = {
                 | "outdoor"
                 | "cold_storage"
                 | "secure";
+            weather_rating:
+                | "indoor_only"
+                | "sheltered"
+                | "outdoor_rated"
+                | "all_weather"
+                | "not_applicable";
             widget_type:
                 | "number"
                 | "chart_bar"
@@ -43951,9 +44055,6 @@ export type CompositeTypes<
       : never;
 
 export const Constants = {
-    graphql_public: {
-        Enums: {},
-    },
     public: {
         Enums: {
             access_grant_status: ["active", "expired", "revoked"],
@@ -44277,6 +44378,11 @@ export const Constants = {
                 "hospitality",
                 "travel",
                 "custom",
+                "site",
+                "food_beverage",
+                "retail",
+                "workplace",
+                "labor",
             ],
             catalog_item_status: ["active", "discontinued", "out_of_stock", "seasonal", "draft"],
             certification_type: [
@@ -45243,7 +45349,16 @@ export const Constants = {
                 "integrations",
             ],
             price_adjustment_type: ["flat", "percentage", "per_unit"],
-            pricing_tier: ["starter", "core", "team", "pro", "enterprise"],
+            pricing_tier: [
+                "starter",
+                "core",
+                "team",
+                "pro",
+                "enterprise",
+                "basic",
+                "standard",
+                "premium",
+            ],
             procurement_status: [
                 "draft",
                 "pending_approval",
@@ -45737,6 +45852,13 @@ export const Constants = {
                 "outdoor",
                 "cold_storage",
                 "secure",
+            ],
+            weather_rating: [
+                "indoor_only",
+                "sheltered",
+                "outdoor_rated",
+                "all_weather",
+                "not_applicable",
             ],
             widget_type: [
                 "number",

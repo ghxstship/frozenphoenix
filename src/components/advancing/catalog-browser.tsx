@@ -3,9 +3,14 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Filter, Package, Search } from "lucide-react";
-import { useCatalogCategories, useCatalogItems, useCatalogItemSearch } from "@/lib/supabase/hooks-advancing";
+import {
+    useCatalogCategories,
+    useCatalogItems,
+    useCatalogItemSearch,
+} from "@/lib/supabase/hooks-advancing";
 import { CategoryTypeBadge } from "./advance-status-badge";
 import { CatalogItemCard } from "./catalog-item-card";
+import { CATALOG_CATEGORY_TYPES } from "@/config/advancing-config";
 import type { CatalogCategoryType } from "@/types";
 
 interface CatalogBrowserProps {
@@ -25,7 +30,9 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
     const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null);
     const [breadcrumb, setBreadcrumb] = React.useState<{ id: string; name: string }[]>([]);
     const [showFilters, setShowFilters] = React.useState(false);
-    const [categoryTypeFilter, setCategoryTypeFilter] = React.useState<CatalogCategoryType | "">("");
+    const [categoryTypeFilter, setCategoryTypeFilter] = React.useState<CatalogCategoryType | "">(
+        ""
+    );
 
     const isSearching = searchQuery.length >= 2;
 
@@ -111,17 +118,18 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                 <div className="flex flex-wrap gap-2 rounded-lg border bg-muted/50 p-3">
                     <select
                         value={categoryTypeFilter}
-                        onChange={(e) => setCategoryTypeFilter(e.target.value as CatalogCategoryType | "")}
+                        onChange={(e) =>
+                            setCategoryTypeFilter(e.target.value as CatalogCategoryType | "")
+                        }
                         className="h-8 rounded-md border border-input bg-background px-2 text-sm"
                         aria-label="Filter by category type"
                     >
                         <option value="">All Types</option>
-                        <option value="access">Access</option>
-                        <option value="production">Production</option>
-                        <option value="technical">Technical</option>
-                        <option value="hospitality">Hospitality</option>
-                        <option value="travel">Travel</option>
-                        <option value="custom">Custom</option>
+                        {CATALOG_CATEGORY_TYPES.map((ct) => (
+                            <option key={ct.value} value={ct.value}>
+                                {ct.label}
+                            </option>
+                        ))}
                     </select>
                 </div>
             )}
@@ -160,10 +168,7 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                         <button
                             key={category.id as string}
                             onClick={() =>
-                                handleCategoryClick(
-                                    category.id as string,
-                                    category.name as string
-                                )
+                                handleCategoryClick(category.id as string, category.name as string)
                             }
                             className="group flex flex-col items-start gap-2 rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-accent/50"
                         >
@@ -173,13 +178,16 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                             </div>
                             <span className="text-sm font-medium">{category.name as string}</span>
                             {!!category.category_type && (
-                                <CategoryTypeBadge type={category.category_type as CatalogCategoryType} />
+                                <CategoryTypeBadge
+                                    type={category.category_type as CatalogCategoryType}
+                                />
                             )}
-                            {typeof category.item_count === "number" && (category.item_count as number) > 0 && (
-                                <span className="text-xs text-muted-foreground">
-                                    {category.item_count as number} items
-                                </span>
-                            )}
+                            {typeof category.item_count === "number" &&
+                                (category.item_count as number) > 0 && (
+                                    <span className="text-xs text-muted-foreground">
+                                        {category.item_count as number} items
+                                    </span>
+                                )}
                         </button>
                     ))}
                 </div>
@@ -222,7 +230,9 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                     <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
                         <Package className="h-10 w-10" />
                         <p className="text-sm">
-                            {isSearching ? "No items match your search" : "No items in this category"}
+                            {isSearching
+                                ? "No items match your search"
+                                : "No items in this category"}
                         </p>
                     </div>
                 )}

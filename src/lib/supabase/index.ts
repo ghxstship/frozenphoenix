@@ -154,6 +154,8 @@ export {
     useCatalogItemModifiers,
     useCatalogOrgOverrides,
     useCatalogOrgOverride,
+    useCatalogPricingTiers,
+    useCatalogPricingTiersBatch,
     useAdvances,
     useAdvance,
     useCreateAdvance,

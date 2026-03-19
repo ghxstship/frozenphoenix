@@ -41,7 +41,7 @@ function parseBids(raw: unknown): BidItem[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "work_orders",
+    entityKey: "work_order",
     titleKey: "title",
     subtitleFn: (r) => {
         const num = String(r.number ?? "");

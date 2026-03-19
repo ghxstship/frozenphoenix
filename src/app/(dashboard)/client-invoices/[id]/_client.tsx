@@ -8,7 +8,7 @@ import { FileText } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "client_invoices",
+    entityKey: "client_invoice",
     titleKey: "invoice_number",
     statusKey: "status",
     icon: FileText,

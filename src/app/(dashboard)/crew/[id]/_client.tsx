@@ -90,7 +90,7 @@ function CrewHistoryTab({ crewId }: { crewId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "crew",
+    entityKey: "crew_member",
     titleKey: "name",
     statusKey: "status",
     icon: HardHat,

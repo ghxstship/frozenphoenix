@@ -283,7 +283,7 @@ function CommTemplatesTab({ projectId }: { projectId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "projects",
+    entityKey: "project",
     titleKey: "name",
     statusKey: "status",
     icon: FolderKanban,

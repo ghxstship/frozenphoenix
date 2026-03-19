@@ -12,7 +12,7 @@ import { FileText, Palette } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "brand_guidelines",
+    entityKey: "brand",
     titleKey: "name",
     statusKey: "status",
     icon: Palette,

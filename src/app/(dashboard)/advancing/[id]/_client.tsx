@@ -146,7 +146,7 @@ function AdvanceTemplatesTab() {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "advancing",
+    entityKey: "production_advance",
     titleKey: "title",
     subtitleFn: (r) =>
         `${String(r.advance_number ?? "")} · ${String(r.advance_type ?? "").replace("_", " ")}`,

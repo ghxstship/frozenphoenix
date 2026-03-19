@@ -143,7 +143,7 @@ function CallSheetCrewTab({ callSheetId }: { callSheetId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "call-sheets",
+    entityKey: "call_sheet",
     titleKey: "title",
     statusKey: "status",
     icon: Calendar,

@@ -69,7 +69,7 @@ function parsePowerCircuits(raw: unknown): PowerCircuit[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "tech-sheets",
+    entityKey: "tech_sheet",
     titleKey: "title",
     statusKey: "status",
     icon: Cpu,

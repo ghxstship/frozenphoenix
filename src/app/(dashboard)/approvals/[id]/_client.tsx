@@ -15,7 +15,7 @@ import { ArrowUpRight, CheckCircle2, Loader2, Shield, XCircle } from "lucide-rea
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "approvals",
+    entityKey: "approval",
     titleKey: "milestone_name",
     subtitleKey: "milestone_id",
     statusKey: "status",

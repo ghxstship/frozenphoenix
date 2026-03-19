@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "shipments",
+    entityKey: "shipment",
     titleKey: "description",
     statusKey: "status",
     icon: Truck,

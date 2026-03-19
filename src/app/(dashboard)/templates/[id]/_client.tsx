@@ -56,7 +56,7 @@ function parseUsageHistory(raw: unknown): UsageItem[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "templates",
+    entityKey: "document_template",
     titleKey: "name",
     subtitleFn: (r) => {
         const cat = ((r.category as string) ?? "proposal") as TemplateCategory;

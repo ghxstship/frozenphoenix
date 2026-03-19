@@ -204,7 +204,7 @@ export function AutomationDetailPageClient() {
     const logEntries = (logs ?? []) as Record<string, unknown>[];
 
     const config: DetailPageConfig = {
-        entityKey: "automations",
+        entityKey: "automation",
         titleFn: () => name,
         subtitleFn: () => `Automation rule builder for ${entityType} entities`,
         statusFn: () => statusCfg?.label ?? status,

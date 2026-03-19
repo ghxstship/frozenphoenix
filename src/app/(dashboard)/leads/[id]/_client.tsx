@@ -122,7 +122,7 @@ function ConvertLeadAction({ leadId }: { leadId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "leads",
+    entityKey: "lead",
     titleKey: "first_name",
     statusKey: "status",
     icon: Users,

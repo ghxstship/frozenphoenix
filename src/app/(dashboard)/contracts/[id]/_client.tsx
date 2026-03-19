@@ -241,7 +241,7 @@ function ContractESignaturesTab({ contractId }: { contractId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "contracts",
+    entityKey: "contract",
     titleKey: "title",
     subtitleFn: (r) => {
         const num = (r.contract_number as string) ?? (r.contractNumber as string) ?? "";

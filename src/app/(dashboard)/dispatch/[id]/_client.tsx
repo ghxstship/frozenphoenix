@@ -12,13 +12,13 @@ import { MapPin, Truck } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "dispatch",
+    entityKey: "dispatch_entry",
     titleKey: "tracking_number",
     statusKey: "status",
     icon: Truck,
     backHref: "/dispatch",
     backLabel: "Dispatch",
-    chatterRecordType: "dispatch",
+    chatterRecordType: "dispatch_entry",
     sidebarFields: [
         { id: "status", label: "Status", accessorKey: "status" },
         { id: "carrier", label: "Carrier", accessorKey: "carrier" },

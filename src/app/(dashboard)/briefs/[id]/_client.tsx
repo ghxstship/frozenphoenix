@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "briefs",
+    entityKey: "creative_brief",
     titleKey: "title",
     statusKey: "status",
     icon: FileText,

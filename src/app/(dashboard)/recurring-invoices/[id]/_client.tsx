@@ -51,7 +51,7 @@ function parseHistory(raw: unknown): HistoryItem[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "recurring_invoices",
+    entityKey: "recurring_invoice",
     titleFn: (r) => {
         const amt = (r.amount as number) ?? 0;
         const cur = (r.currency as string) ?? "USD";

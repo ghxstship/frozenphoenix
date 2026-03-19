@@ -8,7 +8,7 @@ import { Mail, Phone, User } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "people",
+    entityKey: "profile",
     titleKey: "full_name",
     subtitleKey: "role",
     statusKey: "status",

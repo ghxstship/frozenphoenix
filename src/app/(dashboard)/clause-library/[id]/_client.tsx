@@ -5,13 +5,13 @@ import { Scale } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "clause_library",
+    entityKey: "clause_library_entry",
     titleKey: "title",
     statusKey: "status",
     icon: Scale,
     backHref: "/clause-library",
     backLabel: "Clause Library",
-    chatterRecordType: "clause_library",
+    chatterRecordType: "clause_library_entry",
     fields: [],
     tabs: [],
 };

@@ -68,7 +68,7 @@ function DocumentVersionsTab() {
 }
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "documents",
+    entityKey: "document",
     titleKey: "name",
     subtitleFn: (r) => `${String(r.category ?? "")} · ${String(r.mime_type ?? "")}`,
     statusKey: "category",

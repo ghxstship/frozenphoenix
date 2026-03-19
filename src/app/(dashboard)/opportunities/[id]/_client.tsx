@@ -49,7 +49,7 @@ function parseActivities(raw: unknown): OppActivityItem[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "opportunities",
+    entityKey: "opportunity",
     titleKey: "name",
     statusKey: "stage",
     icon: Target,

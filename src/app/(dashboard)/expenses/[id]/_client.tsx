@@ -11,7 +11,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { CheckCircle2, Receipt, Upload } from "lucide-react";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "expenses",
+    entityKey: "expense",
     titleKey: "description",
     subtitleFn: (r) => {
         const cat = (r.category as string) ?? "other";

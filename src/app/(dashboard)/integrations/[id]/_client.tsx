@@ -101,7 +101,7 @@ export function IntegrationDetailPageClient() {
     };
 
     const config: DetailPageConfig = {
-        entityKey: "provider_connections",
+        entityKey: "integration",
         titleFn: () => displayName,
         subtitleFn: () =>
             `${providerType} integration — ${(conn.sync_direction as string) || "inbound"} sync`,

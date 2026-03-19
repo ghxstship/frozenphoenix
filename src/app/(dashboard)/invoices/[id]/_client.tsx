@@ -260,7 +260,7 @@ function InvoiceAgingTab() {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "invoices",
+    entityKey: "invoice",
     titleFn: (r) => `Invoice ${String(r.number ?? "")}`,
     subtitleFn: (r) => `${String(r.company_name ?? "")} · ${String(r.project_name ?? "")}`,
     statusKey: "delivery_status",

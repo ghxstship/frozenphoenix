@@ -30,7 +30,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, Clock, DollarSign, Edit, MapPin, Play, Users } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "events",
+    entityKey: "live_event",
     titleKey: "name",
     statusKey: "status",
     icon: Calendar,

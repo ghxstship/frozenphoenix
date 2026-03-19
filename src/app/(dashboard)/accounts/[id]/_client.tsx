@@ -8,7 +8,7 @@ import { Building2, Mail, MapPin, Phone, User } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "accounts",
+    entityKey: "stakeholder",
     titleKey: "name",
     subtitleKey: "type",
     statusKey: "status",

@@ -53,7 +53,7 @@ type KpiView = {
 };
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "campaigns",
+    entityKey: "campaign",
     titleKey: "name",
     statusKey: "status",
     icon: Megaphone,

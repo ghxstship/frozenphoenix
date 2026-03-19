@@ -41,7 +41,7 @@ const SEVERITY_CONFIG: Record<string, { label: string; variant: string; color: s
 };
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "incidents",
+    entityKey: "incident",
     titleKey: "title",
     statusKey: "status",
     icon: AlertTriangle,

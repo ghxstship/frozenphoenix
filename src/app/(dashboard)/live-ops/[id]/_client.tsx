@@ -11,7 +11,7 @@ import { Clock, MapPin, Radio, Users } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "live_event_instances",
+    entityKey: "live_event_instance",
     titleKey: "name",
     subtitleKey: "event_name",
     statusKey: "status",

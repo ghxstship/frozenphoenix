@@ -167,7 +167,7 @@ export function ApprovalWorkflowDetailClient({
     };
 
     const config: DetailPageConfig = {
-        entityKey: "approval_workflows",
+        entityKey: "approval_workflow",
         titleFn: () => wfName,
         subtitleFn: () =>
             `${steps.length}-step approval workflow — entity type: ${(workflow?.entity_type as string) ?? ""}`,

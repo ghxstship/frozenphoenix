@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "vendors",
+    entityKey: "vendor",
     titleKey: "name",
     statusKey: "status",
     icon: Store,

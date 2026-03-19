@@ -216,7 +216,7 @@ function DealActivityTab({ dealId }: { dealId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "deals",
+    entityKey: "deal",
     titleKey: "title",
     statusKey: "stage",
     icon: DollarSign,

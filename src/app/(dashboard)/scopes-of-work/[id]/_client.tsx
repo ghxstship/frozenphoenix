@@ -323,7 +323,7 @@ function CollaboratorRequirementsTab({ sowId }: { sowId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "scopes-of-work",
+    entityKey: "sow",
     titleKey: "title",
     statusKey: "status",
     icon: FileText,

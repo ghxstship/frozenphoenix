@@ -12,7 +12,7 @@ import { CheckSquare, ClipboardList } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "compliance_checklists",
+    entityKey: "compliance_checklist",
     titleKey: "name",
     statusKey: "status",
     icon: ClipboardList,

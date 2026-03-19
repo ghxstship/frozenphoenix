@@ -27,7 +27,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, DollarSign, Edit, MapPin, Sparkles, Users } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "locations",
+    entityKey: "location",
     titleKey: "name",
     statusKey: "type",
     icon: MapPin,

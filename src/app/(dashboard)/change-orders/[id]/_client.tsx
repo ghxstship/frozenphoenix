@@ -13,7 +13,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, CheckCircle2, Clock, DollarSign, FileEdit, User } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "change-orders",
+    entityKey: "change_order",
     titleKey: "title",
     statusKey: "status",
     icon: FileEdit,

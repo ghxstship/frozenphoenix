@@ -16,7 +16,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { ArrowRightLeft, CheckCircle2, Headphones } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "service_requests",
+    entityKey: "service_request",
     titleKey: "title",
     subtitleFn: (r) =>
         `${String(r.priority ?? "")} priority · ${String(r.source ?? "").replace(/_/g, " ")}`,

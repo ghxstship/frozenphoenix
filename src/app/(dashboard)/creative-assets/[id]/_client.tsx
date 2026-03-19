@@ -111,7 +111,7 @@ function parseSpecs(raw: unknown): { width: number; height: number; format: stri
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "creative-assets",
+    entityKey: "digital_asset",
     titleKey: "name",
     statusKey: "production_status",
     icon: Palette,

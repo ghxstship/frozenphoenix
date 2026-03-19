@@ -49,7 +49,7 @@ function parseLinks(raw: unknown): LinkEntry[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "digital_assets",
+    entityKey: "digital_asset",
     titleKey: "name",
     statusKey: "status",
     icon: FileBox,

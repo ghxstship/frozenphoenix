@@ -181,7 +181,7 @@ function ArticleLinksTab({ articleId }: { articleId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "knowledge_base",
+    entityKey: "knowledge_base_article",
     titleKey: "title",
     statusKey: "status",
     icon: BookOpen,

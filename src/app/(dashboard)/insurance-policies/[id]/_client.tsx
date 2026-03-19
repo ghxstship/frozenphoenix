@@ -18,7 +18,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, CheckCircle2, DollarSign, FileText, Shield } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "insurance_policies",
+    entityKey: "insurance_policy",
     titleFn: (r) =>
         `${String(r.carrier ?? "")} — ${String(r.policy_type ?? "").replace(/_/g, " ")}`,
     subtitleFn: (r) => `Policy ${String(r.policy_number ?? "")} · ${String(r.holder_type ?? "")}`,

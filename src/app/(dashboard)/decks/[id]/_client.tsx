@@ -45,7 +45,7 @@ const SLIDE_TYPES: { type: SlideType; label: string; icon: React.ElementType }[]
 ];
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "decks",
+    entityKey: "deck",
     titleKey: "title",
     statusKey: "status",
     icon: Presentation,

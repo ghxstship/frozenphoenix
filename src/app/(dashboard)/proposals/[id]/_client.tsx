@@ -102,7 +102,7 @@ function ProposalItemsTab({ proposalId }: { proposalId: string }) {
 const brandConfig = getActiveBrand();
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "proposals",
+    entityKey: "proposal",
     titleKey: "title",
     statusKey: "status",
     icon: FileText,

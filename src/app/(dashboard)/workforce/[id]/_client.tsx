@@ -9,7 +9,7 @@ import { PermissionGate } from "@/components/permission-guard";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "workforce",
+    entityKey: "worker_profile",
     titleKey: "full_name",
     subtitleKey: "classification",
     statusKey: "lifecycle_status",

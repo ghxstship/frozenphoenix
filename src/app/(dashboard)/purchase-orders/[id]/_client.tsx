@@ -9,7 +9,7 @@ import { FileText, Package, Truck } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "purchase_orders",
+    entityKey: "purchase_order",
     titleFn: (r) => `PO ${String(r.id ?? "").slice(0, 8)}`,
     statusKey: "status",
     icon: FileText,

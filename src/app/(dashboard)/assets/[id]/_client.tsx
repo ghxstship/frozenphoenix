@@ -401,7 +401,7 @@ function AssetMaintenanceTab({ assetId }: { assetId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "assets",
+    entityKey: "asset",
     titleKey: "name",
     statusKey: "condition",
     icon: Package,

@@ -159,7 +159,7 @@ function BudgetApprovalsTab({ budgetId }: { budgetId: string }) {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "budgets",
+    entityKey: "budget",
     statusKey: "status",
     icon: DollarSign,
     backHref: "/budgets",

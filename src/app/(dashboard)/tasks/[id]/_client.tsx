@@ -16,7 +16,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { CheckSquare, Clock, DollarSign, Edit, Link2, MessageSquare, User } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "tasks",
+    entityKey: "task",
     titleKey: "title",
     subtitleFn: (r) => {
         const projectName = String(r._projectName ?? "");

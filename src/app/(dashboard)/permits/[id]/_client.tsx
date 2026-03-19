@@ -24,7 +24,7 @@ import {
 import { usePermit } from "@/lib/supabase";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "permits",
+    entityKey: "permit",
     titleKey: "title",
     statusKey: "status",
     icon: ScrollText,

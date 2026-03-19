@@ -22,7 +22,7 @@ import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, DollarSign, Edit, Package, Sparkles, Users } from "lucide-react";
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "activations",
+    entityKey: "activation",
     titleKey: "name",
     statusKey: "status",
     icon: Sparkles,

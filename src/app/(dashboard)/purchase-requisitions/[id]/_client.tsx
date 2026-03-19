@@ -13,7 +13,7 @@ import { ClipboardList, Send } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "purchase_requisitions",
+    entityKey: "purchase_requisition",
     titleKey: "title",
     subtitleFn: (r) => `${String(r.number ?? "")} · ${String(r.department ?? "No Department")}`,
     statusKey: "status",

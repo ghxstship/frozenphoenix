@@ -112,7 +112,7 @@ function ReviewFeedbackTab() {
 }
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "vendor_reviews",
+    entityKey: "worker_review",
     titleKey: "title",
     statusKey: "status",
     icon: ClipboardCheck,

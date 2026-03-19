@@ -30,7 +30,7 @@ function parseLineItems(raw: unknown): EstLineItem[] {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "estimates",
+    entityKey: "estimate",
     titleKey: "title",
     subtitleFn: (r) => `${String(r.number ?? "")} · ${String(r.company_name ?? "")}`,
     statusKey: "status",

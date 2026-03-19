@@ -78,7 +78,7 @@ const ASSET_TYPE_VARIANTS: Record<
     illustration: "destructive",
 };
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "brand-kit",
+    entityKey: "brand_kit",
     titleKey: "title",
     statusKey: "status",
     icon: Palette,

@@ -122,7 +122,7 @@ function UserCertificationsTab() {
 }
 
 const BASE_CONFIG: DetailPageConfig = {
-    entityKey: "certifications",
+    entityKey: "certification",
     titleKey: "title",
     subtitleFn: (r) => {
         const assetId = String(r.asset_id ?? "");

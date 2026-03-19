@@ -1,6 +1,14 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { createClient } from "./client";
 import { clearWorkspaceContext } from "@/hooks/use-workspace-context";
 import type { Session, User } from "@supabase/supabase-js";
@@ -44,6 +52,9 @@ interface AuthContextType {
 
 const AUTH_ACTIVE_ORG_KEY = "fp-active-org-id";
 
+const MEMBERSHIP_SELECT =
+    "id, user_id, organization_id, role, status, is_default_org, is_owner, organizations(id, name, slug)" as const;
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -57,9 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return null;
     });
-    const [loading, setLoading] = useState(true);
-
     const supabase = useMemo(() => createClient(), []);
+
+    // When supabase is not configured, there is nothing to load — start as false.
+    const [loading, setLoading] = useState(() => supabase !== null);
 
     // Derive active org + owner flag from memberships + stored preference
     const activeOrg = useMemo(() => {
@@ -96,11 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchMemberships = useCallback(
         async (userId: string) => {
             if (!supabase) return;
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from("org_memberships")
-                .select(
-                    "id, user_id, organization_id, role, status, is_default_org, is_owner, organizations(id, name, slug)"
-                )
+                .select(MEMBERSHIP_SELECT)
                 .eq("user_id", userId)
                 .eq("status", "active");
 
@@ -108,6 +118,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setMemberships(data);
                 return;
             }
+
+            // Only create a default membership when the query succeeded with
+            // zero rows. If the query itself failed (RLS, network), do NOT
+            // fall through — that would spuriously create a duplicate membership.
+            if (error) return;
 
             // No org_memberships — create one in the default org
             const { data: defaultOrg } = await supabase
@@ -130,9 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         },
                         { onConflict: "user_id,organization_id" }
                     )
-                    .select(
-                        "id, user_id, organization_id, role, status, is_default_org, is_owner, organizations(id, name, slug)"
-                    )
+                    .select(MEMBERSHIP_SELECT)
                     .single();
 
                 if (created) {
@@ -143,8 +156,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         [supabase]
     );
 
+    // Accepts an optional authUser so the fallback path doesn't need a
+    // redundant getUser() round-trip when we already have the validated user.
     const fetchProfile = useCallback(
-        async (userId: string) => {
+        async (userId: string, authUser?: User) => {
             if (!supabase) return;
             const { data } = await supabase
                 .from("user_profiles")
@@ -159,15 +174,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Profile row missing — DB trigger may have failed.
             // Create it from auth metadata so the user is never stuck as "Guest".
-            const {
-                data: { user: authUser },
-            } = await supabase.auth.getUser();
-            if (!authUser) return;
+            const resolvedUser = authUser ?? (await supabase.auth.getUser()).data.user;
+            if (!resolvedUser) return;
 
             const displayName =
-                authUser.user_metadata?.name ||
-                authUser.user_metadata?.full_name ||
-                authUser.email?.split("@")[0] ||
+                resolvedUser.user_metadata?.name ||
+                resolvedUser.user_metadata?.full_name ||
+                resolvedUser.email?.split("@")[0] ||
                 "User";
 
             const { data: created } = await supabase
@@ -175,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .upsert(
                     {
                         id: userId,
-                        email: authUser.email ?? "",
+                        email: resolvedUser.email ?? "",
                         display_name: displayName,
                     },
                     { onConflict: "id" }
@@ -202,13 +215,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return typeof profile.email === "string" && profile.email.endsWith("@atproto.local");
     }, [profile]);
 
+    // Stable refs for functions called inside useEffect — prevents the effect
+    // from re-running (and re-subscribing) when these callbacks are recreated.
+    const fetchProfileRef = useRef(fetchProfile);
+    const fetchMembershipsRef = useRef(fetchMemberships);
+    useEffect(() => {
+        fetchProfileRef.current = fetchProfile;
+        fetchMembershipsRef.current = fetchMemberships;
+    }, [fetchProfile, fetchMemberships]);
+
     const refreshProfile = useCallback(async () => {
         if (user) {
-            await Promise.all([fetchProfile(user.id), fetchMemberships(user.id)]);
+            await Promise.all([
+                fetchProfileRef.current(user.id),
+                fetchMembershipsRef.current(user.id),
+            ]);
         }
-    }, [user, fetchProfile, fetchMemberships]);
+    }, [user]);
 
     const signOut = useCallback(async () => {
+        // Prevent onAuthStateChange from processing SIGNED_OUT events
+        // that would flash the UI in an unauthenticated state.
+        signingOutRef.current = true;
+
         // Audit: log the logout event before clearing session
         logAuthEvent("logout");
 
@@ -228,68 +257,117 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Client-side signOut (clears local Supabase tokens).
-        // Do NOT await — we navigate immediately to avoid the onAuthStateChange
-        // callback re-rendering the current page in an unauthenticated state.
+        // Must complete before navigation so back-button doesn't see stale tokens.
         if (supabase) {
-            supabase.auth.signOut();
+            await supabase.auth.signOut();
         }
 
         // Hard navigation to /login ensures middleware sees cleared cookies.
-        // This must happen synchronously after signOut to prevent the race
-        // where onAuthStateChange fires and the page re-renders without a user.
         if (typeof window !== "undefined") {
             window.location.href = "/login";
         }
     }, [supabase]);
 
+    // Tracks whether initSession has completed. Prevents onAuthStateChange's
+    // INITIAL_SESSION event from clobbering the server-validated state with a
+    // stale/null local session — the root cause of the "Not signed in" flash.
+    const initDoneRef = useRef(false);
+
+    // Tracks whether signOut is in progress. When true, onAuthStateChange
+    // events are ignored to prevent re-rendering in an unauthenticated state
+    // before the hard navigation to /login completes.
+    const signingOutRef = useRef(false);
+
     useEffect(() => {
         if (!supabase) {
+            // Supabase not configured — loading already initialized to false
+            // via the lazy initializer, so no setState needed here.
             return;
         }
 
+        initDoneRef.current = false;
+        let cancelled = false;
+
         const initSession = async () => {
-            // getUser() validates the token server-side and refreshes it if
-            // expired. getSession() only reads from local storage and will
-            // return a stale/expired token after a hard refresh, causing the
-            // user to be kicked out.
-            const {
-                data: { user: validatedUser },
-            } = await supabase.auth.getUser();
-
-            if (validatedUser) {
-                // Token is now refreshed — getSession() will return the fresh session.
+            try {
+                // getUser() validates the token server-side and refreshes it if
+                // expired. getSession() only reads from local storage and will
+                // return a stale/expired token after a hard refresh, causing the
+                // user to be kicked out.
                 const {
-                    data: { session: freshSession },
-                } = await supabase.auth.getSession();
+                    data: { user: validatedUser },
+                } = await supabase.auth.getUser();
 
-                setSession(freshSession);
-                setUser(validatedUser);
+                if (cancelled) return;
 
-                await Promise.all([
-                    fetchProfile(validatedUser.id),
-                    fetchMemberships(validatedUser.id),
-                ]);
-            } else {
-                setSession(null);
-                setUser(null);
+                if (validatedUser) {
+                    // Token is now refreshed — getSession() will return the fresh session.
+                    const {
+                        data: { session: freshSession },
+                    } = await supabase.auth.getSession();
+
+                    if (cancelled) return;
+
+                    setSession(freshSession);
+                    setUser(validatedUser);
+
+                    await Promise.all([
+                        fetchProfileRef.current(validatedUser.id, validatedUser),
+                        fetchMembershipsRef.current(validatedUser.id),
+                    ]);
+                } else {
+                    setSession(null);
+                    setUser(null);
+                }
+            } catch {
+                // Network failure during init — clear state so the UI doesn't
+                // hang on loading=true forever.
+                if (!cancelled) {
+                    setSession(null);
+                    setUser(null);
+                }
             }
 
-            setLoading(false);
+            if (!cancelled) {
+                setLoading(false);
+                initDoneRef.current = true;
+            }
         };
 
         initSession();
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+        } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+            // Skip INITIAL_SESSION — initSession() already handles the initial
+            // load with server-validated getUser(). The INITIAL_SESSION event
+            // fires synchronously with the (potentially stale/null) local
+            // storage session and would clobber the validated state.
+            if (event === "INITIAL_SESSION") return;
+
+            // Until initSession completes, ignore listener events to prevent
+            // races where TOKEN_REFRESHED fires before initSession's getUser()
+            // resolves, setting loading=false with incomplete profile/memberships.
+            if (!initDoneRef.current) return;
+
+            // During signOut, ignore all events to prevent flash of unauth state.
+            if (signingOutRef.current) return;
+
+            // TOKEN_REFRESHED only updates the session object (new JWT).
+            // No need to re-fetch profile/memberships — they haven't changed.
+            if (event === "TOKEN_REFRESHED") {
+                setSession(newSession);
+                return;
+            }
+
+            setSession(newSession);
+            setUser(newSession?.user ?? null);
 
             // Audit: log successful sign-in events + track session
-            if (event === "SIGNED_IN" && session?.user) {
+            if (event === "SIGNED_IN" && newSession?.user) {
                 logAuthEvent("login_success", {
-                    auth_method: session.user.app_metadata?.provider ?? "unknown",
-                    email: session.user.email ?? "unknown",
+                    auth_method: newSession.user.app_metadata?.provider ?? "unknown",
+                    email: newSession.user.email ?? "unknown",
                 });
                 // Track session (fire-and-forget)
                 fetch("/api/auth/session-track", { method: "POST", keepalive: true }).catch(
@@ -297,10 +375,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 );
             }
 
-            if (session?.user) {
+            if (newSession?.user) {
                 await Promise.all([
-                    fetchProfile(session.user.id),
-                    fetchMemberships(session.user.id),
+                    fetchProfileRef.current(newSession.user.id, newSession.user),
+                    fetchMembershipsRef.current(newSession.user.id),
                 ]);
             } else {
                 setProfile(null);
@@ -310,8 +388,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
         });
 
-        return () => subscription.unsubscribe();
-    }, [supabase, fetchProfile, fetchMemberships]);
+        return () => {
+            cancelled = true;
+            subscription.unsubscribe();
+        };
+    }, [supabase]);
 
     return (
         <AuthContext.Provider

@@ -89,6 +89,25 @@ export async function updateSession(request: NextRequest) {
 
     let response = supabaseResponse;
 
+    // Helper: creates a redirect response that carries over any session cookies
+    // that Supabase's setAll callback wrote to `response`. Without this, token
+    // refresh cookies are lost on redirect responses and the client ends up
+    // with a stale/expired session.
+    function redirectWithCookies(url: URL): NextResponse {
+        const redirect = NextResponse.redirect(url);
+        for (const cookie of response.cookies.getAll()) {
+            redirect.cookies.set(cookie.name, cookie.value, {
+                // Preserve the original cookie options by re-setting
+                // with the same attributes the Supabase SSR adapter used.
+                path: "/",
+                httpOnly: true,
+                secure: IS_PROD,
+                sameSite: "lax",
+            });
+        }
+        return redirect;
+    }
+
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
         cookies: {
             getAll() {
@@ -117,13 +136,13 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         url.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(url);
+        return redirectWithCookies(url);
     }
 
     if (AUTH_REDIRECT_PATHS.has(pathname) && user) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
-        return NextResponse.redirect(url);
+        return redirectWithCookies(url);
     }
 
     // ─── Performance: Cookie-first checks ─────────────────────────
@@ -146,13 +165,13 @@ export async function updateSession(request: NextRequest) {
                 const url = request.nextUrl.clone();
                 url.pathname = "/login";
                 url.searchParams.set("reason", "account_suspended");
-                return NextResponse.redirect(url);
+                return redirectWithCookies(url);
             }
 
             if (cachedMfa === "needs_aal2" && !pathname.startsWith("/auth/mfa")) {
                 const url = request.nextUrl.clone();
                 url.pathname = "/auth/mfa-verify";
-                return NextResponse.redirect(url);
+                return redirectWithCookies(url);
             }
 
             // Onboarding already checked (cookie present or skipped) — skip entirely
@@ -244,7 +263,7 @@ export async function updateSession(request: NextRequest) {
                 setCacheCookie(response, "fp-mfa-level", "needs_aal2", COOKIE_TTL_SHORT);
                 const url = request.nextUrl.clone();
                 url.pathname = "/auth/mfa-verify";
-                return NextResponse.redirect(url);
+                return redirectWithCookies(url);
             }
             // Cache MFA as OK
             setCacheCookie(response, "fp-mfa-level", "ok", COOKIE_TTL_SHORT);
@@ -258,14 +277,19 @@ export async function updateSession(request: NextRequest) {
                 const url = request.nextUrl.clone();
                 url.pathname = "/login";
                 url.searchParams.set("reason", "account_suspended");
-                return NextResponse.redirect(url);
+                return redirectWithCookies(url);
             }
 
             // ─── Cache role + orgId ───
             const resolvedRole = (roleOrgResult.data?.role as string) ?? "member";
-            const resolvedOrgId = (roleOrgResult.data?.organization_id as string) ?? "";
+            const resolvedOrgId = (roleOrgResult.data?.organization_id as string) || "";
             setCacheCookie(response, "fp-user-role", resolvedRole, COOKIE_TTL_SHORT);
-            setCacheCookie(response, "fp-org-id", resolvedOrgId, COOKIE_TTL_SHORT);
+            // Only cache org ID when we actually have one. An empty string
+            // passes the truthy check in allCookiesFresh on the next request,
+            // causing the fast path to fire with no org context.
+            if (resolvedOrgId) {
+                setCacheCookie(response, "fp-org-id", resolvedOrgId, COOKIE_TTL_SHORT);
+            }
 
             // ─── Onboarding enforcement (data already fetched in parallel) ───
             if (needsOnboardingCheck) {
@@ -280,7 +304,7 @@ export async function updateSession(request: NextRequest) {
                     if (hasNoOrg) {
                         const url = request.nextUrl.clone();
                         url.pathname = "/onboarding/org-setup";
-                        return NextResponse.redirect(url);
+                        return redirectWithCookies(url);
                     }
 
                     const firstMembership = orgMemberships[0];
@@ -297,7 +321,7 @@ export async function updateSession(request: NextRequest) {
                     if (onlyDefault) {
                         const url = request.nextUrl.clone();
                         url.pathname = "/onboarding/org-setup";
-                        return NextResponse.redirect(url);
+                        return redirectWithCookies(url);
                     }
 
                     // Gate access enforcement
@@ -343,7 +367,7 @@ export async function updateSession(request: NextRequest) {
                                 const url = request.nextUrl.clone();
                                 url.pathname = redirectPath;
                                 url.searchParams.set("gate", step.step_key);
-                                return NextResponse.redirect(url);
+                                return redirectWithCookies(url);
                             }
                         }
 

@@ -114,7 +114,6 @@ function LoginForm() {
 
                 resetRateLimit();
                 router.push(redirectTo);
-                router.refresh();
             } catch {
                 setError("Something went wrong. Please try again.");
             } finally {

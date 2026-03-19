@@ -5,13 +5,13 @@ import { Boxes } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {
-    entityKey: "inventory_item",
+    entityKey: "catalog_item",
     titleKey: "name",
     statusKey: "status",
     icon: Boxes,
     backHref: "/inventory",
     backLabel: "Inventory",
-    chatterRecordType: "inventory_item",
+    chatterRecordType: "catalog_item",
     fields: [],
     tabs: [],
 };

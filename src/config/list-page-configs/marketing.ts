@@ -47,6 +47,13 @@ export const BRANDS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Brand", accessorKey: "name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -64,6 +71,14 @@ export const BRIEF_TEMPLATES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "brief_type", label: "Type", accessorKey: "brief_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -89,6 +104,15 @@ export const CREATIVE_REVIEWS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "review_type",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Review", accessorKey: "title" },
+            { id: "review_type", label: "Type", accessorKey: "review_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -107,6 +131,15 @@ export const SURVEY_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "survey_type", label: "Type", accessorKey: "survey_type", fieldType: "status" },
+            { id: "question_count", label: "Questions", accessorKey: "question_count" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -124,6 +157,14 @@ export const BRAND_GUIDELINE_SECTIONS_PAGE: ListPageConfig = {
         { id: "order", header: "Order", accessorKey: "order" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Section", accessorKey: "title" },
+            { id: "section_type", label: "Type", accessorKey: "section_type", fieldType: "status" },
+            { id: "order", label: "Order", accessorKey: "order" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -141,6 +182,14 @@ export const BRAND_KITS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Kit", accessorKey: "name" },
+            { id: "brand_name", label: "Brand", accessorKey: "brand_name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -172,6 +221,15 @@ export const CAMPAIGN_ASSETS_PAGE: ListPageConfig = {
         subtitleKey: "campaign_name",
         statusKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Asset", accessorKey: "name" },
+            { id: "asset_type", label: "Type", accessorKey: "asset_type", fieldType: "status" },
+            { id: "campaign_name", label: "Campaign", accessorKey: "campaign_name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -190,6 +248,15 @@ export const CAMPAIGN_CHANNELS_PAGE: ListPageConfig = {
         { id: "budget", header: "Budget", accessorKey: "budget", fieldType: "currency" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Channel", accessorKey: "name" },
+            { id: "channel_type", label: "Type", accessorKey: "channel_type", fieldType: "status" },
+            { id: "campaign_name", label: "Campaign", accessorKey: "campaign_name" },
+            { id: "budget", label: "Budget", accessorKey: "budget", fieldType: "currency" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -216,6 +283,16 @@ export const CAMPAIGN_KPIS_PAGE: ListPageConfig = {
         valueKey: "current_value",
         aggregation: "sum",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "KPI", accessorKey: "name" },
+            { id: "metric_type", label: "Metric", accessorKey: "metric_type", fieldType: "status" },
+            { id: "target_value", label: "Target", accessorKey: "target_value" },
+            { id: "current_value", label: "Current", accessorKey: "current_value" },
+            { id: "campaign_name", label: "Campaign", accessorKey: "campaign_name" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -234,6 +311,15 @@ export const CATALOG_CATEGORIES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Category", accessorKey: "name" },
+            { id: "parent_name", label: "Parent", accessorKey: "parent_name" },
+            { id: "item_count", label: "Items", accessorKey: "item_count" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -279,6 +365,21 @@ export const CATALOG_ITEMS_PAGE: ListPageConfig = {
         subtitleKey: "category_name",
         statusKey: "is_active",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Item", accessorKey: "name" },
+            { id: "sku", label: "SKU", accessorKey: "sku" },
+            { id: "price", label: "Price", accessorKey: "price", fieldType: "currency" },
+            {
+                id: "category_name",
+                label: "Category",
+                accessorKey: "category_name",
+                fieldType: "status",
+            },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -303,6 +404,21 @@ export const SURVEY_RESPONSES_PAGE: ListPageConfig = {
         categoryKey: "survey_name",
         valueKey: "score",
         aggregation: "avg",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "respondent_name", label: "Respondent", accessorKey: "respondent_name" },
+            { id: "survey_name", label: "Survey", accessorKey: "survey_name" },
+            { id: "score", label: "Score", accessorKey: "score" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "submitted_at",
+                label: "Submitted",
+                accessorKey: "submitted_at",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
     },
     exportable: true,
 };

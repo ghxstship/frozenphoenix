@@ -40,6 +40,15 @@ export const DEPRECIATION_SCHEDULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Schedule", accessorKey: "name" },
+            { id: "method", label: "Method", accessorKey: "method", fieldType: "status" },
+            { id: "useful_life_months", label: "Life (mo)", accessorKey: "useful_life_months" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -70,6 +79,25 @@ export const EXPENSE_REPORTS_PAGE: ListPageConfig = {
         valueKey: "total_amount",
         aggregation: "sum",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Report", accessorKey: "title" },
+            {
+                id: "total_amount",
+                label: "Total",
+                accessorKey: "total_amount",
+                fieldType: "currency",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "submitted_at",
+                label: "Submitted",
+                accessorKey: "submitted_at",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -87,6 +115,19 @@ export const INVOICE_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_default", header: "Default", accessorKey: "is_default", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            {
+                id: "template_type",
+                label: "Type",
+                accessorKey: "template_type",
+                fieldType: "status",
+            },
+            { id: "is_default", label: "Default", accessorKey: "is_default", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -112,6 +153,20 @@ export const PAYROLL_BATCHES_PAGE: ListPageConfig = {
         cardTitleKey: "name",
         cardSubtitleKey: "period",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Batch", accessorKey: "name" },
+            { id: "period", label: "Period", accessorKey: "period" },
+            {
+                id: "total_amount",
+                label: "Total",
+                accessorKey: "total_amount",
+                fieldType: "currency",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -135,6 +190,26 @@ export const REVENUE_SCHEDULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "period_start", header: "Start", accessorKey: "period_start", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Schedule", accessorKey: "name" },
+            {
+                id: "total_amount",
+                label: "Total",
+                accessorKey: "total_amount",
+                fieldType: "currency",
+            },
+            {
+                id: "recognized_amount",
+                label: "Recognized",
+                accessorKey: "recognized_amount",
+                fieldType: "currency",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "period_start", label: "Start", accessorKey: "period_start", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -160,6 +235,16 @@ export const JOB_COST_ENTRIES_PAGE: ListPageConfig = {
         categoryKey: "cost_type",
         valueKey: "amount",
         aggregation: "sum",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Entry", accessorKey: "description" },
+            { id: "cost_type", label: "Type", accessorKey: "cost_type", fieldType: "status" },
+            { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "entry_date", label: "Date", accessorKey: "entry_date", fieldType: "date" },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -197,6 +282,25 @@ export const BUDGET_LINE_ITEMS_PAGE: ListPageConfig = {
         valueKey: "budgeted_amount",
         aggregation: "sum",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Line Item", accessorKey: "description" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            {
+                id: "budgeted_amount",
+                label: "Budgeted",
+                accessorKey: "budgeted_amount",
+                fieldType: "currency",
+            },
+            {
+                id: "actual_amount",
+                label: "Actual",
+                accessorKey: "actual_amount",
+                fieldType: "currency",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -232,6 +336,26 @@ export const POS_TRANSACTIONS_PAGE: ListPageConfig = {
         valueKey: "amount",
         aggregation: "sum",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "transaction_id", label: "Transaction", accessorKey: "transaction_id" },
+            { id: "location_name", label: "Location", accessorKey: "location_name" },
+            { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+            {
+                id: "payment_method",
+                label: "Payment",
+                accessorKey: "payment_method",
+                fieldType: "status",
+            },
+            {
+                id: "transaction_date",
+                label: "Date",
+                accessorKey: "transaction_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -254,6 +378,21 @@ export const REVENUE_RECOGNITION_ENTRIES_PAGE: ListPageConfig = {
         },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Entry", accessorKey: "description" },
+            { id: "revenue_type", label: "Type", accessorKey: "revenue_type", fieldType: "status" },
+            { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+            {
+                id: "recognition_date",
+                label: "Recognized",
+                accessorKey: "recognition_date",
+                fieldType: "date",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -272,5 +411,14 @@ export const FINANCIAL_PERIODS_PAGE: ListPageConfig = {
     ],
     views: ["table"],
     defaultView: "table",
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Period", accessorKey: "name" },
+            { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+            { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };

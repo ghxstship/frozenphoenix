@@ -1,502 +1,402 @@
 /* ═══════════════════════════════════════════════════════════════
-   LIST PAGE CONFIG REGISTRY
+   LIST PAGE CONFIG REGISTRY — Lazy Loading
 
-   Maps string keys to ListPageConfig objects. This registry
-   lives client-side so that RSC page.tsx files can pass a
-   serializable configKey string across the server→client
-   boundary instead of the config object (which contains
-   non-serializable Lucide icon components and functions).
+   Maps string keys to ListPageConfig objects via dynamic import().
+   Each domain module (crm, finance, marketing, etc.) is loaded
+   on-demand as a separate webpack chunk — only the module needed
+   for the current page is fetched. This eliminates the multi-
+   second delay caused by eagerly bundling all 233 configs + their
+   transitive dependencies (icons, create-entity configs, domain
+   maps) into a single monolithic chunk.
+
+   Consumers call resolveListPageConfig(key) which returns a
+   cached Promise<ListPageConfig>.
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ListPageConfig } from "@/types/list-page-config";
-import {
-    ACCOUNT_HEALTH_SCORES_PAGE,
-    CONTACTS_PAGE,
-    GUEST_INCIDENTS_PAGE,
-    LOST_REASONS_PAGE,
-    TESTIMONIALS_PAGE,
-    UPSELL_EVENTS_PAGE,
-    UPSELL_TRIGGERS_PAGE,
-    VIP_GUESTS_PAGE,
-    VIP_SERVICE_REQUESTS_PAGE,
-} from "./crm";
-import {
-    BUDGET_LINE_ITEMS_PAGE,
-    DEPRECIATION_SCHEDULES_PAGE,
-    EXPENSE_REPORTS_PAGE,
-    FINANCIAL_PERIODS_PAGE,
-    INVOICE_TEMPLATES_PAGE,
-    JOB_COST_ENTRIES_PAGE,
-    PAYROLL_BATCHES_PAGE,
-    POS_TRANSACTIONS_PAGE,
-    REVENUE_RECOGNITION_ENTRIES_PAGE,
-    REVENUE_SCHEDULES_PAGE,
-} from "./finance";
-import {
-    BRAND_GUIDELINE_SECTIONS_PAGE,
-    BRAND_KITS_PAGE,
-    BRANDS_PAGE,
-    BRIEF_TEMPLATES_PAGE,
-    CAMPAIGN_ASSETS_PAGE,
-    CAMPAIGN_CHANNELS_PAGE,
-    CAMPAIGN_KPIS_PAGE,
-    CATALOG_CATEGORIES_PAGE,
-    CATALOG_ITEMS_PAGE,
-    CREATIVE_REVIEWS_PAGE,
-    SURVEY_RESPONSES_PAGE,
-    SURVEY_TEMPLATES_PAGE,
-} from "./marketing";
-import {
-    BOMS_PAGE,
-    CONSUMABLE_USAGE_PAGE,
-    CONSUMABLES_PAGE,
-    EQUIPMENT_CHECK_INS_PAGE,
-    INVENTORY_AUDITS_PAGE,
-    INVENTORY_RESERVATIONS_PAGE,
-    KITS_PAGE,
-    LOAD_PLANS_PAGE,
-    LOGISTICS_EVENTS_PAGE,
-    MAINTENANCE_RECORDS_PAGE,
-    MAINTENANCE_SCHEDULES_PAGE,
-    QC_GATES_PAGE,
-    QUALITY_CHECK_TEMPLATES_PAGE,
-    RENTAL_AGREEMENTS_PAGE,
-    RESOURCE_BOOKINGS_PAGE,
-    TRANSFER_ORDERS_PAGE,
-} from "./operations";
-import {
-    CERTIFICATIONS_PAGE,
-    CREDENTIAL_ASSIGNMENTS_PAGE,
-    CREDENTIAL_INVENTORY_POOLS_PAGE,
-    CREDENTIAL_TYPES_PAGE,
-    CREW_AVAILABILITY_PAGE,
-    CREW_SHIFTS_PAGE,
-    GOALS_PAGE,
-    LIVE_CREW_ASSIGNMENTS_PAGE,
-    REVIEW_CYCLES_PAGE,
-    REVIEWS_PAGE,
-    SCHEDULE_ENTRIES_PAGE,
-    SHIFTS_PAGE,
-    TEAM_MEMBERS_PAGE,
-    TIME_ENTRIES_PAGE,
-    TIME_OFF_REQUESTS_PAGE,
-    TIME_TRACKING_POLICIES_PAGE,
-    TIMESHEETS_PAGE,
-    WORKER_CLASSIFICATIONS_PAGE,
-    WORKER_COMPLIANCE_DOCS_PAGE,
-    WORKER_OFFBOARDING_RUNS_PAGE,
-    WORKER_ONBOARDING_RUNS_PAGE,
-    WORKER_PROFILES_PAGE,
-    WORKER_REVIEWS_PAGE,
-} from "./people";
-import {
-    ACCOUNTS_PAGE,
-    ACTIVATIONS_PAGE,
-    ASSETS_PAGE,
-    BRIEFS_PAGE,
-    BUDGET_APPROVALS_PAGE,
-    BUDGETS_PAGE,
-    CALL_SHEETS_PAGE,
-    CAMPAIGNS_PAGE,
-    CASE_STUDIES_PAGE,
-    CHANGE_ORDERS_PAGE,
-    CHECKLISTS_PAGE,
-    CLAUSE_LIBRARY_PAGE,
-    CLIENT_INVOICES_PAGE,
-    COMPANIES_PAGE,
-    COMPLIANCE_CHECKLISTS_PAGE,
-    CONTRACTS_PAGE,
-    CREATIVE_ASSETS_PAGE,
-    CREDENTIALS_PAGE,
-    CREDIT_NOTES_PAGE,
-    CREW_PAGE,
-    DEALS_PAGE,
-    DECKS_PAGE,
-    DIGITAL_ASSETS_PAGE,
-    DISPATCH_PAGE,
-    DOCUMENTS_PAGE,
-    ENGINEERING_APPROVALS_PAGE,
-    ESTIMATES_PAGE,
-    EVENTS_PAGE,
-    EXPENSES_PAGE,
-    FEATURE_FLAGS_PAGE,
-    FLEET_PAGE,
-    GL_ACCOUNTS_PAGE,
-    GOODS_RECEIPTS_PAGE,
-    INCIDENTS_PAGE,
-    INSURANCE_POLICIES_PAGE,
-    INTEGRATIONS_PAGE,
-    INVENTORY_PAGE,
-    INVOICES_PAGE,
-    IP_RIGHTS_PAGE,
-    KNOWLEDGE_BASE_PAGE,
-    LEADS_PAGE,
-    LOCATIONS_PAGE,
-    OPPORTUNITIES_PAGE,
-    PAYMENT_APPROVALS_PAGE,
-    PAYMENTS_PAGE,
-    PEOPLE_PAGE,
-    PERMITS_PAGE,
-    PIPELINE_PAGE,
-    PROCUREMENT_PAGE,
-    PROJECTS_PAGE,
-    PROPOSALS_PAGE,
-    PURCHASE_ORDERS_PAGE,
-    PURCHASE_REQUISITIONS_PAGE,
-    QUALITY_CHECKS_PAGE,
-    RATE_CARDS_PAGE,
-    RECURRING_INVOICES_PAGE,
-    SAVED_VIEWS_PAGE,
-    SCOPES_OF_WORK_PAGE,
-    SERVICE_REQUESTS_PAGE,
-    SHIPMENTS_PAGE,
-    SOPS_PAGE,
-    SURVEYS_PAGE,
-    TASKS_PAGE,
-    TEAMS_PAGE,
-    TECH_SHEETS_PAGE,
-    TEMPLATES_PAGE,
-    VENDOR_ONBOARDING_PAGE,
-    VENDOR_REVIEWS_PAGE,
-    VENDOR_RISK_PAGE,
-    VENDORS_PAGE,
-    WAREHOUSES_PAGE,
-    WORK_ORDERS_PAGE,
-    WORKFORCE_PAGE,
-} from "./primary";
-import {
-    ADVANCE_TEMPLATES_PAGE,
-    COMMAND_POSITIONS_PAGE,
-    ENVIRONMENTAL_READINGS_PAGE,
-    FOH_ZONE_READINGS_PAGE,
-    FOH_ZONES_PAGE,
-    LIVE_EVENT_INSTANCES_PAGE,
-    LIVE_FINANCIAL_SNAPSHOTS_PAGE,
-    POST_EVENT_REPORTS_PAGE,
-    PRODUCTION_ADVANCE_ITEMS_PAGE,
-    PRODUCTION_ADVANCES_PAGE,
-    PRODUCTION_BUDGET_LINES_PAGE,
-    PRODUCTION_CHECKLISTS_PAGE,
-    PRODUCTION_EXPENSES_PAGE,
-    PRODUCTION_MILESTONES_PAGE,
-    PRODUCTION_RUNS_PAGE,
-    PRODUCTION_SOPS_PAGE,
-    PRODUCTION_TASKS_PAGE,
-    PRODUCTION_TIME_ENTRIES_PAGE,
-    PRODUCTION_VERTICALS_PAGE,
-    READINESS_GATES_PAGE,
-    ROS_CUES_PAGE,
-    SPACE_BOOKINGS_PAGE,
-    STRIKE_SEQUENCES_PAGE,
-    TECHNICAL_SPECS_PAGE,
-} from "./production";
-import {
-    CHECKLIST_TEMPLATES_PAGE,
-    MILESTONES_PAGE,
-    PROJECT_ASSIGNMENTS_PAGE,
-    PROJECT_TEMPLATES_PAGE,
-    STAKEHOLDER_PROJECTS_PAGE,
-    STAKEHOLDERS_PAGE,
-    WORK_PACKAGES_PAGE,
-} from "./projects";
-import {
-    ACCESS_AUDIT_LOG_PAGE,
-    ACTIVITIES_PAGE,
-    ACTIVITY_LOG_PAGE,
-    ADVANCE_STATUS_HISTORY_PAGE,
-    APPROVAL_STEPS_PAGE,
-    APPROVAL_WORKFLOWS_PAGE,
-    ASSET_ASSIGNMENTS_PAGE,
-    ASSET_TAGS_PAGE,
-    ASSET_VERSIONS_PAGE,
-    AUTOMATION_EXECUTIONS_PAGE,
-    AUTOMATION_LOGS_PAGE,
-    AUTOMATION_RULES_PAGE,
-    CALENDAR_EVENTS_PAGE,
-    CHANNEL_TEMPLATES_PAGE,
-    COMM_CHANNELS_PAGE,
-    COMMENTS_PAGE,
-    CONVERSATIONS_PAGE,
-    CUSTOM_FIELD_DEFINITIONS_PAGE,
-    CUSTOM_FIELDS_PAGE,
-    DASHBOARD_WIDGETS_PAGE,
-    DATA_EXPORT_REQUESTS_PAGE,
-    DOCUMENT_VERSIONS_PAGE,
-    DOMAIN_EVENTS_PAGE,
-    EMAIL_MESSAGES_PAGE,
-    INVITATIONS_PAGE,
-    KNOWLEDGE_ARTICLES_PAGE,
-    LOGIN_AUDIT_LOG_PAGE,
-    NOTIFICATIONS_PAGE,
-    ORGANIZATIONS_PAGE,
-    PROFILES_PAGE,
-    PROVIDER_CONNECTIONS_PAGE,
-    REPORT_DEFINITIONS_PAGE,
-    RESILIENCE_TARGETS_PAGE,
-    ROLE_CHANGE_LOG_PAGE,
-    SCAN_EVENTS_PAGE,
-    SERVICE_HEALTH_CHECKS_PAGE,
-    SLA_DEFINITIONS_PAGE,
-    SLA_POLICIES_PAGE,
-    SLA_TRACKING_PAGE,
-    STORAGE_OBJECTS_PAGE,
-    SYNC_EVENTS_PAGE,
-    TAGS_PAGE,
-    TEMPORARY_ACCESS_GRANTS_PAGE,
-    USER_MANAGEMENT_PAGE,
-    VAULT_DOCUMENTS_PAGE,
-    WORKFLOWS_PAGE,
-} from "./system";
-import {
-    COMPLIANCE_REQUIREMENTS_PAGE,
-    COMPLIANCE_TEMPLATES_PAGE,
-    CONTRACT_AMENDMENTS_PAGE,
-    CONTRACT_OBLIGATIONS_PAGE,
-    E_SIGNATURES_PAGE,
-    ENGAGEMENT_TERMS_PAGE,
-    INSURANCE_REQUIREMENTS_PAGE,
-    LEGAL_HOLDS_PAGE,
-    RFQS_PAGE,
-    RIGHTS_PAGE,
-    RISK_ASSESSMENTS_PAGE,
-    VENDOR_COMMUNICATIONS_PAGE,
-    VENDOR_COMPLIANCE_DOCUMENTS_PAGE,
-} from "./vendor";
 
-export const LIST_PAGE_REGISTRY: Record<string, ListPageConfig> = {
-    ACCESS_AUDIT_LOG_PAGE,
-    ACCOUNTS_PAGE,
-    ACCOUNT_HEALTH_SCORES_PAGE,
-    ACTIVATIONS_PAGE,
-    ACTIVITIES_PAGE,
-    ACTIVITY_LOG_PAGE,
-    ADVANCE_STATUS_HISTORY_PAGE,
-    ADVANCE_TEMPLATES_PAGE,
-    APPROVAL_STEPS_PAGE,
-    APPROVAL_WORKFLOWS_PAGE,
-    ASSETS_PAGE,
-    ASSET_ASSIGNMENTS_PAGE,
-    ASSET_TAGS_PAGE,
-    ASSET_VERSIONS_PAGE,
-    AUTOMATION_EXECUTIONS_PAGE,
-    AUTOMATION_LOGS_PAGE,
-    AUTOMATION_RULES_PAGE,
-    BOMS_PAGE,
-    BRANDS_PAGE,
-    BRAND_GUIDELINE_SECTIONS_PAGE,
-    BRAND_KITS_PAGE,
-    BRIEFS_PAGE,
-    BRIEF_TEMPLATES_PAGE,
-    BUDGETS_PAGE,
-    BUDGET_APPROVALS_PAGE,
-    BUDGET_LINE_ITEMS_PAGE,
-    CALENDAR_EVENTS_PAGE,
-    CALL_SHEETS_PAGE,
-    CAMPAIGNS_PAGE,
-    CAMPAIGN_ASSETS_PAGE,
-    CAMPAIGN_CHANNELS_PAGE,
-    CAMPAIGN_KPIS_PAGE,
-    CASE_STUDIES_PAGE,
-    CATALOG_CATEGORIES_PAGE,
-    CATALOG_ITEMS_PAGE,
-    CERTIFICATIONS_PAGE,
-    CHANGE_ORDERS_PAGE,
-    CHANNEL_TEMPLATES_PAGE,
-    CHECKLISTS_PAGE,
-    CHECKLIST_TEMPLATES_PAGE,
-    CLAUSE_LIBRARY_PAGE,
-    CLIENT_INVOICES_PAGE,
-    COMMAND_POSITIONS_PAGE,
-    COMMENTS_PAGE,
-    COMM_CHANNELS_PAGE,
-    COMPANIES_PAGE,
-    COMPLIANCE_CHECKLISTS_PAGE,
-    COMPLIANCE_REQUIREMENTS_PAGE,
-    COMPLIANCE_TEMPLATES_PAGE,
-    CONSUMABLES_PAGE,
-    CONSUMABLE_USAGE_PAGE,
-    CONTACTS_PAGE,
-    CONTRACT_AMENDMENTS_PAGE,
-    CONTRACT_OBLIGATIONS_PAGE,
-    CONTRACTS_PAGE,
-    CONVERSATIONS_PAGE,
-    CREATIVE_ASSETS_PAGE,
-    CREATIVE_REVIEWS_PAGE,
-    CREDENTIALS_PAGE,
-    CREDENTIAL_ASSIGNMENTS_PAGE,
-    CREDENTIAL_INVENTORY_POOLS_PAGE,
-    CREDENTIAL_TYPES_PAGE,
-    CREDIT_NOTES_PAGE,
-    CREW_AVAILABILITY_PAGE,
-    CREW_PAGE,
-    CREW_SHIFTS_PAGE,
-    CUSTOM_FIELDS_PAGE,
-    CUSTOM_FIELD_DEFINITIONS_PAGE,
-    DASHBOARD_WIDGETS_PAGE,
-    DATA_EXPORT_REQUESTS_PAGE,
-    DEALS_PAGE,
-    DECKS_PAGE,
-    DEPRECIATION_SCHEDULES_PAGE,
-    DIGITAL_ASSETS_PAGE,
-    DISPATCH_PAGE,
-    DOCUMENTS_PAGE,
-    DOCUMENT_VERSIONS_PAGE,
-    DOMAIN_EVENTS_PAGE,
-    EMAIL_MESSAGES_PAGE,
-    ENGAGEMENT_TERMS_PAGE,
-    ENGINEERING_APPROVALS_PAGE,
-    ENVIRONMENTAL_READINGS_PAGE,
-    EQUIPMENT_CHECK_INS_PAGE,
-    ESTIMATES_PAGE,
-    EVENTS_PAGE,
-    EXPENSES_PAGE,
-    EXPENSE_REPORTS_PAGE,
-    E_SIGNATURES_PAGE,
-    FEATURE_FLAGS_PAGE,
-    FINANCIAL_PERIODS_PAGE,
-    FLEET_PAGE,
-    FOH_ZONES_PAGE,
-    FOH_ZONE_READINGS_PAGE,
-    GL_ACCOUNTS_PAGE,
-    GOALS_PAGE,
-    GOODS_RECEIPTS_PAGE,
-    GUEST_INCIDENTS_PAGE,
-    INCIDENTS_PAGE,
-    INSURANCE_POLICIES_PAGE,
-    INSURANCE_REQUIREMENTS_PAGE,
-    INTEGRATIONS_PAGE,
-    INVENTORY_AUDITS_PAGE,
-    INVENTORY_PAGE,
-    INVENTORY_RESERVATIONS_PAGE,
-    INVITATIONS_PAGE,
-    INVOICES_PAGE,
-    INVOICE_TEMPLATES_PAGE,
-    IP_RIGHTS_PAGE,
-    JOB_COST_ENTRIES_PAGE,
-    KITS_PAGE,
-    KNOWLEDGE_ARTICLES_PAGE,
-    KNOWLEDGE_BASE_PAGE,
-    LEADS_PAGE,
-    LEGAL_HOLDS_PAGE,
-    LIVE_CREW_ASSIGNMENTS_PAGE,
-    LIVE_EVENT_INSTANCES_PAGE,
-    LIVE_FINANCIAL_SNAPSHOTS_PAGE,
-    LOAD_PLANS_PAGE,
-    LOCATIONS_PAGE,
-    LOGISTICS_EVENTS_PAGE,
-    LOGIN_AUDIT_LOG_PAGE,
-    LOST_REASONS_PAGE,
-    MAINTENANCE_RECORDS_PAGE,
-    MAINTENANCE_SCHEDULES_PAGE,
-    MILESTONES_PAGE,
-    NOTIFICATIONS_PAGE,
-    OPPORTUNITIES_PAGE,
-    ORGANIZATIONS_PAGE,
-    PAYMENTS_PAGE,
-    PAYMENT_APPROVALS_PAGE,
-    PAYROLL_BATCHES_PAGE,
-    PEOPLE_PAGE,
-    PERMITS_PAGE,
-    PIPELINE_PAGE,
-    POS_TRANSACTIONS_PAGE,
-    POST_EVENT_REPORTS_PAGE,
-    PROCUREMENT_PAGE,
-    PRODUCTION_ADVANCES_PAGE,
-    PRODUCTION_ADVANCE_ITEMS_PAGE,
-    PRODUCTION_BUDGET_LINES_PAGE,
-    PRODUCTION_CHECKLISTS_PAGE,
-    PRODUCTION_EXPENSES_PAGE,
-    PRODUCTION_MILESTONES_PAGE,
-    PRODUCTION_RUNS_PAGE,
-    PRODUCTION_SOPS_PAGE,
-    PRODUCTION_TASKS_PAGE,
-    PRODUCTION_TIME_ENTRIES_PAGE,
-    PRODUCTION_VERTICALS_PAGE,
-    PROFILES_PAGE,
-    PROJECTS_PAGE,
-    PROJECT_ASSIGNMENTS_PAGE,
-    PROJECT_TEMPLATES_PAGE,
-    PROPOSALS_PAGE,
-    PROVIDER_CONNECTIONS_PAGE,
-    PURCHASE_ORDERS_PAGE,
-    PURCHASE_REQUISITIONS_PAGE,
-    QC_GATES_PAGE,
-    QUALITY_CHECKS_PAGE,
-    QUALITY_CHECK_TEMPLATES_PAGE,
-    RATE_CARDS_PAGE,
-    READINESS_GATES_PAGE,
-    RECURRING_INVOICES_PAGE,
-    RENTAL_AGREEMENTS_PAGE,
-    REPORT_DEFINITIONS_PAGE,
-    RESILIENCE_TARGETS_PAGE,
-    RESOURCE_BOOKINGS_PAGE,
-    REVENUE_RECOGNITION_ENTRIES_PAGE,
-    REVENUE_SCHEDULES_PAGE,
-    REVIEWS_PAGE,
-    REVIEW_CYCLES_PAGE,
-    RFQS_PAGE,
-    RIGHTS_PAGE,
-    RISK_ASSESSMENTS_PAGE,
-    ROLE_CHANGE_LOG_PAGE,
-    ROS_CUES_PAGE,
-    SAVED_VIEWS_PAGE,
-    SCAN_EVENTS_PAGE,
-    SCHEDULE_ENTRIES_PAGE,
-    SCOPES_OF_WORK_PAGE,
-    SERVICE_HEALTH_CHECKS_PAGE,
-    SERVICE_REQUESTS_PAGE,
-    SHIFTS_PAGE,
-    SHIPMENTS_PAGE,
-    SLA_DEFINITIONS_PAGE,
-    SLA_POLICIES_PAGE,
-    SLA_TRACKING_PAGE,
-    SOPS_PAGE,
-    SPACE_BOOKINGS_PAGE,
-    STAKEHOLDERS_PAGE,
-    STAKEHOLDER_PROJECTS_PAGE,
-    STORAGE_OBJECTS_PAGE,
-    STRIKE_SEQUENCES_PAGE,
-    SURVEYS_PAGE,
-    SURVEY_RESPONSES_PAGE,
-    SURVEY_TEMPLATES_PAGE,
-    SYNC_EVENTS_PAGE,
-    TAGS_PAGE,
-    TASKS_PAGE,
-    TEAMS_PAGE,
-    TEAM_MEMBERS_PAGE,
-    TECHNICAL_SPECS_PAGE,
-    TECH_SHEETS_PAGE,
-    TEMPLATES_PAGE,
-    TEMPORARY_ACCESS_GRANTS_PAGE,
-    TESTIMONIALS_PAGE,
-    TIMESHEETS_PAGE,
-    TIME_ENTRIES_PAGE,
-    TIME_OFF_REQUESTS_PAGE,
-    TIME_TRACKING_POLICIES_PAGE,
-    TRANSFER_ORDERS_PAGE,
-    UPSELL_EVENTS_PAGE,
-    UPSELL_TRIGGERS_PAGE,
-    USER_MANAGEMENT_PAGE,
-    VAULT_DOCUMENTS_PAGE,
-    VENDOR_COMMUNICATIONS_PAGE,
-    VENDOR_COMPLIANCE_DOCUMENTS_PAGE,
-    VENDOR_ONBOARDING_PAGE,
-    VENDOR_REVIEWS_PAGE,
-    VENDOR_RISK_PAGE,
-    VENDORS_PAGE,
-    VIP_GUESTS_PAGE,
-    VIP_SERVICE_REQUESTS_PAGE,
-    WAREHOUSES_PAGE,
-    WORKER_CLASSIFICATIONS_PAGE,
-    WORKER_COMPLIANCE_DOCS_PAGE,
-    WORKER_OFFBOARDING_RUNS_PAGE,
-    WORKER_ONBOARDING_RUNS_PAGE,
-    WORKER_PROFILES_PAGE,
-    WORKER_REVIEWS_PAGE,
-    WORKFLOWS_PAGE,
-    WORKFORCE_PAGE,
-    WORK_ORDERS_PAGE,
-    WORK_PACKAGES_PAGE,
+// ─── Module loaders (each becomes a separate webpack chunk) ───
+
+type ModuleLoader = () => Promise<Record<string, ListPageConfig>>;
+
+const loadCrm: ModuleLoader = () => import("./crm") as Promise<Record<string, ListPageConfig>>;
+const loadFinance: ModuleLoader = () =>
+    import("./finance") as Promise<Record<string, ListPageConfig>>;
+const loadMarketing: ModuleLoader = () =>
+    import("./marketing") as Promise<Record<string, ListPageConfig>>;
+const loadOperations: ModuleLoader = () =>
+    import("./operations") as Promise<Record<string, ListPageConfig>>;
+const loadPeople: ModuleLoader = () =>
+    import("./people") as Promise<Record<string, ListPageConfig>>;
+const loadPrimary: ModuleLoader = () =>
+    import("./primary") as Promise<Record<string, ListPageConfig>>;
+const loadProduction: ModuleLoader = () =>
+    import("./production") as Promise<Record<string, ListPageConfig>>;
+const loadProjects: ModuleLoader = () =>
+    import("./projects") as Promise<Record<string, ListPageConfig>>;
+const loadSystem: ModuleLoader = () =>
+    import("./system") as Promise<Record<string, ListPageConfig>>;
+const loadVendor: ModuleLoader = () =>
+    import("./vendor") as Promise<Record<string, ListPageConfig>>;
+
+// ─── Key → Module mapping ─────────────────────────────────────
+
+const CONFIG_KEY_MODULE: Record<string, ModuleLoader> = {
+    // crm
+    CONTACTS_PAGE: loadCrm,
+    GUEST_INCIDENTS_PAGE: loadCrm,
+    LOST_REASONS_PAGE: loadCrm,
+    TESTIMONIALS_PAGE: loadCrm,
+    VIP_GUESTS_PAGE: loadCrm,
+    VIP_SERVICE_REQUESTS_PAGE: loadCrm,
+    ACCOUNT_HEALTH_SCORES_PAGE: loadCrm,
+    UPSELL_EVENTS_PAGE: loadCrm,
+    UPSELL_TRIGGERS_PAGE: loadCrm,
+
+    // finance
+    DEPRECIATION_SCHEDULES_PAGE: loadFinance,
+    EXPENSE_REPORTS_PAGE: loadFinance,
+    INVOICE_TEMPLATES_PAGE: loadFinance,
+    PAYROLL_BATCHES_PAGE: loadFinance,
+    REVENUE_SCHEDULES_PAGE: loadFinance,
+    JOB_COST_ENTRIES_PAGE: loadFinance,
+    BUDGET_LINE_ITEMS_PAGE: loadFinance,
+    POS_TRANSACTIONS_PAGE: loadFinance,
+    REVENUE_RECOGNITION_ENTRIES_PAGE: loadFinance,
+    FINANCIAL_PERIODS_PAGE: loadFinance,
+
+    // marketing
+    BRANDS_PAGE: loadMarketing,
+    BRIEF_TEMPLATES_PAGE: loadMarketing,
+    CREATIVE_REVIEWS_PAGE: loadMarketing,
+    SURVEY_TEMPLATES_PAGE: loadMarketing,
+    BRAND_GUIDELINE_SECTIONS_PAGE: loadMarketing,
+    BRAND_KITS_PAGE: loadMarketing,
+    CAMPAIGN_ASSETS_PAGE: loadMarketing,
+    CAMPAIGN_CHANNELS_PAGE: loadMarketing,
+    CAMPAIGN_KPIS_PAGE: loadMarketing,
+    CATALOG_CATEGORIES_PAGE: loadMarketing,
+    CATALOG_ITEMS_PAGE: loadMarketing,
+    SURVEY_RESPONSES_PAGE: loadMarketing,
+
+    // operations
+    BOMS_PAGE: loadOperations,
+    CONSUMABLES_PAGE: loadOperations,
+    INVENTORY_AUDITS_PAGE: loadOperations,
+    KITS_PAGE: loadOperations,
+    LOAD_PLANS_PAGE: loadOperations,
+    MAINTENANCE_RECORDS_PAGE: loadOperations,
+    QC_GATES_PAGE: loadOperations,
+    QUALITY_CHECK_TEMPLATES_PAGE: loadOperations,
+    RENTAL_AGREEMENTS_PAGE: loadOperations,
+    RESOURCE_BOOKINGS_PAGE: loadOperations,
+    CONSUMABLE_USAGE_PAGE: loadOperations,
+    EQUIPMENT_CHECK_INS_PAGE: loadOperations,
+    INVENTORY_RESERVATIONS_PAGE: loadOperations,
+    LOGISTICS_EVENTS_PAGE: loadOperations,
+    MAINTENANCE_SCHEDULES_PAGE: loadOperations,
+    TRANSFER_ORDERS_PAGE: loadOperations,
+
+    // people
+    CREDENTIAL_TYPES_PAGE: loadPeople,
+    GOALS_PAGE: loadPeople,
+    REVIEW_CYCLES_PAGE: loadPeople,
+    REVIEWS_PAGE: loadPeople,
+    TIME_OFF_REQUESTS_PAGE: loadPeople,
+    TIMESHEETS_PAGE: loadPeople,
+    WORKER_OFFBOARDING_RUNS_PAGE: loadPeople,
+    WORKER_ONBOARDING_RUNS_PAGE: loadPeople,
+    CERTIFICATIONS_PAGE: loadPeople,
+    CREDENTIAL_ASSIGNMENTS_PAGE: loadPeople,
+    CREDENTIAL_INVENTORY_POOLS_PAGE: loadPeople,
+    CREW_AVAILABILITY_PAGE: loadPeople,
+    CREW_SHIFTS_PAGE: loadPeople,
+    LIVE_CREW_ASSIGNMENTS_PAGE: loadPeople,
+    SCHEDULE_ENTRIES_PAGE: loadPeople,
+    SHIFTS_PAGE: loadPeople,
+    TEAM_MEMBERS_PAGE: loadPeople,
+    TIME_ENTRIES_PAGE: loadPeople,
+    TIME_TRACKING_POLICIES_PAGE: loadPeople,
+    WORKER_CLASSIFICATIONS_PAGE: loadPeople,
+    WORKER_COMPLIANCE_DOCS_PAGE: loadPeople,
+    WORKER_PROFILES_PAGE: loadPeople,
+    WORKER_REVIEWS_PAGE: loadPeople,
+
+    // primary
+    DEALS_PAGE: loadPrimary,
+    OPPORTUNITIES_PAGE: loadPrimary,
+    COMPANIES_PAGE: loadPrimary,
+    INVOICES_PAGE: loadPrimary,
+    CLIENT_INVOICES_PAGE: loadPrimary,
+    RECURRING_INVOICES_PAGE: loadPrimary,
+    EXPENSES_PAGE: loadPrimary,
+    PAYMENTS_PAGE: loadPrimary,
+    CREDIT_NOTES_PAGE: loadPrimary,
+    GL_ACCOUNTS_PAGE: loadPrimary,
+    BUDGETS_PAGE: loadPrimary,
+    BUDGET_APPROVALS_PAGE: loadPrimary,
+    PAYMENT_APPROVALS_PAGE: loadPrimary,
+    GOODS_RECEIPTS_PAGE: loadPrimary,
+    CAMPAIGNS_PAGE: loadPrimary,
+    BRIEFS_PAGE: loadPrimary,
+    CASE_STUDIES_PAGE: loadPrimary,
+    DIGITAL_ASSETS_PAGE: loadPrimary,
+    CREATIVE_ASSETS_PAGE: loadPrimary,
+    DECKS_PAGE: loadPrimary,
+    CONTRACTS_PAGE: loadPrimary,
+    CLAUSE_LIBRARY_PAGE: loadPrimary,
+    SCOPES_OF_WORK_PAGE: loadPrimary,
+    CHANGE_ORDERS_PAGE: loadPrimary,
+    PROPOSALS_PAGE: loadPrimary,
+    ESTIMATES_PAGE: loadPrimary,
+    CALL_SHEETS_PAGE: loadPrimary,
+    CHECKLISTS_PAGE: loadPrimary,
+    COMPLIANCE_CHECKLISTS_PAGE: loadPrimary,
+    DISPATCH_PAGE: loadPrimary,
+    FLEET_PAGE: loadPrimary,
+    WAREHOUSES_PAGE: loadPrimary,
+    INVENTORY_PAGE: loadPrimary,
+    LOCATIONS_PAGE: loadPrimary,
+    SERVICE_REQUESTS_PAGE: loadPrimary,
+    WORK_ORDERS_PAGE: loadPrimary,
+    INCIDENTS_PAGE: loadPrimary,
+    INSURANCE_POLICIES_PAGE: loadPrimary,
+    PERMITS_PAGE: loadPrimary,
+    PURCHASE_ORDERS_PAGE: loadPrimary,
+    PURCHASE_REQUISITIONS_PAGE: loadPrimary,
+    PEOPLE_PAGE: loadPrimary,
+    TEAMS_PAGE: loadPrimary,
+    WORKFORCE_PAGE: loadPrimary,
+    DOCUMENTS_PAGE: loadPrimary,
+    KNOWLEDGE_BASE_PAGE: loadPrimary,
+    SOPS_PAGE: loadPrimary,
+    TEMPLATES_PAGE: loadPrimary,
+    TECH_SHEETS_PAGE: loadPrimary,
+    RATE_CARDS_PAGE: loadPrimary,
+    SAVED_VIEWS_PAGE: loadPrimary,
+    EVENTS_PAGE: loadPrimary,
+    IP_RIGHTS_PAGE: loadPrimary,
+    INTEGRATIONS_PAGE: loadPrimary,
+    ENGINEERING_APPROVALS_PAGE: loadPrimary,
+    QUALITY_CHECKS_PAGE: loadPrimary,
+    VENDOR_REVIEWS_PAGE: loadPrimary,
+    ACCOUNTS_PAGE: loadPrimary,
+    PIPELINE_PAGE: loadPrimary,
+    FEATURE_FLAGS_PAGE: loadPrimary,
+    VENDOR_RISK_PAGE: loadPrimary,
+    VENDOR_ONBOARDING_PAGE: loadPrimary,
+    ACTIVATIONS_PAGE: loadPrimary,
+    ASSETS_PAGE: loadPrimary,
+    CREDENTIALS_PAGE: loadPrimary,
+    CREW_PAGE: loadPrimary,
+    LEADS_PAGE: loadPrimary,
+    PROJECTS_PAGE: loadPrimary,
+    PROCUREMENT_PAGE: loadPrimary,
+    SHIPMENTS_PAGE: loadPrimary,
+    SURVEYS_PAGE: loadPrimary,
+    TASKS_PAGE: loadPrimary,
+    VENDORS_PAGE: loadPrimary,
+
+    // production
+    ADVANCE_TEMPLATES_PAGE: loadProduction,
+    FOH_ZONES_PAGE: loadProduction,
+    POST_EVENT_REPORTS_PAGE: loadProduction,
+    PRODUCTION_ADVANCES_PAGE: loadProduction,
+    PRODUCTION_CHECKLISTS_PAGE: loadProduction,
+    PRODUCTION_EXPENSES_PAGE: loadProduction,
+    PRODUCTION_RUNS_PAGE: loadProduction,
+    PRODUCTION_SOPS_PAGE: loadProduction,
+    PRODUCTION_VERTICALS_PAGE: loadProduction,
+    SPACE_BOOKINGS_PAGE: loadProduction,
+    STRIKE_SEQUENCES_PAGE: loadProduction,
+    TECHNICAL_SPECS_PAGE: loadProduction,
+    COMMAND_POSITIONS_PAGE: loadProduction,
+    ENVIRONMENTAL_READINGS_PAGE: loadProduction,
+    FOH_ZONE_READINGS_PAGE: loadProduction,
+    LIVE_EVENT_INSTANCES_PAGE: loadProduction,
+    LIVE_FINANCIAL_SNAPSHOTS_PAGE: loadProduction,
+    PRODUCTION_ADVANCE_ITEMS_PAGE: loadProduction,
+    PRODUCTION_BUDGET_LINES_PAGE: loadProduction,
+    PRODUCTION_MILESTONES_PAGE: loadProduction,
+    PRODUCTION_TASKS_PAGE: loadProduction,
+    PRODUCTION_TIME_ENTRIES_PAGE: loadProduction,
+    READINESS_GATES_PAGE: loadProduction,
+    ROS_CUES_PAGE: loadProduction,
+
+    // projects
+    CHECKLIST_TEMPLATES_PAGE: loadProjects,
+    PROJECT_TEMPLATES_PAGE: loadProjects,
+    STAKEHOLDERS_PAGE: loadProjects,
+    WORK_PACKAGES_PAGE: loadProjects,
+    MILESTONES_PAGE: loadProjects,
+    PROJECT_ASSIGNMENTS_PAGE: loadProjects,
+    STAKEHOLDER_PROJECTS_PAGE: loadProjects,
+
+    // system
+    AUTOMATION_RULES_PAGE: loadSystem,
+    CUSTOM_FIELD_DEFINITIONS_PAGE: loadSystem,
+    DATA_EXPORT_REQUESTS_PAGE: loadSystem,
+    INVITATIONS_PAGE: loadSystem,
+    PROVIDER_CONNECTIONS_PAGE: loadSystem,
+    REPORT_DEFINITIONS_PAGE: loadSystem,
+    RESILIENCE_TARGETS_PAGE: loadSystem,
+    SLA_DEFINITIONS_PAGE: loadSystem,
+    TEMPORARY_ACCESS_GRANTS_PAGE: loadSystem,
+    VAULT_DOCUMENTS_PAGE: loadSystem,
+    WORKFLOWS_PAGE: loadSystem,
+    ACCESS_AUDIT_LOG_PAGE: loadSystem,
+    ACTIVITIES_PAGE: loadSystem,
+    ACTIVITY_LOG_PAGE: loadSystem,
+    ADVANCE_STATUS_HISTORY_PAGE: loadSystem,
+    APPROVAL_STEPS_PAGE: loadSystem,
+    APPROVAL_WORKFLOWS_PAGE: loadSystem,
+    ASSET_ASSIGNMENTS_PAGE: loadSystem,
+    ASSET_TAGS_PAGE: loadSystem,
+    ASSET_VERSIONS_PAGE: loadSystem,
+    AUTOMATION_EXECUTIONS_PAGE: loadSystem,
+    AUTOMATION_LOGS_PAGE: loadSystem,
+    CALENDAR_EVENTS_PAGE: loadSystem,
+    CHANNEL_TEMPLATES_PAGE: loadSystem,
+    COMM_CHANNELS_PAGE: loadSystem,
+    COMMENTS_PAGE: loadSystem,
+    CONVERSATIONS_PAGE: loadSystem,
+    CUSTOM_FIELDS_PAGE: loadSystem,
+    DASHBOARD_WIDGETS_PAGE: loadSystem,
+    DOCUMENT_VERSIONS_PAGE: loadSystem,
+    DOMAIN_EVENTS_PAGE: loadSystem,
+    EMAIL_MESSAGES_PAGE: loadSystem,
+    KNOWLEDGE_ARTICLES_PAGE: loadSystem,
+    LOGIN_AUDIT_LOG_PAGE: loadSystem,
+    NOTIFICATIONS_PAGE: loadSystem,
+    ORGANIZATIONS_PAGE: loadSystem,
+    PROFILES_PAGE: loadSystem,
+    ROLE_CHANGE_LOG_PAGE: loadSystem,
+    SCAN_EVENTS_PAGE: loadSystem,
+    SERVICE_HEALTH_CHECKS_PAGE: loadSystem,
+    SLA_POLICIES_PAGE: loadSystem,
+    SLA_TRACKING_PAGE: loadSystem,
+    STORAGE_OBJECTS_PAGE: loadSystem,
+    SYNC_EVENTS_PAGE: loadSystem,
+    USER_MANAGEMENT_PAGE: loadSystem,
+    TAGS_PAGE: loadSystem,
+
+    // vendor
+    COMPLIANCE_REQUIREMENTS_PAGE: loadVendor,
+    COMPLIANCE_TEMPLATES_PAGE: loadVendor,
+    CONTRACT_AMENDMENTS_PAGE: loadVendor,
+    CONTRACT_OBLIGATIONS_PAGE: loadVendor,
+    E_SIGNATURES_PAGE: loadVendor,
+    ENGAGEMENT_TERMS_PAGE: loadVendor,
+    INSURANCE_REQUIREMENTS_PAGE: loadVendor,
+    LEGAL_HOLDS_PAGE: loadVendor,
+    RFQS_PAGE: loadVendor,
+    RIGHTS_PAGE: loadVendor,
+    RISK_ASSESSMENTS_PAGE: loadVendor,
+    VENDOR_COMMUNICATIONS_PAGE: loadVendor,
+    VENDOR_COMPLIANCE_DOCUMENTS_PAGE: loadVendor,
 };
 
-export type ListPageConfigKey = keyof typeof LIST_PAGE_REGISTRY;
+// ─── All valid config keys (type-safe) ────────────────────────
+
+export type ListPageConfigKey = keyof typeof CONFIG_KEY_MODULE;
+
+// ─── Resolved config cache ────────────────────────────────────
+
+const configCache = new Map<string, ListPageConfig>();
+
+/**
+ * Lazily resolve a ListPageConfig by key.
+ * Loads only the source module chunk for that key (not all 233 configs).
+ * Result is cached in-memory — subsequent calls for the same key are synchronous.
+ */
+export async function resolveListPageConfig(key: string): Promise<ListPageConfig> {
+    const cached = configCache.get(key);
+    if (cached) return cached;
+
+    const loader = CONFIG_KEY_MODULE[key];
+    if (!loader) {
+        throw new Error(
+            `resolveListPageConfig: unknown key "${key}". ` +
+                `Valid keys: ${Object.keys(CONFIG_KEY_MODULE).join(", ")}`
+        );
+    }
+
+    const mod = await loader();
+    const config = mod[key];
+    if (!config) {
+        throw new Error(
+            `resolveListPageConfig: key "${key}" not found in loaded module. ` +
+                `Available exports: ${Object.keys(mod).join(", ")}`
+        );
+    }
+
+    configCache.set(key, config);
+    return config;
+}
+
+/**
+ * Synchronously retrieve a previously-resolved config.
+ * Returns undefined if the config hasn't been loaded yet.
+ */
+export function getResolvedConfig(key: string): ListPageConfig | undefined {
+    return configCache.get(key);
+}
+
+// ─── Idle-time prefetch ──────────────────────────────────────
+
+/**
+ * Unique module loaders — deduplicated set of the 10 domain chunk loaders.
+ * Used by prefetchAllConfigs to load every chunk without duplicating work.
+ */
+const UNIQUE_LOADERS: ModuleLoader[] = [
+    loadCrm,
+    loadFinance,
+    loadMarketing,
+    loadOperations,
+    loadPeople,
+    loadPrimary,
+    loadProduction,
+    loadProjects,
+    loadSystem,
+    loadVendor,
+];
+
+let prefetchStarted = false;
+
+/**
+ * Prefetch all config domain chunks during browser idle time.
+ *
+ * Call once after the first config resolves. Uses requestIdleCallback
+ * (with setTimeout fallback) to avoid blocking interaction. Each chunk
+ * is loaded sequentially with a small yield between chunks so the main
+ * thread stays responsive. All resolved configs are cached, making
+ * every subsequent page navigation instant (zero async wait).
+ */
+export function prefetchAllConfigs(): void {
+    if (prefetchStarted) return;
+    if (typeof window === "undefined") return;
+    prefetchStarted = true;
+
+    const schedule =
+        typeof requestIdleCallback === "function"
+            ? requestIdleCallback
+            : (cb: () => void) => setTimeout(cb, 50);
+
+    schedule(async () => {
+        for (const loader of UNIQUE_LOADERS) {
+            try {
+                const mod = await loader();
+                // Cache every exported config from this module
+                for (const [exportName, config] of Object.entries(mod)) {
+                    if (exportName in CONFIG_KEY_MODULE && !configCache.has(exportName)) {
+                        configCache.set(exportName, config);
+                    }
+                }
+            } catch {
+                // Non-critical — individual chunks will load on demand if prefetch fails
+            }
+            // Yield between chunks so we don't monopolize the main thread
+            await new Promise((r) => setTimeout(r, 0));
+        }
+    });
+}

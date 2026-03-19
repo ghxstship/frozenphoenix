@@ -60,6 +60,20 @@ export const BOMS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "BOM", accessorKey: "name" },
+            { id: "bom_type", label: "Type", accessorKey: "bom_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "total_cost",
+                label: "Total Cost",
+                accessorKey: "total_cost",
+                fieldType: "currency",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -102,6 +116,21 @@ export const CONSUMABLES_PAGE: ListPageConfig = {
         valueKey: "quantity_on_hand",
         aggregation: "sum",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Item", accessorKey: "name" },
+            { id: "sku", label: "SKU", accessorKey: "sku" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "quantity_on_hand", label: "On Hand", accessorKey: "quantity_on_hand" },
+            {
+                id: "unit_cost",
+                label: "Unit Cost",
+                accessorKey: "unit_cost",
+                fieldType: "currency",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -120,6 +149,15 @@ export const INVENTORY_AUDITS_PAGE: ListPageConfig = {
         { id: "audit_date", header: "Date", accessorKey: "audit_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Audit", accessorKey: "name" },
+            { id: "location", label: "Location", accessorKey: "location" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "audit_date", label: "Date", accessorKey: "audit_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -138,6 +176,20 @@ export const KITS_PAGE: ListPageConfig = {
         { id: "total_value", header: "Value", accessorKey: "total_value", fieldType: "currency" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Kit", accessorKey: "name" },
+            { id: "kit_type", label: "Type", accessorKey: "kit_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "total_value",
+                label: "Value",
+                accessorKey: "total_value",
+                fieldType: "currency",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -172,6 +224,20 @@ export const LOAD_PLANS_PAGE: ListPageConfig = {
         titleKey: "name",
         dateKey: "departure_date",
         colorKey: "status",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Load Plan", accessorKey: "name" },
+            { id: "vehicle", label: "Vehicle", accessorKey: "vehicle" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "departure_date",
+                label: "Departure",
+                accessorKey: "departure_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -213,6 +279,25 @@ export const MAINTENANCE_RECORDS_PAGE: ListPageConfig = {
         dateKey: "scheduled_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Record", accessorKey: "title" },
+            {
+                id: "maintenance_type",
+                label: "Type",
+                accessorKey: "maintenance_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "scheduled_date",
+                label: "Scheduled",
+                accessorKey: "scheduled_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -231,6 +316,15 @@ export const QC_GATES_PAGE: ListPageConfig = {
         { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Gate", accessorKey: "name" },
+            { id: "gate_type", label: "Type", accessorKey: "gate_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -249,6 +343,15 @@ export const QUALITY_CHECK_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "check_count", label: "Checks", accessorKey: "check_count" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -280,6 +383,16 @@ export const RENTAL_AGREEMENTS_PAGE: ListPageConfig = {
         startDateKey: "start_date",
         endDateKey: "start_date",
         colorKey: "status",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Agreement", accessorKey: "title" },
+            { id: "vendor_name", label: "Vendor", accessorKey: "vendor_name" },
+            { id: "total_cost", label: "Total", accessorKey: "total_cost", fieldType: "currency" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -314,6 +427,16 @@ export const RESOURCE_BOOKINGS_PAGE: ListPageConfig = {
         endDateKey: "end_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "resource_name", label: "Resource", accessorKey: "resource_name" },
+            { id: "booking_type", label: "Type", accessorKey: "booking_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "start_date", label: "Start", accessorKey: "start_date", fieldType: "date" },
+            { id: "end_date", label: "End", accessorKey: "end_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -332,6 +455,15 @@ export const CONSUMABLE_USAGE_PAGE: ListPageConfig = {
         { id: "usage_date", header: "Date", accessorKey: "usage_date", fieldType: "date" },
         { id: "created_at", header: "Logged", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "consumable_name", label: "Consumable", accessorKey: "consumable_name" },
+            { id: "quantity", label: "Qty", accessorKey: "quantity" },
+            { id: "used_by", label: "Used By", accessorKey: "used_by" },
+            { id: "usage_date", label: "Date", accessorKey: "usage_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -350,6 +482,16 @@ export const EQUIPMENT_CHECK_INS_PAGE: ListPageConfig = {
         { id: "condition", header: "Condition", accessorKey: "condition", fieldType: "status" },
         { id: "checked_at", header: "Date", accessorKey: "checked_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "equipment_name", label: "Equipment", accessorKey: "equipment_name" },
+            { id: "checked_by", label: "Checked By", accessorKey: "checked_by" },
+            { id: "check_type", label: "Type", accessorKey: "check_type", fieldType: "status" },
+            { id: "condition", label: "Condition", accessorKey: "condition", fieldType: "status" },
+            { id: "checked_at", label: "Date", accessorKey: "checked_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -368,6 +510,21 @@ export const INVENTORY_RESERVATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "reserved_until", header: "Until", accessorKey: "reserved_until", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "item_name", label: "Item", accessorKey: "item_name" },
+            { id: "reserved_for", label: "Reserved For", accessorKey: "reserved_for" },
+            { id: "quantity", label: "Qty", accessorKey: "quantity" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "reserved_until",
+                label: "Until",
+                accessorKey: "reserved_until",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -385,6 +542,16 @@ export const LOGISTICS_EVENTS_PAGE: ListPageConfig = {
         { id: "location", header: "Location", accessorKey: "location" },
         { id: "occurred_at", header: "Date", accessorKey: "occurred_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Event", accessorKey: "description" },
+            { id: "event_type", label: "Type", accessorKey: "event_type", fieldType: "status" },
+            { id: "shipment_name", label: "Shipment", accessorKey: "shipment_name" },
+            { id: "location", label: "Location", accessorKey: "location" },
+            { id: "occurred_at", label: "Date", accessorKey: "occurred_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -403,6 +570,16 @@ export const MAINTENANCE_SCHEDULES_PAGE: ListPageConfig = {
         { id: "next_due", header: "Next Due", accessorKey: "next_due", fieldType: "date" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Schedule", accessorKey: "name" },
+            { id: "equipment_name", label: "Equipment", accessorKey: "equipment_name" },
+            { id: "frequency", label: "Frequency", accessorKey: "frequency", fieldType: "status" },
+            { id: "next_due", label: "Next Due", accessorKey: "next_due", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -445,6 +622,21 @@ export const TRANSFER_ORDERS_PAGE: ListPageConfig = {
             cancelled: "Cancelled",
         },
         cardTitleKey: "transfer_number",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "transfer_number", label: "Transfer #", accessorKey: "transfer_number" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "priority", label: "Priority", accessorKey: "priority", fieldType: "status" },
+            { id: "total_items", label: "Items", accessorKey: "total_items" },
+            {
+                id: "requested_date",
+                label: "Requested",
+                accessorKey: "requested_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
     },
     exportable: true,
 };

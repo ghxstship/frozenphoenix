@@ -93,6 +93,20 @@ export const AUTOMATION_RULES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Rule", accessorKey: "name" },
+            {
+                id: "trigger_type",
+                label: "Trigger",
+                accessorKey: "trigger_type",
+                fieldType: "status",
+            },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -111,6 +125,21 @@ export const CUSTOM_FIELD_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type" },
         { id: "is_required", header: "Required", accessorKey: "is_required", fieldType: "status" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Field", accessorKey: "name" },
+            { id: "field_key", label: "Key", accessorKey: "field_key" },
+            { id: "field_type", label: "Type", accessorKey: "field_type", fieldType: "status" },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type" },
+            {
+                id: "is_required",
+                label: "Required",
+                accessorKey: "is_required",
+                fieldType: "status",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -129,6 +158,20 @@ export const DATA_EXPORT_REQUESTS_PAGE: ListPageConfig = {
         { id: "requested_at", header: "Requested", accessorKey: "requested_at", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Export", accessorKey: "name" },
+            { id: "export_type", label: "Type", accessorKey: "export_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "requested_at",
+                label: "Requested",
+                accessorKey: "requested_at",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -152,6 +195,20 @@ export const INVITATIONS_PAGE: ListPageConfig = {
         { id: "expires_at", header: "Expires", accessorKey: "expires_at", fieldType: "date" },
         { id: "created_at", header: "Sent", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "email", label: "Email", accessorKey: "email" },
+            {
+                id: "permission_level",
+                label: "Role",
+                accessorKey: "permission_level",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "expires_at", label: "Expires", accessorKey: "expires_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -175,6 +232,20 @@ export const PROVIDER_CONNECTIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Connection", accessorKey: "name" },
+            { id: "provider", label: "Provider", accessorKey: "provider" },
+            {
+                id: "connection_type",
+                label: "Type",
+                accessorKey: "connection_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -192,6 +263,14 @@ export const REPORT_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Report", accessorKey: "name" },
+            { id: "report_type", label: "Type", accessorKey: "report_type", fieldType: "status" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -210,6 +289,15 @@ export const RESILIENCE_TARGETS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Target", accessorKey: "name" },
+            { id: "target_type", label: "Type", accessorKey: "target_type", fieldType: "status" },
+            { id: "rto_hours", label: "RTO (hrs)", accessorKey: "rto_hours" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -232,6 +320,23 @@ export const SLA_DEFINITIONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "SLA", accessorKey: "name" },
+            {
+                id: "response_time_hours",
+                label: "Response (hrs)",
+                accessorKey: "response_time_hours",
+            },
+            {
+                id: "resolution_time_hours",
+                label: "Resolution (hrs)",
+                accessorKey: "resolution_time_hours",
+            },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -250,6 +355,20 @@ export const TEMPORARY_ACCESS_GRANTS_PAGE: ListPageConfig = {
         { id: "expires_at", header: "Expires", accessorKey: "expires_at", fieldType: "date" },
         { id: "created_at", header: "Granted", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "grantee_name", label: "Grantee", accessorKey: "grantee_name" },
+            {
+                id: "access_level",
+                label: "Level",
+                accessorKey: "access_level",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "expires_at", label: "Expires", accessorKey: "expires_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -273,6 +392,25 @@ export const VAULT_DOCUMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Document", accessorKey: "title" },
+            {
+                id: "document_type",
+                label: "Type",
+                accessorKey: "document_type",
+                fieldType: "status",
+            },
+            {
+                id: "classification",
+                label: "Classification",
+                accessorKey: "classification",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -291,6 +429,20 @@ export const WORKFLOWS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Workflow", accessorKey: "name" },
+            {
+                id: "workflow_type",
+                label: "Type",
+                accessorKey: "workflow_type",
+                fieldType: "status",
+            },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -307,6 +459,14 @@ export const ACCESS_AUDIT_LOG_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "action", label: "Action", accessorKey: "action" },
+            { id: "resource", label: "Resource", accessorKey: "resource", fieldType: "status" },
+            { id: "actor_id", label: "Actor", accessorKey: "actor_id" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -323,6 +483,19 @@ export const ACTIVITIES_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Activity", accessorKey: "description" },
+            {
+                id: "activity_type",
+                label: "Type",
+                accessorKey: "activity_type",
+                fieldType: "status",
+            },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -339,6 +512,14 @@ export const ACTIVITY_LOG_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "action", label: "Action", accessorKey: "action" },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+            { id: "actor_id", label: "Actor", accessorKey: "actor_id" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -356,6 +537,15 @@ export const ADVANCE_STATUS_HISTORY_PAGE: ListPageConfig = {
         { id: "changed_by", header: "Changed By", accessorKey: "changed_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "advance_id", label: "Advance", accessorKey: "advance_id" },
+            { id: "from_status", label: "From", accessorKey: "from_status", fieldType: "status" },
+            { id: "to_status", label: "To", accessorKey: "to_status", fieldType: "status" },
+            { id: "changed_by", label: "Changed By", accessorKey: "changed_by" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -379,6 +569,20 @@ export const APPROVAL_STEPS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Step", accessorKey: "name" },
+            {
+                id: "approver_role",
+                label: "Approver Role",
+                accessorKey: "approver_role",
+                fieldType: "status",
+            },
+            { id: "order", label: "Order", accessorKey: "order" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -402,6 +606,20 @@ export const APPROVAL_WORKFLOWS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Workflow", accessorKey: "name" },
+            {
+                id: "entity_type",
+                label: "Entity Type",
+                accessorKey: "entity_type",
+                fieldType: "status",
+            },
+            { id: "steps_count", label: "Steps", accessorKey: "steps_count" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -439,6 +657,21 @@ export const ASSET_ASSIGNMENTS_PAGE: ListPageConfig = {
         endDateKey: "return_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "asset_name", label: "Asset", accessorKey: "asset_name" },
+            { id: "assignee_name", label: "Assignee", accessorKey: "assignee_name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "assigned_date",
+                label: "Assigned",
+                accessorKey: "assigned_date",
+                fieldType: "date",
+            },
+            { id: "return_date", label: "Return", accessorKey: "return_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -456,6 +689,14 @@ export const ASSET_TAGS_PAGE: ListPageConfig = {
         { id: "usage_count", header: "Usage", accessorKey: "usage_count" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Tag", accessorKey: "name" },
+            { id: "tag_type", label: "Type", accessorKey: "tag_type", fieldType: "status" },
+            { id: "usage_count", label: "Usage", accessorKey: "usage_count" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -474,6 +715,15 @@ export const ASSET_VERSIONS_PAGE: ListPageConfig = {
         { id: "created_by", header: "Author", accessorKey: "created_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "asset_name", label: "Asset", accessorKey: "asset_name" },
+            { id: "version_number", label: "Version", accessorKey: "version_number" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "created_by", label: "Author", accessorKey: "created_by" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -491,6 +741,21 @@ export const AUTOMATION_EXECUTIONS_PAGE: ListPageConfig = {
         { id: "duration_ms", header: "Duration", accessorKey: "duration_ms" },
         { id: "executed_at", header: "Executed", accessorKey: "executed_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "rule_name", label: "Rule", accessorKey: "rule_name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "trigger_type",
+                label: "Trigger",
+                accessorKey: "trigger_type",
+                fieldType: "status",
+            },
+            { id: "duration_ms", label: "Duration", accessorKey: "duration_ms" },
+            { id: "executed_at", label: "Executed", accessorKey: "executed_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -507,6 +772,14 @@ export const AUTOMATION_LOGS_PAGE: ListPageConfig = {
         { id: "execution_id", header: "Execution", accessorKey: "execution_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "message", label: "Message", accessorKey: "message" },
+            { id: "level", label: "Level", accessorKey: "level", fieldType: "status" },
+            { id: "execution_id", label: "Execution", accessorKey: "execution_id" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -540,6 +813,16 @@ export const CALENDAR_EVENTS_PAGE: ListPageConfig = {
         endDateKey: "end_time",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Event", accessorKey: "title" },
+            { id: "event_type", label: "Type", accessorKey: "event_type", fieldType: "status" },
+            { id: "start_time", label: "Start", accessorKey: "start_time", fieldType: "date" },
+            { id: "end_time", label: "End", accessorKey: "end_time", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -557,6 +840,19 @@ export const CHANNEL_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            {
+                id: "channel_type",
+                label: "Channel",
+                accessorKey: "channel_type",
+                fieldType: "status",
+            },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -574,6 +870,14 @@ export const COMM_CHANNELS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Channel", accessorKey: "name" },
+            { id: "channel_type", label: "Type", accessorKey: "channel_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -591,6 +895,14 @@ export const COMMENTS_PAGE: ListPageConfig = {
         { id: "entity_type", header: "Entity", accessorKey: "entity_type", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "content", label: "Comment", accessorKey: "content" },
+            { id: "author_name", label: "Author", accessorKey: "author_name" },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -613,6 +925,20 @@ export const CONVERSATIONS_PAGE: ListPageConfig = {
             fieldType: "date",
         },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "subject", label: "Subject", accessorKey: "subject" },
+            { id: "participant_count", label: "Participants", accessorKey: "participant_count" },
+            { id: "message_count", label: "Messages", accessorKey: "message_count" },
+            {
+                id: "last_message_at",
+                label: "Last Activity",
+                accessorKey: "last_message_at",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -631,6 +957,15 @@ export const CUSTOM_FIELDS_PAGE: ListPageConfig = {
         { id: "value", header: "Value", accessorKey: "value" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "field_name", label: "Field", accessorKey: "field_name" },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+            { id: "field_type", label: "Type", accessorKey: "field_type", fieldType: "status" },
+            { id: "value", label: "Value", accessorKey: "value" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -649,6 +984,15 @@ export const DASHBOARD_WIDGETS_PAGE: ListPageConfig = {
         { id: "is_visible", header: "Visible", accessorKey: "is_visible", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Widget", accessorKey: "title" },
+            { id: "widget_type", label: "Type", accessorKey: "widget_type", fieldType: "status" },
+            { id: "position", label: "Position", accessorKey: "position" },
+            { id: "is_visible", label: "Visible", accessorKey: "is_visible", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -667,6 +1011,15 @@ export const DOCUMENT_VERSIONS_PAGE: ListPageConfig = {
         { id: "created_by", header: "Author", accessorKey: "created_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "document_name", label: "Document", accessorKey: "document_name" },
+            { id: "version_number", label: "Version", accessorKey: "version_number" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "created_by", label: "Author", accessorKey: "created_by" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -683,6 +1036,14 @@ export const DOMAIN_EVENTS_PAGE: ListPageConfig = {
         { id: "actor_id", header: "Actor", accessorKey: "actor_id" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "event_type", label: "Event", accessorKey: "event_type" },
+            { id: "entity_type", label: "Entity", accessorKey: "entity_type", fieldType: "status" },
+            { id: "actor_id", label: "Actor", accessorKey: "actor_id" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -700,6 +1061,16 @@ export const EMAIL_MESSAGES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "sent_at", header: "Sent", accessorKey: "sent_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "subject", label: "Subject", accessorKey: "subject" },
+            { id: "from_address", label: "From", accessorKey: "from_address" },
+            { id: "to_address", label: "To", accessorKey: "to_address" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "sent_at", label: "Sent", accessorKey: "sent_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -726,6 +1097,15 @@ export const KNOWLEDGE_ARTICLES_PAGE: ListPageConfig = {
         statusKey: "status",
         fields: [{ id: "views_count", label: "Views", accessorKey: "views_count" }],
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Article", accessorKey: "title" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "views_count", label: "Views", accessorKey: "views_count" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -743,6 +1123,15 @@ export const LOGIN_AUDIT_LOG_PAGE: ListPageConfig = {
         { id: "user_agent", header: "User Agent", accessorKey: "user_agent" },
         { id: "created_at", header: "Timestamp", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "email", label: "Email", accessorKey: "email" },
+            { id: "ip_address", label: "IP Address", accessorKey: "ip_address" },
+            { id: "result", label: "Result", accessorKey: "result", fieldType: "status" },
+            { id: "user_agent", label: "User Agent", accessorKey: "user_agent" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -764,6 +1153,19 @@ export const NOTIFICATIONS_PAGE: ListPageConfig = {
         { id: "is_read", header: "Read", accessorKey: "is_read", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Notification", accessorKey: "title" },
+            {
+                id: "notification_type",
+                label: "Type",
+                accessorKey: "notification_type",
+                fieldType: "status",
+            },
+            { id: "is_read", label: "Read", accessorKey: "is_read", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -782,6 +1184,15 @@ export const ORGANIZATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Organization", accessorKey: "name" },
+            { id: "industry", label: "Industry", accessorKey: "industry", fieldType: "status" },
+            { id: "member_count", label: "Members", accessorKey: "member_count" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -813,6 +1224,21 @@ export const PROFILES_PAGE: ListPageConfig = {
         statusKey: "role",
         fields: [{ id: "status", label: "Status", accessorKey: "status", fieldType: "status" }],
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "display_name", label: "Name", accessorKey: "display_name" },
+            { id: "email", label: "Email", accessorKey: "email" },
+            { id: "role", label: "Role", accessorKey: "role", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "last_login_at",
+                label: "Last Login",
+                accessorKey: "last_login_at",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -830,6 +1256,15 @@ export const ROLE_CHANGE_LOG_PAGE: ListPageConfig = {
         { id: "changed_by", header: "Changed By", accessorKey: "changed_by" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "user_name", label: "User", accessorKey: "user_name" },
+            { id: "from_role", label: "From", accessorKey: "from_role", fieldType: "status" },
+            { id: "to_role", label: "To", accessorKey: "to_role", fieldType: "status" },
+            { id: "changed_by", label: "Changed By", accessorKey: "changed_by" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -847,6 +1282,16 @@ export const SCAN_EVENTS_PAGE: ListPageConfig = {
         { id: "scanned_by", header: "Scanned By", accessorKey: "scanned_by" },
         { id: "scanned_at", header: "Date", accessorKey: "scanned_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "scan_type", label: "Type", accessorKey: "scan_type" },
+            { id: "location_name", label: "Location", accessorKey: "location_name" },
+            { id: "result", label: "Result", accessorKey: "result", fieldType: "status" },
+            { id: "scanned_by", label: "Scanned By", accessorKey: "scanned_by" },
+            { id: "scanned_at", label: "Date", accessorKey: "scanned_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -864,6 +1309,16 @@ export const SERVICE_HEALTH_CHECKS_PAGE: ListPageConfig = {
         { id: "response_time_ms", header: "Response (ms)", accessorKey: "response_time_ms" },
         { id: "checked_at", header: "Checked", accessorKey: "checked_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "service_name", label: "Service", accessorKey: "service_name" },
+            { id: "check_type", label: "Type", accessorKey: "check_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "response_time_ms", label: "Response (ms)", accessorKey: "response_time_ms" },
+            { id: "checked_at", label: "Checked", accessorKey: "checked_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -882,6 +1337,16 @@ export const SLA_POLICIES_PAGE: ListPageConfig = {
         { id: "resolution_time", header: "Resolution Time", accessorKey: "resolution_time" },
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Policy", accessorKey: "name" },
+            { id: "policy_type", label: "Type", accessorKey: "policy_type", fieldType: "status" },
+            { id: "response_time", label: "Response Time", accessorKey: "response_time" },
+            { id: "resolution_time", label: "Resolution Time", accessorKey: "resolution_time" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -910,6 +1375,20 @@ export const SLA_TRACKING_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "compliance_status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "entity_name", label: "Entity", accessorKey: "entity_name" },
+            { id: "sla_name", label: "SLA", accessorKey: "sla_name" },
+            {
+                id: "compliance_status",
+                label: "Status",
+                accessorKey: "compliance_status",
+                fieldType: "status",
+            },
+            { id: "breach_count", label: "Breaches", accessorKey: "breach_count" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -927,6 +1406,15 @@ export const STORAGE_OBJECTS_PAGE: ListPageConfig = {
         { id: "uploaded_by", header: "Uploaded By", accessorKey: "uploaded_by" },
         { id: "created_at", header: "Uploaded", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "File", accessorKey: "name" },
+            { id: "mime_type", label: "Type", accessorKey: "mime_type", fieldType: "status" },
+            { id: "size_bytes", label: "Size", accessorKey: "size_bytes" },
+            { id: "uploaded_by", label: "Uploaded By", accessorKey: "uploaded_by" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -944,6 +1432,16 @@ export const SYNC_EVENTS_PAGE: ListPageConfig = {
         { id: "records_synced", header: "Records", accessorKey: "records_synced" },
         { id: "synced_at", header: "Synced", accessorKey: "synced_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "provider_name", label: "Provider", accessorKey: "provider_name" },
+            { id: "sync_type", label: "Type", accessorKey: "sync_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "records_synced", label: "Records", accessorKey: "records_synced" },
+            { id: "synced_at", label: "Synced", accessorKey: "synced_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -962,6 +1460,15 @@ export const USER_MANAGEMENT_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Joined", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Name", accessorKey: "name" },
+            { id: "email", label: "Email", accessorKey: "email" },
+            { id: "role", label: "Role", accessorKey: "role", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -982,5 +1489,15 @@ export const TAGS_PAGE: ListPageConfig = {
     ],
     views: ["table"],
     defaultView: "table",
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Tag", accessorKey: "name" },
+            { id: "slug", label: "Slug", accessorKey: "slug" },
+            { id: "color", label: "Color", accessorKey: "color" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "usage_count", label: "Usage", accessorKey: "usage_count" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };

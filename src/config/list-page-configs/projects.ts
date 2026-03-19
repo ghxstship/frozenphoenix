@@ -42,6 +42,14 @@ export const CHECKLIST_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -60,6 +68,15 @@ export const PROJECT_TEMPLATES_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "task_count", label: "Tasks", accessorKey: "task_count" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -106,6 +123,25 @@ export const STAKEHOLDERS_PAGE: ListPageConfig = {
     chartConfig: {
         type: "pie",
         categoryKey: "stakeholder_type",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Stakeholder", accessorKey: "name" },
+            { id: "organization", label: "Organization", accessorKey: "organization" },
+            {
+                id: "stakeholder_type",
+                label: "Type",
+                accessorKey: "stakeholder_type",
+                fieldType: "status",
+            },
+            {
+                id: "influence_level",
+                label: "Influence",
+                accessorKey: "influence_level",
+                fieldType: "status",
+            },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -183,6 +219,16 @@ export const MILESTONES_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Milestone", accessorKey: "name" },
+            { id: "project_name", label: "Project", accessorKey: "project_name" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "completion_percent", label: "Progress", accessorKey: "completion_percent" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -217,6 +263,16 @@ export const PROJECT_ASSIGNMENTS_PAGE: ListPageConfig = {
             { id: "assigned_at", label: "Assigned", accessorKey: "assigned_at", fieldType: "date" },
         ],
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "member_name", label: "Member", accessorKey: "member_name" },
+            { id: "project_name", label: "Project", accessorKey: "project_name" },
+            { id: "role", label: "Role", accessorKey: "role", fieldType: "status" },
+            { id: "assigned_at", label: "Assigned", accessorKey: "assigned_at", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -240,5 +296,19 @@ export const STAKEHOLDER_PROJECTS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Added", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "stakeholder_name", label: "Stakeholder", accessorKey: "stakeholder_name" },
+            { id: "project_name", label: "Project", accessorKey: "project_name" },
+            { id: "role", label: "Role", accessorKey: "role", fieldType: "status" },
+            {
+                id: "influence_level",
+                label: "Influence",
+                accessorKey: "influence_level",
+                fieldType: "status",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };

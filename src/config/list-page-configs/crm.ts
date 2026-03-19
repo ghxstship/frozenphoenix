@@ -88,6 +88,21 @@ export const GUEST_INCIDENTS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "description",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Incident", accessorKey: "title" },
+            {
+                id: "incident_type",
+                label: "Type",
+                accessorKey: "incident_type",
+                fieldType: "status",
+            },
+            { id: "severity", label: "Severity", accessorKey: "severity", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "reported_at", label: "Reported", accessorKey: "reported_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -105,6 +120,14 @@ export const LOST_REASONS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Reason", accessorKey: "name" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -123,6 +146,15 @@ export const TESTIMONIALS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "author_name", label: "Author", accessorKey: "author_name" },
+            { id: "company", label: "Company", accessorKey: "company" },
+            { id: "rating", label: "Rating", accessorKey: "rating" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -148,6 +180,15 @@ export const VIP_GUESTS_PAGE: ListPageConfig = {
         subtitleKey: "organization",
         statusKey: "vip_tier",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Guest", accessorKey: "name" },
+            { id: "organization", label: "Organization", accessorKey: "organization" },
+            { id: "vip_tier", label: "Tier", accessorKey: "vip_tier", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -172,6 +213,15 @@ export const VIP_SERVICE_REQUESTS_PAGE: ListPageConfig = {
         groupByKey: "status",
         cardTitleKey: "title",
         cardSubtitleKey: "guest_name",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Request", accessorKey: "title" },
+            { id: "guest_name", label: "Guest", accessorKey: "guest_name" },
+            { id: "service_type", label: "Type", accessorKey: "service_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -200,6 +250,14 @@ export const ACCOUNT_HEALTH_SCORES_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "trend",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "account_name", label: "Account", accessorKey: "account_name" },
+            { id: "score", label: "Score", accessorKey: "score" },
+            { id: "trend", label: "Trend", accessorKey: "trend", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -217,6 +275,15 @@ export const UPSELL_EVENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "event_type", label: "Event", accessorKey: "event_type" },
+            { id: "customer_name", label: "Customer", accessorKey: "customer_name" },
+            { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -235,5 +302,14 @@ export const UPSELL_TRIGGERS_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Trigger", accessorKey: "name" },
+            { id: "trigger_type", label: "Type", accessorKey: "trigger_type", fieldType: "status" },
+            { id: "condition", label: "Condition", accessorKey: "condition" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };

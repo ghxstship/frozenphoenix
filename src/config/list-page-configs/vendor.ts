@@ -66,6 +66,20 @@ export const COMPLIANCE_REQUIREMENTS_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Requirement", accessorKey: "name" },
+            {
+                id: "requirement_type",
+                label: "Type",
+                accessorKey: "requirement_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -101,6 +115,25 @@ export const CONTRACT_AMENDMENTS_PAGE: ListPageConfig = {
         cardTitleKey: "title",
         cardSubtitleKey: "amendment_type",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Amendment", accessorKey: "title" },
+            {
+                id: "amendment_type",
+                label: "Type",
+                accessorKey: "amendment_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "effective_date",
+                label: "Effective",
+                accessorKey: "effective_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -125,6 +158,15 @@ export const E_SIGNATURES_PAGE: ListPageConfig = {
         groupByKey: "status",
         cardTitleKey: "document_title",
         cardSubtitleKey: "signer_name",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "document_title", label: "Document", accessorKey: "document_title" },
+            { id: "signer_name", label: "Signer", accessorKey: "signer_name" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "signed_at", label: "Signed", accessorKey: "signed_at", fieldType: "date" },
+        ],
+        navigable: true,
     },
     exportable: true,
 };
@@ -154,6 +196,25 @@ export const INSURANCE_REQUIREMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Requirement", accessorKey: "name" },
+            {
+                id: "insurance_type",
+                label: "Type",
+                accessorKey: "insurance_type",
+                fieldType: "status",
+            },
+            {
+                id: "min_coverage",
+                label: "Min Coverage",
+                accessorKey: "min_coverage",
+                fieldType: "currency",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -177,6 +238,20 @@ export const LEGAL_HOLDS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Hold", accessorKey: "title" },
+            { id: "hold_type", label: "Type", accessorKey: "hold_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "effective_date",
+                label: "Effective",
+                accessorKey: "effective_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -201,6 +276,15 @@ export const RFQS_PAGE: ListPageConfig = {
         groupByKey: "status",
         cardTitleKey: "title",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "RFQ", accessorKey: "title" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+            { id: "response_count", label: "Responses", accessorKey: "response_count" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -219,6 +303,15 @@ export const RIGHTS_PAGE: ListPageConfig = {
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Right", accessorKey: "title" },
+            { id: "rights_type", label: "Type", accessorKey: "rights_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "expiry_date", label: "Expires", accessorKey: "expiry_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -248,6 +341,20 @@ export const RISK_ASSESSMENTS_PAGE: ListPageConfig = {
         type: "pie",
         categoryKey: "risk_level",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Assessment", accessorKey: "title" },
+            { id: "risk_level", label: "Level", accessorKey: "risk_level", fieldType: "status" },
+            {
+                id: "likelihood",
+                label: "Likelihood",
+                accessorKey: "likelihood",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -266,6 +373,21 @@ export const VENDOR_COMPLIANCE_DOCUMENTS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "expiry_date", header: "Expires", accessorKey: "expiry_date", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Document", accessorKey: "title" },
+            { id: "vendor_name", label: "Vendor", accessorKey: "vendor_name" },
+            {
+                id: "document_type",
+                label: "Type",
+                accessorKey: "document_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "expiry_date", label: "Expires", accessorKey: "expiry_date", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -284,6 +406,15 @@ export const COMPLIANCE_TEMPLATES_PAGE: ListPageConfig = {
         { id: "is_active", header: "Active", accessorKey: "is_active", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Template", accessorKey: "name" },
+            { id: "category", label: "Category", accessorKey: "category", fieldType: "status" },
+            { id: "items_count", label: "Items", accessorKey: "items_count" },
+            { id: "is_active", label: "Active", accessorKey: "is_active", fieldType: "status" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -319,6 +450,21 @@ export const CONTRACT_OBLIGATIONS_PAGE: ListPageConfig = {
         dateKey: "due_date",
         colorKey: "status",
     },
+    quickViewConfig: {
+        previewFields: [
+            { id: "description", label: "Obligation", accessorKey: "description" },
+            {
+                id: "obligation_type",
+                label: "Type",
+                accessorKey: "obligation_type",
+                fieldType: "status",
+            },
+            { id: "due_date", label: "Due", accessorKey: "due_date", fieldType: "date" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "contract_name", label: "Contract", accessorKey: "contract_name" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -342,6 +488,20 @@ export const ENGAGEMENT_TERMS_PAGE: ListPageConfig = {
         },
         { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Term", accessorKey: "name" },
+            { id: "term_type", label: "Type", accessorKey: "term_type", fieldType: "status" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            {
+                id: "effective_date",
+                label: "Effective",
+                accessorKey: "effective_date",
+                fieldType: "date",
+            },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };
 
@@ -365,5 +525,20 @@ export const VENDOR_COMMUNICATIONS_PAGE: ListPageConfig = {
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "sent_at", header: "Date", accessorKey: "sent_at", fieldType: "date" },
     ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "subject", label: "Subject", accessorKey: "subject" },
+            { id: "vendor_name", label: "Vendor", accessorKey: "vendor_name" },
+            {
+                id: "communication_type",
+                label: "Type",
+                accessorKey: "communication_type",
+                fieldType: "status",
+            },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+            { id: "sent_at", label: "Date", accessorKey: "sent_at", fieldType: "date" },
+        ],
+        navigable: true,
+    },
     exportable: true,
 };

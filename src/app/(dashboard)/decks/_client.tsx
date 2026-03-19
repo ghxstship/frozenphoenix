@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { DECKS_PAGE } from "@/config/list-page-configs";
+import { DECKS_PAGE } from "@/config/list-page-configs/primary";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

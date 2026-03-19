@@ -28,24 +28,9 @@ interface DataChartProps {
     height?: number;
 }
 
-// ─── Color Palette ───
+// ─── Color Palette (re-exported from shared module) ───
 
-const CHART_COLORS = [
-    "hsl(var(--primary))",
-    "hsl(var(--info))",
-    "hsl(var(--success))",
-    "hsl(var(--warning))",
-    "hsl(var(--destructive))",
-    "hsl(221 83% 53%)",
-    "hsl(262 83% 58%)",
-    "hsl(316 73% 52%)",
-    "hsl(173 58% 39%)",
-    "hsl(43 96% 56%)",
-];
-
-export function getChartColor(index: number): string {
-    return CHART_COLORS[index % CHART_COLORS.length]!;
-}
+export { getChartColor } from "./chart-colors";
 
 // ─── Bar Chart ───
 

@@ -23,7 +23,7 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { SURVEYS_PAGE } from "@/config/list-page-configs";
+import { SURVEYS_PAGE } from "@/config/list-page-configs/primary";
 import {
     useCreateSurveyTemplate,
     useSurveyResponses,

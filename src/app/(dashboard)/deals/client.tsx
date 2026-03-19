@@ -1,7 +1,7 @@
 "use client";
 
 import { ListPageShell } from "@/components/shells";
-import { DEALS_PAGE } from "@/config/list-page-configs";
+import { DEALS_PAGE } from "@/config/list-page-configs/primary";
 import { Building2, DollarSign, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";

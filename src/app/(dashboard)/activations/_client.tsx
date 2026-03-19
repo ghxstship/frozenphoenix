@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useActivations, useLocations, useProjects } from "@/lib/supabase";
 import { useCreateActivation } from "@/lib/supabase/hooks-core";
-import { ACTIVATIONS_PAGE } from "@/config/list-page-configs";
+import { ACTIVATIONS_PAGE } from "@/config/list-page-configs/primary";
 import { DollarSign, Sparkles, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ListPageConfig } from "@/types/list-page-config";

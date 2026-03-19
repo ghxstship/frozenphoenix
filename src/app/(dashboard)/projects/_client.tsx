@@ -12,7 +12,7 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ArrowRight, Calendar, DollarSign, FolderKanban, Users } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { PROJECTS_PAGE } from "@/config/list-page-configs";
+import { PROJECTS_PAGE } from "@/config/list-page-configs/primary";
 import {
     PROJECT_PHASE_MAP as PROJECT_PHASE_CONFIG,
     PROJECT_PHASE_ORDER,

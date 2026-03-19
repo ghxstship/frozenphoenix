@@ -15,7 +15,7 @@ import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { useProjects, usePurchaseOrders, useVendors } from "@/lib/supabase";
 import { usePurchaseRequisitions } from "@/lib/supabase";
-import { PROCUREMENT_PAGE } from "@/config/list-page-configs";
+import { PROCUREMENT_PAGE } from "@/config/list-page-configs/primary";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
 

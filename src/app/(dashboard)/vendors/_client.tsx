@@ -14,7 +14,7 @@ import {
     PhoneField,
     RatingField,
 } from "@/components/data-view/field-renderers";
-import { VENDORS_PAGE } from "@/config/list-page-configs";
+import { VENDORS_PAGE } from "@/config/list-page-configs/primary";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { ListPageShell } from "@/components/shells/list-page-shell";

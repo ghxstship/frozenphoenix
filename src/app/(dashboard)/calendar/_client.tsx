@@ -30,14 +30,118 @@ import {
     ChevronRight,
     Clock,
     Download,
+    ExternalLink,
     FolderKanban,
     Plus,
+    Share2,
     ShieldCheck,
     Star,
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PermissionGate } from "@/components/permission-guard";
 
 type EventType = "project" | "task" | "approval" | "milestone" | "event";
+
+function getWeekStart(date: Date): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+function getWeekEnd(date: Date): Date {
+    const start = getWeekStart(date);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    return end;
+}
+
+function formatDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function buildIcsContent(events: CalendarEvent[]): string {
+    const lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//FrozenPhoenix//Calendar//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        ...events
+            .map((e) => [
+                "BEGIN:VEVENT",
+                `UID:${e.id}@frozenphoenix`,
+                `DTSTART;VALUE=DATE:${e.date.replace(/-/g, "")}`,
+                `SUMMARY:${e.title.replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\n/g, "\\n")}`,
+                `CATEGORIES:${e.type}`,
+                "END:VEVENT",
+            ])
+            .flat(),
+        "END:VCALENDAR",
+    ];
+    return lines.join("\r\n");
+}
+
+function downloadIcs(events: CalendarEvent[]) {
+    const blob = new Blob([buildIcsContent(events)], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "calendar.ics";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function openGoogleCalendarImport(events: CalendarEvent[]) {
+    if (events.length === 0) return;
+    if (events.length === 1) {
+        const e = events[0];
+        if (!e) return;
+        const dateStr = e.date.replace(/-/g, "");
+        const params = new URLSearchParams({
+            action: "TEMPLATE",
+            text: e.title,
+            dates: `${dateStr}/${dateStr}`,
+            details: `Type: ${e.type}${e.projectName ? ` | Project: ${e.projectName}` : ""}`,
+        });
+        window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank");
+    } else {
+        downloadIcs(events);
+        window.open("https://calendar.google.com/calendar/r/settings/export", "_blank");
+    }
+}
+
+function openOutlookCalendarImport(events: CalendarEvent[]) {
+    if (events.length === 0) return;
+    if (events.length === 1) {
+        const e = events[0];
+        if (!e) return;
+        const dateStr = e.date;
+        const params = new URLSearchParams({
+            rru: "addevent",
+            startdt: dateStr,
+            enddt: dateStr,
+            subject: e.title,
+            body: `Type: ${e.type}${e.projectName ? ` | Project: ${e.projectName}` : ""}`,
+            allday: "true",
+            path: "/calendar/action/compose",
+        });
+        window.open(
+            `https://outlook.live.com/calendar/0/action/compose?${params.toString()}`,
+            "_blank"
+        );
+    } else {
+        downloadIcs(events);
+        window.open("https://outlook.live.com/calendar/0/addcalendar", "_blank");
+    }
+}
 
 interface CalendarEvent {
     id: string;
@@ -187,15 +291,29 @@ export function CalendarPageClient() {
         return events.filter((e) => e.date === dateStr);
     };
 
-    const navigateMonth = (direction: number) => {
-        setCurrentDate(new Date(year, month + direction, 1));
+    const navigate = (direction: number) => {
+        if (view === "week") {
+            const d = new Date(currentDate);
+            d.setDate(d.getDate() + direction * 7);
+            setCurrentDate(d);
+        } else {
+            setCurrentDate(new Date(year, month + direction, 1));
+        }
     };
 
     const goToToday = () => {
         setCurrentDate(new Date());
     };
 
+    const weekStart = getWeekStart(currentDate);
+    const weekEnd = getWeekEnd(currentDate);
+
     const monthName = currentDate.toLocaleString("default", { month: "long", year: "numeric" });
+    const weekLabel =
+        weekStart.getMonth() === weekEnd.getMonth()
+            ? `${weekStart.toLocaleString("default", { month: "long" })} ${weekStart.getDate()}–${weekEnd.getDate()}, ${weekStart.getFullYear()}`
+            : `${weekStart.toLocaleString("default", { month: "short" })} ${weekStart.getDate()} – ${weekEnd.toLocaleString("default", { month: "short" })} ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`;
+    const headerLabel = view === "week" ? weekLabel : monthName;
     const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     const today = new Date();
@@ -227,40 +345,31 @@ export function CalendarPageClient() {
                             ]}
                             ariaLabel="Calendar view"
                         />
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                const lines = [
-                                    "BEGIN:VCALENDAR",
-                                    "VERSION:2.0",
-                                    "PRODID:-//FrozenPhoenix//Calendar//EN",
-                                    ...events
-                                        .map((e) => [
-                                            "BEGIN:VEVENT",
-                                            `UID:${e.id}@frozenphoenix`,
-                                            `DTSTART;VALUE=DATE:${e.date.replace(/-/g, "")}`,
-                                            `SUMMARY:${e.title.replace(/,/g, "\\,")}`,
-                                            `CATEGORIES:${e.type}`,
-                                            "END:VEVENT",
-                                        ])
-                                        .flat(),
-                                    "END:VCALENDAR",
-                                ];
-                                const blob = new Blob([lines.join("\r\n")], {
-                                    type: "text/calendar",
-                                });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = "calendar.ics";
-                                a.click();
-                                URL.revokeObjectURL(url);
-                            }}
-                        >
-                            <Download className="h-4 w-4" />
-                            iCal Export
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Share2 className="h-4 w-4" />
+                                    Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Download</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => downloadIcs(events)}>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    iCal File (.ics)
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Add to Calendar</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => openGoogleCalendarImport(events)}>
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Google Calendar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openOutlookCalendarImport(events)}>
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Outlook Calendar
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button size="sm" onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             Add Event
@@ -272,8 +381,10 @@ export function CalendarPageClient() {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => navigateMonth(-1)}
-                                    aria-label="Previous month"
+                                    onClick={() => navigate(-1)}
+                                    aria-label={
+                                        view === "week" ? "Previous week" : "Previous month"
+                                    }
                                     className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
@@ -282,11 +393,11 @@ export function CalendarPageClient() {
                                     className="text-lg font-bold min-w-48 text-center"
                                     id="calendar-month-label"
                                 >
-                                    {monthName}
+                                    {headerLabel}
                                 </h2>
                                 <button
-                                    onClick={() => navigateMonth(1)}
-                                    aria-label="Next month"
+                                    onClick={() => navigate(1)}
+                                    aria-label={view === "week" ? "Next week" : "Next month"}
                                     className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
                                 >
                                     <ChevronRight className="h-4 w-4" />
@@ -297,13 +408,22 @@ export function CalendarPageClient() {
                             </Button>
                         </div>
 
-                        <CalendarGrid
-                            weekDays={weekDays}
-                            calendarDays={calendarDays}
-                            getEventsForDate={getEventsForDate}
-                            isToday={isToday}
-                            monthName={monthName}
-                        />
+                        {view === "week" ? (
+                            <CalendarWeekGrid
+                                weekStart={weekStart}
+                                events={events}
+                                weekDays={weekDays}
+                                weekLabel={weekLabel}
+                            />
+                        ) : (
+                            <CalendarGrid
+                                weekDays={weekDays}
+                                calendarDays={calendarDays}
+                                getEventsForDate={getEventsForDate}
+                                isToday={isToday}
+                                monthName={monthName}
+                            />
+                        )}
 
                         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
                             {(
@@ -578,6 +698,104 @@ function CalendarGrid({
                         })}
                     </div>
                 ))}
+            </div>
+        </div>
+    );
+}
+
+function CalendarWeekGrid({
+    weekStart,
+    events,
+    weekDays,
+    weekLabel,
+}: {
+    weekStart: Date;
+    events: CalendarEvent[];
+    weekDays: string[];
+    weekLabel: string;
+}) {
+    const today = new Date();
+    const todayStr = formatDateStr(today);
+
+    const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(weekStart);
+        d.setDate(d.getDate() + i);
+        return d;
+    });
+
+    return (
+        <div
+            role="grid"
+            aria-label={`Week of ${weekLabel}`}
+            className="rounded-xl overflow-hidden border border-border"
+        >
+            <div role="rowgroup">
+                <div role="row" className="grid grid-cols-7 gap-px bg-border">
+                    {days.map((d, i) => {
+                        const dateStr = formatDateStr(d);
+                        const isToday = dateStr === todayStr;
+                        return (
+                            <div
+                                key={i}
+                                role="columnheader"
+                                className="bg-secondary/50 p-2 text-center"
+                            >
+                                <div className="text-xs font-semibold text-muted-foreground">
+                                    {weekDays[i]}
+                                </div>
+                                <div
+                                    className={`text-sm font-bold mt-0.5 h-7 w-7 mx-auto flex items-center justify-center rounded-full ${
+                                        isToday ? "bg-primary text-primary-foreground" : ""
+                                    }`}
+                                >
+                                    {d.getDate()}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+            <div role="rowgroup" className="bg-border">
+                <div role="row" className="grid grid-cols-7 gap-px">
+                    {days.map((d, i) => {
+                        const dateStr = formatDateStr(d);
+                        const dayEvents = events.filter((e) => e.date === dateStr);
+                        const isToday = dateStr === todayStr;
+
+                        return (
+                            <div
+                                key={i}
+                                role="gridcell"
+                                className={`bg-card min-h-48 p-1.5 transition-colors ${
+                                    isToday
+                                        ? "ring-2 ring-inset ring-primary/20"
+                                        : "hover:bg-secondary/30"
+                                }`}
+                            >
+                                <div className="space-y-1">
+                                    {dayEvents.map((event) => {
+                                        const config = eventTypeConfig[event.type];
+                                        const Icon = config.icon;
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className={`text-[11px] px-2 py-1.5 rounded-md ${config.color} text-primary-foreground flex items-center gap-1.5`}
+                                            >
+                                                <Icon className="h-3 w-3 shrink-0" />
+                                                <span className="truncate">{event.title}</span>
+                                            </div>
+                                        );
+                                    })}
+                                    {dayEvents.length === 0 && (
+                                        <div className="text-[10px] text-muted-foreground/50 text-center pt-4">
+                                            No events
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

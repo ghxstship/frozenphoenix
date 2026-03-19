@@ -8,7 +8,7 @@ import { useProjects, useTasks } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CheckSquare } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { TASKS_PAGE } from "@/config/list-page-configs";
+import { TASKS_PAGE } from "@/config/list-page-configs/primary";
 import {
     FABRICATION_STATUS_MAP as FABRICATION_STATUS_CONFIG,
     TASK_PRIORITY_MAP as TASK_PRIORITY_CONFIG,

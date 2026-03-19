@@ -11,13 +11,12 @@
    Replaces: EntityPageShell, hand-built PageShell list pages.
    ═══════════════════════════════════════════════════════════════ */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { apiList } from "@/lib/api/client";
 import { getEntityConfig } from "@/lib/api/entity-config";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,8 +51,9 @@ const DataGallery = dynamic(() =>
 const DataChart = dynamic(() =>
     import("@/components/data-view/data-chart").then((m) => m.DataChart)
 );
-// getChartColor is a pure function needed synchronously at render time — import eagerly
-import { getChartColor } from "@/components/data-view/data-chart";
+// getChartColor is a pure function — import from the tiny shared module
+// instead of eagerly pulling in the full DataChart component.
+import { getChartColor } from "@/components/data-view/chart-colors";
 const DataMap = dynamic(() =>
     import("@/components/data-view/data-map").then((m) => m.DataMap)
 ) as React.ComponentType<any>;
@@ -86,7 +86,12 @@ import type {
     ListPageConfig,
     ListRowActionDef,
 } from "@/types/list-page-config";
-import { LIST_PAGE_REGISTRY, type ListPageConfigKey } from "@/config/list-page-configs/registry";
+import {
+    getResolvedConfig,
+    type ListPageConfigKey,
+    prefetchAllConfigs,
+    resolveListPageConfig,
+} from "@/config/list-page-configs/registry";
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
@@ -181,6 +186,7 @@ interface ViewContentProps {
     renderRowActionItems?: (row: EntityRecord) => React.ReactNode;
     onBoardDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
     emptyState?: React.ReactNode;
+    isLoading?: boolean;
 }
 
 function ViewContent({
@@ -197,6 +203,7 @@ function ViewContent({
     renderRowActionItems,
     onBoardDragEnd,
     emptyState,
+    isLoading,
 }: ViewContentProps) {
     // ─── Table ───
     if (viewMode === "table") {
@@ -221,6 +228,7 @@ function ViewContent({
                 rowActions={renderRowActions}
                 caption={`${title} list`}
                 emptyState={emptyState}
+                loading={isLoading}
             />
         );
     }
@@ -476,7 +484,7 @@ function ViewContent({
     );
 }
 
-// ─── Main Component ─────────────────────────────────────────
+// ─── Outer wrapper: handles lazy config resolution ──────────
 
 export function ListPageShell({
     config: configProp,
@@ -484,12 +492,59 @@ export function ListPageShell({
     data: externalData,
     isLoading: externalLoading,
 }: ListPageShellProps) {
-    const config = configProp ?? (configKey ? LIST_PAGE_REGISTRY[configKey] : undefined);
+    // Lazy config resolution: load only the needed module chunk on demand.
+    // getResolvedConfig is synchronous (returns from cache if already loaded).
+    const [lazyConfig, setLazyConfig] = useState<ListPageConfig | undefined>(
+        configKey ? getResolvedConfig(configKey) : undefined
+    );
+
+    useEffect(() => {
+        if (configProp || lazyConfig) return;
+        if (!configKey) return;
+        let cancelled = false;
+        resolveListPageConfig(configKey).then((resolved) => {
+            if (!cancelled) setLazyConfig(resolved);
+            // Once the first config is loaded, prefetch remaining domain chunks
+            // during browser idle time so all future navigations are instant.
+            prefetchAllConfigs();
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [configKey, configProp, lazyConfig]);
+
+    // Also trigger prefetch if config was provided directly or from cache
+    useEffect(() => {
+        if (configProp || lazyConfig) prefetchAllConfigs();
+    }, [configProp, lazyConfig]);
+
+    const config = configProp ?? lazyConfig;
+
     if (!config) {
+        if (configKey) return <LoadingState />;
         throw new Error(
             `ListPageShell: either "config" or a valid "configKey" is required. Received configKey="${String(configKey)}"`
         );
     }
+
+    return <ListPageShellInner config={config} data={externalData} isLoading={externalLoading} />;
+}
+
+ListPageShell.displayName = "ListPageShell";
+
+// ─── Inner component: all hooks + rendering ─────────────────
+
+interface ListPageShellInnerProps {
+    config: ListPageConfig;
+    data?: Record<string, unknown>[];
+    isLoading?: boolean;
+}
+
+function ListPageShellInner({
+    config,
+    data: externalData,
+    isLoading: externalLoading,
+}: ListPageShellInnerProps) {
     const router = useRouter();
     const entityConfig = getEntityConfig(config.entityKey);
     const [search, setSearch] = useState("");
@@ -874,102 +929,130 @@ export function ListPageShell({
     const hasBulkActions = resolvedBulkActions.length > 0;
     const hasMultiView = views.length > 1;
 
+    // Compact empty text for table view (column headers stay visible)
+    const tableEmptyText = useMemo(() => {
+        if (search || activeFilterCount > 0) {
+            return `No ${title.toLowerCase()} match your filters`;
+        }
+        return config.emptyTitle ?? `No ${title.toLowerCase()} yet`;
+    }, [search, activeFilterCount, title, config.emptyTitle]);
+
+    // Non-table views still use the hero EmptyState as a wrapper
+    const showNonTableEmpty = !isLoading && filtered.length === 0 && viewMode !== "table";
+
     return (
         <PermissionGate resource={resource} action="read">
-            <SkeletonCrossfade isLoading={isLoading} skeleton={<LoadingState />}>
-                <div
-                    className="motion-safe:animate-fade-in"
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "var(--density-page-gap)",
-                    }}
-                >
-                    {/* Header */}
-                    {config.headerSlot ?? (
-                        <PageHeader title={title} description={description}>
-                            {importable && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setImportOpen(true)}
-                                >
-                                    <Upload className="h-4 w-4" /> Import
-                                </Button>
-                            )}
-                            {exportable && (
-                                <CsvExportButton
-                                    entity={config.entityKey}
-                                    size="sm"
-                                    variant="outline"
+            <div
+                className="motion-safe:animate-fade-in"
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--density-page-gap)",
+                }}
+            >
+                {/* Header */}
+                {config.headerSlot ?? (
+                    <PageHeader title={title} description={description}>
+                        {importable && (
+                            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+                                <Upload className="h-4 w-4" /> Import
+                            </Button>
+                        )}
+                        {exportable && (
+                            <CsvExportButton
+                                entity={config.entityKey}
+                                size="sm"
+                                variant="outline"
+                            />
+                        )}
+                        {hasCreate && (
+                            <Button size="sm" onClick={openCreate}>
+                                <Plus className="h-4 w-4" />{" "}
+                                {config.createLabel ??
+                                    `New ${entityConfig?.displayName ?? config.entityKey}`}
+                            </Button>
+                        )}
+                    </PageHeader>
+                )}
+
+                {/* Stats */}
+                {config.statsSlot ??
+                    (statsToRender && statsToRender.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {statsToRender.map((s) => (
+                                <StatCard
+                                    key={s.label}
+                                    title={s.label}
+                                    value={s.computedValue}
+                                    icon={s.icon}
                                 />
-                            )}
-                            {hasCreate && (
-                                <Button size="sm" onClick={openCreate}>
-                                    <Plus className="h-4 w-4" />{" "}
-                                    {config.createLabel ??
-                                        `New ${entityConfig?.displayName ?? config.entityKey}`}
-                                </Button>
-                            )}
-                        </PageHeader>
-                    )}
-
-                    {/* Stats */}
-                    {config.statsSlot ??
-                        (statsToRender && statsToRender.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {statsToRender.map((s) => (
-                                    <StatCard
-                                        key={s.label}
-                                        title={s.label}
-                                        value={s.computedValue}
-                                        icon={s.icon}
-                                    />
-                                ))}
-                            </div>
-                        ))}
-
-                    {/* Alerts */}
-                    {config.alerts?.map((alert, i) => (
-                        <AlertBanner key={i} alert={alert} records={records} />
+                            ))}
+                        </div>
                     ))}
 
-                    {/* Toolbar */}
-                    {config.toolbarSlot ?? (
-                        <FilterBar
-                            search={{
-                                value: search,
-                                onValueChange: setSearch,
-                                placeholder: `Search ${title.toLowerCase()}...`,
-                            }}
-                            filters={filterBarFilters}
-                            activeCount={activeFilterCount}
-                            onClearAll={() => setFilterValues({})}
-                            actions={
-                                <>
-                                    {viewMode === "table" && colVisibilityItems.length > 1 && (
-                                        <ColumnVisibilityPopover
-                                            columns={colVisibilityItems}
-                                            onToggle={columnPrefs.toggleVisibility}
-                                            onReset={columnPrefs.reset}
-                                            onShowAll={columnPrefs.showAll}
-                                            onHideAll={columnPrefs.hideAll}
-                                        />
-                                    )}
-                                    {hasMultiView && (
-                                        <ViewSwitcher
-                                            views={views}
-                                            value={viewMode}
-                                            onValueChange={setViewMode}
-                                        />
-                                    )}
-                                </>
+                {/* Alerts */}
+                {config.alerts?.map((alert, i) => (
+                    <AlertBanner key={i} alert={alert} records={records} />
+                ))}
+
+                {/* Toolbar */}
+                {config.toolbarSlot ?? (
+                    <FilterBar
+                        search={{
+                            value: search,
+                            onValueChange: setSearch,
+                            placeholder: `Search ${title.toLowerCase()}...`,
+                        }}
+                        filters={filterBarFilters}
+                        activeCount={activeFilterCount}
+                        onClearAll={() => setFilterValues({})}
+                        actions={
+                            <>
+                                {viewMode === "table" && colVisibilityItems.length > 1 && (
+                                    <ColumnVisibilityPopover
+                                        columns={colVisibilityItems}
+                                        onToggle={columnPrefs.toggleVisibility}
+                                        onReset={columnPrefs.reset}
+                                        onShowAll={columnPrefs.showAll}
+                                        onHideAll={columnPrefs.hideAll}
+                                    />
+                                )}
+                                {hasMultiView && (
+                                    <ViewSwitcher
+                                        views={views}
+                                        value={viewMode}
+                                        onValueChange={setViewMode}
+                                    />
+                                )}
+                            </>
+                        }
+                    />
+                )}
+
+                {/* Content */}
+                {config.contentSlot ??
+                    (showNonTableEmpty ? (
+                        <EmptyState
+                            icon={Icon}
+                            title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
+                            description={
+                                search || activeFilterCount > 0
+                                    ? "Try adjusting your search or filters"
+                                    : (config.emptyDescription ??
+                                      `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
+                            }
+                            action={
+                                !search && activeFilterCount === 0 && hasCreate
+                                    ? {
+                                          label:
+                                              config.createLabel ??
+                                              `New ${entityConfig?.displayName ?? "Record"}`,
+                                          onClick: openCreate,
+                                      }
+                                    : undefined
                             }
                         />
-                    )}
-
-                    {/* Content */}
-                    {config.contentSlot ?? (
+                    ) : (
                         <ViewContent
                             viewMode={viewMode}
                             filtered={filtered}
@@ -982,28 +1065,8 @@ export function ListPageShell({
                             handleRowClick={handleRowClick}
                             renderRowActions={renderRowActions}
                             renderRowActionItems={renderRowActionItems}
-                            emptyState={
-                                <EmptyState
-                                    icon={Icon}
-                                    title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
-                                    description={
-                                        search || activeFilterCount > 0
-                                            ? "Try adjusting your search or filters"
-                                            : (config.emptyDescription ??
-                                              `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
-                                    }
-                                    action={
-                                        !search && activeFilterCount === 0 && hasCreate
-                                            ? {
-                                                  label:
-                                                      config.createLabel ??
-                                                      `New ${entityConfig?.displayName ?? "Record"}`,
-                                                  onClick: openCreate,
-                                              }
-                                            : undefined
-                                    }
-                                />
-                            }
+                            emptyState={tableEmptyText}
+                            isLoading={isLoading}
                             onBoardDragEnd={
                                 config.boardConfig
                                     ? async (itemId: string, _from: string, toColumn: string) => {
@@ -1019,22 +1082,21 @@ export function ListPageShell({
                                     : undefined
                             }
                         />
-                    )}
+                    ))}
 
-                    {/* Footer slot */}
-                    {config.footerSlot}
+                {/* Footer slot */}
+                {config.footerSlot}
 
-                    {/* Bulk Action Bar */}
-                    {hasBulkActions && (
-                        <BulkActionBar
-                            selectedCount={selectedKeys.size}
-                            actions={resolvedBulkActions}
-                            selectedIds={Array.from(selectedKeys)}
-                            onClearSelection={handleClearSelection}
-                        />
-                    )}
-                </div>
-            </SkeletonCrossfade>
+                {/* Bulk Action Bar */}
+                {hasBulkActions && (
+                    <BulkActionBar
+                        selectedCount={selectedKeys.size}
+                        actions={resolvedBulkActions}
+                        selectedIds={Array.from(selectedKeys)}
+                        onClearSelection={handleClearSelection}
+                    />
+                )}
+            </div>
 
             {/* Create dialog */}
             {config.createConfig && (
@@ -1077,5 +1139,3 @@ export function ListPageShell({
         </PermissionGate>
     );
 }
-
-ListPageShell.displayName = "ListPageShell";

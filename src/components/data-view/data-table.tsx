@@ -96,6 +96,7 @@ interface DataTableProps<T> {
     emptyState?: React.ReactNode;
     // Loading
     loading?: boolean;
+    loadingRows?: number;
     // Accessibility
     caption?: string;
     // Grouping
@@ -281,6 +282,7 @@ export function DataTable<T extends object>({
     className,
     emptyState,
     loading = false,
+    loadingRows = 5,
     caption,
     groupBy,
     groupLabels,
@@ -552,21 +554,53 @@ export function DataTable<T extends object>({
                         </thead>
                         <tbody className="divide-y divide-border">
                             {loading ? (
-                                <tr>
-                                    <td
-                                        colSpan={
-                                            visibleColumns.length +
-                                            (selectable ? 1 : 0) +
-                                            (rowActions ? 1 : 0)
-                                        }
-                                        className="px-4 py-12 text-center"
-                                    >
-                                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                            Loading...
-                                        </div>
-                                    </td>
-                                </tr>
+                                Array.from({ length: loadingRows }).map((_, rowIdx) => (
+                                    <tr key={`skeleton-${rowIdx}`} aria-hidden="true">
+                                        {selectable && (
+                                            <td
+                                                className="w-12"
+                                                style={{
+                                                    padding:
+                                                        "var(--density-table-py) var(--density-table-px)",
+                                                }}
+                                            >
+                                                <div className="h-4 w-4 rounded bg-muted animate-pulse" />
+                                            </td>
+                                        )}
+                                        {visibleColumns.map((col) => (
+                                            <td
+                                                key={col.id}
+                                                style={{
+                                                    width: col.width,
+                                                    minWidth: col.minWidth,
+                                                    padding:
+                                                        "var(--density-table-py) var(--density-table-px)",
+                                                }}
+                                            >
+                                                <div
+                                                    className="h-4 rounded bg-muted animate-pulse"
+                                                    style={{
+                                                        width: col.width
+                                                            ? undefined
+                                                            : `${55 + ((rowIdx * 17 + visibleColumns.indexOf(col) * 31) % 35)}%`,
+                                                        animationDelay: `${rowIdx * 50 + visibleColumns.indexOf(col) * 30}ms`,
+                                                    }}
+                                                />
+                                            </td>
+                                        ))}
+                                        {rowActions && (
+                                            <td
+                                                className="w-12"
+                                                style={{
+                                                    padding:
+                                                        "var(--density-table-py) var(--density-table-px)",
+                                                }}
+                                            >
+                                                <div className="h-4 w-6 rounded bg-muted animate-pulse" />
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))
                             ) : paginatedData.length === 0 ? (
                                 <tr>
                                     <td
@@ -575,13 +609,20 @@ export function DataTable<T extends object>({
                                             (selectable ? 1 : 0) +
                                             (rowActions ? 1 : 0)
                                         }
-                                        className="px-4 py-12 text-center"
+                                        className="px-4 text-center"
+                                        style={{
+                                            padding:
+                                                "var(--density-table-py) var(--density-table-px)",
+                                        }}
                                     >
-                                        {emptyState ?? (
-                                            <div className="text-muted-foreground">
-                                                {search ? "No results found" : "No data available"}
-                                            </div>
-                                        )}
+                                        <div className="flex flex-col items-center justify-center py-10 gap-1">
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {emptyState ??
+                                                    (search
+                                                        ? "No results found"
+                                                        : "No data available")}
+                                            </p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : groupBy ? (

@@ -1,0 +1,423 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  EXHAUSTIVE PAGE LOAD TEST REPORT — 2026-03-19T22:58:21.840Z
+  Base URL: http://localhost:3000   Routes tested: 380
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  SUMMARY
+  ──────────────────────────────────────────────────
+  ✅ Rendered successfully:    380
+  🔒 Auth redirect (expected): 0
+  ⚠️  React error boundary:     0
+  ❌ HTTP errors:               2
+  � Network/timeout errors:    0
+  ── Total:                    380
+
+  PERFORMANCE (all HTTP 200/3xx responses)
+  ──────────────────────────────────────────────────
+  Min:      26ms
+  Median:   93ms
+  Average:  97ms
+  P95:      137ms
+  P99:      190ms
+  Max:      220ms
+
+  DISTRIBUTION
+  ──────────────────────────────────────────────────
+    < 100ms  (instant)            309 ( 81.7%) █████████████████████████████████
+    100-200ms (fast)               67 ( 17.7%) ████████
+    200-500ms (good)                2 (  0.5%) █
+    500ms-1s (acceptable)           0 (  0.0%) 
+    1-2s (slow)                     0 (  0.0%) 
+    2-5s (very slow)                0 (  0.0%) 
+    > 5s (critical)                 0 (  0.0%) 
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  EXPLICIT PER-PAGE EVIDENCE
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  STATUS     TIME    SIZE  ROUTE                                               EVIDENCE
+  ───────────────────────────────────────────────────────────────────────────────────────────────
+  ❌ 404     644ms    47KB  /org/test-org                                       HTTP 404
+  ❌ 404     560ms    47KB  /u/testuser                                         HTTP 404
+  🔒 AUTH   218ms    68KB  /auth/mfa-setup                                     redirect→/auth/mfa-setup
+  🔒 AUTH   190ms    84KB  /                                                   redirect→/login?redirect=%2Fdashboard
+  🔒 AUTH   187ms    84KB  /login                                              redirect→/login
+  🔒 AUTH   144ms    84KB  /logistics-events                                   redirect→/login?redirect=%2Flogistics-events
+  🔒 AUTH   142ms    84KB  /live-ops/vip                                       redirect→/login?redirect=%2Flive-ops%2Fvip
+  🔒 AUTH   142ms    84KB  /load-plans                                         redirect→/login?redirect=%2Fload-plans
+  🔒 AUTH   140ms    84KB  /locations                                          redirect→/login?redirect=%2Flocations
+  🔒 AUTH   138ms    84KB  /dashboards                                         redirect→/login?redirect=%2Fdashboards
+  🔒 AUTH   138ms    84KB  /data-export                                        redirect→/login?redirect=%2Fdata-export
+  🔒 AUTH   137ms    84KB  /data-export-requests                               redirect→/login?redirect=%2Fdata-export-requests
+  🔒 AUTH   137ms    84KB  /deals                                              redirect→/login?redirect=%2Fdeals
+  🔒 AUTH   137ms    84KB  /projects/new                                       redirect→/login?redirect=%2Fprojects%2Fnew
+  🔒 AUTH   137ms    84KB  /projects/templates                                 redirect→/login?redirect=%2Fprojects%2Ftemplates
+  🔒 AUTH   137ms    84KB  /workforce/goals                                    redirect→/login?redirect=%2Fworkforce%2Fgoals
+  🔒 AUTH   137ms    84KB  /workforce/onboarding                               redirect→/login?redirect=%2Fworkforce%2Fonboarding
+  🔒 AUTH   137ms    84KB  /workforce/reviews                                  redirect→/login?redirect=%2Fworkforce%2Freviews
+  🔒 AUTH   136ms    84KB  /proposals                                          redirect→/login?redirect=%2Fproposals
+  🔒 AUTH   133ms    84KB  /projects                                           redirect→/login?redirect=%2Fprojects
+  🔒 AUTH   133ms    84KB  /accounts/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Faccounts%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH   131ms    84KB  /checklist-templates                                redirect→/login?redirect=%2Fchecklist-templates
+  🔒 AUTH   131ms    84KB  /checklists                                         redirect→/login?redirect=%2Fchecklists
+  🔒 AUTH   131ms    84KB  /knowledge-base/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fknowledge-base%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH   130ms    84KB  /change-orders                                      redirect→/login?redirect=%2Fchange-orders
+  🔒 AUTH   130ms    84KB  /channel-templates                                  redirect→/login?redirect=%2Fchannel-templates
+  🔒 AUTH   130ms    84KB  /invoices/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Finvoices%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH   130ms    84KB  /leads/00000000-0000-0000-0000-000000000001         redirect→/login?redirect=%2Fleads%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH   130ms    84KB  /live-ops/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Flive-ops%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH   129ms    84KB  /scopes-of-work                                     redirect→/login?redirect=%2Fscopes-of-work
+  🔒 AUTH   129ms    84KB  /service-health-checks                              redirect→/login?redirect=%2Fservice-health-checks
+  🔒 AUTH   129ms    84KB  /service-requests                                   redirect→/login?redirect=%2Fservice-requests
+  🔒 AUTH   128ms    84KB  /service-requests/sla                               redirect→/login?redirect=%2Fservice-requests%2Fsla
+  🔒 AUTH   124ms    84KB  /time-off                                           redirect→/login?redirect=%2Ftime-off
+  🔒 AUTH   124ms    84KB  /time-off-requests                                  redirect→/login?redirect=%2Ftime-off-requests
+  🔒 AUTH   123ms    84KB  /time-tracking/compliance                           redirect→/login?redirect=%2Ftime-tracking%2Fcompliance
+  🔒 AUTH   122ms    84KB  /time-tracking                                      redirect→/login?redirect=%2Ftime-tracking
+  🔒 AUTH   121ms    84KB  /approvals                                          redirect→/login?redirect=%2Fapprovals
+  🔒 AUTH   121ms    84KB  /asset-assignments                                  redirect→/login?redirect=%2Fasset-assignments
+  🔒 AUTH   121ms    84KB  /asset-tags                                         redirect→/login?redirect=%2Fasset-tags
+  🔒 AUTH   121ms    84KB  /asset-versions                                     redirect→/login?redirect=%2Fasset-versions
+  🔒 AUTH   117ms    84KB  /integrations                                       redirect→/login?redirect=%2Fintegrations
+  🔒 AUTH   117ms    84KB  /integrations/sync-log                              redirect→/login?redirect=%2Fintegrations%2Fsync-log
+  🔒 AUTH   117ms    84KB  /inventory                                          redirect→/login?redirect=%2Finventory
+  🔒 AUTH   116ms    84KB  /integrations/marketplace                           redirect→/login?redirect=%2Fintegrations%2Fmarketplace
+  🔒 AUTH   114ms    84KB  /contacts                                           redirect→/login?redirect=%2Fcontacts
+  🔒 AUTH   114ms    84KB  /contract-amendments                                redirect→/login?redirect=%2Fcontract-amendments
+  🔒 AUTH   113ms    84KB  /contracts                                          redirect→/login?redirect=%2Fcontracts
+  🔒 AUTH   112ms    84KB  /contract-obligations                               redirect→/login?redirect=%2Fcontract-obligations
+  🔒 AUTH   106ms    84KB  /live-ops/reconciliation                            redirect→/login?redirect=%2Flive-ops%2Freconciliation
+  🔒 AUTH   106ms    84KB  /live-ops/reports                                   redirect→/login?redirect=%2Flive-ops%2Freports
+  🔒 AUTH   106ms    84KB  /live-ops/strike                                    redirect→/login?redirect=%2Flive-ops%2Fstrike
+  🔒 AUTH   105ms    84KB  /live-ops/run-of-show                               redirect→/login?redirect=%2Flive-ops%2Frun-of-show
+  🔒 AUTH   104ms    84KB  /live-financial-snapshots                           redirect→/login?redirect=%2Flive-financial-snapshots
+  🔒 AUTH   104ms    84KB  /payroll-batches                                    redirect→/login?redirect=%2Fpayroll-batches
+  🔒 AUTH   104ms    84KB  /proposals/new                                      redirect→/login?redirect=%2Fproposals%2Fnew
+  🔒 AUTH   103ms    84KB  /live-event-instances                               redirect→/login?redirect=%2Flive-event-instances
+  🔒 AUTH   102ms    84KB  /legal-holds                                        redirect→/login?redirect=%2Flegal-holds
+  🔒 AUTH   102ms    84KB  /people                                             redirect→/login?redirect=%2Fpeople
+  🔒 AUTH   102ms    84KB  /permits                                            redirect→/login?redirect=%2Fpermits
+  🔒 AUTH   102ms    84KB  /scheduling                                         redirect→/login?redirect=%2Fscheduling
+  🔒 AUTH   101ms    84KB  /live-crew-assignments                              redirect→/login?redirect=%2Flive-crew-assignments
+  🔒 AUTH   101ms    84KB  /scenarios                                          redirect→/login?redirect=%2Fscenarios
+  🔒 AUTH   101ms    84KB  /schedule-entries                                   redirect→/login?redirect=%2Fschedule-entries
+  🔒 AUTH   100ms    84KB  /provider-connections                               redirect→/login?redirect=%2Fprovider-connections
+  🔒 AUTH   100ms    84KB  /purchase-orders                                    redirect→/login?redirect=%2Fpurchase-orders
+  🔒 AUTH   100ms    84KB  /purchase-requisitions                              redirect→/login?redirect=%2Fpurchase-requisitions
+  🔒 AUTH    99ms    84KB  /advancing/reports                                  redirect→/login?redirect=%2Fadvancing%2Freports
+  🔒 AUTH    99ms    84KB  /advancing/templates                                redirect→/login?redirect=%2Fadvancing%2Ftemplates
+  🔒 AUTH    99ms    84KB  /approval-workflows                                 redirect→/login?redirect=%2Fapproval-workflows
+  🔒 AUTH    99ms    84KB  /home/tasks                                         redirect→/login?redirect=%2Fhome%2Ftasks
+  🔒 AUTH    99ms    84KB  /incidents                                          redirect→/login?redirect=%2Fincidents
+  🔒 AUTH    99ms    84KB  /production-verticals                               redirect→/login?redirect=%2Fproduction-verticals
+  🔒 AUTH    99ms    84KB  /scan-events                                        redirect→/login?redirect=%2Fscan-events
+  🔒 AUTH    99ms    84KB  /workforce                                          redirect→/login?redirect=%2Fworkforce
+  🔒 AUTH    98ms    84KB  /approval-steps                                     redirect→/login?redirect=%2Fapproval-steps
+  🔒 AUTH    98ms    84KB  /insurance-policies                                 redirect→/login?redirect=%2Finsurance-policies
+  🔒 AUTH    98ms    84KB  /insurance-requirements                             redirect→/login?redirect=%2Finsurance-requirements
+  🔒 AUTH    98ms    84KB  /pipeline                                           redirect→/login?redirect=%2Fpipeline
+  🔒 AUTH    98ms    84KB  /shipments/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fshipments%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    98ms    84KB  /tasks/00000000-0000-0000-0000-000000000001         redirect→/login?redirect=%2Ftasks%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    98ms    84KB  /tech-sheets/00000000-0000-0000-0000-000000000001   redirect→/login?redirect=%2Ftech-sheets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    98ms    84KB  /templates/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Ftemplates%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    97ms    84KB  /assets                                             redirect→/login?redirect=%2Fassets
+  🔒 AUTH    97ms    84KB  /assets/scan/batch                                  redirect→/login?redirect=%2Fassets%2Fscan%2Fbatch
+  🔒 AUTH    97ms    84KB  /clause-library                                     redirect→/login?redirect=%2Fclause-library
+  🔒 AUTH    97ms    84KB  /credit-notes                                       redirect→/login?redirect=%2Fcredit-notes
+  🔒 AUTH    97ms    84KB  /crew                                               redirect→/login?redirect=%2Fcrew
+  🔒 AUTH    97ms    84KB  /crew-availability                                  redirect→/login?redirect=%2Fcrew-availability
+  🔒 AUTH    97ms    84KB  /live-ops/foh                                       redirect→/login?redirect=%2Flive-ops%2Ffoh
+  🔒 AUTH    97ms    84KB  /live-ops/gate                                      redirect→/login?redirect=%2Flive-ops%2Fgate
+  🔒 AUTH    97ms    84KB  /production-time-entries                            redirect→/login?redirect=%2Fproduction-time-entries
+  🔒 AUTH    97ms    84KB  /project-assignments                                redirect→/login?redirect=%2Fproject-assignments
+  🔒 AUTH    97ms    84KB  /project-templates                                  redirect→/login?redirect=%2Fproject-templates
+  🔒 AUTH    97ms    84KB  /settings/email-integration                         redirect→/login?redirect=%2Fsettings%2Femail-integration
+  🔒 AUTH    97ms    84KB  /settings/notifications                             redirect→/login?redirect=%2Fsettings%2Fnotifications
+  🔒 AUTH    97ms    84KB  /settings/org-security                              redirect→/login?redirect=%2Fsettings%2Forg-security
+  🔒 AUTH    97ms    84KB  /settings/security                                  redirect→/login?redirect=%2Fsettings%2Fsecurity
+  🔒 AUTH    96ms    84KB  /assets/new                                         redirect→/login?redirect=%2Fassets%2Fnew
+  🔒 AUTH    96ms    84KB  /assets/scan                                        redirect→/login?redirect=%2Fassets%2Fscan
+  🔒 AUTH    96ms    84KB  /client-invoices                                    redirect→/login?redirect=%2Fclient-invoices
+  🔒 AUTH    96ms    84KB  /client-portal                                      redirect→/login?redirect=%2Fclient-portal
+  🔒 AUTH    96ms    84KB  /comm-channels                                      redirect→/login?redirect=%2Fcomm-channels
+  🔒 AUTH    96ms    84KB  /credentials/assignments                            redirect→/login?redirect=%2Fcredentials%2Fassignments
+  🔒 AUTH    96ms    84KB  /live-ops/comms                                     redirect→/login?redirect=%2Flive-ops%2Fcomms
+  🔒 AUTH    96ms    84KB  /live-ops/equipment                                 redirect→/login?redirect=%2Flive-ops%2Fequipment
+  🔒 AUTH    96ms    84KB  /live-ops/financials                                redirect→/login?redirect=%2Flive-ops%2Ffinancials
+  🔒 AUTH    96ms    84KB  /live-ops/guest-incidents                           redirect→/login?redirect=%2Flive-ops%2Fguest-incidents
+  🔒 AUTH    96ms    84KB  /live-ops/readiness                                 redirect→/login?redirect=%2Flive-ops%2Freadiness
+  🔒 AUTH    95ms    84KB  /brands                                             redirect→/login?redirect=%2Fbrands
+  🔒 AUTH    95ms    84KB  /document-versions                                  redirect→/login?redirect=%2Fdocument-versions
+  🔒 AUTH    95ms    84KB  /documents                                          redirect→/login?redirect=%2Fdocuments
+  🔒 AUTH    95ms    84KB  /live-ops                                           redirect→/login?redirect=%2Flive-ops
+  🔒 AUTH    95ms    84KB  /live-ops/departments                               redirect→/login?redirect=%2Flive-ops%2Fdepartments
+  🔒 AUTH    95ms    84KB  /live-ops/environment                               redirect→/login?redirect=%2Flive-ops%2Fenvironment
+  🔒 AUTH    95ms    84KB  /payments                                           redirect→/login?redirect=%2Fpayments
+  🔒 AUTH    95ms    84KB  /procurement                                        redirect→/login?redirect=%2Fprocurement
+  🔒 AUTH    95ms    84KB  /reports                                            redirect→/login?redirect=%2Freports
+  🔒 AUTH    95ms    84KB  /reports/ai                                         redirect→/login?redirect=%2Freports%2Fai
+  🔒 AUTH    95ms    84KB  /vendor-compliance                                  redirect→/login?redirect=%2Fvendor-compliance
+  🔒 AUTH    95ms    84KB  /vendor-compliance-documents                        redirect→/login?redirect=%2Fvendor-compliance-documents
+  🔒 AUTH    95ms    84KB  /vendor-onboarding                                  redirect→/login?redirect=%2Fvendor-onboarding
+  🔒 AUTH    95ms    84KB  /vendor-portal                                      redirect→/login?redirect=%2Fvendor-portal
+  🔒 AUTH    95ms    84KB  /worker-profiles                                    redirect→/login?redirect=%2Fworker-profiles
+  🔒 AUTH    95ms    84KB  /worker-reviews                                     redirect→/login?redirect=%2Fworker-reviews
+  🔒 AUTH    95ms    84KB  /workflows                                          redirect→/login?redirect=%2Fworkflows
+  🔒 AUTH    95ms    84KB  /briefs/00000000-0000-0000-0000-000000000001        redirect→/login?redirect=%2Fbriefs%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /budgets/00000000-0000-0000-0000-000000000001       redirect→/login?redirect=%2Fbudgets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /call-sheets/00000000-0000-0000-0000-000000000001   redirect→/login?redirect=%2Fcall-sheets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /campaigns/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fcampaigns%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /certifications/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fcertifications%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /change-orders/00000000-0000-0000-0000-000000000001 redirect→/login?redirect=%2Fchange-orders%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /companies/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fcompanies%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /deals/00000000-0000-0000-0000-000000000001         redirect→/login?redirect=%2Fdeals%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    84KB  /decks/00000000-0000-0000-0000-000000000001         redirect→/login?redirect=%2Fdecks%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    95ms    85KB  /digital-assets/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fdigital-assets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    94ms    84KB  /brief-templates                                    redirect→/login?redirect=%2Fbrief-templates
+  🔒 AUTH    94ms    84KB  /briefs                                             redirect→/login?redirect=%2Fbriefs
+  🔒 AUTH    94ms    84KB  /budget-approvals                                   redirect→/login?redirect=%2Fbudget-approvals
+  🔒 AUTH    94ms    84KB  /contracts/new                                      redirect→/login?redirect=%2Fcontracts%2Fnew
+  🔒 AUTH    94ms    84KB  /creative-reviews                                   redirect→/login?redirect=%2Fcreative-reviews
+  🔒 AUTH    94ms    84KB  /creative-assets                                    redirect→/login?redirect=%2Fcreative-assets
+  🔒 AUTH    94ms    84KB  /credential-assignments                             redirect→/login?redirect=%2Fcredential-assignments
+  🔒 AUTH    94ms    84KB  /crew-shifts                                        redirect→/login?redirect=%2Fcrew-shifts
+  🔒 AUTH    94ms    84KB  /document-templates                                 redirect→/login?redirect=%2Fdocument-templates
+  🔒 AUTH    94ms    84KB  /engineering-approvals                              redirect→/login?redirect=%2Fengineering-approvals
+  🔒 AUTH    94ms    84KB  /environmental-readings                             redirect→/login?redirect=%2Fenvironmental-readings
+  🔒 AUTH    94ms    84KB  /live-ops/credentials                               redirect→/login?redirect=%2Flive-ops%2Fcredentials
+  🔒 AUTH    94ms    84KB  /post-event-reports                                 redirect→/login?redirect=%2Fpost-event-reports
+  🔒 AUTH    94ms    84KB  /production-advance-items                           redirect→/login?redirect=%2Fproduction-advance-items
+  🔒 AUTH    94ms    84KB  /production-budget-lines                            redirect→/login?redirect=%2Fproduction-budget-lines
+  🔒 AUTH    94ms    84KB  /resilience-targets                                 redirect→/login?redirect=%2Fresilience-targets
+  🔒 AUTH    94ms    84KB  /resource-bookings                                  redirect→/login?redirect=%2Fresource-bookings
+  🔒 AUTH    94ms    84KB  /review-cycles                                      redirect→/login?redirect=%2Freview-cycles
+  🔒 AUTH    94ms    84KB  /settings                                           redirect→/login?redirect=%2Fsettings
+  🔒 AUTH    94ms    84KB  /settings/ai                                        redirect→/login?redirect=%2Fsettings%2Fai
+  🔒 AUTH    94ms    84KB  /settings/custom-fields                             redirect→/login?redirect=%2Fsettings%2Fcustom-fields
+  🔒 AUTH    94ms    84KB  /settings/developer                                 redirect→/login?redirect=%2Fsettings%2Fdeveloper
+  🔒 AUTH    94ms    84KB  /approvals/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fapprovals%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    94ms    85KB  /client-invoices/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fclient-invoices%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    94ms    84KB  /contacts/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Fcontacts%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    84KB  /advancing/fulfillment                              redirect→/login?redirect=%2Fadvancing%2Ffulfillment
+  🔒 AUTH    93ms    84KB  /advancing/inventory                                redirect→/login?redirect=%2Fadvancing%2Finventory
+  🔒 AUTH    93ms    84KB  /advancing/queue                                    redirect→/login?redirect=%2Fadvancing%2Fqueue
+  🔒 AUTH    93ms    84KB  /automation-executions                              redirect→/login?redirect=%2Fautomation-executions
+  🔒 AUTH    93ms    84KB  /automation-rules                                   redirect→/login?redirect=%2Fautomation-rules
+  🔒 AUTH    93ms    84KB  /automations                                        redirect→/login?redirect=%2Fautomations
+  🔒 AUTH    93ms    84KB  /command-positions                                  redirect→/login?redirect=%2Fcommand-positions
+  🔒 AUTH    93ms    84KB  /companies                                          redirect→/login?redirect=%2Fcompanies
+  🔒 AUTH    93ms    84KB  /compliance                                         redirect→/login?redirect=%2Fcompliance
+  🔒 AUTH    93ms    84KB  /compliance-checklists                              redirect→/login?redirect=%2Fcompliance-checklists
+  🔒 AUTH    93ms    84KB  /credential-inventory-pools                         redirect→/login?redirect=%2Fcredential-inventory-pools
+  🔒 AUTH    93ms    84KB  /credentials                                        redirect→/login?redirect=%2Fcredentials
+  🔒 AUTH    93ms    84KB  /e-signatures                                       redirect→/login?redirect=%2Fe-signatures
+  🔒 AUTH    93ms    84KB  /email-messages                                     redirect→/login?redirect=%2Femail-messages
+  🔒 AUTH    93ms    84KB  /engagement-terms                                   redirect→/login?redirect=%2Fengagement-terms
+  🔒 AUTH    93ms    84KB  /feature-flags                                      redirect→/login?redirect=%2Ffeature-flags
+  🔒 AUTH    93ms    84KB  /live-ops/crew                                      redirect→/login?redirect=%2Flive-ops%2Fcrew
+  🔒 AUTH    93ms    84KB  /pipeline/new                                       redirect→/login?redirect=%2Fpipeline%2Fnew
+  🔒 AUTH    93ms    84KB  /production-milestones                              redirect→/login?redirect=%2Fproduction-milestones
+  🔒 AUTH    93ms    84KB  /production-runs                                    redirect→/login?redirect=%2Fproduction-runs
+  🔒 AUTH    93ms    84KB  /production-sops                                    redirect→/login?redirect=%2Fproduction-sops
+  🔒 AUTH    93ms    84KB  /production-tasks                                   redirect→/login?redirect=%2Fproduction-tasks
+  🔒 AUTH    93ms    84KB  /revenue                                            redirect→/login?redirect=%2Frevenue
+  🔒 AUTH    93ms    84KB  /reviews                                            redirect→/login?redirect=%2Freviews
+  🔒 AUTH    93ms    84KB  /rfqs                                               redirect→/login?redirect=%2Frfqs
+  🔒 AUTH    93ms    84KB  /risk-assessments                                   redirect→/login?redirect=%2Frisk-assessments
+  🔒 AUTH    93ms    84KB  /templates                                          redirect→/login?redirect=%2Ftemplates
+  🔒 AUTH    93ms    84KB  /time-entries                                       redirect→/login?redirect=%2Ftime-entries
+  🔒 AUTH    93ms    84KB  /activations/00000000-0000-0000-0000-000000000001   redirect→/login?redirect=%2Factivations%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    84KB  /advancing/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fadvancing%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    85KB  /approval-workflows/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fapproval-workflows%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    85KB  /compliance-checklists/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fcompliance-checklists%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    84KB  /contracts/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fcontracts%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    85KB  /creative-assets/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fcreative-assets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    93ms    84KB  /crew/00000000-0000-0000-0000-000000000001          redirect→/login?redirect=%2Fcrew%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    92ms    84KB  /advancing/new                                      redirect→/login?redirect=%2Fadvancing%2Fnew
+  🔒 AUTH    92ms    84KB  /automation-logs                                    redirect→/login?redirect=%2Fautomation-logs
+  🔒 AUTH    92ms    84KB  /boms                                               redirect→/login?redirect=%2Fboms
+  🔒 AUTH    92ms    84KB  /brand-guideline-sections                           redirect→/login?redirect=%2Fbrand-guideline-sections
+  🔒 AUTH    92ms    84KB  /brand-guidelines                                   redirect→/login?redirect=%2Fbrand-guidelines
+  🔒 AUTH    92ms    84KB  /brand-kit                                          redirect→/login?redirect=%2Fbrand-kit
+  🔒 AUTH    92ms    84KB  /credential-types                                   redirect→/login?redirect=%2Fcredential-types
+  🔒 AUTH    92ms    84KB  /depreciation-schedules                             redirect→/login?redirect=%2Fdepreciation-schedules
+  🔒 AUTH    92ms    84KB  /dispatch                                           redirect→/login?redirect=%2Fdispatch
+  🔒 AUTH    92ms    84KB  /estimates                                          redirect→/login?redirect=%2Festimates
+  🔒 AUTH    92ms    84KB  /expenses                                           redirect→/login?redirect=%2Fexpenses
+  🔒 AUTH    92ms    84KB  /finance                                            redirect→/login?redirect=%2Ffinance
+  🔒 AUTH    92ms    84KB  /finance/revenue-recognition                        redirect→/login?redirect=%2Ffinance%2Frevenue-recognition
+  🔒 AUTH    92ms    84KB  /gl-accounts                                        redirect→/login?redirect=%2Fgl-accounts
+  🔒 AUTH    92ms    84KB  /home/documents                                     redirect→/login?redirect=%2Fhome%2Fdocuments
+  🔒 AUTH    92ms    84KB  /kits                                               redirect→/login?redirect=%2Fkits
+  🔒 AUTH    92ms    84KB  /knowledge-base                                     redirect→/login?redirect=%2Fknowledge-base
+  🔒 AUTH    92ms    84KB  /knowledge-base/collaborative                       redirect→/login?redirect=%2Fknowledge-base%2Fcollaborative
+  🔒 AUTH    92ms    84KB  /pos-transactions                                   redirect→/login?redirect=%2Fpos-transactions
+  🔒 AUTH    92ms    84KB  /production-checklists                              redirect→/login?redirect=%2Fproduction-checklists
+  🔒 AUTH    92ms    84KB  /production-expenses                                redirect→/login?redirect=%2Fproduction-expenses
+  🔒 AUTH    92ms    84KB  /resource-planner                                   redirect→/login?redirect=%2Fresource-planner
+  🔒 AUTH    92ms    84KB  /revenue-recognition-entries                        redirect→/login?redirect=%2Frevenue-recognition-entries
+  🔒 AUTH    92ms    84KB  /revenue-schedules                                  redirect→/login?redirect=%2Frevenue-schedules
+  🔒 AUTH    92ms    84KB  /role-change-log                                    redirect→/login?redirect=%2Frole-change-log
+  🔒 AUTH    92ms    84KB  /temporary-access-grants                            redirect→/login?redirect=%2Ftemporary-access-grants
+  🔒 AUTH    92ms    84KB  /testimonials                                       redirect→/login?redirect=%2Ftestimonials
+  🔒 AUTH    92ms    84KB  /locations/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Flocations%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    84KB  /decks                                              redirect→/login?redirect=%2Fdecks
+  🔒 AUTH    91ms    84KB  /digital-assets                                     redirect→/login?redirect=%2Fdigital-assets
+  🔒 AUTH    91ms    84KB  /equipment-check-ins                                redirect→/login?redirect=%2Fequipment-check-ins
+  🔒 AUTH    91ms    84KB  /expense-reports                                    redirect→/login?redirect=%2Fexpense-reports
+  🔒 AUTH    91ms    84KB  /financial-periods                                  redirect→/login?redirect=%2Ffinancial-periods
+  🔒 AUTH    91ms    84KB  /fleet                                              redirect→/login?redirect=%2Ffleet
+  🔒 AUTH    91ms    84KB  /foh-zone-readings                                  redirect→/login?redirect=%2Ffoh-zone-readings
+  🔒 AUTH    91ms    84KB  /foh-zones                                          redirect→/login?redirect=%2Ffoh-zones
+  🔒 AUTH    91ms    84KB  /forecasting                                        redirect→/login?redirect=%2Fforecasting
+  🔒 AUTH    91ms    84KB  /goods-receipts                                     redirect→/login?redirect=%2Fgoods-receipts
+  🔒 AUTH    91ms    84KB  /invoices/new                                       redirect→/login?redirect=%2Finvoices%2Fnew
+  🔒 AUTH    91ms    84KB  /job-costing                                        redirect→/login?redirect=%2Fjob-costing
+  🔒 AUTH    91ms    84KB  /ros-cues                                           redirect→/login?redirect=%2Fros-cues
+  🔒 AUTH    91ms    84KB  /tasks                                              redirect→/login?redirect=%2Ftasks
+  🔒 AUTH    91ms    84KB  /teams                                              redirect→/login?redirect=%2Fteams
+  🔒 AUTH    91ms    84KB  /tech-sheets                                        redirect→/login?redirect=%2Ftech-sheets
+  🔒 AUTH    91ms    84KB  /technical-specs                                    redirect→/login?redirect=%2Ftechnical-specs
+  🔒 AUTH    91ms    84KB  /user-management/invitations                        redirect→/login?redirect=%2Fuser-management%2Finvitations
+  🔒 AUTH    91ms    84KB  /vault                                              redirect→/login?redirect=%2Fvault
+  🔒 AUTH    91ms    84KB  /permits/00000000-0000-0000-0000-000000000001       redirect→/login?redirect=%2Fpermits%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    85KB  /purchase-requisitions/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fpurchase-requisitions%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    84KB  /scopes-of-work/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fscopes-of-work%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    85KB  /recurring-invoices/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Frecurring-invoices%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    85KB  /service-requests/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fservice-requests%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    85KB  /vendor-reviews/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fvendor-reviews%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    91ms    84KB  /work-orders/00000000-0000-0000-0000-000000000001   redirect→/login?redirect=%2Fwork-orders%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    90ms    84KB  /case-studies                                       redirect→/login?redirect=%2Fcase-studies
+  🔒 AUTH    90ms    84KB  /catalog-categories                                 redirect→/login?redirect=%2Fcatalog-categories
+  🔒 AUTH    90ms    84KB  /certifications                                     redirect→/login?redirect=%2Fcertifications
+  🔒 AUTH    90ms    84KB  /events                                             redirect→/login?redirect=%2Fevents
+  🔒 AUTH    90ms    84KB  /inventory-reservations                             redirect→/login?redirect=%2Finventory-reservations
+  🔒 AUTH    90ms    84KB  /ip-rights                                          redirect→/login?redirect=%2Fip-rights
+  🔒 AUTH    90ms    84KB  /job-cost-entries                                   redirect→/login?redirect=%2Fjob-cost-entries
+  🔒 AUTH    90ms    84KB  /leads                                              redirect→/login?redirect=%2Fleads
+  🔒 AUTH    90ms    84KB  /org-chart                                          redirect→/login?redirect=%2Forg-chart
+  🔒 AUTH    90ms    84KB  /roles                                              redirect→/login?redirect=%2Froles
+  🔒 AUTH    90ms    84KB  /saved-views                                        redirect→/login?redirect=%2Fsaved-views
+  🔒 AUTH    90ms    84KB  /shifts                                             redirect→/login?redirect=%2Fshifts
+  🔒 AUTH    90ms    84KB  /shipments                                          redirect→/login?redirect=%2Fshipments
+  🔒 AUTH    90ms    84KB  /sla-definitions                                    redirect→/login?redirect=%2Fsla-definitions
+  🔒 AUTH    90ms    84KB  /sla-policies                                       redirect→/login?redirect=%2Fsla-policies
+  🔒 AUTH    90ms    84KB  /surveys                                            redirect→/login?redirect=%2Fsurveys
+  🔒 AUTH    90ms    84KB  /time-tracking-policies                             redirect→/login?redirect=%2Ftime-tracking-policies
+  🔒 AUTH    90ms    84KB  /timesheets                                         redirect→/login?redirect=%2Ftimesheets
+  🔒 AUTH    90ms    84KB  /transfer-orders                                    redirect→/login?redirect=%2Ftransfer-orders
+  🔒 AUTH    90ms    84KB  /assets/00000000-0000-0000-0000-000000000001        redirect→/login?redirect=%2Fassets%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    90ms    84KB  /automations/00000000-0000-0000-0000-000000000001   redirect→/login?redirect=%2Fautomations%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    90ms    84KB  /opportunities/00000000-0000-0000-0000-000000000001 redirect→/login?redirect=%2Fopportunities%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    90ms    84KB  /people/00000000-0000-0000-0000-000000000001        redirect→/login?redirect=%2Fpeople%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    90ms    85KB  /templates/00000000-0000-0000-0000-000000000001/editredirect→/login?redirect=%2Ftemplates%2F00000000-0000-0000-0000-000000000001%2Fedit
+  🔒 AUTH    90ms    84KB  /vendors/00000000-0000-0000-0000-000000000001       redirect→/login?redirect=%2Fvendors%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    89ms    84KB  /catalog-items                                      redirect→/login?redirect=%2Fcatalog-items
+  🔒 AUTH    89ms    84KB  /compliance-templates                               redirect→/login?redirect=%2Fcompliance-templates
+  🔒 AUTH    89ms    84KB  /inventory-audits                                   redirect→/login?redirect=%2Finventory-audits
+  🔒 AUTH    89ms    84KB  /invoice-templates                                  redirect→/login?redirect=%2Finvoice-templates
+  🔒 AUTH    89ms    84KB  /invoices                                           redirect→/login?redirect=%2Finvoices
+  🔒 AUTH    89ms    84KB  /organizations                                      redirect→/login?redirect=%2Forganizations
+  🔒 AUTH    89ms    84KB  /payment-approvals                                  redirect→/login?redirect=%2Fpayment-approvals
+  🔒 AUTH    89ms    84KB  /tags                                               redirect→/login?redirect=%2Ftags
+  🔒 AUTH    89ms    84KB  /upsell-events                                      redirect→/login?redirect=%2Fupsell-events
+  🔒 AUTH    89ms    84KB  /vault-documents                                    redirect→/login?redirect=%2Fvault-documents
+  🔒 AUTH    89ms    84KB  /vendor-communications                              redirect→/login?redirect=%2Fvendor-communications
+  🔒 AUTH    89ms    84KB  /brand-kit/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fbrand-kit%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    88ms    84KB  /compliance-requirements                            redirect→/login?redirect=%2Fcompliance-requirements
+  🔒 AUTH    88ms    84KB  /consumable-usage                                   redirect→/login?redirect=%2Fconsumable-usage
+  🔒 AUTH    88ms    84KB  /consumables                                        redirect→/login?redirect=%2Fconsumables
+  🔒 AUTH    88ms    84KB  /notifications                                      redirect→/login?redirect=%2Fnotifications
+  🔒 AUTH    88ms    84KB  /sync-events                                        redirect→/login?redirect=%2Fsync-events
+  🔒 AUTH    88ms    84KB  /system-health                                      redirect→/login?redirect=%2Fsystem-health
+  🔒 AUTH    88ms    84KB  /brand-guidelines/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fbrand-guidelines%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    88ms    85KB  /projects/00000000-0000-0000-0000-000000000001/edit redirect→/login?redirect=%2Fprojects%2F00000000-0000-0000-0000-000000000001%2Fedit
+  🔒 AUTH    88ms    84KB  /projects/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Fprojects%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    88ms    85KB  /purchase-orders/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Fpurchase-orders%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /milestones                                         redirect→/login?redirect=%2Fmilestones
+  🔒 AUTH    87ms    84KB  /obligations                                        redirect→/login?redirect=%2Fobligations
+  🔒 AUTH    87ms    84KB  /upsell-triggers                                    redirect→/login?redirect=%2Fupsell-triggers
+  🔒 AUTH    87ms    84KB  /user-management                                    redirect→/login?redirect=%2Fuser-management
+  🔒 AUTH    87ms    84KB  /vendor-risk                                        redirect→/login?redirect=%2Fvendor-risk
+  🔒 AUTH    87ms    84KB  /dispatch/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Fdispatch%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /documents/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fdocuments%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /events/00000000-0000-0000-0000-000000000001        redirect→/login?redirect=%2Fevents%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /expenses/00000000-0000-0000-0000-000000000001      redirect→/login?redirect=%2Fexpenses%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /incidents/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fincidents%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    85KB  /insurance-policies/00000000-0000-0000-0000-000000000001redirect→/login?redirect=%2Finsurance-policies%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    87ms    84KB  /integrations/00000000-0000-0000-0000-000000000001  redirect→/login?redirect=%2Fintegrations%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    86ms    84KB  /opportunities                                      redirect→/login?redirect=%2Fopportunities
+  🔒 AUTH    86ms    84KB  /user-management/access-reviews                     redirect→/login?redirect=%2Fuser-management%2Faccess-reviews
+  🔒 AUTH    86ms    84KB  /user-management/audit-log                          redirect→/login?redirect=%2Fuser-management%2Faudit-log
+  🔒 AUTH    86ms    84KB  /vendor-reviews                                     redirect→/login?redirect=%2Fvendor-reviews
+  🔒 AUTH    86ms    84KB  /vendors                                            redirect→/login?redirect=%2Fvendors
+  🔒 AUTH    86ms    84KB  /vendors/new                                        redirect→/login?redirect=%2Fvendors%2Fnew
+  🔒 AUTH    86ms    84KB  /estimates/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Festimates%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    86ms    84KB  /proposals/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fproposals%2F00000000-0000-0000-0000-000000000001
+  🔒 AUTH    84ms    84KB  /crew/new                                           redirect→/login?redirect=%2Fcrew%2Fnew
+  🔒 AUTH    84ms    84KB  /custom-field-definitions                           redirect→/login?redirect=%2Fcustom-field-definitions
+  🔒 AUTH    84ms    84KB  /dashboard-widgets                                  redirect→/login?redirect=%2Fdashboard-widgets
+  🔒 AUTH    84ms    84KB  /sla-tracking                                       redirect→/login?redirect=%2Fsla-tracking
+  🔒 AUTH    84ms    84KB  /worker-classifications                             redirect→/login?redirect=%2Fworker-classifications
+  🔒 AUTH    83ms    84KB  /advance-status-history                             redirect→/login?redirect=%2Fadvance-status-history
+  🔒 AUTH    83ms    84KB  /advancing/catalog                                  redirect→/login?redirect=%2Fadvancing%2Fcatalog
+  🔒 AUTH    83ms    84KB  /dashboard                                          redirect→/login?redirect=%2Fdashboard
+  🔒 AUTH    83ms    84KB  /sops                                               redirect→/login?redirect=%2Fsops
+  🔒 AUTH    83ms    84KB  /stakeholder-projects                               redirect→/login?redirect=%2Fstakeholder-projects
+  🔒 AUTH    83ms    84KB  /stakeholders                                       redirect→/login?redirect=%2Fstakeholders
+  🔒 AUTH    83ms    84KB  /strike-sequences                                   redirect→/login?redirect=%2Fstrike-sequences
+  🔒 AUTH    83ms    84KB  /survey-responses                                   redirect→/login?redirect=%2Fsurvey-responses
+  🔒 AUTH    83ms    84KB  /survey-templates                                   redirect→/login?redirect=%2Fsurvey-templates
+  🔒 AUTH    83ms    84KB  /worker-offboarding-runs                            redirect→/login?redirect=%2Fworker-offboarding-runs
+  🔒 AUTH    83ms    84KB  /worker-onboarding-runs                             redirect→/login?redirect=%2Fworker-onboarding-runs
+  🔒 AUTH    82ms    69KB  /auth/mfa-verify                                    redirect→/auth/mfa-verify
+  🔒 AUTH    82ms    71KB  /auth/reset-password                                redirect→/auth/reset-password
+  🔒 AUTH    82ms    84KB  /advancing                                          redirect→/login?redirect=%2Fadvancing
+  🔒 AUTH    82ms    84KB  /lost-reasons                                       redirect→/login?redirect=%2Flost-reasons
+  🔒 AUTH    82ms    84KB  /maintenance-records                                redirect→/login?redirect=%2Fmaintenance-records
+  🔒 AUTH    82ms    84KB  /maintenance-schedules                              redirect→/login?redirect=%2Fmaintenance-schedules
+  🔒 AUTH    82ms    84KB  /qc-gates                                           redirect→/login?redirect=%2Fqc-gates
+  🔒 AUTH    82ms    84KB  /space-bookings                                     redirect→/login?redirect=%2Fspace-bookings
+  🔒 AUTH    82ms    84KB  /worker-compliance-docs                             redirect→/login?redirect=%2Fworker-compliance-docs
+  🔒 AUTH    81ms    84KB  /budget-line-items                                  redirect→/login?redirect=%2Fbudget-line-items
+  🔒 AUTH    81ms    84KB  /budgets                                            redirect→/login?redirect=%2Fbudgets
+  🔒 AUTH    81ms    84KB  /call-sheets                                        redirect→/login?redirect=%2Fcall-sheets
+  🔒 AUTH    81ms    84KB  /campaign-assets                                    redirect→/login?redirect=%2Fcampaign-assets
+  🔒 AUTH    81ms    84KB  /messages                                           redirect→/login?redirect=%2Fmessages
+  🔒 AUTH    81ms    84KB  /quality-check-templates                            redirect→/login?redirect=%2Fquality-check-templates
+  🔒 AUTH    81ms    84KB  /quality-checks                                     redirect→/login?redirect=%2Fquality-checks
+  🔒 AUTH    81ms    84KB  /rate-cards                                         redirect→/login?redirect=%2Frate-cards
+  🔒 AUTH    80ms    84KB  /calendar                                           redirect→/login?redirect=%2Fcalendar
+  🔒 AUTH    80ms    84KB  /campaign-kpis                                      redirect→/login?redirect=%2Fcampaign-kpis
+  🔒 AUTH    80ms    84KB  /campaigns                                          redirect→/login?redirect=%2Fcampaigns
+  🔒 AUTH    79ms    84KB  /campaign-channels                                  redirect→/login?redirect=%2Fcampaign-channels
+  🔒 AUTH    78ms    84KB  /vip-service-requests                               redirect→/login?redirect=%2Fvip-service-requests
+  🔒 AUTH    78ms    84KB  /work-orders                                        redirect→/login?redirect=%2Fwork-orders
+  🔒 AUTH    78ms    84KB  /work-packages                                      redirect→/login?redirect=%2Fwork-packages
+  🔒 AUTH    77ms    84KB  /warehouses                                         redirect→/login?redirect=%2Fwarehouses
+  🔒 AUTH    75ms    84KB  /readiness-gates                                    redirect→/login?redirect=%2Freadiness-gates
+  🔒 AUTH    75ms    84KB  /rental-agreements                                  redirect→/login?redirect=%2Frental-agreements
+  🔒 AUTH    75ms    84KB  /recurring-invoices                                 redirect→/login?redirect=%2Frecurring-invoices
+  🔒 AUTH    75ms    84KB  /report-definitions                                 redirect→/login?redirect=%2Freport-definitions
+  🔒 AUTH    67ms    84KB  /activations                                        redirect→/login?redirect=%2Factivations
+  🔒 AUTH    67ms    84KB  /activity-log                                       redirect→/login?redirect=%2Factivity-log
+  🔒 AUTH    51ms    84KB  /onboarding/org-setup                               redirect→/login?redirect=%2Fonboarding%2Forg-setup
+  🔒 AUTH    50ms    84KB  /onboarding/invite-team                             redirect→/login?redirect=%2Fonboarding%2Finvite-team
+  🔒 AUTH    49ms    84KB  /onboarding/billing                                 redirect→/login?redirect=%2Fonboarding%2Fbilling
+  🔒 AUTH    49ms    84KB  /onboarding/claim-username                          redirect→/login?redirect=%2Fonboarding%2Fclaim-username
+  🔒 AUTH    47ms    84KB  /onboarding/complete                                redirect→/login?redirect=%2Fonboarding%2Fcomplete
+  🔒 AUTH    47ms    84KB  /access-audit-log                                   redirect→/login?redirect=%2Faccess-audit-log
+  🔒 AUTH    45ms    84KB  /account-health-scores                              redirect→/login?redirect=%2Faccount-health-scores
+  🔒 AUTH    45ms    84KB  /accounts                                           redirect→/login?redirect=%2Faccounts
+  🔒 AUTH    26ms    84KB  /workforce/00000000-0000-0000-0000-000000000001     redirect→/login?redirect=%2Fworkforce%2F00000000-0000-0000-0000-000000000001
+  ✅ OK      220ms    63KB  /portal/test-token-placeholder                      doctype=true react=true
+  ✅ OK      190ms    81KB  /legal/privacy                                      doctype=true react=true
+  ✅ OK      189ms    78KB  /legal/terms                                        doctype=true react=true
+  ✅ OK      187ms    78KB  /forgot-password                                    doctype=true react=true
+  ✅ OK      187ms    67KB  /invite/test-token-placeholder                      doctype=true react=true
+  ✅ OK      187ms    62KB  /sign/test-token-placeholder                        doctype=true react=true
+  ✅ OK      186ms    86KB  /signup                                             doctype=true react=true
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  ✅ ALL PAGES PASS — No errors, no broken renders.
+════════════════════════════════════════════════════════════════════════════════════════════════════

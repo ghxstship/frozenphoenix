@@ -254,16 +254,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "dashboard.read",
             },
             {
+                title: "Messages",
+                path: "/messages",
+                icon: Mail,
+                permission: "messaging_dm.read",
+            },
+            {
                 title: "Tasks",
                 path: "/home/tasks",
                 icon: CheckSquare,
                 permission: "tasks.read",
-            },
-            {
-                title: "Documents",
-                path: "/home/documents",
-                icon: FileCheck,
-                permission: "documents.read",
             },
             {
                 title: "Calendar",
@@ -272,16 +272,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "calendar.read",
             },
             {
-                title: "Messages",
-                path: "/messages",
-                icon: Mail,
-                permission: "messaging_dm.read",
-            },
-            {
                 title: "Notifications",
                 path: "/notifications",
                 icon: Bell,
                 permission: "dashboard.read",
+            },
+            {
+                title: "Documents",
+                path: "/home/documents",
+                icon: FileCheck,
+                permission: "documents.read",
             },
             {
                 title: "Insights",
@@ -290,22 +290,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "reports.read",
                 children: [
                     {
+                        title: "Custom Dashboards",
+                        path: "/dashboards",
+                        icon: GanttChart,
+                        permission: "dashboards.read",
+                    },
+                    {
                         title: "Forecasting",
                         path: "/forecasting",
                         icon: TrendingUp,
                         permission: "forecasting.read",
-                    },
-                    {
-                        title: "Scenarios",
-                        path: "/scenarios",
-                        icon: FlaskConical,
-                        permission: "scenarios.read",
-                    },
-                    {
-                        title: "AI Reports",
-                        path: "/reports/ai",
-                        icon: Brain,
-                        permission: "reports.read",
                     },
                     {
                         title: "Saved Views",
@@ -314,10 +308,16 @@ export const navigationConfig: NavSection[] = [
                         permission: "saved_views.read",
                     },
                     {
-                        title: "Custom Dashboards",
-                        path: "/dashboards",
-                        icon: GanttChart,
-                        permission: "dashboards.read",
+                        title: "AI Reports",
+                        path: "/reports/ai",
+                        icon: Brain,
+                        permission: "reports.read",
+                    },
+                    {
+                        title: "Scenarios",
+                        path: "/scenarios",
+                        icon: FlaskConical,
+                        permission: "scenarios.read",
                     },
                     {
                         title: "Report Builder",
@@ -342,19 +342,6 @@ export const navigationConfig: NavSection[] = [
                 path: "/opportunities",
                 icon: Target,
                 permission: "opportunities.read",
-            },
-            { title: "Accounts", path: "/accounts", icon: Building2, permission: "accounts.read" },
-            {
-                title: "Contacts",
-                path: "/companies",
-                icon: ContactRound,
-                permission: "people.read",
-            },
-            {
-                title: "Stakeholders",
-                path: "/stakeholders",
-                icon: UsersRound,
-                permission: "people.read",
             },
             {
                 title: "Deals",
@@ -381,12 +368,6 @@ export const navigationConfig: NavSection[] = [
                         permission: "change_orders.read",
                     },
                     {
-                        title: "Lost Reasons",
-                        path: "/lost-reasons",
-                        icon: AlertTriangle,
-                        permission: "deals.manage",
-                    },
-                    {
                         title: "Upsell Events",
                         path: "/upsell-events",
                         icon: Sparkles,
@@ -398,7 +379,26 @@ export const navigationConfig: NavSection[] = [
                         icon: Zap,
                         permission: "deals.manage",
                     },
+                    {
+                        title: "Lost Reasons",
+                        path: "/lost-reasons",
+                        icon: AlertTriangle,
+                        permission: "deals.manage",
+                    },
                 ],
+            },
+            { title: "Accounts", path: "/accounts", icon: Building2, permission: "accounts.read" },
+            {
+                title: "Contacts",
+                path: "/companies",
+                icon: ContactRound,
+                permission: "people.read",
+            },
+            {
+                title: "Stakeholders",
+                path: "/stakeholders",
+                icon: UsersRound,
+                permission: "people.read",
             },
         ],
     },
@@ -412,6 +412,12 @@ export const navigationConfig: NavSection[] = [
                 icon: FolderKanban,
                 permission: "projects.read",
             },
+            {
+                title: "Scopes of Work",
+                path: "/scopes-of-work",
+                icon: ScrollText,
+                permission: "sow.read",
+            },
             { title: "Events", path: "/events", icon: Calendar, permission: "events.read" },
             {
                 title: "Activations",
@@ -421,22 +427,16 @@ export const navigationConfig: NavSection[] = [
             },
             { title: "Tasks", path: "/tasks", icon: CheckSquare, permission: "tasks.read" },
             {
-                title: "Scopes of Work",
-                path: "/scopes-of-work",
-                icon: ScrollText,
-                permission: "sow.read",
+                title: "Schedule",
+                path: "/scheduling",
+                icon: GanttChart,
+                permission: "schedule.read",
             },
             {
                 title: "Bills of Materials",
                 path: "/boms",
                 icon: Layers,
                 permission: "projects.read",
-            },
-            {
-                title: "Schedule",
-                path: "/scheduling",
-                icon: GanttChart,
-                permission: "schedule.read",
             },
             { title: "Locations", path: "/locations", icon: MapPin, permission: "locations.read" },
             {
@@ -445,6 +445,12 @@ export const navigationConfig: NavSection[] = [
                 icon: ShoppingCart,
                 permission: "advancing.read",
                 children: [
+                    {
+                        title: "Catalog",
+                        path: "/advancing/catalog",
+                        icon: Boxes,
+                        permission: "advancing.manage",
+                    },
                     {
                         title: "New Advance",
                         path: "/advancing/new",
@@ -461,12 +467,6 @@ export const navigationConfig: NavSection[] = [
                         title: "Fulfillment",
                         path: "/advancing/fulfillment",
                         icon: Truck,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Catalog",
-                        path: "/advancing/catalog",
-                        icon: Boxes,
                         permission: "advancing.manage",
                     },
                     {
@@ -530,32 +530,6 @@ export const navigationConfig: NavSection[] = [
                 ],
             },
             {
-                title: "Automations",
-                path: "/automations",
-                icon: Zap,
-                permission: "automations.read",
-            },
-            {
-                title: "Quality Checks",
-                path: "/quality-checks",
-                icon: SearchCheck,
-                permission: "approvals.read",
-                children: [
-                    {
-                        title: "Templates",
-                        path: "/quality-check-templates",
-                        icon: LayoutTemplate,
-                        permission: "approvals.manage",
-                    },
-                    {
-                        title: "Gates",
-                        path: "/qc-gates",
-                        icon: Gauge,
-                        permission: "approvals.manage",
-                    },
-                ],
-            },
-            {
                 title: "Service Requests",
                 path: "/service-requests",
                 icon: Inbox,
@@ -580,6 +554,32 @@ export const navigationConfig: NavSection[] = [
                 path: "/workflows",
                 icon: Workflow,
                 permission: "automations.read",
+            },
+            {
+                title: "Automations",
+                path: "/automations",
+                icon: Zap,
+                permission: "automations.read",
+            },
+            {
+                title: "Quality Checks",
+                path: "/quality-checks",
+                icon: SearchCheck,
+                permission: "approvals.read",
+                children: [
+                    {
+                        title: "Templates",
+                        path: "/quality-check-templates",
+                        icon: LayoutTemplate,
+                        permission: "approvals.manage",
+                    },
+                    {
+                        title: "Gates",
+                        path: "/qc-gates",
+                        icon: Gauge,
+                        permission: "approvals.manage",
+                    },
+                ],
             },
             {
                 title: "Documents",
@@ -627,17 +627,29 @@ export const navigationConfig: NavSection[] = [
         items: [
             { title: "Crew", path: "/crew", icon: HardHat, permission: "crew.read" },
             {
+                title: "Shifts",
+                path: "/shifts",
+                icon: CalendarDays,
+                permission: "crew.read",
+            },
+            {
+                title: "Availability",
+                path: "/crew-availability",
+                icon: CalendarDays,
+                permission: "crew.read",
+            },
+            {
+                title: "Resource Planner",
+                path: "/resource-planner",
+                icon: BarChartHorizontal,
+                permission: "resource_planner.read",
+            },
+            {
                 title: "Time Tracking",
                 path: "/time-tracking",
                 icon: Timer,
                 permission: "time_tracking.read",
                 children: [
-                    {
-                        title: "Compliance",
-                        path: "/time-tracking/compliance",
-                        icon: ShieldCheck,
-                        permission: "time_tracking.read",
-                    },
                     {
                         title: "Time Entries",
                         path: "/time-entries",
@@ -648,6 +660,12 @@ export const navigationConfig: NavSection[] = [
                         title: "Timesheets",
                         path: "/timesheets",
                         icon: FileSpreadsheet,
+                        permission: "time_tracking.read",
+                    },
+                    {
+                        title: "Compliance",
+                        path: "/time-tracking/compliance",
+                        icon: ShieldCheck,
                         permission: "time_tracking.read",
                     },
                 ],
@@ -665,24 +683,6 @@ export const navigationConfig: NavSection[] = [
                         permission: "time_off.read",
                     },
                 ],
-            },
-            {
-                title: "Resource Planner",
-                path: "/resource-planner",
-                icon: BarChartHorizontal,
-                permission: "resource_planner.read",
-            },
-            {
-                title: "Shifts",
-                path: "/shifts",
-                icon: CalendarDays,
-                permission: "crew.read",
-            },
-            {
-                title: "Availability",
-                path: "/crew-availability",
-                icon: CalendarDays,
-                permission: "crew.read",
             },
             {
                 title: "Certifications",
@@ -730,16 +730,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "vendor_compliance.read",
             },
             {
-                title: "Vendor Reviews",
-                path: "/vendor-reviews",
-                icon: Star,
-                permission: "vendor_reviews.read",
-            },
-            {
                 title: "Work Orders",
                 path: "/work-orders",
                 icon: ClipboardCheck,
                 permission: "work_orders.read",
+            },
+            {
+                title: "Vendor Reviews",
+                path: "/vendor-reviews",
+                icon: Star,
+                permission: "vendor_reviews.read",
             },
         ],
     },
@@ -766,15 +766,15 @@ export const navigationConfig: NavSection[] = [
                         permission: "assets.read",
                     },
                     {
-                        title: "Maintenance",
-                        path: "/maintenance-schedules",
-                        icon: Wrench,
-                        permission: "assets.manage",
-                    },
-                    {
                         title: "Transfer Orders",
                         path: "/transfer-orders",
                         icon: ArrowRightLeft,
+                        permission: "assets.manage",
+                    },
+                    {
+                        title: "Maintenance",
+                        path: "/maintenance-schedules",
+                        icon: Wrench,
                         permission: "assets.manage",
                     },
                 ],
@@ -786,9 +786,9 @@ export const navigationConfig: NavSection[] = [
                 icon: Warehouse,
                 permission: "warehouses.read",
             },
-            { title: "Shipments", path: "/shipments", icon: Truck, permission: "shipments.read" },
             { title: "Fleet", path: "/fleet", icon: Car, permission: "fleet.read" },
             { title: "Dispatch", path: "/dispatch", icon: Navigation, permission: "dispatch.read" },
+            { title: "Shipments", path: "/shipments", icon: Truck, permission: "shipments.read" },
             {
                 title: "Purchase Orders",
                 path: "/purchase-orders",
@@ -808,6 +808,7 @@ export const navigationConfig: NavSection[] = [
         defaultExpanded: false,
         items: [
             { title: "Briefs", path: "/briefs", icon: PenTool, permission: "creative_briefs.read" },
+            { title: "Brand Kit", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
             {
                 title: "Brand Guidelines",
                 path: "/brand-guidelines",
@@ -826,14 +827,13 @@ export const navigationConfig: NavSection[] = [
                 icon: ImagePlus,
                 permission: "digital_assets.read",
             },
-            { title: "Brand Kit", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
-            { title: "Decks", path: "/decks", icon: Presentation, permission: "decks.read" },
             {
                 title: "Creative Reviews",
                 path: "/creative-reviews",
                 icon: Star,
                 permission: "creative_reviews.read",
             },
+            { title: "Decks", path: "/decks", icon: Presentation, permission: "decks.read" },
             {
                 title: "Campaigns",
                 path: "/campaigns",
@@ -869,19 +869,6 @@ export const navigationConfig: NavSection[] = [
             { title: "Overview", path: "/finance", icon: Landmark, permission: "finance.read" },
             { title: "Revenue", path: "/revenue", icon: DollarSign, permission: "revenue.read" },
             {
-                title: "Revenue Recognition",
-                path: "/finance/revenue-recognition",
-                icon: TrendingUp,
-                permission: "finance.read",
-            },
-            {
-                title: "Expenses",
-                path: "/expenses",
-                icon: Receipt,
-                permission: "expenses.read",
-                children: [],
-            },
-            {
                 title: "Billing",
                 path: "/invoices",
                 icon: FileSpreadsheet,
@@ -900,18 +887,25 @@ export const navigationConfig: NavSection[] = [
                         permission: "payments.read",
                     },
                     {
-                        title: "Credit Notes",
-                        path: "/credit-notes",
-                        icon: ReceiptText,
-                        permission: "credit_notes.read",
-                    },
-                    {
                         title: "Recurring Invoices",
                         path: "/recurring-invoices",
                         icon: Repeat,
                         permission: "recurring_invoices.read",
                     },
+                    {
+                        title: "Credit Notes",
+                        path: "/credit-notes",
+                        icon: ReceiptText,
+                        permission: "credit_notes.read",
+                    },
                 ],
+            },
+            {
+                title: "Expenses",
+                path: "/expenses",
+                icon: Receipt,
+                permission: "expenses.read",
+                children: [],
             },
             {
                 title: "Budgeting",
@@ -919,6 +913,12 @@ export const navigationConfig: NavSection[] = [
                 icon: PiggyBank,
                 permission: "budgets.read",
                 children: [
+                    {
+                        title: "Milestones",
+                        path: "/milestones",
+                        icon: Target,
+                        permission: "budgets.read",
+                    },
                     {
                         title: "Job Costing",
                         path: "/job-costing",
@@ -931,45 +931,19 @@ export const navigationConfig: NavSection[] = [
                         icon: CreditCard,
                         permission: "rate_cards.read",
                     },
-                    {
-                        title: "Milestones",
-                        path: "/milestones",
-                        icon: Target,
-                        permission: "budgets.read",
-                    },
                 ],
+            },
+            {
+                title: "Revenue Recognition",
+                path: "/finance/revenue-recognition",
+                icon: TrendingUp,
+                permission: "finance.read",
             },
             {
                 title: "Payroll Runs",
                 path: "/payroll-batches",
                 icon: Banknote,
                 permission: "finance.read",
-            },
-            {
-                title: "Financial Periods",
-                path: "/financial-periods",
-                icon: CalendarDays,
-                permission: "finance.manage",
-            },
-            {
-                title: "Governance",
-                path: "/gl-accounts",
-                icon: CircleDollarSign,
-                permission: "gl_accounts.read",
-                children: [
-                    {
-                        title: "Budget Approvals",
-                        path: "/budget-approvals",
-                        icon: ShieldCheck,
-                        permission: "budget_approvals.read",
-                    },
-                    {
-                        title: "Payment Approvals",
-                        path: "/payment-approvals",
-                        icon: WalletCards,
-                        permission: "payment_approvals.read",
-                    },
-                ],
             },
             {
                 title: "Procurement",
@@ -997,6 +971,32 @@ export const navigationConfig: NavSection[] = [
                     },
                 ],
             },
+            {
+                title: "Governance",
+                path: "/gl-accounts",
+                icon: CircleDollarSign,
+                permission: "gl_accounts.read",
+                children: [
+                    {
+                        title: "Budget Approvals",
+                        path: "/budget-approvals",
+                        icon: ShieldCheck,
+                        permission: "budget_approvals.read",
+                    },
+                    {
+                        title: "Payment Approvals",
+                        path: "/payment-approvals",
+                        icon: WalletCards,
+                        permission: "payment_approvals.read",
+                    },
+                ],
+            },
+            {
+                title: "Financial Periods",
+                path: "/financial-periods",
+                icon: CalendarDays,
+                permission: "finance.manage",
+            },
         ],
     },
 
@@ -1012,6 +1012,18 @@ export const navigationConfig: NavSection[] = [
                 permission: "contracts.read",
             },
             {
+                title: "Obligations",
+                path: "/obligations",
+                icon: ClipboardMinus,
+                permission: "obligations.read",
+            },
+            {
+                title: "Permits & Licenses",
+                path: "/permits",
+                icon: FileBadge,
+                permission: "permits.read",
+            },
+            {
                 title: "Insurance",
                 path: "/insurance-policies",
                 icon: Shield,
@@ -1024,28 +1036,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "ip_rights.read",
             },
             {
-                title: "Clause Library",
-                path: "/clause-library",
-                icon: BookLock,
-                permission: "clause_library.read",
-            },
-            {
-                title: "Obligations",
-                path: "/obligations",
-                icon: ClipboardMinus,
-                permission: "obligations.read",
-            },
-            {
                 title: "Incidents",
                 path: "/incidents",
                 icon: AlertTriangle,
                 permission: "incidents.read",
             },
             {
-                title: "Permits & Licenses",
-                path: "/permits",
-                icon: FileBadge,
-                permission: "permits.read",
+                title: "Compliance Checklists",
+                path: "/compliance-checklists",
+                icon: FileCheck,
+                permission: "compliance_checklists.read",
             },
             {
                 title: "Engineering Approvals",
@@ -1054,10 +1054,10 @@ export const navigationConfig: NavSection[] = [
                 permission: "engineering_approvals.read",
             },
             {
-                title: "Compliance Checklists",
-                path: "/compliance-checklists",
-                icon: FileCheck,
-                permission: "compliance_checklists.read",
+                title: "Clause Library",
+                path: "/clause-library",
+                icon: BookLock,
+                permission: "clause_library.read",
             },
         ],
     },
@@ -1077,6 +1077,20 @@ export const navigationConfig: NavSection[] = [
                 icon: UserPlus,
                 permission: "invitations.read",
             },
+            { title: "Roles", path: "/roles", icon: Shield, permission: "roles.manage" },
+            {
+                title: "Teams",
+                path: "/teams",
+                icon: Users,
+                permission: "teams.read",
+            },
+            {
+                title: "Org Chart",
+                path: "/org-chart",
+                icon: GitBranch,
+                permission: "org_chart.read",
+            },
+            { title: "People", path: "/people", icon: UserCircle, permission: "people.read" },
             {
                 title: "Access Reviews",
                 path: "/user-management/access-reviews",
@@ -1089,20 +1103,6 @@ export const navigationConfig: NavSection[] = [
                 icon: KeyRound,
                 permission: "audit_log.read",
             },
-            { title: "People", path: "/people", icon: UserCircle, permission: "people.read" },
-            {
-                title: "Org Chart",
-                path: "/org-chart",
-                icon: GitBranch,
-                permission: "org_chart.read",
-            },
-            {
-                title: "Teams",
-                path: "/teams",
-                icon: Users,
-                permission: "teams.read",
-            },
-            { title: "Roles", path: "/roles", icon: Shield, permission: "roles.manage" },
             {
                 title: "Knowledge Base",
                 path: "/knowledge-base",
@@ -1124,15 +1124,9 @@ export const navigationConfig: NavSection[] = [
                         permission: "settings.manage",
                     },
                     {
-                        title: "Custom Fields",
-                        path: "/settings/custom-fields",
-                        icon: Blocks,
-                        permission: "settings.manage",
-                    },
-                    {
-                        title: "Developer Portal",
-                        path: "/settings/developer",
-                        icon: Code2,
+                        title: "Notification Preferences",
+                        path: "/settings/notifications",
+                        icon: Bell,
                         permission: "settings.manage",
                     },
                     {
@@ -1142,15 +1136,21 @@ export const navigationConfig: NavSection[] = [
                         permission: "settings.manage",
                     },
                     {
-                        title: "Notification Preferences",
-                        path: "/settings/notifications",
-                        icon: Bell,
+                        title: "Custom Fields",
+                        path: "/settings/custom-fields",
+                        icon: Blocks,
                         permission: "settings.manage",
                     },
                     {
                         title: "AI Copilot",
                         path: "/settings/ai",
                         icon: Brain,
+                        permission: "settings.manage",
+                    },
+                    {
+                        title: "Developer Portal",
+                        path: "/settings/developer",
+                        icon: Code2,
                         permission: "settings.manage",
                     },
                 ],
@@ -1182,18 +1182,6 @@ export const navigationConfig: NavSection[] = [
                 ],
             },
             {
-                title: "System Health",
-                path: "/system-health",
-                icon: HeartPulse,
-                permission: "system_health.read",
-            },
-            {
-                title: "Data Export",
-                path: "/data-export",
-                icon: Download,
-                permission: "data_export.read",
-            },
-            {
                 title: "Credentials",
                 path: "/credentials",
                 icon: Ticket,
@@ -1218,6 +1206,18 @@ export const navigationConfig: NavSection[] = [
                 path: "/vendor-portal",
                 icon: ScanBarcode,
                 permission: "vendor_portal.read",
+            },
+            {
+                title: "System Health",
+                path: "/system-health",
+                icon: HeartPulse,
+                permission: "system_health.read",
+            },
+            {
+                title: "Data Export",
+                path: "/data-export",
+                icon: Download,
+                permission: "data_export.read",
             },
         ],
     },
@@ -1271,18 +1271,6 @@ export const navigationConfig: NavSection[] = [
                 permission: "comm_channels.read",
             },
             {
-                title: "Environment",
-                path: "/live-ops/environment",
-                icon: Thermometer,
-                permission: "environmental_readings.read",
-            },
-            {
-                title: "Financials",
-                path: "/live-ops/financials",
-                icon: Landmark,
-                permission: "live_financial.read",
-            },
-            {
                 title: "Front of House",
                 path: "/live-ops/foh",
                 icon: Drama,
@@ -1311,6 +1299,18 @@ export const navigationConfig: NavSection[] = [
                 path: "/live-ops/guest-incidents",
                 icon: AlertTriangle,
                 permission: "guest_incidents.read",
+            },
+            {
+                title: "Environment",
+                path: "/live-ops/environment",
+                icon: Thermometer,
+                permission: "environmental_readings.read",
+            },
+            {
+                title: "Financials",
+                path: "/live-ops/financials",
+                icon: Landmark,
+                permission: "live_financial.read",
             },
             {
                 title: "Strike & Load-Out",

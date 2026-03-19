@@ -27,9 +27,7 @@ export function serializeCsv(
     headers: { key: string; label: string }[]
 ): string {
     const headerLine = headers.map((h) => escapeCsvCell(h.label)).join(",");
-    const dataLines = rows.map((row) =>
-        headers.map((h) => escapeCsvCell(row[h.key])).join(",")
-    );
+    const dataLines = rows.map((row) => headers.map((h) => escapeCsvCell(row[h.key])).join(","));
     return [headerLine, ...dataLines].join("\r\n");
 }
 
@@ -46,9 +44,7 @@ export function generateTemplateCsv(
     const headerLine = headers.map((h) => escapeCsvCell(h.label)).join(",");
 
     // Description row (prefixed with # for clarity)
-    const descLine = headers
-        .map((h) => escapeCsvCell(h.description ?? ""))
-        .join(",");
+    const descLine = headers.map((h) => escapeCsvCell(h.description ?? "")).join(",");
 
     const lines = [headerLine, `# ${descLine}`];
 
@@ -111,6 +107,7 @@ export function autoMapHeaders(
     templateFields: { dbColumn: string; csvHeader: string }[]
 ): Map<number, string> {
     const mapping = new Map<number, string>();
+    const usedDbColumns = new Set<string>();
     const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     for (let i = 0; i < csvHeaders.length; i++) {
@@ -118,29 +115,32 @@ export function autoMapHeaders(
 
         // Exact match on normalized csvHeader
         const exactMatch = templateFields.find(
-            (f) => normalize(f.csvHeader) === normalized
+            (f) => normalize(f.csvHeader) === normalized && !usedDbColumns.has(f.dbColumn)
         );
         if (exactMatch) {
             mapping.set(i, exactMatch.dbColumn);
+            usedDbColumns.add(exactMatch.dbColumn);
             continue;
         }
 
         // Exact match on dbColumn (snake_case)
         const colMatch = templateFields.find(
-            (f) => normalize(f.dbColumn) === normalized
+            (f) => normalize(f.dbColumn) === normalized && !usedDbColumns.has(f.dbColumn)
         );
         if (colMatch) {
             mapping.set(i, colMatch.dbColumn);
+            usedDbColumns.add(colMatch.dbColumn);
             continue;
         }
 
         // Fuzzy: check if csvHeader contains the db column words
         const fuzzyMatch = templateFields.find((f) => {
             const words = f.dbColumn.split("_");
-            return words.every((w) => normalized.includes(w));
+            return words.every((w) => normalized.includes(w)) && !usedDbColumns.has(f.dbColumn);
         });
         if (fuzzyMatch) {
             mapping.set(i, fuzzyMatch.dbColumn);
+            usedDbColumns.add(fuzzyMatch.dbColumn);
         }
     }
 

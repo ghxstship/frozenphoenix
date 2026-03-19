@@ -1,13 +1,5 @@
-import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { LoadingState } from "@/components/layouts/loading-state";
-import { fetchEntityList } from "@/lib/api/server-fetch";
 
-export default async function RfqsPage() {
-    const data = await fetchEntityList("rfq");
-    return (
-        <Suspense fallback={<LoadingState />}>
-            <ListPageShell configKey="RFQS_PAGE" data={data} isLoading={false} />
-        </Suspense>
-    );
+export default function RfqsPage() {
+    return <ListPageShell configKey="RFQS_PAGE" />;
 }

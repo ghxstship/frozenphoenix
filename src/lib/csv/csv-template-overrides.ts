@@ -1383,7 +1383,7 @@ export const CSV_TEMPLATE_OVERRIDES: Record<string, TemplateOverride> = {
     contract: CONTRACTS_OVERRIDE,
     location: LOCATIONS_OVERRIDE,
     // Tier 2
-    event: EVENTS_OVERRIDE,
+    live_event: EVENTS_OVERRIDE,
     activation: ACTIVATIONS_OVERRIDE,
     budget: BUDGETS_OVERRIDE,
     campaign: CAMPAIGNS_OVERRIDE,

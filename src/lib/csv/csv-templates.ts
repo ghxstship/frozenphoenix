@@ -62,8 +62,13 @@ function buildRegistry(): Record<string, CsvEntityTemplate> {
     for (const [entityKey, config] of Object.entries(ENTITY_CONFIGS)) {
         const override = CSV_TEMPLATE_OVERRIDES[entityKey];
         const template = generateCsvTemplate(config, config.createSchema, override);
-        // Key by table name (plural) for backward compatibility
+        // Key by table name (plural) for backward compatibility with API routes
         registry[config.table] = template;
+        // Also key by entityKey (singular) — this is what ListPageShell passes
+        // to CsvExportButton / CsvImportDialog via config.entityKey
+        if (entityKey !== config.table) {
+            registry[entityKey] = template;
+        }
     }
 
     return registry;

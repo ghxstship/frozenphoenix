@@ -1,13 +1,5 @@
-import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { LoadingState } from "@/components/layouts/loading-state";
-import { fetchEntityList } from "@/lib/api/server-fetch";
 
-export default async function DataExportRequestsPage() {
-    const data = await fetchEntityList("data_export_request");
-    return (
-        <Suspense fallback={<LoadingState />}>
-            <ListPageShell configKey="DATA_EXPORT_REQUESTS_PAGE" data={data} isLoading={false} />
-        </Suspense>
-    );
+export default function DataExportRequestsPage() {
+    return <ListPageShell configKey="DATA_EXPORT_REQUESTS_PAGE" />;
 }

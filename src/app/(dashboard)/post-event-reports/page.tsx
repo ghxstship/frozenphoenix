@@ -1,13 +1,5 @@
-import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { LoadingState } from "@/components/layouts/loading-state";
-import { fetchEntityList } from "@/lib/api/server-fetch";
 
-export default async function PostEventReportsPage() {
-    const data = await fetchEntityList("post_event_report");
-    return (
-        <Suspense fallback={<LoadingState />}>
-            <ListPageShell configKey="POST_EVENT_REPORTS_PAGE" data={data} isLoading={false} />
-        </Suspense>
-    );
+export default function PostEventReportsPage() {
+    return <ListPageShell configKey="POST_EVENT_REPORTS_PAGE" />;
 }

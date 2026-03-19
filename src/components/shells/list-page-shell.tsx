@@ -180,6 +180,7 @@ interface ViewContentProps {
     renderRowActions?: (row: EntityRecord) => React.ReactNode;
     renderRowActionItems?: (row: EntityRecord) => React.ReactNode;
     onBoardDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
+    emptyState?: React.ReactNode;
 }
 
 function ViewContent({
@@ -195,6 +196,7 @@ function ViewContent({
     renderRowActions,
     renderRowActionItems,
     onBoardDragEnd,
+    emptyState,
 }: ViewContentProps) {
     // ─── Table ───
     if (viewMode === "table") {
@@ -218,6 +220,7 @@ function ViewContent({
                 onRowClick={handleRowClick}
                 rowActions={renderRowActions}
                 caption={`${title} list`}
+                emptyState={emptyState}
             />
         );
     }
@@ -966,61 +969,57 @@ export function ListPageShell({
                     )}
 
                     {/* Content */}
-                    {config.contentSlot ??
-                        (filtered.length === 0 ? (
-                            <EmptyState
-                                icon={Icon}
-                                title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
-                                description={
-                                    search || activeFilterCount > 0
-                                        ? "Try adjusting your search or filters"
-                                        : (config.emptyDescription ??
-                                          `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
-                                }
-                                action={
-                                    !search && activeFilterCount === 0 && hasCreate
-                                        ? {
-                                              label:
-                                                  config.createLabel ??
-                                                  `New ${entityConfig?.displayName ?? "Record"}`,
-                                              onClick: openCreate,
-                                          }
-                                        : undefined
-                                }
-                            />
-                        ) : (
-                            <ViewContent
-                                viewMode={viewMode}
-                                filtered={filtered}
-                                dtColumns={orderedVisibleColumns}
-                                config={config}
-                                title={title}
-                                hasBulkActions={hasBulkActions}
-                                selectedKeys={selectedKeys}
-                                setSelectedKeys={setSelectedKeys}
-                                handleRowClick={handleRowClick}
-                                renderRowActions={renderRowActions}
-                                renderRowActionItems={renderRowActionItems}
-                                onBoardDragEnd={
-                                    config.boardConfig
-                                        ? async (
-                                              itemId: string,
-                                              _from: string,
-                                              toColumn: string
-                                          ) => {
-                                              try {
-                                                  await apiUpdate(basePath, itemId, {
-                                                      [config.boardConfig!.groupByKey]: toColumn,
-                                                  });
-                                                  window.location.reload();
-                                              } catch {
-                                                  // API errors surface via toast
+                    {config.contentSlot ?? (
+                        <ViewContent
+                            viewMode={viewMode}
+                            filtered={filtered}
+                            dtColumns={orderedVisibleColumns}
+                            config={config}
+                            title={title}
+                            hasBulkActions={hasBulkActions}
+                            selectedKeys={selectedKeys}
+                            setSelectedKeys={setSelectedKeys}
+                            handleRowClick={handleRowClick}
+                            renderRowActions={renderRowActions}
+                            renderRowActionItems={renderRowActionItems}
+                            emptyState={
+                                <EmptyState
+                                    icon={Icon}
+                                    title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
+                                    description={
+                                        search || activeFilterCount > 0
+                                            ? "Try adjusting your search or filters"
+                                            : (config.emptyDescription ??
+                                              `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
+                                    }
+                                    action={
+                                        !search && activeFilterCount === 0 && hasCreate
+                                            ? {
+                                                  label:
+                                                      config.createLabel ??
+                                                      `New ${entityConfig?.displayName ?? "Record"}`,
+                                                  onClick: openCreate,
                                               }
+                                            : undefined
+                                    }
+                                />
+                            }
+                            onBoardDragEnd={
+                                config.boardConfig
+                                    ? async (itemId: string, _from: string, toColumn: string) => {
+                                          try {
+                                              await apiUpdate(basePath, itemId, {
+                                                  [config.boardConfig!.groupByKey]: toColumn,
+                                              });
+                                              window.location.reload();
+                                          } catch {
+                                              // API errors surface via toast
                                           }
-                                        : undefined
-                                }
-                            />
-                        ))}
+                                      }
+                                    : undefined
+                            }
+                        />
+                    )}
 
                     {/* Footer slot */}
                     {config.footerSlot}

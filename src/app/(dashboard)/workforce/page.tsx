@@ -1,12 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useWorkerProfiles } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { WORKFORCE_PAGE } from "@/config/list-page-configs";
 
-export default function WorkforcePage() {
-    const { data: rawData, isLoading } = useWorkerProfiles();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={WORKFORCE_PAGE} data={data} isLoading={isLoading} />;
+export default async function WorkforcePage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={WORKFORCE_PAGE} />
+        </Suspense>
+    );
 }

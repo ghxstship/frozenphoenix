@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { FINANCIAL_PERIODS_PAGE } from "@/config/list-page-configs/finance";
-import {
-    useCreateFinancialPeriod,
-    useDeleteFinancialPeriod,
-    useFinancialPeriod,
-    useFinancialPeriods,
-    useUpdateFinancialPeriod,
-} from "@/lib/supabase/hooks-finance";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
+import { FINANCIAL_PERIODS_PAGE } from "@/config/list-page-configs";
 
-export default function FinancialPeriodsPage() {
-    const { data: _items } = useFinancialPeriods();
-    const { data: _detail } = useFinancialPeriod("");
-    const _create = useCreateFinancialPeriod();
-    const _update = useUpdateFinancialPeriod();
-    const _delete = useDeleteFinancialPeriod();
-    return <ListPageShell config={FINANCIAL_PERIODS_PAGE} />;
+export default async function FinancialPeriodsPage() {
+    const data = await fetchEntityList("financial_period");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={FINANCIAL_PERIODS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

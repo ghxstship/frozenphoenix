@@ -1,10 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { RISK_ASSESSMENTS_PAGE } from "@/config/list-page-configs";
-import { useCreateRiskAssessment } from "@/lib/supabase/hooks-admin";
 
-export default function RiskAssessmentsPage() {
-    const _create = useCreateRiskAssessment();
-    return <ListPageShell config={RISK_ASSESSMENTS_PAGE} />;
+export default async function RiskAssessmentsPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={RISK_ASSESSMENTS_PAGE} />
+        </Suspense>
+    );
 }

@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { RENTAL_AGREEMENTS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateRentalAgreement,
-    useDeleteRentalAgreement,
-    useRentalAgreement,
-    useRentalAgreements,
-    useUpdateRentalAgreement,
-} from "@/lib/supabase/hooks-assets-inventory";
 
-export default function RentalAgreementsPage() {
-    const { data: _items } = useRentalAgreements();
-    const { data: _detail } = useRentalAgreement("");
-    const _create = useCreateRentalAgreement();
-    const _update = useUpdateRentalAgreement();
-    const _delete = useDeleteRentalAgreement();
-    return <ListPageShell config={RENTAL_AGREEMENTS_PAGE} />;
+export default async function RentalAgreementsPage() {
+    const data = await fetchEntityList("rental_agreement");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={RENTAL_AGREEMENTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

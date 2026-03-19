@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { KITS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateKit,
-    useDeleteKit,
-    useKit,
-    useKits,
-    useUpdateKit,
-} from "@/lib/supabase/hooks-assets-inventory";
 
-export default function KitsPage() {
-    const { data: _items } = useKits();
-    const { data: _detail } = useKit("");
-    const _create = useCreateKit();
-    const _update = useUpdateKit();
-    const _delete = useDeleteKit();
-    return <ListPageShell config={KITS_PAGE} />;
+export default async function KitsPage() {
+    const data = await fetchEntityList("kit");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={KITS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

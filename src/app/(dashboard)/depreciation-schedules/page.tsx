@@ -1,18 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { DEPRECIATION_SCHEDULES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateDepreciationSchedule,
-    useDepreciationSchedule,
-    useDepreciationSchedules,
-    useUpdateDepreciationSchedule,
-} from "@/lib/supabase/hooks-finance";
 
-export default function DepreciationSchedulesPage() {
-    const { data: _items } = useDepreciationSchedules();
-    const { data: _detail } = useDepreciationSchedule("");
-    const _create = useCreateDepreciationSchedule();
-    const _update = useUpdateDepreciationSchedule();
-    return <ListPageShell config={DEPRECIATION_SCHEDULES_PAGE} />;
+export default async function DepreciationSchedulesPage() {
+    const data = await fetchEntityList("depreciation_schedule");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={DEPRECIATION_SCHEDULES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

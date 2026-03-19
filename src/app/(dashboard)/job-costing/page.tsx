@@ -1,12 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useJobCostEntries } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { JOB_COST_ENTRIES_PAGE } from "@/config/list-page-configs";
 
-export default function JobCostingPage() {
-    const { data: rawData, isLoading } = useJobCostEntries();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={JOB_COST_ENTRIES_PAGE} data={data} isLoading={isLoading} />;
+export default async function JobCostingPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={JOB_COST_ENTRIES_PAGE} />
+        </Suspense>
+    );
 }

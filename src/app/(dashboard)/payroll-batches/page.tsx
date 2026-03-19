@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { PAYROLL_BATCHES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreatePayrollBatch,
-    useDeletePayrollBatch,
-    usePayrollBatch,
-    usePayrollBatches,
-    useUpdatePayrollBatch,
-} from "@/lib/supabase/hooks-finance";
 
-export default function PayrollBatchesPage() {
-    const { data: _items } = usePayrollBatches();
-    const { data: _detail } = usePayrollBatch("");
-    const _create = useCreatePayrollBatch();
-    const _update = useUpdatePayrollBatch();
-    const _delete = useDeletePayrollBatch();
-    return <ListPageShell config={PAYROLL_BATCHES_PAGE} />;
+export default async function PayrollBatchesPage() {
+    const data = await fetchEntityList("payroll_batch");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={PAYROLL_BATCHES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

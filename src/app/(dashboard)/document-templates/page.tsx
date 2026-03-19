@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { TEMPLATES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateDocumentTemplate,
-    useDeleteDocumentTemplate,
-    useDocumentTemplates,
-} from "@/lib/supabase/hooks-documents";
 
-export default function DocumentTemplatesPage() {
-    const { data: _templates } = useDocumentTemplates();
-    const _create = useCreateDocumentTemplate();
-    const _delete = useDeleteDocumentTemplate();
-    return <ListPageShell config={TEMPLATES_PAGE} />;
+export default async function DocumentTemplatesPage() {
+    const data = await fetchEntityList("document_template");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={TEMPLATES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

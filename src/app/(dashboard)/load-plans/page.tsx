@@ -1,18 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { LOAD_PLANS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateLoadPlan,
-    useLoadPlan,
-    useLoadPlans,
-    useUpdateLoadPlan,
-} from "@/lib/supabase/hooks-assets-inventory";
 
-export default function LoadPlansPage() {
-    const { data: _items } = useLoadPlans();
-    const { data: _detail } = useLoadPlan("");
-    const _create = useCreateLoadPlan();
-    const _update = useUpdateLoadPlan();
-    return <ListPageShell config={LOAD_PLANS_PAGE} />;
+export default async function LoadPlansPage() {
+    const data = await fetchEntityList("load_plan");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={LOAD_PLANS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

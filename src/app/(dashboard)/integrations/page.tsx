@@ -1,22 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useProviderConnections } from "@/lib/supabase/hooks-external-sync";
-import {
-    useCreateIntegration,
-    useIntegration,
-    useIntegrations,
-    useUpdateIntegration,
-} from "@/lib/supabase/hooks-core";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { INTEGRATIONS_PAGE } from "@/config/list-page-configs";
 
-export default function IntegrationsPage() {
-    const { data: rawData, isLoading } = useProviderConnections();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const { data: _integrations } = useIntegrations();
-    const { data: _detail } = useIntegration("");
-    const _create = useCreateIntegration();
-    const _update = useUpdateIntegration();
-
-    return <ListPageShell config={INTEGRATIONS_PAGE} data={data} isLoading={isLoading} />;
+export default async function IntegrationsPage() {
+    const data = await fetchEntityList("provider_connection");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={INTEGRATIONS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

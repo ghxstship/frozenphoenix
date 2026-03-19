@@ -1,12 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useProjectTemplates } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { TEMPLATES_PAGE } from "@/config/list-page-configs";
 
-export default function TemplatesPage() {
-    const { data: rawData, isLoading } = useProjectTemplates();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={TEMPLATES_PAGE} data={data} isLoading={isLoading} />;
+export default async function TemplatesPage() {
+    const data = await fetchEntityList("project_template");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={TEMPLATES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -1,20 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { SCHEDULE_ENTRIES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateScheduleEntry,
-    useDeleteScheduleEntry,
-    useScheduleEntries,
-    useScheduleEntry,
-    useUpdateScheduleEntry,
-} from "@/lib/supabase/hooks-production";
 
-export default function Page() {
-    const { data: _items } = useScheduleEntries();
-    const { data: _detail } = useScheduleEntry("");
-    const _create = useCreateScheduleEntry();
-    const _update = useUpdateScheduleEntry();
-    const _delete = useDeleteScheduleEntry();
-    return <ListPageShell config={SCHEDULE_ENTRIES_PAGE} />;
+export default async function ScheduleEntriesPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={SCHEDULE_ENTRIES_PAGE} />
+        </Suspense>
+    );
 }

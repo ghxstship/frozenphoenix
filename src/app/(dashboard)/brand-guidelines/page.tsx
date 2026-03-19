@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useBrandGuidelines } from "@/lib/supabase";
-import { useCreateBrandGuideline } from "@/lib/supabase/hooks-documents";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { BRANDS_PAGE } from "@/config/list-page-configs";
 
-export default function BrandGuidelinesPage() {
-    const { data: rawData, isLoading } = useBrandGuidelines();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateBrandGuideline();
-
-    return <ListPageShell config={BRANDS_PAGE} data={data} isLoading={isLoading} />;
+export default async function BrandGuidelinesPage() {
+    const data = await fetchEntityList("brand_guideline");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={BRANDS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

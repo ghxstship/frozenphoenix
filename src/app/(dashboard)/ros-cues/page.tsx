@@ -1,11 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { ROS_CUES_PAGE } from "@/config/list-page-configs";
-import { useCreateRosCue, useDeleteRosCue } from "@/lib/supabase/hooks-live-ops";
 
-export default function Page() {
-    const _create = useCreateRosCue();
-    const _delete = useDeleteRosCue();
-    return <ListPageShell config={ROS_CUES_PAGE} />;
+export default async function RosCuesPage() {
+    const data = await fetchEntityList("ros_cue");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={ROS_CUES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

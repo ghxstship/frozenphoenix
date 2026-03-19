@@ -1,18 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { WORK_PACKAGES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateWorkPackage,
-    useDeleteWorkPackage,
-    useUpdateWorkPackage,
-    useWorkPackages,
-} from "@/lib/supabase/hooks-production";
 
-export default function WorkPackagesPage() {
-    const { data: _items } = useWorkPackages();
-    const _create = useCreateWorkPackage();
-    const _update = useUpdateWorkPackage();
-    const _delete = useDeleteWorkPackage();
-    return <ListPageShell config={WORK_PACKAGES_PAGE} />;
+export default async function WorkPackagesPage() {
+    const data = await fetchEntityList("work_package");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={WORK_PACKAGES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -1,11 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { EXPENSE_REPORTS_PAGE } from "@/config/list-page-configs";
-import { useCreateExpenseReport, useExpenseReports } from "@/lib/supabase/hooks-finance";
 
-export default function ExpenseReportsPage() {
-    const { data: _items } = useExpenseReports();
-    const _create = useCreateExpenseReport();
-    return <ListPageShell config={EXPENSE_REPORTS_PAGE} />;
+export default async function ExpenseReportsPage() {
+    const data = await fetchEntityList("expense_report");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={EXPENSE_REPORTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

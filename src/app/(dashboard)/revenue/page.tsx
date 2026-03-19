@@ -1,12 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useRevenueSchedules } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { REVENUE_SCHEDULES_PAGE } from "@/config/list-page-configs";
 
-export default function RevenuePage() {
-    const { data: rawData, isLoading } = useRevenueSchedules();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={REVENUE_SCHEDULES_PAGE} data={data} isLoading={isLoading} />;
+export default async function RevenuePage() {
+    const data = await fetchEntityList("revenue_schedule");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={REVENUE_SCHEDULES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

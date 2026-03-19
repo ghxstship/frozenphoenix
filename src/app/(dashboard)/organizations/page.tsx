@@ -1,10 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { ORGANIZATIONS_PAGE } from "@/config/list-page-configs";
-import { useOrganizations } from "@/lib/supabase/hooks-admin";
 
-export default function Page() {
-    const { data: _items } = useOrganizations();
-    return <ListPageShell config={ORGANIZATIONS_PAGE} />;
+export default async function OrganizationsPage() {
+    const data = await fetchEntityList("organization");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={ORGANIZATIONS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

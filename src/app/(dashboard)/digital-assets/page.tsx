@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useDigitalAssets } from "@/lib/supabase";
-import { useCreateDigitalAsset } from "@/lib/supabase/hooks-documents";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { DIGITAL_ASSETS_PAGE } from "@/config/list-page-configs";
 
-export default function DigitalAssetsPage() {
-    const { data: rawData, isLoading } = useDigitalAssets();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateDigitalAsset();
-
-    return <ListPageShell config={DIGITAL_ASSETS_PAGE} data={data} isLoading={isLoading} />;
+export default async function DigitalAssetsPage() {
+    const data = await fetchEntityList("digital_asset");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={DIGITAL_ASSETS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

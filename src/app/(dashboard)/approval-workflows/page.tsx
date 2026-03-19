@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { APPROVAL_WORKFLOWS_PAGE } from "@/config/list-page-configs";
-import {
-    useApprovalWorkflows,
-    useCreateApprovalWorkflow,
-    useUpdateApprovalWorkflow,
-} from "@/lib/supabase/hooks-workflows";
 
-export default function Page() {
-    const { data: _workflows } = useApprovalWorkflows();
-    const _create = useCreateApprovalWorkflow();
-    const _update = useUpdateApprovalWorkflow();
-    return <ListPageShell config={APPROVAL_WORKFLOWS_PAGE} />;
+export default async function ApprovalWorkflowsPage() {
+    const data = await fetchEntityList("approval_workflow");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={APPROVAL_WORKFLOWS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

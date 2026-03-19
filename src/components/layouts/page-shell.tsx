@@ -9,11 +9,13 @@ import type { TabBarItem } from "@/components/ui/tab-bar";
 /** @deprecated Use TabBarItem from '@/components/ui/tab-bar' directly */
 export type TabConfig = TabBarItem;
 
+/** @internal Retained for justified-bespoke pages. New pages should not use this type. */
 export interface BreadcrumbItem {
     label: string;
     href?: string;
 }
 
+/** @internal Retained for justified-bespoke pages. New pages should use a purpose-built shell. */
 export interface PageShellProps {
     title: string;
     description?: string;
@@ -26,6 +28,16 @@ export interface PageShellProps {
     children: React.ReactNode;
 }
 
+/**
+ * @internal Legacy thin wrapper — retained for 21 justified-bespoke pages (tool/editor patterns).
+ * New pages should use one of the purpose-built shells:
+ * - `ListPageShell` — list / card-grid pages
+ * - `DetailPageShell` — record detail pages
+ * - `OperationalDashboardShell` — stats + tabs + card grids
+ * - `SettingsPageShell` — settings panels
+ * - `WizardShell` — multi-step flows
+ * - `FormPageShell` — create/edit forms
+ */
 export function PageShell({
     title,
     description,

@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useAccounts } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { ACCOUNTS_PAGE } from "@/config/list-page-configs";
-import { useCreateAccount } from "@/lib/supabase/hooks-crm";
 
-export default function AccountsPage() {
-    const { data: rawData, isLoading } = useAccounts();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateAccount();
-
-    return <ListPageShell config={ACCOUNTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function AccountsPage() {
+    const data = await fetchEntityList("account");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={ACCOUNTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

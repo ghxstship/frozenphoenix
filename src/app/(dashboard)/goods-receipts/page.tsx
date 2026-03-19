@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useGoodsReceipts } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { GOODS_RECEIPTS_PAGE } from "@/config/list-page-configs";
-import { useCreateGoodsReceipt } from "@/lib/supabase/hooks-legal";
 
-export default function GoodsReceiptsPage() {
-    const { data: rawData, isLoading } = useGoodsReceipts();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateGoodsReceipt();
-
-    return <ListPageShell config={GOODS_RECEIPTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function GoodsReceiptsPage() {
+    const data = await fetchEntityList("goods_receipt");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={GOODS_RECEIPTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

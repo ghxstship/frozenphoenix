@@ -1,16 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { TECHNICAL_SPECS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateTechnicalSpec,
-    useTechnicalSpecs,
-    useUpdateTechnicalSpec,
-} from "@/lib/supabase/hooks-production";
 
-export default function TechnicalSpecsPage() {
-    const { data: _items } = useTechnicalSpecs();
-    const _create = useCreateTechnicalSpec();
-    const _update = useUpdateTechnicalSpec();
-    return <ListPageShell config={TECHNICAL_SPECS_PAGE} />;
+export default async function TechnicalSpecsPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={TECHNICAL_SPECS_PAGE} />
+        </Suspense>
+    );
 }

@@ -1,11 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { STRIKE_SEQUENCES_PAGE } from "@/config/list-page-configs";
-import { useCreateStrikeSequence, useUpdateStrikeSequence } from "@/lib/supabase/hooks-live-ops";
 
-export default function StrikeSequencesPage() {
-    const _create = useCreateStrikeSequence();
-    const _update = useUpdateStrikeSequence();
-    return <ListPageShell config={STRIKE_SEQUENCES_PAGE} />;
+export default async function StrikeSequencesPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={STRIKE_SEQUENCES_PAGE} />
+        </Suspense>
+    );
 }

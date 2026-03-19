@@ -1,10 +1,30 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-    // Allows to automatically instantiate createClient with right options
-    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-    __InternalSupabase: {
-        PostgrestVersion: "14.1";
+    graphql_public: {
+        Tables: {
+            [_ in never]: never;
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            graphql: {
+                Args: {
+                    extensions?: Json;
+                    operationName?: string;
+                    query?: string;
+                    variables?: Json;
+                };
+                Returns: Json;
+            };
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
+        };
     };
     public: {
         Tables: {
@@ -3988,10 +4008,12 @@ export type Database = {
             };
             automations: {
                 Row: {
+                    conditions: Json | null;
                     created_at: string | null;
                     created_by: string | null;
                     description: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
+                    error_count: number | null;
                     id: string;
                     is_active: boolean | null;
                     last_triggered_at: string | null;
@@ -4007,10 +4029,12 @@ export type Database = {
                     version: number | null;
                 };
                 Insert: {
+                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type: Database["public"]["Enums"]["entity_type"];
+                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -4026,10 +4050,12 @@ export type Database = {
                     version?: number | null;
                 };
                 Update: {
+                    conditions?: Json | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
                     entity_type?: Database["public"]["Enums"]["entity_type"];
+                    error_count?: number | null;
                     id?: string;
                     is_active?: boolean | null;
                     last_triggered_at?: string | null;
@@ -27455,6 +27481,8 @@ export type Database = {
                     status: string;
                     sustainability_score: number | null;
                     team_id: string | null;
+                    template_id: string | null;
+                    template_version: number | null;
                     timezone: string;
                     updated_at: string | null;
                     weather_contingency_plan: string | null;
@@ -27491,6 +27519,8 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
+                    template_id?: string | null;
+                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -27527,6 +27557,8 @@ export type Database = {
                     status?: string;
                     sustainability_score?: number | null;
                     team_id?: string | null;
+                    template_id?: string | null;
+                    template_version?: number | null;
                     timezone?: string;
                     updated_at?: string | null;
                     weather_contingency_plan?: string | null;
@@ -27635,6 +27667,13 @@ export type Database = {
                         columns: ["team_id"];
                         isOneToOne: false;
                         referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "projects_template_id_fkey";
+                        columns: ["template_id"];
+                        isOneToOne: false;
+                        referencedRelation: "project_templates";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -42115,6 +42154,13 @@ export type Database = {
                     token_count: number;
                 }[];
             };
+            purge_expired_data: {
+                Args: never;
+                Returns: {
+                    entity: string;
+                    rows_purged: number;
+                }[];
+            };
             refresh_dashboard_kpis: { Args: never; Returns: undefined };
             resolve_setting: {
                 Args: {
@@ -44055,6 +44101,9 @@ export type CompositeTypes<
       : never;
 
 export const Constants = {
+    graphql_public: {
+        Enums: {},
+    },
     public: {
         Enums: {
             access_grant_status: ["active", "expired", "revoked"],

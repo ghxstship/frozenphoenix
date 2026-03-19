@@ -1,11 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { ASSET_TAGS_PAGE } from "@/config/list-page-configs";
-import { useCreateAssetTag, useDeleteAssetTag } from "@/lib/supabase/hooks-assets-inventory";
 
-export default function Page() {
-    const _create = useCreateAssetTag();
-    const _delete = useDeleteAssetTag();
-    return <ListPageShell config={ASSET_TAGS_PAGE} />;
+export default async function AssetTagsPage() {
+    const data = await fetchEntityList("asset_tag");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={ASSET_TAGS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useRecurringInvoices } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { RECURRING_INVOICES_PAGE } from "@/config/list-page-configs";
-import { useCreateRecurringInvoice } from "@/lib/supabase/hooks-finance";
 
-export default function RecurringInvoicesPage() {
-    const { data: rawData, isLoading } = useRecurringInvoices();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateRecurringInvoice();
-
-    return <ListPageShell config={RECURRING_INVOICES_PAGE} data={data} isLoading={isLoading} />;
+export default async function RecurringInvoicesPage() {
+    const data = await fetchEntityList("recurring_invoice");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={RECURRING_INVOICES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

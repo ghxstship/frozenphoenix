@@ -1,12 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useContracts } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { CONTRACTS_PAGE } from "@/config/list-page-configs";
 
-export default function ContractsPage() {
-    const { data: rawData, isLoading } = useContracts();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={CONTRACTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function ContractsPage() {
+    const data = await fetchEntityList("contract");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={CONTRACTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

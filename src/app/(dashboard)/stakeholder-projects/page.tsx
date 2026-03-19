@@ -1,11 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { STAKEHOLDER_PROJECTS_PAGE } from "@/config/list-page-configs";
-import { useCreateStakeholderProject, useDeleteStakeholderProject } from "@/lib/supabase/hooks-crm";
 
-export default function Page() {
-    const _create = useCreateStakeholderProject();
-    const _delete = useDeleteStakeholderProject();
-    return <ListPageShell config={STAKEHOLDER_PROJECTS_PAGE} />;
+export default async function StakeholderProjectsPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={STAKEHOLDER_PROJECTS_PAGE} />
+        </Suspense>
+    );
 }

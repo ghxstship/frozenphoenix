@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useDocuments } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { DOCUMENTS_PAGE } from "@/config/list-page-configs";
-import { useMyDocuments } from "@/lib/supabase/hooks-admin";
-import { useCreateDocument } from "@/lib/supabase/hooks-documents";
 
-export default function DocumentsPage() {
-    const { data: rawData, isLoading } = useDocuments();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const { data: _myDocs } = useMyDocuments();
-    const _createDoc = useCreateDocument();
-
-    return <ListPageShell config={DOCUMENTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function DocumentsPage() {
+    const data = await fetchEntityList("document");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={DOCUMENTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

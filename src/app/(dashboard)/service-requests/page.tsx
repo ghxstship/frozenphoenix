@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useServiceRequests } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { SERVICE_REQUESTS_PAGE } from "@/config/list-page-configs";
-import { useCreateServiceRequest } from "@/lib/supabase/hooks-admin";
 
-export default function ServiceRequestsPage() {
-    const { data: rawData, isLoading } = useServiceRequests();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateServiceRequest();
-
-    return <ListPageShell config={SERVICE_REQUESTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function ServiceRequestsPage() {
+    const data = await fetchEntityList("service_request");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={SERVICE_REQUESTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

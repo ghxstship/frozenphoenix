@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { TIME_ENTRIES_PAGE } from "@/config/list-page-configs";
-import {
-    useDeleteTimeEntry,
-    useTimeEntry,
-    useUpdateTimeEntry,
-} from "@/lib/supabase/hooks-workforce";
 
-export default function Page() {
-    const { data: _detail } = useTimeEntry("");
-    const _update = useUpdateTimeEntry();
-    const _delete = useDeleteTimeEntry();
-    return <ListPageShell config={TIME_ENTRIES_PAGE} />;
+export default async function TimeEntriesPage() {
+    const data = await fetchEntityList("time_entry");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={TIME_ENTRIES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

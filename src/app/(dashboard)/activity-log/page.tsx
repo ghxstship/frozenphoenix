@@ -1,18 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { ACTIVITY_LOG_PAGE } from "@/config/list-page-configs";
-import {
-    useActivityLog,
-    useActivityLogRecent,
-    useCreateActivity,
-    useUpdateActivity,
-} from "@/lib/supabase/hooks-admin";
 
-export default function Page() {
-    const { data: _activityLog } = useActivityLog();
-    const { data: _recentActivity } = useActivityLogRecent();
-    const _createActivity = useCreateActivity();
-    const _updateActivity = useUpdateActivity();
-    return <ListPageShell config={ACTIVITY_LOG_PAGE} />;
+export default async function ActivityLogPage() {
+    const data = await fetchEntityList("activity_log");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={ACTIVITY_LOG_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

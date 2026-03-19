@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useSavedViews } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { SAVED_VIEWS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateSavedView,
-    useDeleteSavedView,
-    useUpdateSavedView,
-} from "@/lib/supabase/hooks-automation";
 
-export default function SavedViewsPage() {
-    const { data: rawData, isLoading } = useSavedViews();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateSavedView();
-    const _update = useUpdateSavedView();
-    const _delete = useDeleteSavedView();
-
-    return <ListPageShell config={SAVED_VIEWS_PAGE} data={data} isLoading={isLoading} />;
+export default async function SavedViewsPage() {
+    const data = await fetchEntityList("saved_view");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={SAVED_VIEWS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

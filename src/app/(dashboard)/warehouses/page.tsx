@@ -1,20 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useWarehouses } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { WAREHOUSES_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateWarehouse,
-    useDeleteWarehouse,
-    useUpdateWarehouse,
-} from "@/lib/supabase/hooks-assets-inventory";
 
-export default function WarehousesPage() {
-    const { data: rawData, isLoading } = useWarehouses();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateWarehouse();
-    const _update = useUpdateWarehouse();
-    const _delete = useDeleteWarehouse();
-
-    return <ListPageShell config={WAREHOUSES_PAGE} data={data} isLoading={isLoading} />;
+export default async function WarehousesPage() {
+    const data = await fetchEntityList("warehouse");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={WAREHOUSES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -1,8 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { RESILIENCE_TARGETS_PAGE } from "@/config/list-page-configs";
 
-export default function ResilienceTargetsPage() {
-    return <ListPageShell config={RESILIENCE_TARGETS_PAGE} />;
+export default async function ResilienceTargetsPage() {
+    const data = await fetchEntityList("resilience_target");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={RESILIENCE_TARGETS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -1,12 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useVendorOnboarding } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { VENDOR_ONBOARDING_PAGE } from "@/config/list-page-configs";
 
-export default function VendorOnboardingPage() {
-    const { data: rawData, isLoading } = useVendorOnboarding();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={VENDOR_ONBOARDING_PAGE} data={data} isLoading={isLoading} />;
+export default async function VendorOnboardingPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={VENDOR_ONBOARDING_PAGE} />
+        </Suspense>
+    );
 }

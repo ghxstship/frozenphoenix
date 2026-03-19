@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useComplianceChecklists } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { COMPLIANCE_CHECKLISTS_PAGE } from "@/config/list-page-configs";
-import { useCreateComplianceChecklist } from "@/lib/supabase/hooks-legal";
 
-export default function ComplianceChecklistsPage() {
-    const { data: rawData, isLoading } = useComplianceChecklists();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateComplianceChecklist();
-
-    return <ListPageShell config={COMPLIANCE_CHECKLISTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function ComplianceChecklistsPage() {
+    const data = await fetchEntityList("compliance_checklist");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={COMPLIANCE_CHECKLISTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

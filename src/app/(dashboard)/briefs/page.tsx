@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useBriefs } from "@/lib/supabase";
-import { useCreateBrief } from "@/lib/supabase/hooks-documents";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { BRIEFS_PAGE } from "@/config/list-page-configs";
 
-export default function BriefsPage() {
-    const { data: rawData, isLoading } = useBriefs();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateBrief();
-
-    return <ListPageShell config={BRIEFS_PAGE} data={data} isLoading={isLoading} />;
+export default async function BriefsPage() {
+    const data = await fetchEntityList("brief");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={BRIEFS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

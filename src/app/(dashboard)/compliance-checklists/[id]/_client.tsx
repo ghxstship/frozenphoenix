@@ -1,0 +1,71 @@
+"use client";
+
+import {
+    useComplianceChecklist,
+    useDeleteComplianceChecklist,
+    useUpdateComplianceChecklist,
+} from "@/lib/supabase";
+import { useDetailCrud } from "@/hooks/use-detail-crud";
+import { DetailPageShell } from "@/components/shells/detail-page-shell";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { CheckSquare, ClipboardList } from "lucide-react";
+import type { DetailPageConfig } from "@/types/detail-page-config";
+
+const CONFIG: DetailPageConfig = {
+    entityKey: "compliance_checklists",
+    titleKey: "name",
+    statusKey: "status",
+    icon: ClipboardList,
+    backHref: "/compliance-checklists",
+    backLabel: "Compliance Checklists",
+    chatterRecordType: "compliance_checklist",
+    sidebarFields: [
+        { id: "status", label: "Status", accessorKey: "status" },
+        { id: "category", label: "Category", accessorKey: "category" },
+        { id: "created_at", label: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+    fields: [
+        { id: "description", label: "Description", accessorKey: "description", fullWidth: true },
+    ],
+    tabs: [
+        {
+            id: "items",
+            label: "Checklist Items",
+            content: (
+                <EmptyState
+                    icon={CheckSquare}
+                    title="No checklist items yet"
+                    description="Individual compliance checklist items will appear here."
+                    compact
+                />
+            ),
+        },
+    ],
+};
+
+export function ComplianceChecklistDetailClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord: Record<string, unknown> | null;
+}) {
+    const { data: checklist, isLoading } = useComplianceChecklist(id);
+    const { menuItems: crudMenuItems } = useDetailCrud({
+        entityId: id,
+        entityLabel: "Compliance Checklist",
+        listPath: "/compliance-checklists",
+        useUpdateHook: useUpdateComplianceChecklist,
+        useDeleteHook: useDeleteComplianceChecklist,
+    });
+
+    return (
+        <DetailPageShell
+            config={CONFIG}
+            id={id}
+            record={(checklist ?? initialRecord) as Record<string, unknown> | null}
+            isLoading={isLoading && !initialRecord}
+            menuItems={crudMenuItems}
+        />
+    );
+}

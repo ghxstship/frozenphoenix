@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { PROJECT_ASSIGNMENTS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateProjectAssignment,
-    useDeleteProjectAssignment,
-    useUpdateProjectAssignment,
-} from "@/lib/supabase/hooks-production";
 
-export default function Page() {
-    const _create = useCreateProjectAssignment();
-    const _update = useUpdateProjectAssignment();
-    const _delete = useDeleteProjectAssignment();
-    return <ListPageShell config={PROJECT_ASSIGNMENTS_PAGE} />;
+export default async function ProjectAssignmentsPage() {
+    const data = await fetchEntityList("project_assignment");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={PROJECT_ASSIGNMENTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

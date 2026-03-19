@@ -1,22 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { SHIFTS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateCalendarEvent,
-    useCreateShift,
-    useDeleteCalendarEvent,
-    useDeleteShift,
-    useUpdateCalendarEvent,
-    useUpdateShift,
-} from "@/lib/supabase/hooks-core";
 
-export default function Page() {
-    const _createShift = useCreateShift();
-    const _updateShift = useUpdateShift();
-    const _deleteShift = useDeleteShift();
-    const _createCalEvent = useCreateCalendarEvent();
-    const _updateCalEvent = useUpdateCalendarEvent();
-    const _deleteCalEvent = useDeleteCalendarEvent();
-    return <ListPageShell config={SHIFTS_PAGE} />;
+export default async function ShiftsPage() {
+    const data = await fetchEntityList("shift");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={SHIFTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

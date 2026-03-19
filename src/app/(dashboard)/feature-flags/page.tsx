@@ -1,17 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { PermissionGate } from "@/components/permission-guard";
-import { useFeatureFlags } from "@/lib/settings/hooks";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { FEATURE_FLAGS_PAGE } from "@/config/list-page-configs";
 
-export default function FeatureFlagsPage() {
-    const { data: rawData, isLoading } = useFeatureFlags();
-    const data = (rawData ?? []) as unknown as Record<string, unknown>[];
-
+export default async function FeatureFlagsPage() {
     return (
-        <PermissionGate resource="settings" action="manage">
-            <ListPageShell config={FEATURE_FLAGS_PAGE} data={data} isLoading={isLoading} />
-        </PermissionGate>
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={FEATURE_FLAGS_PAGE} />
+        </Suspense>
     );
 }

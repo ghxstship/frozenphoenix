@@ -1,30 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useIpRights } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { IP_RIGHTS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateIpRight,
-    useCreateRightsLicense,
-    useDeleteIpRight,
-    useDeleteRightsLicense,
-    useRightsLicense,
-    useRightsLicenses,
-    useUpdateIpRight,
-    useUpdateRightsLicense,
-} from "@/lib/supabase/hooks-legal";
 
-export default function IPRightsPage() {
-    const { data: rawData, isLoading } = useIpRights();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateIpRight();
-    const _update = useUpdateIpRight();
-    const _delete = useDeleteIpRight();
-    const { data: _licenses } = useRightsLicenses();
-    const { data: _licenseDetail } = useRightsLicense("");
-    const _createLicense = useCreateRightsLicense();
-    const _updateLicense = useUpdateRightsLicense();
-    const _deleteLicense = useDeleteRightsLicense();
-
-    return <ListPageShell config={IP_RIGHTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function IpRightsPage() {
+    const data = await fetchEntityList("ip_right");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={IP_RIGHTS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

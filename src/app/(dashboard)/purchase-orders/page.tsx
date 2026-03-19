@@ -1,12 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { usePurchaseOrders } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { PURCHASE_ORDERS_PAGE } from "@/config/list-page-configs";
 
-export default function PurchaseOrdersPage() {
-    const { data: rawData, isLoading } = usePurchaseOrders();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={PURCHASE_ORDERS_PAGE} data={data} isLoading={isLoading} />;
+export default async function PurchaseOrdersPage() {
+    const data = await fetchEntityList("purchase_order");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={PURCHASE_ORDERS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

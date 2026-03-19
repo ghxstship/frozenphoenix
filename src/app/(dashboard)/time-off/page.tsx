@@ -1,12 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useTimeOffRequests } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { TIME_OFF_REQUESTS_PAGE } from "@/config/list-page-configs";
 
-export default function TimeOffPage() {
-    const { data: rawData, isLoading } = useTimeOffRequests();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-
-    return <ListPageShell config={TIME_OFF_REQUESTS_PAGE} data={data} isLoading={isLoading} />;
+export default async function TimeOffPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={TIME_OFF_REQUESTS_PAGE} />
+        </Suspense>
+    );
 }

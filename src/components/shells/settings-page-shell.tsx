@@ -155,6 +155,24 @@ export function SettingsPageShell({ config, children }: SettingsPageShellProps) 
         [config.tabs]
     );
 
+    const isVertical = config.orientation === "vertical";
+
+    const tabContent = children
+        ? children
+        : config.tabs.map((tab) => (
+              <TabPanel key={tab.id} value={tab.id} activeValue={activeTab}>
+                  {tab.content ? (
+                      tab.content
+                  ) : tab.sections ? (
+                      <div className="space-y-6">
+                          {tab.sections.map((section) => (
+                              <SettingsSectionRenderer key={section.id} section={section} />
+                          ))}
+                      </div>
+                  ) : null}
+              </TabPanel>
+          ));
+
     return (
         <PermissionGate
             resource={config.resource}
@@ -165,32 +183,43 @@ export function SettingsPageShell({ config, children }: SettingsPageShellProps) 
                     {config.headerActions}
                 </PageHeader>
 
-                <TabBar
-                    items={tabItems}
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                    ariaLabel={`${config.title} tabs`}
-                    className="overflow-x-auto scrollbar-hide"
-                />
-
-                {children
-                    ? children
-                    : config.tabs.map((tab) => (
-                          <TabPanel key={tab.id} value={tab.id} activeValue={activeTab}>
-                              {tab.content ? (
-                                  tab.content
-                              ) : tab.sections ? (
-                                  <div className="space-y-6">
-                                      {tab.sections.map((section) => (
-                                          <SettingsSectionRenderer
-                                              key={section.id}
-                                              section={section}
-                                          />
-                                      ))}
-                                  </div>
-                              ) : null}
-                          </TabPanel>
-                      ))}
+                {isVertical ? (
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        <Card className="lg:w-64 shrink-0">
+                            <CardContent className="p-2">
+                                <TabBar
+                                    items={tabItems}
+                                    value={activeTab}
+                                    onValueChange={setActiveTab}
+                                    ariaLabel={`${config.title} tabs`}
+                                    orientation="vertical"
+                                    variant="pill"
+                                    className="w-full"
+                                />
+                            </CardContent>
+                        </Card>
+                        <div className="flex-1 space-y-6">
+                            <div
+                                role="tabpanel"
+                                id={`settings-tabs-tabpanel-${activeTab}`}
+                                aria-labelledby={`settings-tabs-tab-${activeTab}`}
+                            >
+                                {tabContent}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <TabBar
+                            items={tabItems}
+                            value={activeTab}
+                            onValueChange={setActiveTab}
+                            ariaLabel={`${config.title} tabs`}
+                            className="overflow-x-auto scrollbar-hide"
+                        />
+                        {tabContent}
+                    </>
+                )}
             </div>
         </PermissionGate>
     );

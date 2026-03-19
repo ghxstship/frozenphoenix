@@ -1,16 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useDeals } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { PIPELINE_PAGE } from "@/config/list-page-configs";
-import { useCreatePipeline, useDeletePipeline, useUpdatePipeline } from "@/lib/supabase/hooks-crm";
 
-export default function PipelinePage() {
-    const { data: rawData, isLoading } = useDeals();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _createPipeline = useCreatePipeline();
-    const _updatePipeline = useUpdatePipeline();
-    const _deletePipeline = useDeletePipeline();
-
-    return <ListPageShell config={PIPELINE_PAGE} data={data} isLoading={isLoading} />;
+export default async function PipelinePage() {
+    const data = await fetchEntityList("deal");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={PIPELINE_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

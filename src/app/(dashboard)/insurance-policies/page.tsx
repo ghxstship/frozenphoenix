@@ -1,14 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useInsurancePolicies } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { INSURANCE_POLICIES_PAGE } from "@/config/list-page-configs";
-import { useCreateInsurancePolicy } from "@/lib/supabase/hooks-legal";
 
-export default function InsurancePoliciesPage() {
-    const { data: rawData, isLoading } = useInsurancePolicies();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const _create = useCreateInsurancePolicy();
-
-    return <ListPageShell config={INSURANCE_POLICIES_PAGE} data={data} isLoading={isLoading} />;
+export default async function InsurancePoliciesPage() {
+    const data = await fetchEntityList("insurance_policy");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={INSURANCE_POLICIES_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

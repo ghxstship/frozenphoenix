@@ -1,18 +1,12 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { WORKER_CLASSIFICATIONS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateWorkerClassification,
-    useUpdateWorkerClassification,
-    useWorkerClassification,
-    useWorkerClassifications,
-} from "@/lib/supabase/hooks-workforce";
 
-export default function Page() {
-    const { data: _items } = useWorkerClassifications();
-    const { data: _detail } = useWorkerClassification("");
-    const _create = useCreateWorkerClassification();
-    const _update = useUpdateWorkerClassification();
-    return <ListPageShell config={WORKER_CLASSIFICATIONS_PAGE} />;
+export default async function WorkerClassificationsPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={WORKER_CLASSIFICATIONS_PAGE} />
+        </Suspense>
+    );
 }

@@ -1,24 +1,14 @@
-"use client";
-
+import { Suspense } from "react";
 import { ListPageShell } from "@/components/shells";
-import { useRateCards } from "@/lib/supabase";
+import { LoadingState } from "@/components/layouts/loading-state";
+import { fetchEntityList } from "@/lib/api/server-fetch";
 import { RATE_CARDS_PAGE } from "@/config/list-page-configs";
-import {
-    useCreateRateCard,
-    useCreateRateCardItem,
-    useDeleteRateCard,
-    useRateCardWithItems,
-    useUpdateRateCard,
-} from "@/lib/supabase/hooks-finance";
 
-export default function RateCardsPage() {
-    const { data: rawData, isLoading } = useRateCards();
-    const data = (rawData ?? []) as Record<string, unknown>[];
-    const { data: _withItems } = useRateCardWithItems("");
-    const _create = useCreateRateCard();
-    const _createItem = useCreateRateCardItem();
-    const _update = useUpdateRateCard();
-    const _delete = useDeleteRateCard();
-
-    return <ListPageShell config={RATE_CARDS_PAGE} data={data} isLoading={isLoading} />;
+export default async function RateCardsPage() {
+    const data = await fetchEntityList("rate_card");
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ListPageShell config={RATE_CARDS_PAGE} data={data} isLoading={false} />
+        </Suspense>
+    );
 }

@@ -90,6 +90,10 @@ export interface SettingsPageConfig {
     /** Tab definitions */
     tabs: SettingsTabDef[];
 
+    // ─── Layout ───
+    /** Tab orientation — "horizontal" (default) or "vertical" (sidebar nav) */
+    orientation?: "horizontal" | "vertical";
+
     // ─── URL tab state key (default: "tab") ───
     tabParamKey?: string;
 }

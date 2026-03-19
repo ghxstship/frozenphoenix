@@ -1,0 +1,6 @@
+import { PipelineDetailClient } from "./_client";
+
+export default async function PipelineDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    return <PipelineDetailClient id={id} />;
+}

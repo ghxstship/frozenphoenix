@@ -86,6 +86,7 @@ import type {
     ListPageConfig,
     ListRowActionDef,
 } from "@/types/list-page-config";
+import { LIST_PAGE_REGISTRY, type ListPageConfigKey } from "@/config/list-page-configs/registry";
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
@@ -94,7 +95,10 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 type EntityRecord = Record<string, unknown>;
 
 export interface ListPageShellProps {
-    config: ListPageConfig;
+    /** Direct config object (client-side only — NOT serializable across RSC boundary) */
+    config?: ListPageConfig;
+    /** Registry key — serializable alternative to config for RSC→client boundary */
+    configKey?: ListPageConfigKey;
     /** Pre-fetched data — bypasses built-in apiList query when provided */
     data?: EntityRecord[];
     /** Loading state for externally-provided data */
@@ -472,10 +476,17 @@ function ViewContent({
 // ─── Main Component ─────────────────────────────────────────
 
 export function ListPageShell({
-    config,
+    config: configProp,
+    configKey,
     data: externalData,
     isLoading: externalLoading,
 }: ListPageShellProps) {
+    const config = configProp ?? (configKey ? LIST_PAGE_REGISTRY[configKey] : undefined);
+    if (!config) {
+        throw new Error(
+            `ListPageShell: either "config" or a valid "configKey" is required. Received configKey="${String(configKey)}"`
+        );
+    }
     const router = useRouter();
     const entityConfig = getEntityConfig(config.entityKey);
     const [search, setSearch] = useState("");

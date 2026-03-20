@@ -657,7 +657,7 @@ export function Sidebar() {
                                         (user ? "Loading role..." : "Not signed in")}
                                 </p>
                             </div>
-                            {profile && (
+                            {user && (
                                 <button
                                     onClick={handleSignOut}
                                     disabled={signingOut}

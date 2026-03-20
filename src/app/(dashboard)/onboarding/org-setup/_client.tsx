@@ -91,8 +91,8 @@ export function OrgSetupPageClient() {
     const [success, setSuccess] = useState(false);
 
     const handleSubmit = useCallback(
-        async (e: React.FormEvent) => {
-            e.preventDefault();
+        async (e?: React.FormEvent) => {
+            e?.preventDefault();
             setError(null);
 
             if (!orgName.trim()) {
@@ -172,7 +172,7 @@ export function OrgSetupPageClient() {
             showProgress: false,
             submitLabel: "Continue",
             onCancel: handleSkip,
-            onComplete: handleSubmit as unknown as () => Promise<void>,
+            onComplete: handleSubmit,
             steps: [
                 {
                     id: "org-setup",

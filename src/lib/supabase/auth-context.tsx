@@ -346,10 +346,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setSession(freshSession);
                     setUser(validatedUser);
 
+                    // Set loading=false BEFORE fetching profile/memberships so the
+                    // UI isn't stuck on "Loading..." while those resolve. The user
+                    // is authenticated — profile/memberships populate asynchronously.
+                    if (!cancelled) {
+                        setLoading(false);
+                        initDoneRef.current = true;
+                    }
+
                     await Promise.all([
                         fetchProfileRef.current(validatedUser.id, validatedUser),
                         fetchMembershipsRef.current(validatedUser.id),
                     ]);
+
+                    return; // Skip the setLoading(false) below
                 } else {
                     setSession(null);
                     setUser(null);

@@ -32,7 +32,9 @@ export const POST = withApiHandler(
         method: "POST",
         route: "/api/organizations",
         mutation: true,
-        rbac: { resource: "organizations", action: "write" },
+        // No RBAC — org creation is a bootstrap action during onboarding.
+        // New users default to "member" role which lacks organizations:write.
+        // Auth is still enforced (user must be logged in).
     },
     async (request, { supabase, user, log }) => {
         // Validate request body with Zod

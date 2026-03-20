@@ -217,7 +217,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { profile, activeOrg, loading: authLoading, signOut } = useAuth();
+    const { user, profile, activeOrg, loading: authLoading, signOut } = useAuth();
     const isOpen = useSidebar((state) => state.isOpen);
     const isCollapsed = useSidebar((state) => state.isCollapsed);
     const isMobile = useSidebar((state) => state.isMobile);
@@ -646,10 +646,15 @@ export function Sidebar() {
                             </div>
                             <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                 <p className="text-xs font-medium truncate">
-                                    {authLoading ? "Loading..." : profile?.display_name || "Guest"}
+                                    {authLoading
+                                        ? "Loading..."
+                                        : profile?.display_name ||
+                                          user?.email?.split("@")[0] ||
+                                          "Guest"}
                                 </p>
                                 <p className="density-caption text-sidebar-foreground/40 truncate capitalize">
-                                    {activeOrg?.role || "Not signed in"}
+                                    {activeOrg?.role ||
+                                        (user ? "Loading role..." : "Not signed in")}
                                 </p>
                             </div>
                             {profile && (

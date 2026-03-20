@@ -122,7 +122,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Only create a default membership when the query succeeded with
             // zero rows. If the query itself failed (RLS, network), do NOT
             // fall through — that would spuriously create a duplicate membership.
-            if (error) return;
+            if (error) {
+                // eslint-disable-next-line no-console
+                console.warn("[auth] org_memberships SELECT failed:", error.message, error.code);
+                return;
+            }
 
             // No org_memberships — create one in the default org
             const { data: defaultOrg } = await supabase
@@ -161,11 +165,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchProfile = useCallback(
         async (userId: string, authUser?: User) => {
             if (!supabase) return;
-            const { data } = await supabase
+            const { data, error: selectError } = await supabase
                 .from("user_profiles")
                 .select("*")
                 .eq("id", userId)
                 .single();
+
+            if (selectError) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                    "[auth] user_profiles SELECT failed:",
+                    selectError.message,
+                    selectError.code
+                );
+            }
 
             if (data) {
                 setProfile(data as Profile);
@@ -183,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 resolvedUser.email?.split("@")[0] ||
                 "User";
 
-            const { data: created } = await supabase
+            const { data: created, error: upsertError } = await supabase
                 .from("user_profiles")
                 .upsert(
                     {
@@ -195,6 +208,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 )
                 .select("*")
                 .single();
+
+            if (upsertError) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    "[auth] user_profiles UPSERT failed:",
+                    upsertError.message,
+                    upsertError.code
+                );
+            }
 
             setProfile((created as Profile | null) ?? null);
         },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -22,10 +23,7 @@ export const POST = withApiHandler(
         const { deal_id } = body;
 
         if (!deal_id) {
-            return NextResponse.json(
-                { error: { message: "deal_id is required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("deal_id is required");
         }
 
         // Fetch the deal
@@ -38,14 +36,11 @@ export const POST = withApiHandler(
             .single();
 
         if (dealErr || !deal) {
-            return NextResponse.json({ error: { message: "Deal not found" } }, { status: 404 });
+            return ApiErrors.notFound("Deal");
         }
 
         if (deal.converted_project_id) {
-            return NextResponse.json(
-                { error: { message: "Deal already converted to a project" } },
-                { status: 409 }
-            );
+            return ApiErrors.conflict("Deal already converted to a project");
         }
 
         // Create project from deal data
@@ -71,10 +66,7 @@ export const POST = withApiHandler(
             .single();
 
         if (projectErr || !project) {
-            return NextResponse.json(
-                { error: { message: "Failed to create project", details: projectErr?.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to create project");
         }
 
         // Update deal with converted project reference

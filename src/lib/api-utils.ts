@@ -16,7 +16,7 @@ export interface ApiErrorPayload {
     };
 }
 
-function generateRequestId(): string {
+export function generateRequestId(): string {
     return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
@@ -41,29 +41,22 @@ export function apiError(
 
 // ─── Common Error Factories ──────────────────────────────────
 export const ApiErrors = {
-    unauthorized: (message = "Authentication required") =>
-        apiError("UNAUTHORIZED", message, 401),
+    unauthorized: (message = "Authentication required") => apiError("UNAUTHORIZED", message, 401),
 
-    forbidden: (message = "Insufficient permissions") =>
-        apiError("FORBIDDEN", message, 403),
+    forbidden: (message = "Insufficient permissions") => apiError("FORBIDDEN", message, 403),
 
-    notFound: (resource = "Resource") =>
-        apiError("NOT_FOUND", `${resource} not found`, 404),
+    notFound: (resource = "Resource") => apiError("NOT_FOUND", `${resource} not found`, 404),
 
-    conflict: (message: string) =>
-        apiError("CONFLICT", message, 409),
+    conflict: (message: string) => apiError("CONFLICT", message, 409),
 
-    gone: (message: string) =>
-        apiError("GONE", message, 410),
+    gone: (message: string) => apiError("GONE", message, 410),
 
     validationError: (details: Record<string, string[]>) =>
         apiError("VALIDATION_ERROR", "Request validation failed", 422, details),
 
-    badRequest: (message: string) =>
-        apiError("BAD_REQUEST", message, 400),
+    badRequest: (message: string) => apiError("BAD_REQUEST", message, 400),
 
-    badGateway: (message = "Upstream service failed") =>
-        apiError("BAD_GATEWAY", message, 502),
+    badGateway: (message = "Upstream service failed") => apiError("BAD_GATEWAY", message, 502),
 
     serviceUnavailable: (message = "Service unavailable") =>
         apiError("SERVICE_UNAVAILABLE", message, 503),
@@ -76,7 +69,9 @@ export const ApiErrors = {
 export async function parseAndValidate<T>(
     request: Request,
     schema: ZodSchema<T>
-): Promise<{ success: true; data: T } | { success: false; response: NextResponse<ApiErrorPayload> }> {
+): Promise<
+    { success: true; data: T } | { success: false; response: NextResponse<ApiErrorPayload> }
+> {
     let body: unknown;
     try {
         body = await request.json();

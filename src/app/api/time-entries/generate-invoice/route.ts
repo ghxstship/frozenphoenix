@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -21,10 +22,7 @@ export const POST = withApiHandler(
         const { project_id, billing_period_start, billing_period_end } = body;
 
         if (!project_id) {
-            return NextResponse.json(
-                { error: { message: "project_id is required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("project_id is required");
         }
 
         // Fetch approved, billable time entries for this project
@@ -40,21 +38,11 @@ export const POST = withApiHandler(
         const { data: timeEntries, error: fetchError } = await query;
 
         if (fetchError) {
-            return NextResponse.json(
-                { error: { message: "Failed to fetch time entries", details: fetchError.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to fetch time entries");
         }
 
         if (!timeEntries || timeEntries.length === 0) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message: "No approved time entries found for this project and period",
-                    },
-                },
-                { status: 404 }
-            );
+            return ApiErrors.notFound("No approved time entries found for this project and period");
         }
 
         // Fetch project for invoice context
@@ -105,10 +93,7 @@ export const POST = withApiHandler(
             .single();
 
         if (invoiceError || !invoice) {
-            return NextResponse.json(
-                { error: { message: "Failed to create invoice", details: invoiceError?.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to create invoice");
         }
 
         // Create invoice line items

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -21,10 +22,7 @@ export const GET = withApiHandler(
         const entityId = url.searchParams.get("entity_id");
 
         if (!entityType || !entityId) {
-            return NextResponse.json(
-                { error: { message: "entity_type and entity_id are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("entity_type and entity_id are required");
         }
 
         // Fetch field definitions for this entity type
@@ -72,13 +70,8 @@ export const POST = withApiHandler(
         const { entity_type, entity_id, field_definition_id, value } = body;
 
         if (!entity_type || !entity_id || !field_definition_id) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message: "entity_type, entity_id, and field_definition_id are required",
-                    },
-                },
-                { status: 400 }
+            return ApiErrors.badRequest(
+                "entity_type, entity_id, and field_definition_id are required"
             );
         }
 
@@ -95,10 +88,7 @@ export const POST = withApiHandler(
         );
 
         if (error) {
-            return NextResponse.json(
-                { error: { message: "Failed to save custom field value", details: error.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to save custom field value");
         }
 
         return NextResponse.json({ data: { saved: true } });

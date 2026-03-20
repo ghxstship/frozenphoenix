@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -22,10 +23,7 @@ export const POST = withApiHandler(
         const { action, provider, entity_type, entity_id } = body;
 
         if (!action || !provider) {
-            return NextResponse.json(
-                { error: { message: "action and provider are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("action and provider are required");
         }
 
         // Find active calendar provider connection
@@ -40,13 +38,8 @@ export const POST = withApiHandler(
             .single();
 
         if (!connection) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message: `No active ${provider} calendar integration. Connect in Settings > Integrations.`,
-                    },
-                },
-                { status: 404 }
+            return ApiErrors.notFound(
+                `No active ${provider} calendar integration. Connect in Settings > Integrations`
             );
         }
 
@@ -54,10 +47,7 @@ export const POST = withApiHandler(
         const accessToken = conn.access_token as string;
 
         if (!accessToken) {
-            return NextResponse.json(
-                { error: { message: `${provider} calendar connection needs re-authentication` } },
-                { status: 422 }
-            );
+            return ApiErrors.badRequest(`${provider} calendar connection needs re-authentication`);
         }
 
         if (action === "push") {
@@ -162,13 +152,8 @@ export const POST = withApiHandler(
                 });
 
                 if (!response.ok) {
-                    return NextResponse.json(
-                        {
-                            error: {
-                                message: `Failed to fetch from ${provider} (HTTP ${response.status})`,
-                            },
-                        },
-                        { status: 502 }
+                    return ApiErrors.badGateway(
+                        `Failed to fetch from ${provider} (HTTP ${response.status})`
                     );
                 }
 
@@ -209,16 +194,10 @@ export const POST = withApiHandler(
                 return NextResponse.json({ data: { imported, direction: "pull" } });
             } catch (err) {
                 log.error("Calendar pull failed", { error: (err as Error).message });
-                return NextResponse.json(
-                    { error: { message: `Calendar pull failed: ${(err as Error).message}` } },
-                    { status: 502 }
-                );
+                return ApiErrors.badGateway(`Calendar pull failed: ${(err as Error).message}`);
             }
         }
 
-        return NextResponse.json(
-            { error: { message: "Invalid action. Use 'push' or 'pull'." } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("Invalid action. Use 'push' or 'pull'.");
     }
 );

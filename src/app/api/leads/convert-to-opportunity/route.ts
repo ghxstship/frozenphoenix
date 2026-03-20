@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -22,10 +23,7 @@ export const POST = withApiHandler(
         const { lead_id } = body;
 
         if (!lead_id) {
-            return NextResponse.json(
-                { error: { message: "lead_id is required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("lead_id is required");
         }
 
         const { data: lead, error: leadErr } = await serverFromTable(supabase, "leads")
@@ -37,14 +35,11 @@ export const POST = withApiHandler(
             .single();
 
         if (leadErr || !lead) {
-            return NextResponse.json({ error: { message: "Lead not found" } }, { status: 404 });
+            return ApiErrors.notFound("Lead");
         }
 
         if (lead.converted_to_opportunity_id) {
-            return NextResponse.json(
-                { error: { message: "Lead already converted to an opportunity" } },
-                { status: 409 }
-            );
+            return ApiErrors.conflict("Lead already converted to an opportunity");
         }
 
         const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ");
@@ -67,10 +62,7 @@ export const POST = withApiHandler(
             .single();
 
         if (oppErr || !opp) {
-            return NextResponse.json(
-                { error: { message: "Failed to create opportunity", details: oppErr?.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to create opportunity");
         }
 
         await serverFromTable(supabase, "leads")

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { createHash } from "crypto";
 
 /**
@@ -17,12 +18,12 @@ export async function POST(
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json({ error: { message: "Invalid portal token" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid portal token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     // Validate token
@@ -34,35 +35,23 @@ export async function POST(
         .single();
 
     if (patError || !pat) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired portal link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Portal link");
     }
 
     const portalToken = pat as Record<string, unknown>;
 
     // Check expiry + revocation
     if (new Date(String(portalToken.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This portal link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This portal link has expired");
     }
     if (portalToken.revoked_at) {
-        return NextResponse.json(
-            { error: { message: "This portal link has been revoked" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link has been revoked");
     }
 
     // Check permissions
     const permissions = (portalToken.permissions as string[]) ?? [];
     if (!permissions.includes("submit")) {
-        return NextResponse.json(
-            { error: { message: "This portal link does not have submit permissions" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link does not have submit permissions");
     }
 
     // Parse body
@@ -70,15 +59,12 @@ export async function POST(
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: { message: "Invalid JSON body" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid JSON body");
     }
 
     const requirementId = body.requirement_id as string | undefined;
     if (!requirementId) {
-        return NextResponse.json(
-            { error: { message: "requirement_id is required" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("requirement_id is required");
     }
 
     const collaboratorId = portalToken.collaborator_id as string;
@@ -94,7 +80,7 @@ export async function POST(
         .single();
 
     if (reqError || !requirement) {
-        return NextResponse.json({ error: { message: "Requirement not found" } }, { status: 404 });
+        return ApiErrors.notFound("Requirement");
     }
 
     const reqRecord = requirement as Record<string, unknown>;
@@ -102,14 +88,7 @@ export async function POST(
 
     // Only allow submission from "requested" or "rejected" states
     if (currentStatus !== "requested" && currentStatus !== "rejected") {
-        return NextResponse.json(
-            {
-                error: {
-                    message: `Cannot submit a requirement in '${currentStatus}' status`,
-                },
-            },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest(`Cannot submit a requirement in '${currentStatus}' status`);
     }
 
     // Update requirement
@@ -133,10 +112,7 @@ export async function POST(
         .single();
 
     if (updateError) {
-        return NextResponse.json(
-            { error: { message: "Failed to submit requirement" } },
-            { status: 500 }
-        );
+        return ApiErrors.internalError("Failed to submit requirement");
     }
 
     return NextResponse.json({ data: updated });

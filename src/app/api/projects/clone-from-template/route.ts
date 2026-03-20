@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -22,10 +23,7 @@ export const POST = withApiHandler(
         const { template_id, name, start_date, end_date } = body;
 
         if (!template_id || !name) {
-            return NextResponse.json(
-                { error: { message: "template_id and name are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("template_id and name are required");
         }
 
         // Fetch template project
@@ -35,7 +33,7 @@ export const POST = withApiHandler(
             .single();
 
         if (tplErr || !template) {
-            return NextResponse.json({ error: { message: "Template not found" } }, { status: 404 });
+            return ApiErrors.notFound("Template");
         }
 
         // Create new project from template
@@ -60,10 +58,7 @@ export const POST = withApiHandler(
             .single();
 
         if (projErr || !project) {
-            return NextResponse.json(
-                { error: { message: "Failed to create project", details: projErr?.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to create project");
         }
 
         const projectId = (project as Record<string, unknown>).id as string;

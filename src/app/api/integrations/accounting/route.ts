@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -24,10 +25,7 @@ export const POST = withApiHandler(
         const { action, entity_id } = body;
 
         if (!action || !entity_id) {
-            return NextResponse.json(
-                { error: { message: "action and entity_id are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("action and entity_id are required");
         }
 
         // Find active accounting provider connection
@@ -40,14 +38,8 @@ export const POST = withApiHandler(
             .single();
 
         if (!connection) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message:
-                            "No active accounting integration configured. Connect QuickBooks or Xero in Settings > Integrations.",
-                    },
-                },
-                { status: 404 }
+            return ApiErrors.notFound(
+                "No active accounting integration configured. Connect QuickBooks or Xero in Settings > Integrations"
             );
         }
 
@@ -79,14 +71,11 @@ export const POST = withApiHandler(
                 .single();
             entityData = data as Record<string, unknown> | null;
         } else {
-            return NextResponse.json(
-                { error: { message: `Unknown action: ${action}` } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest(`Unknown action: ${action}`);
         }
 
         if (!entityData) {
-            return NextResponse.json({ error: { message: "Entity not found" } }, { status: 404 });
+            return ApiErrors.notFound("Entity");
         }
 
         // Transform and dispatch to provider
@@ -94,13 +83,8 @@ export const POST = withApiHandler(
         const accessToken = (conn.access_token as string) || "";
 
         if (!apiBaseUrl || !accessToken) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message: `${providerType} connection is not properly configured (missing API URL or token)`,
-                    },
-                },
-                { status: 422 }
+            return ApiErrors.badRequest(
+                `${providerType} connection is not properly configured (missing API URL or token)`
             );
         }
 
@@ -137,14 +121,8 @@ export const POST = withApiHandler(
                     status: response.status,
                     error: errorBody,
                 });
-                return NextResponse.json(
-                    {
-                        error: {
-                            message: `${providerType} sync failed (HTTP ${response.status})`,
-                            details: errorBody,
-                        },
-                    },
-                    { status: 502 }
+                return ApiErrors.badGateway(
+                    `${providerType} sync failed (HTTP ${response.status})`
                 );
             }
 
@@ -160,15 +138,7 @@ export const POST = withApiHandler(
             });
         } catch (err) {
             log.error("Accounting sync exception", { error: (err as Error).message });
-            return NextResponse.json(
-                {
-                    error: {
-                        message: `Failed to connect to ${providerType}`,
-                        details: (err as Error).message,
-                    },
-                },
-                { status: 502 }
-            );
+            return ApiErrors.badGateway(`Failed to connect to ${providerType}`);
         }
     }
 );

@@ -10,6 +10,7 @@
    - UPDATE (PATCH) with Zod validation, state machine transition checks
    - SOFT DELETE (DELETE) via deleted_at timestamp
    - RBAC enforcement via permission matrix
+   - Org-scoped queries (defense-in-depth on top of RLS)
    - Structured logging
    - Standard error envelope
    
@@ -36,7 +37,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { ZodSchema } from "zod";
 import { createClient, serverFromTable } from "@/lib/supabase/server";
-import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
+import type { ServerClient } from "@/lib/supabase/server";
+import { ApiErrors, generateRequestId, parseAndValidate } from "@/lib/api-utils";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
@@ -48,8 +50,33 @@ import { validateTransition } from "@/lib/state-machine";
 // 30 mutations per minute per client across all CRUD endpoints
 const mutationLimiter = rateLimit({ windowMs: 60_000, max: 30 });
 
-function generateRequestId(): string {
-    return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+// ─── Shared Auth Resolution ─────────────────────────────────
+// Consolidates auth boilerplate: createClient → getUser → resolveRole+Org
+// Called once per request instead of being duplicated in every handler.
+
+interface AuthResult {
+    supabase: ServerClient;
+    userId: string;
+    role: PermissionLevel;
+    orgId: string;
+}
+
+async function resolveAuth(
+    request: NextRequest
+): Promise<{ ok: true; auth: AuthResult } | { ok: false; response: NextResponse }> {
+    const supabase = await createClient();
+    if (!supabase) return { ok: false, response: ApiErrors.serviceUnavailable() };
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { ok: false, response: ApiErrors.unauthorized() };
+
+    const cachedRole = request.cookies.get("fp-user-role")?.value;
+    const cachedOrgId = request.cookies.get("fp-org-id")?.value;
+    const { role, orgId } = await resolveRoleAndOrg(supabase, user.id, cachedRole, cachedOrgId);
+
+    return { ok: true, auth: { supabase, userId: user.id, role, orgId } };
 }
 
 // ─── Types ───────────────────────────────────────────────────
@@ -243,54 +270,84 @@ function applyFilters(
 // ─── Factory ─────────────────────────────────────────────────
 
 export function createCrudHandlers(config: CrudConfig): CrudHandlers {
-    const {
-        table,
+    const c = resolveConfig(config);
+    return {
+        list: buildList(c),
+        getById: buildGetById(c),
+        create: buildCreate(c),
+        update: buildUpdate(c),
+        remove: buildRemove(c),
+    };
+}
+
+// ─── Resolved Config (normalizes defaults once) ──────────────
+
+interface ResolvedConfig {
+    table: string;
+    resource: string;
+    displayName: string;
+    selectList: string;
+    selectDetail: string;
+    createSchema?: ZodSchema;
+    updateSchema?: ZodSchema;
+    filters: FilterConfig[];
+    searchColumns: string[];
+    defaultSort: SortConfig;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stateMachine?: StateMachineDefinition<any>;
+    statusColumn: string;
+    softDelete: boolean;
+    orgColumn: string;
+    trackAuthor: boolean;
+    maxPerPage: number;
+    defaultPerPage: number;
+    immutableColumns: string[];
+    beforeCreate?: CrudConfig["beforeCreate"];
+    beforeUpdate?: CrudConfig["beforeUpdate"];
+    logPrefix: string;
+}
+
+function resolveConfig(config: CrudConfig): ResolvedConfig {
+    const resource = config.resource;
+    return {
+        table: config.table,
         resource,
-        displayName = resource,
-        selectList = "*",
-        selectDetail = "*",
-        createSchema,
-        updateSchema,
-        filters = [],
-        searchColumns = [],
-        defaultSort = { column: "created_at", ascending: false },
-        stateMachine,
-        statusColumn = "status",
-        softDelete = true,
-        trackAuthor = true,
-        maxPerPage = 100,
-        defaultPerPage = 25,
-        immutableColumns = [],
-        beforeCreate,
-        beforeUpdate,
-    } = config;
+        displayName: config.displayName ?? resource,
+        selectList: config.selectList ?? "*",
+        selectDetail: config.selectDetail ?? "*",
+        createSchema: config.createSchema,
+        updateSchema: config.updateSchema,
+        filters: config.filters ?? [],
+        searchColumns: config.searchColumns ?? [],
+        defaultSort: config.defaultSort ?? { column: "created_at", ascending: false },
+        stateMachine: config.stateMachine,
+        statusColumn: config.statusColumn ?? "status",
+        softDelete: config.softDelete ?? true,
+        orgColumn: config.orgColumn ?? "organization_id",
+        trackAuthor: config.trackAuthor ?? true,
+        maxPerPage: config.maxPerPage ?? 100,
+        defaultPerPage: config.defaultPerPage ?? 25,
+        immutableColumns: config.immutableColumns ?? [],
+        beforeCreate: config.beforeCreate,
+        beforeUpdate: config.beforeUpdate,
+        logPrefix: `[CRUD /${resource}]`,
+    };
+}
 
-    const logPrefix = `[CRUD /${resource}]`;
+// ─── LIST handler builder ───────────────────────────────────
 
-    // ─── LIST ────────────────────────────────────────────────
-    async function list(request: NextRequest): Promise<NextResponse> {
+function buildList(c: ResolvedConfig) {
+    return async function list(request: NextRequest): Promise<NextResponse> {
         const requestId = generateRequestId();
-        const log = logger.child({ requestId, method: "GET", route: `/${resource}` });
+        const log = logger.child({ requestId, method: "GET", route: `/${c.resource}` });
 
         try {
-            const supabase = await createClient();
-            if (!supabase) return ApiErrors.serviceUnavailable();
+            const authResult = await resolveAuth(request);
+            if (!authResult.ok) return authResult.response;
+            const { supabase, role: userRole, orgId } = authResult.auth;
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) return ApiErrors.unauthorized();
-
-            const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
-            const { role: userRole } = await resolveRoleAndOrg(
-                supabase,
-                user.id,
-                cachedRole,
-                cachedOrgId
-            );
-            if (!hasPermission(userRole, resource, "read")) {
-                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            if (!hasPermission(userRole, c.resource, "read")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${c.displayName}`);
             }
 
             const url = new URL(request.url);
@@ -298,25 +355,33 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             const perPage = Math.min(
                 Math.max(
                     1,
-                    parseInt(url.searchParams.get("per_page") ?? String(defaultPerPage), 10)
+                    parseInt(url.searchParams.get("per_page") ?? String(c.defaultPerPage), 10)
                 ),
-                maxPerPage
+                c.maxPerPage
             );
-            const sortBy = url.searchParams.get("sort_by") ?? defaultSort.column;
+            const sortBy = url.searchParams.get("sort_by") ?? c.defaultSort.column;
             const sortOrder =
-                url.searchParams.get("sort_order") ?? (defaultSort.ascending ? "asc" : "desc");
+                url.searchParams.get("sort_order") ?? (c.defaultSort.ascending ? "asc" : "desc");
             const search = url.searchParams.get("search");
 
-            let query = serverFromTable(supabase, table).select(selectList, { count: "exact" });
+            // Data query — uses selectList with joins for rich payloads
+            let query = serverFromTable(supabase, c.table).select(c.selectList);
 
-            if (softDelete) {
+            // Org-scoping: defense-in-depth on top of RLS
+            if (orgId) {
+                query = query.eq(c.orgColumn, orgId);
+            }
+
+            if (c.softDelete) {
                 query = query.is("deleted_at", null);
             }
 
-            query = applyFilters(query, url, filters);
+            query = applyFilters(query, url, c.filters);
 
-            if (search && searchColumns.length > 0) {
-                const orClauses = searchColumns.map((col) => `${col}.ilike.%${search}%`).join(",");
+            if (search && c.searchColumns.length > 0) {
+                const orClauses = c.searchColumns
+                    .map((col) => `${col}.ilike.%${search}%`)
+                    .join(",");
                 query = query.or(orClauses);
             }
 
@@ -324,24 +389,56 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             const to = from + perPage - 1;
             query = query.order(sortBy, { ascending: sortOrder === "asc" }).range(from, to);
 
-            const { data, error, count } = await query;
+            // Count query — lightweight, no joins, just counts matching rows
+            let countQuery = serverFromTable(supabase, c.table).select("id", {
+                count: "exact",
+                head: true,
+            });
 
-            if (error) {
-                log.error(`${logPrefix} LIST failed`, { error: error.message, code: error.code });
-                return ApiErrors.internalError(`Failed to fetch ${displayName}`);
+            if (orgId) {
+                countQuery = countQuery.eq(c.orgColumn, orgId);
             }
 
+            if (c.softDelete) {
+                countQuery = countQuery.is("deleted_at", null);
+            }
+
+            countQuery = applyFilters(countQuery, url, c.filters);
+
+            if (search && c.searchColumns.length > 0) {
+                const orClauses = c.searchColumns
+                    .map((col) => `${col}.ilike.%${search}%`)
+                    .join(",");
+                countQuery = countQuery.or(orClauses);
+            }
+
+            // Execute both in parallel for max throughput
+            const [dataResult, countResult] = await Promise.all([query, countQuery]);
+
+            if (dataResult.error) {
+                // If org column doesn't exist, retry without org scoping
+                if (dataResult.error.message?.includes(c.orgColumn)) {
+                    return await listWithoutOrgScope(request, c, log, requestId);
+                }
+                log.error(`${c.logPrefix} LIST failed`, {
+                    error: dataResult.error.message,
+                    code: dataResult.error.code,
+                });
+                return ApiErrors.internalError(`Failed to fetch ${c.displayName}`);
+            }
+
+            const total = countResult.count ?? 0;
+
             const response = NextResponse.json({
-                data,
+                data: dataResult.data,
                 pagination: {
                     page,
                     per_page: perPage,
-                    total: count ?? 0,
-                    total_pages: count ? Math.ceil(count / perPage) : 0,
+                    total,
+                    total_pages: total ? Math.ceil(total / perPage) : 0,
                 },
             });
             response.headers.set("X-Request-Id", requestId);
-            // Performance: Allow browser + CDN to serve stale data while revalidating
             response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=60");
             return response;
         } catch (err) {
@@ -350,56 +447,111 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             });
             return ApiErrors.internalError();
         }
+    };
+}
+
+// Fallback LIST without org scoping (for tables without organization_id)
+async function listWithoutOrgScope(
+    request: NextRequest,
+    c: ResolvedConfig,
+    log: ReturnType<typeof logger.child>,
+    requestId: string
+): Promise<NextResponse> {
+    const authResult = await resolveAuth(request);
+    if (!authResult.ok) return authResult.response;
+    const { supabase } = authResult.auth;
+
+    const url = new URL(request.url);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+    const perPage = Math.min(
+        Math.max(1, parseInt(url.searchParams.get("per_page") ?? String(c.defaultPerPage), 10)),
+        c.maxPerPage
+    );
+    const sortBy = url.searchParams.get("sort_by") ?? c.defaultSort.column;
+    const sortOrder =
+        url.searchParams.get("sort_order") ?? (c.defaultSort.ascending ? "asc" : "desc");
+    const search = url.searchParams.get("search");
+
+    let query = serverFromTable(supabase, c.table).select(c.selectList);
+    if (c.softDelete) query = query.is("deleted_at", null);
+    query = applyFilters(query, url, c.filters);
+    if (search && c.searchColumns.length > 0) {
+        query = query.or(c.searchColumns.map((col) => `${col}.ilike.%${search}%`).join(","));
+    }
+    const from = (page - 1) * perPage;
+    query = query.order(sortBy, { ascending: sortOrder === "asc" }).range(from, from + perPage - 1);
+
+    let countQuery = serverFromTable(supabase, c.table).select("id", {
+        count: "exact",
+        head: true,
+    });
+    if (c.softDelete) countQuery = countQuery.is("deleted_at", null);
+    countQuery = applyFilters(countQuery, url, c.filters);
+    if (search && c.searchColumns.length > 0) {
+        countQuery = countQuery.or(
+            c.searchColumns.map((col) => `${col}.ilike.%${search}%`).join(",")
+        );
     }
 
-    // ─── GET BY ID ───────────────────────────────────────────
-    async function getById(
-        _request: NextRequest,
+    const [dataResult, countResult] = await Promise.all([query, countQuery]);
+
+    if (dataResult.error) {
+        log.error(`${c.logPrefix} LIST failed (no-org)`, { error: dataResult.error.message });
+        return ApiErrors.internalError(`Failed to fetch ${c.displayName}`);
+    }
+
+    const total = countResult.count ?? 0;
+    const response = NextResponse.json({
+        data: dataResult.data,
+        pagination: {
+            page,
+            per_page: perPage,
+            total,
+            total_pages: total ? Math.ceil(total / perPage) : 0,
+        },
+    });
+    response.headers.set("X-Request-Id", requestId);
+    response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=60");
+    return response;
+}
+
+// ─── GET BY ID handler builder ──────────────────────────────
+
+function buildGetById(c: ResolvedConfig) {
+    return async function getById(
+        request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
         const requestId = generateRequestId();
-        const log = logger.child({ requestId, method: "GET", route: `/${resource}/:id` });
+        const log = logger.child({ requestId, method: "GET", route: `/${c.resource}/:id` });
 
         try {
-            const supabase = await createClient();
-            if (!supabase) return ApiErrors.serviceUnavailable();
+            const authResult = await resolveAuth(request);
+            if (!authResult.ok) return authResult.response;
+            const { supabase, role: userRole } = authResult.auth;
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) return ApiErrors.unauthorized();
-
-            const cachedRole = _request.cookies.get("fp-user-role")?.value;
-            const cachedOrgId = _request.cookies.get("fp-org-id")?.value;
-            const { role: userRole } = await resolveRoleAndOrg(
-                supabase,
-                user.id,
-                cachedRole,
-                cachedOrgId
-            );
-            if (!hasPermission(userRole, resource, "read")) {
-                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${displayName}`);
+            if (!hasPermission(userRole, c.resource, "read")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot read ${c.displayName}`);
             }
 
             const { id } = await params;
 
-            let query = serverFromTable(supabase, table).select(selectDetail).eq("id", id);
+            let query = serverFromTable(supabase, c.table).select(c.selectDetail).eq("id", id);
 
-            if (softDelete) {
+            if (c.softDelete) {
                 query = query.is("deleted_at", null);
             }
 
             const { data, error } = await query.single();
 
             if (error) {
-                if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
-                log.error(`${logPrefix} GET failed`, { id, error: error.message });
-                return ApiErrors.internalError(`Failed to fetch ${displayName}`);
+                if (error.code === "PGRST116") return ApiErrors.notFound(c.displayName);
+                log.error(`${c.logPrefix} GET failed`, { id, error: error.message });
+                return ApiErrors.internalError(`Failed to fetch ${c.displayName}`);
             }
 
             const response = NextResponse.json({ data });
             response.headers.set("X-Request-Id", requestId);
-            // Performance: Allow browser to serve stale detail while revalidating
             response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=30");
             return response;
         } catch (err) {
@@ -408,14 +560,16 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             });
             return ApiErrors.internalError();
         }
-    }
+    };
+}
 
-    // ─── CREATE ──────────────────────────────────────────────
-    async function create(request: NextRequest): Promise<NextResponse> {
+// ─── CREATE handler builder ─────────────────────────────────
+
+function buildCreate(c: ResolvedConfig) {
+    return async function create(request: NextRequest): Promise<NextResponse> {
         const requestId = generateRequestId();
-        const log = logger.child({ requestId, method: "POST", route: `/${resource}` });
+        const log = logger.child({ requestId, method: "POST", route: `/${c.resource}` });
 
-        // Rate limit mutations
         const rlCheck = mutationLimiter.check(getClientId(request));
         if (!rlCheck.allowed) {
             log.warn("Rate limit exceeded");
@@ -423,30 +577,18 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         }
 
         try {
-            const supabase = await createClient();
-            if (!supabase) return ApiErrors.serviceUnavailable();
+            const authResult = await resolveAuth(request);
+            if (!authResult.ok) return authResult.response;
+            const { supabase, userId, role: userRole } = authResult.auth;
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) return ApiErrors.unauthorized();
-
-            const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
-            const { role: userRole } = await resolveRoleAndOrg(
-                supabase,
-                user.id,
-                cachedRole,
-                cachedOrgId
-            );
-            if (!hasPermission(userRole, resource, "write")) {
-                return ApiErrors.forbidden(`Role "${userRole}" cannot create ${displayName}`);
+            if (!hasPermission(userRole, c.resource, "write")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot create ${c.displayName}`);
             }
 
             let payload: Record<string, unknown>;
 
-            if (createSchema) {
-                const parsed = await parseAndValidate(request, createSchema);
+            if (c.createSchema) {
+                const parsed = await parseAndValidate(request, c.createSchema);
                 if (!parsed.success) return parsed.response;
                 payload = parsed.data as Record<string, unknown>;
             } else {
@@ -457,40 +599,42 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
                 }
             }
 
-            if (trackAuthor) {
-                payload.created_by = user.id;
+            if (c.trackAuthor) {
+                payload.created_by = userId;
             }
 
-            if (stateMachine && !payload[statusColumn]) {
-                payload[statusColumn] = stateMachine.initialState;
+            if (c.stateMachine && !payload[c.statusColumn]) {
+                payload[c.statusColumn] = c.stateMachine.initialState;
             }
 
-            if (beforeCreate) {
-                payload = await beforeCreate(payload, user.id);
+            if (c.beforeCreate) {
+                payload = await c.beforeCreate(payload, userId);
             }
 
-            // Check idempotency key
             const idempotencyKey = request.headers.get("x-idempotency-key");
             if (idempotencyKey) {
                 payload._idempotency_key = idempotencyKey;
             }
 
-            const { data, error } = await serverFromTable(supabase, table)
+            const { data, error } = await serverFromTable(supabase, c.table)
                 .insert(payload as Record<string, unknown>)
-                .select(selectDetail)
+                .select(c.selectDetail)
                 .single();
 
             if (error) {
                 if (error.code === "23505") {
-                    return ApiErrors.conflict(`${displayName} already exists (duplicate key)`);
+                    return ApiErrors.conflict(`${c.displayName} already exists (duplicate key)`);
                 }
-                log.error(`${logPrefix} CREATE failed`, { error: error.message, code: error.code });
-                return ApiErrors.internalError(`Failed to create ${displayName}`);
+                log.error(`${c.logPrefix} CREATE failed`, {
+                    error: error.message,
+                    code: error.code,
+                });
+                return ApiErrors.internalError(`Failed to create ${c.displayName}`);
             }
 
-            log.info(`${logPrefix} created`, {
+            log.info(`${c.logPrefix} created`, {
                 id: (data as Record<string, unknown>).id,
-                userId: user.id,
+                userId,
             });
             const response = NextResponse.json({ data }, { status: 201 });
             response.headers.set("X-Request-Id", requestId);
@@ -501,15 +645,18 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             });
             return ApiErrors.internalError();
         }
-    }
+    };
+}
 
-    // ─── UPDATE ──────────────────────────────────────────────
-    async function update(
+// ─── UPDATE handler builder ─────────────────────────────────
+
+function buildUpdate(c: ResolvedConfig) {
+    return async function update(
         request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
         const requestId = generateRequestId();
-        const log = logger.child({ requestId, method: "PATCH", route: `/${resource}` });
+        const log = logger.child({ requestId, method: "PATCH", route: `/${c.resource}` });
 
         const rlCheck = mutationLimiter.check(getClientId(request));
         if (!rlCheck.allowed) {
@@ -518,32 +665,20 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
         }
 
         try {
-            const supabase = await createClient();
-            if (!supabase) return ApiErrors.serviceUnavailable();
+            const authResult = await resolveAuth(request);
+            if (!authResult.ok) return authResult.response;
+            const { supabase, userId, role: userRole } = authResult.auth;
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) return ApiErrors.unauthorized();
-
-            const cachedRole = request.cookies.get("fp-user-role")?.value;
-            const cachedOrgId = request.cookies.get("fp-org-id")?.value;
-            const { role: userRole } = await resolveRoleAndOrg(
-                supabase,
-                user.id,
-                cachedRole,
-                cachedOrgId
-            );
-            if (!hasPermission(userRole, resource, "write")) {
-                return ApiErrors.forbidden(`Role "${userRole}" cannot update ${displayName}`);
+            if (!hasPermission(userRole, c.resource, "write")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot update ${c.displayName}`);
             }
 
             const { id } = await params;
 
             let payload: Record<string, unknown>;
 
-            if (updateSchema) {
-                const parsed = await parseAndValidate(request, updateSchema);
+            if (c.updateSchema) {
+                const parsed = await parseAndValidate(request, c.updateSchema);
                 if (!parsed.success) return parsed.response;
                 payload = parsed.data as Record<string, unknown>;
             } else {
@@ -554,39 +689,41 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
                 }
             }
 
-            // Strip immutable columns from update payload
-            for (const col of immutableColumns) {
+            for (const col of c.immutableColumns) {
                 delete payload[col];
             }
 
-            if (trackAuthor) {
-                payload.updated_by = user.id;
+            if (c.trackAuthor) {
+                payload.updated_by = userId;
                 payload.updated_at = new Date().toISOString();
             }
 
-            // State machine transition validation
-            if (stateMachine && payload[statusColumn]) {
-                const targetStatus = payload[statusColumn] as string;
+            if (c.stateMachine && payload[c.statusColumn]) {
+                const targetStatus = payload[c.statusColumn] as string;
 
-                // Fetch current record to get current status
-                const { data: current, error: fetchError } = await serverFromTable(supabase, table)
-                    .select(statusColumn)
+                const { data: current, error: fetchError } = await serverFromTable(
+                    supabase,
+                    c.table
+                )
+                    .select(c.statusColumn)
                     .eq("id", id)
                     .single();
 
                 if (fetchError) {
-                    if (fetchError.code === "PGRST116") return ApiErrors.notFound(displayName);
-                    log.error(`${logPrefix} UPDATE fetch-current failed`, {
+                    if (fetchError.code === "PGRST116") return ApiErrors.notFound(c.displayName);
+                    log.error(`${c.logPrefix} UPDATE fetch-current failed`, {
                         id,
                         error: fetchError.message,
                     });
-                    return ApiErrors.internalError(`Failed to update ${displayName}`);
+                    return ApiErrors.internalError(`Failed to update ${c.displayName}`);
                 }
 
-                const currentStatus = (current as Record<string, unknown>)[statusColumn] as string;
+                const currentStatus = (current as Record<string, unknown>)[
+                    c.statusColumn
+                ] as string;
 
                 if (currentStatus !== targetStatus) {
-                    const result = validateTransition(stateMachine, currentStatus, targetStatus, {
+                    const result = validateTransition(c.stateMachine, currentStatus, targetStatus, {
                         userRole,
                         entity: current as Record<string, unknown>,
                     });
@@ -597,23 +734,23 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
                 }
             }
 
-            if (beforeUpdate) {
-                payload = await beforeUpdate(payload, user.id);
+            if (c.beforeUpdate) {
+                payload = await c.beforeUpdate(payload, userId);
             }
 
-            const { data, error } = await serverFromTable(supabase, table)
+            const { data, error } = await serverFromTable(supabase, c.table)
                 .update(payload as Record<string, unknown>)
                 .eq("id", id)
-                .select(selectDetail)
+                .select(c.selectDetail)
                 .single();
 
             if (error) {
-                if (error.code === "PGRST116") return ApiErrors.notFound(displayName);
-                log.error(`${logPrefix} UPDATE failed`, { id, error: error.message });
-                return ApiErrors.internalError(`Failed to update ${displayName}`);
+                if (error.code === "PGRST116") return ApiErrors.notFound(c.displayName);
+                log.error(`${c.logPrefix} UPDATE failed`, { id, error: error.message });
+                return ApiErrors.internalError(`Failed to update ${c.displayName}`);
             }
 
-            log.info(`${logPrefix} updated`, { id, userId: user.id });
+            log.info(`${c.logPrefix} updated`, { id, userId });
             const response = NextResponse.json({ data });
             response.headers.set("X-Request-Id", requestId);
             return response;
@@ -623,71 +760,62 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             });
             return ApiErrors.internalError();
         }
-    }
+    };
+}
 
-    // ─── DELETE ──────────────────────────────────────────────
-    async function remove(
-        _request: NextRequest,
+// ─── DELETE handler builder ─────────────────────────────────
+
+function buildRemove(c: ResolvedConfig) {
+    return async function remove(
+        request: NextRequest,
         { params }: { params: Promise<{ id: string }> }
     ): Promise<NextResponse> {
         const requestId = generateRequestId();
-        const log = logger.child({ requestId, method: "DELETE", route: `/${resource}` });
+        const log = logger.child({ requestId, method: "DELETE", route: `/${c.resource}` });
 
-        const rlCheck = mutationLimiter.check(getClientId(_request));
+        const rlCheck = mutationLimiter.check(getClientId(request));
         if (!rlCheck.allowed) {
             log.warn("Rate limit exceeded");
             return rateLimitResponse(rlCheck.retryAfterSeconds);
         }
 
         try {
-            const supabase = await createClient();
-            if (!supabase) return ApiErrors.serviceUnavailable();
+            const authResult = await resolveAuth(request);
+            if (!authResult.ok) return authResult.response;
+            const { supabase, userId, role: userRole } = authResult.auth;
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) return ApiErrors.unauthorized();
-
-            const cachedRole = _request.cookies.get("fp-user-role")?.value;
-            const cachedOrgId = _request.cookies.get("fp-org-id")?.value;
-            const { role: userRole } = await resolveRoleAndOrg(
-                supabase,
-                user.id,
-                cachedRole,
-                cachedOrgId
-            );
-            if (!hasPermission(userRole, resource, "delete")) {
-                return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${displayName}`);
+            if (!hasPermission(userRole, c.resource, "delete")) {
+                return ApiErrors.forbidden(`Role "${userRole}" cannot delete ${c.displayName}`);
             }
 
             const { id } = await params;
 
-            if (softDelete) {
+            if (c.softDelete) {
                 const updatePayload: Record<string, unknown> = {
                     deleted_at: new Date().toISOString(),
                 };
-                if (trackAuthor) {
-                    updatePayload.deleted_by = user.id;
+                if (c.trackAuthor) {
+                    updatePayload.deleted_by = userId;
                 }
 
-                const { error } = await serverFromTable(supabase, table)
+                const { error } = await serverFromTable(supabase, c.table)
                     .update(updatePayload as Record<string, unknown>)
                     .eq("id", id);
 
                 if (error) {
-                    log.error(`${logPrefix} SOFT DELETE failed`, { id, error: error.message });
-                    return ApiErrors.internalError(`Failed to delete ${displayName}`);
+                    log.error(`${c.logPrefix} SOFT DELETE failed`, { id, error: error.message });
+                    return ApiErrors.internalError(`Failed to delete ${c.displayName}`);
                 }
             } else {
-                const { error } = await serverFromTable(supabase, table).delete().eq("id", id);
+                const { error } = await serverFromTable(supabase, c.table).delete().eq("id", id);
 
                 if (error) {
-                    log.error(`${logPrefix} HARD DELETE failed`, { id, error: error.message });
-                    return ApiErrors.internalError(`Failed to delete ${displayName}`);
+                    log.error(`${c.logPrefix} HARD DELETE failed`, { id, error: error.message });
+                    return ApiErrors.internalError(`Failed to delete ${c.displayName}`);
                 }
             }
 
-            log.info(`${logPrefix} deleted`, { id, userId: user.id, soft: softDelete });
+            log.info(`${c.logPrefix} deleted`, { id, userId, soft: c.softDelete });
             const response = NextResponse.json({ success: true });
             response.headers.set("X-Request-Id", requestId);
             return response;
@@ -697,9 +825,7 @@ export function createCrudHandlers(config: CrudConfig): CrudHandlers {
             });
             return ApiErrors.internalError();
         }
-    }
-
-    return { list, getById, create, update, remove };
+    };
 }
 
 // ─── Convenience: Generate both collection + [id] route handlers ─
@@ -725,18 +851,18 @@ export interface ItemRouteHandlers {
 }
 
 export function createCollectionRoute(config: CrudConfig): CollectionRouteHandlers {
-    const handlers = createCrudHandlers(config);
+    const c = resolveConfig(config);
     return {
-        GET: handlers.list,
-        POST: handlers.create,
+        GET: buildList(c),
+        POST: buildCreate(c),
     };
 }
 
 export function createItemRoute(config: CrudConfig): ItemRouteHandlers {
-    const handlers = createCrudHandlers(config);
+    const c = resolveConfig(config);
     return {
-        GET: handlers.getById,
-        PATCH: handlers.update,
-        DELETE: handlers.remove,
+        GET: buildGetById(c),
+        PATCH: buildUpdate(c),
+        DELETE: buildRemove(c),
     };
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -21,7 +22,7 @@ export const POST = withApiHandler(
         const { body: messageBody, entity_type, entity_id, conversation_id } = body;
 
         if (!messageBody) {
-            return NextResponse.json({ error: { message: "body is required" } }, { status: 400 });
+            return ApiErrors.badRequest("body is required");
         }
 
         // Parse @mentions — matches @username or @"Display Name" patterns

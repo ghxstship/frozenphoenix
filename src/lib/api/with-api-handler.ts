@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { ApiErrors } from "@/lib/api-utils";
+import { ApiErrors, generateRequestId } from "@/lib/api-utils";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
@@ -36,10 +36,6 @@ const customMutationLimiter = rateLimit({ windowMs: 60_000, max: 30 });
 // ─── Auth Rate Limiter (stricter) ────────────────────────────
 // 10 auth attempts per minute per client
 const authLimiter = rateLimit({ windowMs: 60_000, max: 10 });
-
-function generateRequestId(): string {
-    return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
 
 // ─── Valid roles for cookie validation ───────────────────────
 const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
@@ -207,6 +203,13 @@ export function withApiHandler(
                 orgId,
             });
             result.headers.set("X-Request-Id", requestId);
+            // Add cache headers for read-only GET requests
+            if (options.method === "GET" && !result.headers.has("Cache-Control")) {
+                result.headers.set(
+                    "Cache-Control",
+                    "private, max-age=0, stale-while-revalidate=60"
+                );
+            }
             return result;
         } catch (err) {
             log.error("Unhandled error in API handler", {
@@ -307,6 +310,13 @@ export function withApiHandlerParams(
                 routeContext
             );
             result.headers.set("X-Request-Id", requestId);
+            // Add cache headers for read-only GET requests
+            if (options.method === "GET" && !result.headers.has("Cache-Control")) {
+                result.headers.set(
+                    "Cache-Control",
+                    "private, max-age=0, stale-while-revalidate=60"
+                );
+            }
             return result;
         } catch (err) {
             log.error("Unhandled error in API handler", {

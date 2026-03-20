@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -22,10 +23,7 @@ export const POST = withApiHandler(
         const { estimate_id } = body;
 
         if (!estimate_id) {
-            return NextResponse.json(
-                { error: { message: "estimate_id is required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("estimate_id is required");
         }
 
         const { data: estimate, error: estErr } = await serverFromTable(supabase, "estimates")
@@ -37,14 +35,11 @@ export const POST = withApiHandler(
             .single();
 
         if (estErr || !estimate) {
-            return NextResponse.json({ error: { message: "Estimate not found" } }, { status: 404 });
+            return ApiErrors.notFound("Estimate");
         }
 
         if (estimate.converted_sow_id) {
-            return NextResponse.json(
-                { error: { message: "Estimate already converted" } },
-                { status: 409 }
-            );
+            return ApiErrors.conflict("Estimate already converted");
         }
 
         const { data: proposal, error: propErr } = await serverFromTable(supabase, "proposals")
@@ -72,10 +67,7 @@ export const POST = withApiHandler(
             .single();
 
         if (propErr || !proposal) {
-            return NextResponse.json(
-                { error: { message: "Failed to create proposal", details: propErr?.message } },
-                { status: 500 }
-            );
+            return ApiErrors.internalError("Failed to create proposal");
         }
 
         // Mark estimate as converted

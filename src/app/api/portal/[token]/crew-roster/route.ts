@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { createHash } from "crypto";
 
 /**
@@ -17,12 +18,12 @@ export async function POST(
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json({ error: { message: "Invalid portal token" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid portal token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     // Validate token
@@ -34,33 +35,21 @@ export async function POST(
         .single();
 
     if (patError || !pat) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired portal link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Portal link");
     }
 
     const portalToken = pat as Record<string, unknown>;
 
     if (new Date(String(portalToken.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This portal link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This portal link has expired");
     }
     if (portalToken.revoked_at) {
-        return NextResponse.json(
-            { error: { message: "This portal link has been revoked" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link has been revoked");
     }
 
     const permissions = (portalToken.permissions as string[]) ?? [];
     if (!permissions.includes("submit")) {
-        return NextResponse.json(
-            { error: { message: "This portal link does not have submit permissions" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link does not have submit permissions");
     }
 
     // Parse body
@@ -68,15 +57,12 @@ export async function POST(
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: { message: "Invalid JSON body" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid JSON body");
     }
 
     const crew = body.crew as Record<string, unknown>[] | undefined;
     if (!crew || !Array.isArray(crew) || crew.length === 0) {
-        return NextResponse.json(
-            { error: { message: "crew array is required and must not be empty" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("crew array is required and must not be empty");
     }
 
     const collaboratorId = portalToken.collaborator_id as string;
@@ -86,13 +72,8 @@ export async function POST(
     // Validate each crew member has required fields
     for (const [i, member] of crew.entries()) {
         if (!member || !member.first_name || !member.last_name || !member.role_title) {
-            return NextResponse.json(
-                {
-                    error: {
-                        message: `Crew member at index ${i} is missing required fields (first_name, last_name, role_title)`,
-                    },
-                },
-                { status: 400 }
+            return ApiErrors.badRequest(
+                `Crew member at index ${i} is missing required fields (first_name, last_name, role_title)`
             );
         }
     }
@@ -135,10 +116,7 @@ export async function POST(
         .select();
 
     if (insertError) {
-        return NextResponse.json(
-            { error: { message: "Failed to submit crew roster" } },
-            { status: 500 }
-        );
+        return ApiErrors.internalError("Failed to submit crew roster");
     }
 
     // Update the crew_roster requirement to "submitted" if one exists

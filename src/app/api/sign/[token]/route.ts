@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 
 /**
  * GET /api/sign/[token]
@@ -11,15 +12,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json(
-            { error: { message: "Invalid signature token" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("Invalid signature token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     // Look up e_signature by access_token
@@ -29,20 +27,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
         .single();
 
     if (esigError || !esig) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired signature link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Signature link");
     }
 
     const esigRecord = esig as Record<string, unknown>;
 
     // Check expiry
     if (esigRecord.expires_at && new Date(String(esigRecord.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This signature link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This signature link has expired");
     }
 
     // Fetch associated contract via polymorphic entity_type/entity_id
@@ -102,15 +94,12 @@ export async function POST(
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json(
-            { error: { message: "Invalid signature token" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("Invalid signature token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     // Validate token
@@ -120,28 +109,19 @@ export async function POST(
         .single();
 
     if (esigError || !esig) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired signature link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Signature link");
     }
 
     const esigRecord = esig as Record<string, unknown>;
 
     // Check expiry
     if (esigRecord.expires_at && new Date(String(esigRecord.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This signature link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This signature link has expired");
     }
 
     // Check if already signed
     if (esigRecord.signed_at) {
-        return NextResponse.json(
-            { error: { message: "This document has already been signed" } },
-            { status: 409 }
-        );
+        return ApiErrors.conflict("This document has already been signed");
     }
 
     // Parse body
@@ -149,20 +129,17 @@ export async function POST(
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: { message: "Invalid JSON body" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid JSON body");
     }
 
     const typedName = body.typed_name as string | undefined;
     const consentGiven = body.consent_given as boolean | undefined;
 
     if (!typedName?.trim()) {
-        return NextResponse.json({ error: { message: "typed_name is required" } }, { status: 400 });
+        return ApiErrors.badRequest("typed_name is required");
     }
     if (!consentGiven) {
-        return NextResponse.json(
-            { error: { message: "consent_given must be true" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("consent_given must be true");
     }
 
     const now = new Date().toISOString();
@@ -189,10 +166,7 @@ export async function POST(
         .eq("id", esigRecord.id as string);
 
     if (updateError) {
-        return NextResponse.json(
-            { error: { message: "Failed to record signature" } },
-            { status: 500 }
-        );
+        return ApiErrors.internalError("Failed to record signature");
     }
 
     // Update contract status to "active" (signed contract becomes active)

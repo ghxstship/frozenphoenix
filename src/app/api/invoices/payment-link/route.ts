@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -24,10 +25,7 @@ export const POST = withApiHandler(
         const { invoice_id } = body;
 
         if (!invoice_id) {
-            return NextResponse.json(
-                { error: { message: "invoice_id is required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("invoice_id is required");
         }
 
         const { data: invoice, error: invErr } = await serverFromTable(supabase, "client_invoices")
@@ -37,15 +35,12 @@ export const POST = withApiHandler(
             .single();
 
         if (invErr || !invoice) {
-            return NextResponse.json({ error: { message: "Invoice not found" } }, { status: 404 });
+            return ApiErrors.notFound("Invoice");
         }
 
         const inv = invoice as Record<string, unknown>;
         if (inv.status === "paid") {
-            return NextResponse.json(
-                { error: { message: "Invoice is already paid" } },
-                { status: 409 }
-            );
+            return ApiErrors.conflict("Invoice is already paid");
         }
 
         // Generate a unique payment token

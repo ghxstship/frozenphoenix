@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { serverFromTable } from "@/lib/supabase/server";
+import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { createHash } from "crypto";
 
 /**
@@ -14,12 +14,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json({ error: { message: "Invalid portal token" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid portal token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     const tokenHash = createHash("sha256").update(token).digest("hex");
@@ -32,28 +32,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
         .single();
 
     if (patError || !pat) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired portal link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Portal link");
     }
 
     const portalToken = pat as Record<string, unknown>;
 
     // Check expiry
     if (new Date(String(portalToken.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This portal link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This portal link has expired");
     }
 
     // Check revocation
     if (portalToken.revoked_at) {
-        return NextResponse.json(
-            { error: { message: "This portal link has been revoked" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link has been revoked");
     }
 
     const projectId = portalToken.project_id as string;

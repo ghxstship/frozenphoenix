@@ -9,10 +9,14 @@ export const GET = withApiHandler(
         route: "/api/user-directory",
         rbac: { resource: "user_profiles", action: "read" },
     },
-    async (_request, { supabase, log }) => {
-        const { data, error } = await serverFromTable(supabase, "user_profiles").select(
+    async (_request, { supabase, orgId, log }) => {
+        let query = serverFromTable(supabase, "user_profiles").select(
             "id, full_name, email, avatar_url, role, department, organization_id"
         );
+        if (orgId) {
+            query = query.eq("organization_id", orgId);
+        }
+        const { data, error } = await query;
 
         if (error) {
             log.error("[GET /api/user-directory] failed", { error: error.message });

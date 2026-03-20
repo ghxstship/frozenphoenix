@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -23,10 +24,7 @@ export const POST = withApiHandler(
         const { automation_id, trigger_record_id } = body;
 
         if (!automation_id || !trigger_record_id) {
-            return NextResponse.json(
-                { error: { message: "automation_id and trigger_record_id are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("automation_id and trigger_record_id are required");
         }
 
         // Fetch automation with its rules (steps) ordered by step_order
@@ -37,10 +35,7 @@ export const POST = withApiHandler(
             .single();
 
         if (fetchErr || !automation) {
-            return NextResponse.json(
-                { error: { message: "Automation not found" } },
-                { status: 404 }
-            );
+            return ApiErrors.notFound("Automation");
         }
 
         const auto = automation as Record<string, unknown>;
@@ -60,10 +55,7 @@ export const POST = withApiHandler(
             .single();
 
         if (recordErr || !record) {
-            return NextResponse.json(
-                { error: { message: "Trigger record not found" } },
-                { status: 404 }
-            );
+            return ApiErrors.notFound("Trigger record");
         }
 
         // Create execution record

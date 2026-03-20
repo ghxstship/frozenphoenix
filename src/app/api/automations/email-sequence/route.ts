@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -24,10 +25,7 @@ export const POST = withApiHandler(
         const { automation_id, recipient_email, recipient_name, entity_type, entity_id } = body;
 
         if (!automation_id || !recipient_email) {
-            return NextResponse.json(
-                { error: { message: "automation_id and recipient_email are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("automation_id and recipient_email are required");
         }
 
         // Fetch the sequence automation with its steps
@@ -39,10 +37,7 @@ export const POST = withApiHandler(
             .single();
 
         if (fetchErr || !automation) {
-            return NextResponse.json(
-                { error: { message: "Automation not found or inactive" } },
-                { status: 404 }
-            );
+            return ApiErrors.notFound("Automation (or inactive)");
         }
 
         const auto = automation as Record<string, unknown>;
@@ -51,10 +46,7 @@ export const POST = withApiHandler(
             .sort((a, b) => ((a.step_order as number) ?? 0) - ((b.step_order as number) ?? 0));
 
         if (rules.length === 0) {
-            return NextResponse.json(
-                { error: { message: "No email steps found in this automation" } },
-                { status: 404 }
-            );
+            return ApiErrors.notFound("No email steps found in this automation");
         }
 
         // Create execution record

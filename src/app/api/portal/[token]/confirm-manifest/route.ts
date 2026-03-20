@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { createHash } from "crypto";
 
 /**
@@ -17,12 +18,12 @@ export async function POST(
     const { token } = await params;
 
     if (!token || token.length < 10) {
-        return NextResponse.json({ error: { message: "Invalid portal token" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid portal token");
     }
 
     const supabase = await createClient();
     if (!supabase) {
-        return NextResponse.json({ error: { message: "Service unavailable" } }, { status: 503 });
+        return ApiErrors.serviceUnavailable();
     }
 
     // Validate token
@@ -34,48 +35,33 @@ export async function POST(
         .single();
 
     if (patError || !pat) {
-        return NextResponse.json(
-            { error: { message: "Invalid or expired portal link" } },
-            { status: 404 }
-        );
+        return ApiErrors.notFound("Portal link");
     }
 
     const portalToken = pat as Record<string, unknown>;
 
     if (new Date(String(portalToken.expires_at)) < new Date()) {
-        return NextResponse.json(
-            { error: { message: "This portal link has expired" } },
-            { status: 410 }
-        );
+        return ApiErrors.gone("This portal link has expired");
     }
     if (portalToken.revoked_at) {
-        return NextResponse.json(
-            { error: { message: "This portal link has been revoked" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link has been revoked");
     }
 
     const permissions = (portalToken.permissions as string[]) ?? [];
     if (!permissions.includes("submit")) {
-        return NextResponse.json(
-            { error: { message: "This portal link does not have submit permissions" } },
-            { status: 403 }
-        );
+        return ApiErrors.forbidden("This portal link does not have submit permissions");
     }
 
     let body: Record<string, unknown>;
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: { message: "Invalid JSON body" } }, { status: 400 });
+        return ApiErrors.badRequest("Invalid JSON body");
     }
 
     const items = body.items as Record<string, unknown>[] | undefined;
     if (!items || !Array.isArray(items) || items.length === 0) {
-        return NextResponse.json(
-            { error: { message: "items array is required and must not be empty" } },
-            { status: 400 }
-        );
+        return ApiErrors.badRequest("items array is required and must not be empty");
     }
 
     const vendorId = portalToken.vendor_id as string;

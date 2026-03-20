@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -23,10 +24,7 @@ export const GET = withApiHandler(
         const entityId = url.searchParams.get("entity_id");
 
         if (!entityType || !entityId) {
-            return NextResponse.json(
-                { error: { message: "entity_type and entity_id are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("entity_type and entity_id are required");
         }
 
         const tableName = entityType.replace(/-/g, "_");
@@ -39,7 +37,7 @@ export const GET = withApiHandler(
             .single();
 
         if (error || !entity) {
-            return NextResponse.json({ error: { message: "Entity not found" } }, { status: 404 });
+            return ApiErrors.notFound("Entity");
         }
 
         const record = entity as Record<string, unknown>;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFromTable } from "@/lib/supabase/server";
+import { ApiErrors } from "@/lib/api-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**
@@ -21,26 +22,17 @@ export const POST = withApiHandler(
         const { entity, ids, field, value } = body;
 
         if (!entity || !ids || !Array.isArray(ids) || ids.length === 0 || !field) {
-            return NextResponse.json(
-                { error: { message: "entity, ids (array), field, and value are required" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("entity, ids (array), field, and value are required");
         }
 
         if (ids.length > 100) {
-            return NextResponse.json(
-                { error: { message: "Maximum 100 records per bulk update" } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest("Maximum 100 records per bulk update");
         }
 
         // Prevent updating protected fields
         const PROTECTED_FIELDS = new Set(["id", "organization_id", "created_at", "created_by"]);
         if (PROTECTED_FIELDS.has(field)) {
-            return NextResponse.json(
-                { error: { message: `Field "${field}" cannot be bulk-updated` } },
-                { status: 400 }
-            );
+            return ApiErrors.badRequest(`Field "${field}" cannot be bulk-updated`);
         }
 
         const tableName = entity.replace(/-/g, "_");
@@ -53,10 +45,7 @@ export const POST = withApiHandler(
 
             if (error) {
                 log.error("Bulk update failed", { entity, field, error: error.message });
-                return NextResponse.json(
-                    { error: { message: "Bulk update failed", details: error.message } },
-                    { status: 500 }
-                );
+                return ApiErrors.internalError("Bulk update failed");
             }
 
             return NextResponse.json({
@@ -64,7 +53,7 @@ export const POST = withApiHandler(
             });
         } catch (err) {
             log.error("Bulk update exception", { error: (err as Error).message });
-            return NextResponse.json({ error: { message: "Bulk update failed" } }, { status: 500 });
+            return ApiErrors.internalError("Bulk update failed");
         }
     }
 );
